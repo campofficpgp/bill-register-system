@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bill, Cash Book, Stock &amp; Ledger Register</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <style>
   :root{
     --navy:#1F4E78;
@@ -248,6 +251,19 @@
   .empty-row td{text-align:center;color:var(--muted);padding:22px 8px;font-style:italic;}
   tr.dup-row{background:var(--danger-tint) !important;}
   tr.dup-row:hover{background:#F7D8D6 !important;}
+
+  /* ---------- Guest (view-only) mode ---------- */
+  body.guest-mode .entry-form{display:none !important;}
+  body.guest-mode .row-actions button:not(.view-only-btn){display:none !important;}
+  body.guest-mode #pendingReturnsCard button{display:none !important;}
+  body.guest-mode .card h3 + .grid button:not(.view-only-btn){display:none !important;}
+  .guest-banner{
+    display:none;background:var(--amber-tint);border:1px solid #E7D6A8;color:#7A5C10;
+    padding:8px 14px;border-radius:var(--radius);font-size:12.5px;margin-bottom:14px;
+  }
+  body.guest-mode .guest-banner{display:block;}
+  body.guest-mode .row-remove-btn, body.guest-mode .add-row-btn, body.guest-mode #ps_regenBtn{display:none !important;}
+  body.guest-mode input.cell-input{pointer-events:none;background:transparent !important;border-color:transparent !important;}
   .row-actions{display:flex;gap:6px;}
   .count-chip{
     font-size:11.5px;background:var(--navy-tint);color:var(--navy-dark);border-radius:999px;
@@ -381,15 +397,15 @@
 <!-- ================= AUTH: FIRST-RUN SETUP ================= -->
 <div class="fullscreen-overlay auth-screen" id="authSetupScreen" style="display:none;">
   <div class="auth-card">
-    <h2>Set up this register</h2>
-    <div class="auth-sub">Create the Administrator account for this computer. This runs only once.</div>
-    <div class="field"><label>Office / section name</label><input type="text" id="setup_office" placeholder="e.g. Accounts Section, XYZ Office"></div>
-    <div class="field"><label>Administrator username</label><input type="text" id="setup_username" placeholder="e.g. admin"></div>
+    <h2>Create an account</h2>
+    <div class="auth-sub">New accounts start as "Guest" (view-only). An existing Administrator must upgrade your role afterwards.</div>
+    <div class="field"><label>Your email</label><input type="email" id="setup_username" placeholder="e.g. name@example.com"></div>
     <div class="field"><label>Password</label><input type="password" id="setup_password"></div>
     <div class="field"><label>Confirm password</label><input type="password" id="setup_password2"></div>
-    <button class="btn" id="setupBtn" style="width:100%;">Create Administrator account</button>
+    <button class="btn" id="setupBtn" style="width:100%;">Create account</button>
     <div class="auth-error" id="setupError"></div>
-    <div class="auth-warn">This password only locks the screen on this computer — it does not encrypt the file. Anyone with the file itself (or the ability to view its source code) can still read the data inside it, including employee CNIC and bank account numbers. Keep the file only on authorized computers and back it up carefully.</div>
+    <button class="btn ghost" id="backToLoginBtn" style="width:100%;margin-top:10px;">Back to sign in</button>
+    <div class="auth-warn">Your data is stored online in this system's shared Firebase database. Only Administrators can add, edit, or delete records; Guests can view everything but cannot change it.</div>
   </div>
 </div>
 
@@ -398,10 +414,11 @@
   <div class="auth-card">
     <h2>Sign in</h2>
     <div class="auth-sub" id="loginOfficeLabel">Bill, Cash Book, Stock &amp; Ledger Register</div>
-    <div class="field"><label>Username</label><input type="text" id="login_username"></div>
+    <div class="field"><label>Email</label><input type="email" id="login_username"></div>
     <div class="field"><label>Password</label><input type="password" id="login_password"></div>
     <button class="btn" id="loginBtn" style="width:100%;">Sign in</button>
     <div class="auth-error" id="loginError"></div>
+    <button class="btn ghost" id="goToSignupBtn" style="width:100%;margin-top:10px;">Create a new account</button>
   </div>
 </div>
 
@@ -479,6 +496,7 @@
   </nav>
 
   <main>
+    <div class="guest-banner">You're signed in as a <b>Guest</b> — you can view and print everything, but adding, editing, or deleting is limited to Administrators.</div>
 
     <!-- ================= CONTINGENT BILL ================= -->
     <section class="panel active" id="panel-bill">
@@ -899,25 +917,16 @@
       <div class="panel-head">
         <div>
           <h2>Users &amp; Access</h2>
-          <p>Administrators can add accounts for other staff, choose their role, and remove access. This is a screen-lock, not encryption — see the note below.</p>
+          <p>Anyone can create their own account (they start as Guest, view-only). An Administrator must promote a person to Administrator here before they can add, edit, or delete anything.</p>
         </div>
         <span class="count-chip" id="userCount">0 users</span>
       </div>
 
-      <div class="card entry-form">
-        <h3>Add a user</h3>
-        <div class="grid cols-4">
-          <div class="field"><label>Username</label><input type="text" id="u_username"></div>
-          <div class="field"><label>Password</label><input type="password" id="u_password"></div>
-          <div class="field"><label>Role</label><select id="u_role"><option value="User">User (data entry)</option><option value="Administrator">Administrator (full access)</option></select></div>
-          <div class="field" style="align-self:end;"><button class="btn" id="u_addBtn" style="width:100%;">Add user</button></div>
-        </div>
-        <div class="auth-error" id="u_addError"></div>
-      </div>
+      <div class="field-hint" style="margin-bottom:14px;">New accounts sign themselves up from the sign-in screen ("Create a new account") — there is no "Add a user" button here, since each person needs to set their own password. Once someone has signed up, their name appears below and an Administrator can change their role.</div>
 
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Username</th><th>Role</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
           <tbody id="userTableBody"></tbody>
         </table>
       </div>
@@ -932,7 +941,7 @@
         <div class="auth-error" id="pw_error"></div>
       </div>
 
-      <div class="auth-warn" style="margin-top:18px;">This login only locks the screen — the file itself is not encrypted. Anyone who opens this HTML file's source code, or copies it, can still read all data inside, including employee CNIC and bank account numbers. Restrict the file to authorized computers and control access to it like any other confidential document.</div>
+      <div class="auth-warn" style="margin-top:18px;">Data is stored online in this system's shared Firebase database. Access is controlled by each person's role (Administrator vs Guest) — enforced both here and, more importantly, by the database's own security rules.</div>
     </section>
 
   </main>
@@ -1074,7 +1083,6 @@ function normalizeData(data){
     data.allowanceRatesVersion = 100;
   }
 
-  data.users = data.users || [];
   data.payslipData = data.payslipData || {};
   data.preparedByName = data.preparedByName || "Iftikhar Ahmed";
   data.preparedByDesignation = data.preparedByDesignation || "Junior Clerk, Camp Office Prosecutor General Punjab, Supreme Court of Pakistan, Islamabad";
@@ -1111,23 +1119,55 @@ function migrateAllowanceRatesJuly2026(rates){
 }
 
 function loadData(){
-  var raw = localStorage.getItem(STORAGE_KEY);
-  var data;
-  if(raw){
-    try{ data = JSON.parse(raw); }catch(e){ data = null; }
-  }
-  if(!data){
-    data = { officeName:"", bills:[], cash:[], stock:[], openingCash:0, headOverrides:{}, itemMaster:{}, employees:[], allowanceRates:[], deductionRates:[], users:[] };
-  }
-  return normalizeData(data);
+  return normalizeData({});
 }
 
-var STATE = loadData();
+var firebaseConfig = {
+  apiKey: "AIzaSyBuxxpoEQQAq5u-1Opx7OrakxoNJNZibXc",
+  authDomain: "bill-register-system.firebaseapp.com",
+  projectId: "bill-register-system",
+  storageBucket: "bill-register-system.firebasestorage.app",
+  messagingSenderId: "985869089345",
+  appId: "1:985869089345:web:89dc1bae99584560085e460",
+  measurementId: "G-KKD67X6ZTG"
+};
+firebase.initializeApp(firebaseConfig);
+var auth = firebase.auth();
+var db = firebase.firestore();
+var SHARED_DOC_REF = db.collection("appData").doc("shared");
+var SUPPRESS_NEXT_SNAPSHOT_RENDER = false;
 
+var STATE = loadData(); /* placeholder until the real data arrives from Firestore, see fetchStateFromFirestore() */
+
+var saveTimer = null;
 function saveData(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(STATE));
+  /* fire-and-forget write to Firestore; UI already reflects the in-memory STATE immediately */
+  SUPPRESS_NEXT_SNAPSHOT_RENDER = true;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(function(){
+    SHARED_DOC_REF.set(STATE).catch(function(err){
+      toast("Could not save to the online database: "+err.message);
+    });
+  }, 300);
 }
-saveData(); /* persist any one-time migrations (e.g. July 2026 allowance restructuring) immediately */
+function fetchStateFromFirestore(callback){
+  SHARED_DOC_REF.get().then(function(snap){
+    STATE = normalizeData(snap.exists? snap.data() : {});
+    callback();
+  }).catch(function(err){
+    toast("Could not load data from the online database: "+err.message);
+  });
+}
+var unsubscribeSharedDoc = null;
+function startRealtimeSync(){
+  if(unsubscribeSharedDoc) unsubscribeSharedDoc();
+  unsubscribeSharedDoc = SHARED_DOC_REF.onSnapshot(function(snap){
+    if(SUPPRESS_NEXT_SNAPSHOT_RENDER){ SUPPRESS_NEXT_SNAPSHOT_RENDER = false; return; }
+    if(!snap.exists) return;
+    STATE = normalizeData(snap.data());
+    if(document.getElementById("appMain").style.display !== "none") renderAll();
+  });
+}
 
 function toast(msg){
   var t = document.getElementById("toast");
@@ -2191,6 +2231,7 @@ document.getElementById("btnBackup").addEventListener("click", function(){
   toast("Backup file downloaded.");
 });
 document.getElementById("btnRestore").addEventListener("click", function(){
+  if(!isAdmin()){ toast("Only an Administrator can restore a backup (it replaces the shared online data for everyone)."); return; }
   document.getElementById("restoreFile").click();
 });
 document.getElementById("restoreFile").addEventListener("change", function(e){
@@ -2200,7 +2241,7 @@ document.getElementById("restoreFile").addEventListener("change", function(e){
   reader.onload = function(ev){
     try{
       var incoming = JSON.parse(ev.target.result);
-      if(!confirm("Restoring will replace all current data in this browser with the backup file. Continue?")) return;
+      if(!confirm("Restoring will replace the shared online data for EVERYONE with this backup file. Continue?")) return;
       STATE = normalizeData({
         officeName: incoming.officeName || "",
         bills: incoming.bills || [],
@@ -2212,18 +2253,12 @@ document.getElementById("restoreFile").addEventListener("change", function(e){
         employees: incoming.employees || [],
         allowanceRates: incoming.allowanceRates || [],
         deductionRates: incoming.deductionRates || [],
-        users: incoming.users || [],
         payslipData: incoming.payslipData || {},
         allowanceRatesVersion: incoming.allowanceRatesVersion,
         preparedByName: incoming.preparedByName || "",
         preparedByDesignation: incoming.preparedByDesignation || ""
       });
       saveData();
-      if(CURRENT_USER){
-        CURRENT_USER = STATE.users.find(function(u){ return u.username===CURRENT_USER.username; }) || null;
-        if(!CURRENT_USER){ clearSession(); showLoginScreen(); return; }
-        updateUserBar();
-      }
       renderAll();
       officeInput.value = STATE.officeName;
       document.getElementById("cashOpening").value = STATE.openingCash;
@@ -2418,7 +2453,7 @@ function renderEmployees(){
       "<td>"+esc(e.persNo)+(dupPers? " <span class='tag overdue'>Duplicate</span>":"")+"</td><td>"+esc(e.name)+"</td><td>"+esc(e.designation)+"</td><td>"+esc(e.department)+"</td>"+
       "<td>"+esc(e.bps)+"</td><td>"+esc(e.status)+"</td><td>"+cnicDisplay+(dupCnic? " <span class='tag overdue'>Duplicate</span>":"")+"</td><td>"+esc(e.gpf)+"</td><td>"+esc(e.dob)+"</td>"+
       "<td>"+esc(e.bank)+"</td><td>"+acctDisplay+"</td>"+
-      "<td class='row-actions'><button class='btn secondary small' data-payslip='"+e.id+"'>Pay Slip</button><button class='btn ghost small' data-edit='"+e.id+"'>Edit</button>"+
+      "<td class='row-actions'><button class='btn secondary small view-only-btn' data-payslip='"+e.id+"'>Pay Slip</button><button class='btn ghost small' data-edit='"+e.id+"'>Edit</button>"+
       (isAdmin()? "<button class='btn danger small' data-del='"+e.id+"'>Delete</button>" : "")+"</td>";
     body.appendChild(tr);
   });
@@ -2478,23 +2513,9 @@ function renderAllowanceDeductionTables(){
   document.getElementById(id).addEventListener("change", renderAllowanceDeductionTables);
 });
 
-/* ================= AUTH: login, setup, users ================= */
-function simpleHash(str){
-  var hash = 5381;
-  str = String(str);
-  for(var i=0;i<str.length;i++){ hash = ((hash<<5)+hash) + str.charCodeAt(i); hash |= 0; }
-  return "h"+Math.abs(hash).toString(36)+str.length;
-}
-var SESSION_KEY = STORAGE_KEY + "_session";
+/* ================= AUTH: Firebase login, signup, roles ================= */
 var CURRENT_USER = null;
-function isAdmin(){ return !!(CURRENT_USER && CURRENT_USER.role==="Administrator"); }
-function getSessionUser(){
-  var uname = sessionStorage.getItem(SESSION_KEY);
-  if(!uname) return null;
-  return STATE.users.find(function(u){ return u.username===uname; }) || null;
-}
-function setSessionUser(username){ sessionStorage.setItem(SESSION_KEY, username); }
-function clearSession(){ sessionStorage.removeItem(SESSION_KEY); }
+function isAdmin(){ return !!(CURRENT_USER && CURRENT_USER.role==="admin"); }
 
 function showSetupScreen(){
   document.getElementById("authSetupScreen").style.display="flex";
@@ -2505,7 +2526,6 @@ function showLoginScreen(){
   document.getElementById("authLoginScreen").style.display="flex";
   document.getElementById("authSetupScreen").style.display="none";
   document.getElementById("appMain").style.display="none";
-  document.getElementById("loginOfficeLabel").textContent = STATE.officeName || "Bill, Cash Book, Stock & Ledger Register";
   document.getElementById("login_username").value="";
   document.getElementById("login_password").value="";
   document.getElementById("loginError").textContent="";
@@ -2513,9 +2533,10 @@ function showLoginScreen(){
 function updateUserBar(){
   document.getElementById("currentUserLabel").textContent = CURRENT_USER? CURRENT_USER.username : "—";
   var roleEl = document.getElementById("currentUserRole");
-  roleEl.textContent = CURRENT_USER? CURRENT_USER.role : "";
+  roleEl.textContent = CURRENT_USER? (isAdmin()? "Administrator" : "Guest") : "";
   roleEl.className = "role-badge" + (isAdmin()? " admin":"");
   document.getElementById("usersNavBtn").style.display = isAdmin()? "flex":"none";
+  document.body.classList.toggle("guest-mode", !isAdmin());
 }
 function showAppScreen(){
   document.getElementById("authSetupScreen").style.display="none";
@@ -2525,109 +2546,120 @@ function showAppScreen(){
   renderAll();
 }
 
+document.getElementById("goToSignupBtn").addEventListener("click", showSetupScreen);
+document.getElementById("backToLoginBtn").addEventListener("click", showLoginScreen);
+
 document.getElementById("setupBtn").addEventListener("click", function(){
-  var office = document.getElementById("setup_office").value.trim();
-  var username = document.getElementById("setup_username").value.trim();
+  var email = document.getElementById("setup_username").value.trim();
   var pw = document.getElementById("setup_password").value;
   var pw2 = document.getElementById("setup_password2").value;
   var err = document.getElementById("setupError");
   err.textContent = "";
-  if(!username){ err.textContent="Enter a username."; return; }
-  if(!pw || pw.length<4){ err.textContent="Password should be at least 4 characters."; return; }
+  if(!email){ err.textContent="Enter your email address."; return; }
+  if(!pw || pw.length<6){ err.textContent="Password should be at least 6 characters."; return; }
   if(pw!==pw2){ err.textContent="Passwords do not match."; return; }
-  STATE.officeName = office;
-  STATE.users.push({username:username, passHash:simpleHash(pw), role:"Administrator"});
-  saveData();
-  CURRENT_USER = STATE.users[STATE.users.length-1];
-  setSessionUser(username);
-  document.getElementById("officeName").value = office;
-  showAppScreen();
-  toast("Administrator account created.");
+  auth.createUserWithEmailAndPassword(email, pw).then(function(cred){
+    return db.collection("users").doc(cred.user.uid).set({email:email, role:"guest"});
+  }).catch(function(fbErr){
+    err.textContent = fbErr.message;
+  });
 });
 document.getElementById("setup_password2").addEventListener("keydown", function(ev){
   if(ev.key==="Enter") document.getElementById("setupBtn").click();
 });
 
 document.getElementById("loginBtn").addEventListener("click", function(){
-  var username = document.getElementById("login_username").value.trim();
+  var email = document.getElementById("login_username").value.trim();
   var pw = document.getElementById("login_password").value;
   var err = document.getElementById("loginError");
   err.textContent = "";
-  var user = STATE.users.find(function(u){ return u.username.toLowerCase()===username.toLowerCase(); });
-  if(!user || user.passHash !== simpleHash(pw)){
-    err.textContent = "Incorrect username or password.";
-    return;
-  }
-  CURRENT_USER = user;
-  setSessionUser(user.username);
-  showAppScreen();
+  auth.signInWithEmailAndPassword(email, pw).catch(function(fbErr){
+    err.textContent = "Incorrect email or password.";
+  });
 });
 document.getElementById("login_password").addEventListener("keydown", function(ev){
   if(ev.key==="Enter") document.getElementById("loginBtn").click();
 });
 document.getElementById("logoutBtn").addEventListener("click", function(){
-  clearSession();
-  CURRENT_USER = null;
-  showLoginScreen();
+  auth.signOut();
 });
 
+/* Reacts to sign-in/sign-out, including the very first load. */
+auth.onAuthStateChanged(function(user){
+  if(user){
+    db.collection("users").doc(user.uid).get().then(function(snap){
+      var role = snap.exists? (snap.data().role||"guest") : "guest";
+      CURRENT_USER = {uid:user.uid, username:user.email, role:role};
+      fetchStateFromFirestore(function(){
+        showAppScreen();
+        startRealtimeSync();
+        renderUsers();
+      });
+    }).catch(function(err){
+      toast("Could not load your account: "+err.message);
+    });
+  } else {
+    CURRENT_USER = null;
+    if(unsubscribeSharedDoc){ unsubscribeSharedDoc(); unsubscribeSharedDoc = null; }
+    showLoginScreen();
+  }
+});
+
+var ALL_USERS_CACHE = [];
 function renderUsers(){
   var body = document.getElementById("userTableBody");
   if(!body) return;
-  body.innerHTML = "";
-  STATE.users.forEach(function(u){
-    var tr = document.createElement("tr");
-    tr.innerHTML = "<td>"+esc(u.username)+"</td><td><span class='role-badge"+(u.role==="Administrator"?" admin":"")+"'>"+esc(u.role)+"</span></td>"+
-      "<td class='row-actions'>"+
-      (isAdmin() && STATE.users.length>1 ? "<button class='btn danger small' data-deluser='"+esc(u.username)+"'>Remove</button>" : "")+
-      "</td>";
-    body.appendChild(tr);
+  if(!isAdmin()){
+    body.innerHTML = "<tr class='empty-row'><td colspan='3'>Only Administrators can see the user list.</td></tr>";
+    document.getElementById("userCount").textContent = "";
+    return;
+  }
+  db.collection("users").get().then(function(qs){
+    ALL_USERS_CACHE = [];
+    qs.forEach(function(doc){ ALL_USERS_CACHE.push(Object.assign({uid:doc.id}, doc.data())); });
+    body.innerHTML = "";
+    ALL_USERS_CACHE.forEach(function(u){
+      var tr = document.createElement("tr");
+      var isThisAdmin = u.role==="admin";
+      tr.innerHTML = "<td>"+esc(u.email)+"</td><td><span class='role-badge"+(isThisAdmin?" admin":"")+"'>"+(isThisAdmin?"Administrator":"Guest")+"</span></td>"+
+        "<td class='row-actions'>"+
+        (u.uid===CURRENT_USER.uid? "<span class='field-hint'>(you)</span>" :
+          "<button class='btn "+(isThisAdmin?"ghost":"secondary")+" small' data-toggle-role='"+esc(u.uid)+"' data-new-role='"+(isThisAdmin?"guest":"admin")+"'>"+(isThisAdmin?"Set as Guest":"Set as Administrator")+"</button>")+
+        "</td>";
+      body.appendChild(tr);
+    });
+    body.querySelectorAll("[data-toggle-role]").forEach(function(el){
+      el.addEventListener("click", function(){
+        db.collection("users").doc(el.dataset.toggleRole).update({role: el.dataset.newRole}).then(function(){
+          toast("Role updated.");
+          renderUsers();
+        }).catch(function(err){ toast("Could not update role: "+err.message); });
+      });
+    });
+    document.getElementById("userCount").textContent = ALL_USERS_CACHE.length+" user"+(ALL_USERS_CACHE.length===1?"":"s");
+  }).catch(function(err){
+    body.innerHTML = "<tr class='empty-row'><td colspan='3'>Could not load users: "+esc(err.message)+"</td></tr>";
   });
-  body.querySelectorAll("[data-deluser]").forEach(function(el){
-    el.addEventListener("click", function(){ deleteUser(el.dataset.deluser); });
-  });
-  document.getElementById("userCount").textContent = STATE.users.length+" user"+(STATE.users.length===1?"":"s");
 }
-function deleteUser(username){
-  var admins = STATE.users.filter(function(u){ return u.role==="Administrator"; });
-  var target = STATE.users.find(function(u){ return u.username===username; });
-  if(!target) return;
-  if(target.role==="Administrator" && admins.length<=1){ toast("At least one Administrator account must remain."); return; }
-  if(CURRENT_USER && username===CURRENT_USER.username){ toast("You can't remove the account you're signed in with."); return; }
-  if(!confirm("Remove user \""+username+"\"?")) return;
-  STATE.users = STATE.users.filter(function(u){ return u.username!==username; });
-  saveData();
-  renderUsers();
-  toast("User removed.");
-}
-document.getElementById("u_addBtn").addEventListener("click", function(){
-  var uname = document.getElementById("u_username").value.trim();
-  var pw = document.getElementById("u_password").value;
-  var role = document.getElementById("u_role").value;
-  var err = document.getElementById("u_addError");
-  err.textContent="";
-  if(!uname){ err.textContent="Enter a username."; return; }
-  if(STATE.users.some(function(u){ return u.username.toLowerCase()===uname.toLowerCase(); })){ err.textContent="That username already exists."; return; }
-  if(!pw || pw.length<4){ err.textContent="Password should be at least 4 characters."; return; }
-  STATE.users.push({username:uname, passHash:simpleHash(pw), role:role});
-  saveData();
-  document.getElementById("u_username").value="";
-  document.getElementById("u_password").value="";
-  renderUsers();
-  toast("User added.");
-});
+
 document.getElementById("pw_changeBtn").addEventListener("click", function(){
   var cur = document.getElementById("pw_current").value;
   var next = document.getElementById("pw_new").value;
   var err = document.getElementById("pw_error");
   err.textContent="";
-  if(!CURRENT_USER || simpleHash(cur) !== CURRENT_USER.passHash){ err.textContent="Current password is incorrect."; return; }
-  if(!next || next.length<4){ err.textContent="New password should be at least 4 characters."; return; }
-  CURRENT_USER.passHash = simpleHash(next);
-  saveData();
-  document.getElementById("pw_current").value="";
-  document.getElementById("pw_new").value="";
-  toast("Password updated.");
+  if(!next || next.length<6){ err.textContent="New password should be at least 6 characters."; return; }
+  var user = auth.currentUser;
+  if(!user){ err.textContent="Not signed in."; return; }
+  var cred = firebase.auth.EmailAuthProvider.credential(user.email, cur);
+  user.reauthenticateWithCredential(cred).then(function(){
+    return user.updatePassword(next);
+  }).then(function(){
+    document.getElementById("pw_current").value="";
+    document.getElementById("pw_new").value="";
+    toast("Password updated.");
+  }).catch(function(fbErr){
+    err.textContent = fbErr.code==="auth/wrong-password"? "Current password is incorrect." : fbErr.message;
+  });
 });
 
 /* ================= PAPER SIZE & GENERIC PRINT ================= */
@@ -2991,18 +3023,8 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   }
 });
 
-/* ---------------- boot ---------------- */
-if(STATE.users.length===0){
-  showSetupScreen();
-} else {
-  var existingSession = getSessionUser();
-  if(existingSession){
-    CURRENT_USER = existingSession;
-    showAppScreen();
-  } else {
-    showLoginScreen();
-  }
-}
+/* Boot happens inside auth.onAuthStateChanged() above, once Firebase reports whether
+   someone is already signed in (it checks this automatically on every page load). */
 
 })();
 </script>
