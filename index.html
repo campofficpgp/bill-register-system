@@ -157,6 +157,19 @@
     color:var(--navy);margin-bottom:12px;font-weight:700;
   }
 
+  /* ---------- Help / Guide panel ---------- */
+  .help-intro{font-size:13.5px;color:var(--text);line-height:1.6;margin:0 0 4px;}
+  .help-steps{margin:0;padding-left:20px;}
+  .help-steps li{margin-bottom:7px;font-size:13px;line-height:1.55;color:var(--text);}
+  .help-steps li:last-child{margin-bottom:0;}
+  details.faq-item{border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;background:#fff;}
+  details.faq-item summary{padding:11px 14px;cursor:pointer;font-weight:600;font-size:13.2px;color:var(--navy-dark);list-style:none;position:relative;padding-right:30px;}
+  details.faq-item summary::-webkit-details-marker{display:none;}
+  details.faq-item summary::after{content:"+";position:absolute;right:14px;top:9px;font-size:17px;color:var(--muted);}
+  details.faq-item[open] summary::after{content:"\2212";}
+  details.faq-item summary:hover{background:var(--navy-tint);}
+  details.faq-item .faq-answer{padding:0 14px 13px;font-size:13px;line-height:1.6;color:var(--text);}
+
   .grid{display:grid;gap:12px;}
   .grid.cols-4{grid-template-columns:repeat(4,1fr);}
   .grid.cols-3{grid-template-columns:repeat(3,1fr);}
@@ -282,6 +295,8 @@
   body.guest-mode .guest-banner{display:block;}
   body.guest-mode .row-remove-btn, body.guest-mode .add-row-btn, body.guest-mode #ps_regenBtn{display:none !important;}
   body.guest-mode input.cell-input{pointer-events:none;background:transparent !important;border-color:transparent !important;}
+  body.guest-mode .att-cell{pointer-events:none;}
+  body.guest-mode .att-admin-only{display:none !important;}
   .row-actions{display:flex;gap:6px;}
   .count-chip{
     font-size:11.5px;background:var(--navy-tint);color:var(--navy-dark);border-radius:999px;
@@ -300,6 +315,35 @@
   .stock-summary-card .item{font-weight:700;font-size:12.5px;color:var(--navy-dark);margin-bottom:4px;}
   .stock-summary-card .qty{font-size:20px;font-weight:700;}
   .stock-summary-card .qty.low{color:var(--danger);}
+  /* ---------- Attendance Register grid ---------- */
+  .att-grid-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);}
+  table.att-grid{border-collapse:collapse;font-size:12px;}
+  table.att-grid th, table.att-grid td{border:1px solid var(--border);padding:0;text-align:center;}
+  table.att-grid th{background:var(--navy-dark);color:#fff;font-weight:600;padding:4px 2px;font-size:11px;}
+  table.att-grid td.att-name-cell, table.att-grid th.att-name-th{
+    position:sticky;left:0;background:#fff;z-index:2;text-align:left;padding:5px 10px;
+    min-width:170px;max-width:220px;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    box-shadow:2px 0 4px rgba(0,0,0,.06);
+  }
+  table.att-grid th.att-name-th{background:var(--navy-dark);z-index:3;}
+  table.att-grid .att-day-th{min-width:26px;}
+  table.att-grid .att-day-th .dow{display:block;font-weight:400;opacity:.75;font-size:9px;}
+  .att-cell{
+    width:26px;height:28px;line-height:28px;cursor:pointer;font-weight:700;user-select:none;
+  }
+  .att-cell:hover{outline:2px solid var(--navy);outline-offset:-2px;}
+  .att-cell[data-status=""]{color:var(--muted);}
+  .att-cell[data-status="P"]{background:var(--success-tint);color:var(--success);}
+  .att-cell[data-status="A"]{background:var(--danger-tint);color:var(--danger);}
+  .att-cell[data-status="L"]{background:var(--amber-tint);color:var(--amber);}
+  td.att-total-cell{font-weight:700;background:#F7F6F2;}
+  .att-legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;font-size:12.5px;}
+  .att-legend span{display:inline-flex;align-items:center;gap:6px;}
+  .att-legend i{width:16px;height:16px;border-radius:4px;display:inline-block;}
+  .att-legend i.p{background:var(--success-tint);border:1px solid var(--success);}
+  .att-legend i.a{background:var(--danger-tint);border:1px solid var(--danger);}
+  .att-legend i.l{background:var(--amber-tint);border:1px solid var(--amber);}
+  .att-legend i.blank{background:#fff;border:1px solid var(--border);}
   .toast{
     position:fixed;bottom:20px;right:20px;background:var(--navy-dark);color:#fff;
     padding:11px 18px;border-radius:var(--radius);box-shadow:0 4px 14px rgba(0,0,0,.25);
@@ -309,6 +353,44 @@
   footer.appfoot{
     text-align:center;color:var(--muted);font-size:11.5px;padding:18px;border-top:1px solid var(--border);
   }
+
+  /* ---------- Team Chat ---------- */
+  #chatToggleBtn{
+    position:fixed;right:20px;bottom:84px;z-index:996;
+    width:52px;height:52px;border-radius:50%;background:var(--navy);color:#fff;
+    border:none;box-shadow:0 4px 14px rgba(0,0,0,.28);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;font-size:22px;padding:0;
+  }
+  #chatToggleBtn:hover{background:var(--navy-dark);}
+  #chatToggleBtn .chat-badge{
+    position:absolute;top:-3px;right:-3px;background:var(--danger);color:#fff;
+    border-radius:999px;min-width:19px;height:19px;font-size:11px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;padding:0 4px;
+  }
+  #chatPanel{
+    position:fixed;top:0;right:-340px;width:320px;height:100%;background:#fff;
+    border-left:1px solid var(--border);box-shadow:-4px 0 18px rgba(0,0,0,.15);
+    z-index:1000;display:flex;flex-direction:column;transition:right .25s ease;
+  }
+  #chatPanel.open{right:0;}
+  .chat-head{background:var(--navy);color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:flex-start;flex:0 0 auto;}
+  .chat-head h3{color:#fff;font-size:14px;margin:0;text-transform:none;letter-spacing:0;font-family:inherit;}
+  .chat-head .chat-online{font-size:11px;color:#CFE0EC;margin-top:3px;}
+  .chat-head button{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:14px;line-height:1;flex:0 0 auto;}
+  .chat-head button:hover{background:rgba(255,255,255,.28);}
+  .chat-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;background:var(--bg);}
+  .chat-msg{max-width:88%;}
+  .chat-msg .chat-msg-meta{font-size:10.5px;color:var(--muted);margin-bottom:2px;}
+  .chat-msg .chat-msg-bubble{background:#fff;border:1px solid var(--border);border-radius:10px;padding:7px 10px;font-size:12.8px;line-height:1.45;color:var(--text);word-wrap:break-word;white-space:pre-wrap;}
+  .chat-msg.mine{align-self:flex-end;}
+  .chat-msg.mine .chat-msg-bubble{background:var(--navy-tint);border-color:#C9DCEA;}
+  .chat-msg.mine .chat-msg-meta{text-align:right;}
+  .chat-empty{color:var(--muted);font-size:12.5px;text-align:center;margin-top:30px;}
+  .chat-input-bar{display:flex;gap:8px;padding:10px;border-top:1px solid var(--border);background:#fff;flex:0 0 auto;}
+  .chat-input-bar textarea{flex:1;resize:none;height:40px;padding:8px 10px;font-size:13px;font-family:inherit;}
+  .chat-input-bar button{border:none;background:var(--navy);color:#fff;border-radius:var(--radius);padding:0 14px;cursor:pointer;font-weight:600;font-family:inherit;}
+  .chat-input-bar button:hover{background:var(--navy-dark);}
+  @media(max-width:640px){ #chatPanel{width:100%;right:-100%;} }
 
   /* ---------- Auth screens ---------- */
   .fullscreen-overlay{
@@ -537,16 +619,22 @@
   <nav class="sidenav">
     <div class="navnote" data-i18n="nav_modules">Modules</div>
     <button class="tab-btn active" data-tab="bill"><span class="dot"></span> <span data-i18n="nav_bill">Contingent Bill</span></button>
+    <div class="navnote" data-i18n="nav_accountsSection">Accounts</div>
     <button class="tab-btn" data-tab="cash"><span class="dot"></span> <span data-i18n="nav_cash">Cash Book</span></button>
     <button class="tab-btn" data-tab="stock"><span class="dot"></span> <span data-i18n="nav_stock">Stock Book</span></button>
     <button class="tab-btn" data-tab="ledger"><span class="dot"></span> <span data-i18n="nav_ledger">Ledger &amp; Budget</span></button>
+    <div class="navnote" data-i18n="nav_adminSection">Administration</div>
     <button class="tab-btn" data-tab="employees"><span class="dot"></span> <span data-i18n="nav_employees">Employees</span></button>
+    <button class="tab-btn" data-tab="leave"><span class="dot"></span> <span data-i18n="nav_leave">Leave Register</span></button>
+    <button class="tab-btn" data-tab="attendance"><span class="dot"></span> <span data-i18n="nav_attendance">Attendance Register</span></button>
     <button class="tab-btn" data-tab="reports"><span class="dot"></span> <span data-i18n="nav_reports">Reports</span></button>
     <button class="tab-btn" data-tab="users" id="usersNavBtn" style="display:none;"><span class="dot"></span> <span data-i18n="nav_users">Users &amp; Access</span></button>
     <div class="navnote" data-i18n="nav_data">Data</div>
     <button id="btnBackup"><span class="dot"></span> <span data-i18n="btn_backup">Backup (save file)</span></button>
     <button id="btnRestore"><span class="dot"></span> <span data-i18n="btn_restore">Restore from file</span></button>
     <input type="file" id="restoreFile" accept="application/json" style="display:none">
+    <div class="navnote" data-i18n="nav_helpSection">Help</div>
+    <button class="tab-btn" data-tab="help"><span class="dot"></span> <span data-i18n="nav_help">Help / Guide</span></button>
   </nav>
 
   <main>
@@ -966,6 +1054,133 @@
       </div>
     </section>
 
+    <!-- ================= LEAVE REGISTER ================= -->
+    <section class="panel" id="panel-leave">
+      <div class="panel-head">
+        <div>
+          <h2 data-i18n="lv_panelTitle">Leave Register</h2>
+          <p data-i18n="lv_panelDesc">Record every leave availed by staff — Casual, Earned, Medical, Extraordinary or other leave. Number of days is counted automatically from the dates.</p>
+        </div>
+        <span class="count-chip" id="leaveCount">0 entries</span>
+      </div>
+
+      <div class="card entry-form" id="leaveFormCard">
+        <h3 id="leaveFormTitle" data-i18n="lv_addLeave">Add a leave entry</h3>
+        <div class="grid cols-4">
+          <div class="field" style="grid-column:span 2;"><label data-i18n="lv_employee">Employee</label><select id="lv_employee"></select></div>
+          <div class="field"><label data-i18n="lv_leaveType">Leave type</label>
+            <select id="lv_leaveType">
+              <option value="Casual Leave (CL)" data-i18n="lv_casual">Casual Leave (CL)</option>
+              <option value="Earned Leave (EL)" data-i18n="lv_earned">Earned Leave (EL)</option>
+              <option value="Medical Leave" data-i18n="lv_medical">Medical Leave</option>
+              <option value="Extraordinary Leave (EOL)" data-i18n="lv_extraOrdinary">Extraordinary Leave (EOL)</option>
+              <option value="Other" data-i18n="lv_other">Other</option>
+            </select>
+          </div>
+          <div class="field"><label data-i18n="lv_noOfDays">No. of days</label><input type="text" id="lv_days" disabled></div>
+        </div>
+        <div class="grid cols-4" style="margin-top:12px;">
+          <div class="field"><label data-i18n="lbl_dateFrom">Date from</label><input type="date" id="lv_from"></div>
+          <div class="field"><label data-i18n="lbl_dateTo">Date to</label><input type="date" id="lv_to"></div>
+          <div class="field"><label data-i18n="lv_sanctionNo">Sanction / Order No</label><input type="text" id="lv_sanctionNo"></div>
+          <div class="field"><label data-i18n="lv_sanctionDate">Sanction date</label><input type="date" id="lv_sanctionDate"></div>
+        </div>
+        <div class="grid cols-2" style="margin-top:12px;">
+          <div class="field"><label data-i18n="lv_reason">Reason / purpose</label>
+            <select id="lv_reason"></select>
+            <input type="text" id="lv_reason_new" placeholder="Type the new reason" style="display:none;margin-top:6px;">
+          </div>
+          <div class="field"><label data-i18n="lbl_remarks">Remarks</label><input type="text" id="lv_remarks"></div>
+        </div>
+        <div class="btnbar">
+          <button class="btn" id="lv_saveBtn" data-i18n="btn_saveEntry">Save entry</button>
+          <button class="btn ghost" id="lv_cancelBtn" style="display:none;" data-i18n="btn_cancelEdit">Cancel edit</button>
+          <button class="btn secondary" id="lv_exportBtn" data-i18n="btn_exportCsv">Export visible rows (CSV)</button>
+        </div>
+      </div>
+
+      <div class="search-bar">
+        <h3 data-i18n="lv_searchTitle">Search &amp; filter leave register</h3>
+        <div class="grid cols-4">
+          <div class="field"><label data-i18n="lv_employee">Employee</label><select id="lvf_employee"><option value="" data-i18n="lv_allEmployees">All employees</option></select></div>
+          <div class="field"><label data-i18n="lv_leaveType">Leave type</label><select id="lvf_leaveType"><option value="" data-i18n="lv_allLeaveTypes">All leave types</option></select></div>
+          <div class="field"><label data-i18n="lbl_dateFrom">Date from</label><input type="date" id="lvf_from"></div>
+          <div class="field"><label data-i18n="lbl_dateTo">Date to</label><input type="date" id="lvf_to"></div>
+        </div>
+        <div class="btnbar"><button class="btn ghost small" id="lvf_clear" data-i18n="btn_clearFilters">Clear filters</button></div>
+      </div>
+
+      <div class="results-strip">
+        <span class="count-chip" id="leaveResultCount">Showing 0 of 0</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th data-i18n="th_sr">Sr#</th><th data-i18n="lv_employee">Employee</th><th data-i18n="lv_leaveType">Leave type</th><th data-i18n="lbl_dateFrom">Date from</th><th data-i18n="lbl_dateTo">Date to</th><th class="num" data-i18n="lv_noOfDays">No. of days</th><th data-i18n="lv_sanctionNo">Sanction / Order No</th><th data-i18n="lv_sanctionDate">Sanction date</th><th data-i18n="lv_reason">Reason / purpose</th><th data-i18n="lbl_remarks">Remarks</th><th data-i18n="th_actions">Actions</th></tr></thead>
+          <tbody id="leaveTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="card" style="margin-top:18px;">
+        <h3 data-i18n="lv_summaryTitle">Leave summary by employee (selected year)</h3>
+        <div class="grid cols-2" style="margin-bottom:10px;">
+          <div class="field"><label data-i18n="lv_year">Year</label><select id="lvs_year"></select></div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th data-i18n="lv_employee">Employee</th><th class="num" data-i18n="lv_casual">Casual Leave (CL)</th><th class="num" data-i18n="lv_earned">Earned Leave (EL)</th><th class="num" data-i18n="lv_medical">Medical Leave</th><th class="num" data-i18n="lv_extraOrdinary">Extraordinary Leave (EOL)</th><th class="num" data-i18n="lv_other">Other</th><th class="num" data-i18n="lv_totalDays">Total days</th></tr></thead>
+            <tbody id="leaveSummaryBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= ATTENDANCE REGISTER ================= -->
+    <section class="panel" id="panel-attendance">
+      <div class="panel-head">
+        <div>
+          <h2 data-i18n="att_panelTitle">Attendance Register</h2>
+          <p data-i18n="att_panelDesc">Pick a month, then click a cell to mark it: Present, Absent or Leave. Click again to cycle, or click once more to clear it.</p>
+        </div>
+        <span class="count-chip" id="attMarkedCount"></span>
+      </div>
+
+      <div class="search-bar">
+        <h3 data-i18n="att_pickMonth">Month</h3>
+        <div class="grid cols-4">
+          <div class="field"><label data-i18n="att_month">Month</label>
+            <select id="att_month">
+              <option value="1" data-i18n="att_month_1">January</option>
+              <option value="2" data-i18n="att_month_2">February</option>
+              <option value="3" data-i18n="att_month_3">March</option>
+              <option value="4" data-i18n="att_month_4">April</option>
+              <option value="5" data-i18n="att_month_5">May</option>
+              <option value="6" data-i18n="att_month_6">June</option>
+              <option value="7" data-i18n="att_month_7">July</option>
+              <option value="8" data-i18n="att_month_8">August</option>
+              <option value="9" data-i18n="att_month_9">September</option>
+              <option value="10" data-i18n="att_month_10">October</option>
+              <option value="11" data-i18n="att_month_11">November</option>
+              <option value="12" data-i18n="att_month_12">December</option>
+            </select>
+          </div>
+          <div class="field"><label data-i18n="lv_year">Year</label><select id="att_year"></select></div>
+          <div class="field" style="align-self:end;"><button class="btn secondary att-admin-only" id="att_fillLeaveBtn" data-i18n="att_fillFromLeave">Fill leave days from Leave Register</button></div>
+          <div class="field" style="align-self:end;"><button class="btn ghost small" id="att_exportBtn" data-i18n="btn_exportCsv">Export visible rows (CSV)</button></div>
+        </div>
+      </div>
+
+      <div class="att-legend">
+        <span><i class="blank"></i> <span data-i18n="att_notMarked">Not marked</span></span>
+        <span><i class="p"></i> <b>P</b> — <span data-i18n="att_present">Present</span></span>
+        <span><i class="a"></i> <b>A</b> — <span data-i18n="att_absent">Absent</span></span>
+        <span><i class="l"></i> <b>L</b> — <span data-i18n="att_leave">Leave</span></span>
+      </div>
+
+      <div class="att-grid-wrap">
+        <table class="att-grid" id="attGridTable"></table>
+      </div>
+    </section>
+
     <!-- ================= REPORTS ================= -->
     <section class="panel" id="panel-reports">
       <div class="panel-head">
@@ -1081,10 +1296,174 @@
       <div class="auth-warn" style="margin-top:18px;" data-i18n="usr_dataWarn">Data is stored online in this system's shared Firebase database. Access is controlled by each person's role (Administrator vs Guest) — enforced both here and, more importantly, by the database's own security rules.</div>
     </section>
 
+    <!-- ================= HELP / GUIDE ================= -->
+    <section class="panel" id="panel-help">
+      <div class="panel-head">
+        <div>
+          <h2 data-i18n="help_title">Help &amp; User Guide</h2>
+          <p data-i18n="help_desc">A quick, practical guide to using each part of this system — plus answers to common questions.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 data-i18n="help_introTitle">How this system works</h3>
+        <p class="help-intro" data-i18n="help_introText">This is one shared system for the whole office — everything you enter is saved online immediately and every other signed-in user sees the same information. You don't need to press a separate "Save data" button anywhere except when adding an entry; each module saves as soon as you click its own Save button. If you're new here, start with "Employees" so names appear correctly everywhere else, then explore the module you need from the sidebar on the left.</p>
+      </div>
+
+      <div class="grid cols-2">
+        <div class="card">
+          <h3 data-i18n="help_bill_title">Contingent Bill</h3>
+          <p class="help-intro" data-i18n="help_bill_intro">Use this to record every contingent bill your office prepares.</p>
+          <ol class="help-steps">
+            <li data-i18n="help_bill_s1">Click "Contingent Bill" in the sidebar.</li>
+            <li data-i18n="help_bill_s2">Fill in the bill's head, date, amount and description in the entry form.</li>
+            <li data-i18n="help_bill_s3">Add any deductions — the Net Payment is calculated for you automatically.</li>
+            <li data-i18n="help_bill_s4">Click "Save" to add it to the register below.</li>
+            <li data-i18n="help_bill_s5">Use the search box to find an old bill, and the Print / Export buttons to get a paper or Excel copy.</li>
+          </ol>
+        </div>
+        <div class="card">
+          <h3 data-i18n="help_cash_title">Cash Book</h3>
+          <p class="help-intro" data-i18n="help_cash_intro">Use this to record every cash receipt and payment, in the order they happen.</p>
+          <ol class="help-steps">
+            <li data-i18n="help_cash_s1">Open "Cash Book" under Accounts.</li>
+            <li data-i18n="help_cash_s2">Add each receipt or payment with its date and particulars, as it happens.</li>
+            <li data-i18n="help_cash_s3">The running balance is calculated automatically after every entry.</li>
+            <li data-i18n="help_cash_s4">Check "Reports" for a period-wise summary whenever you need one.</li>
+          </ol>
+        </div>
+        <div class="card">
+          <h3 data-i18n="help_stock_title">Stock Book</h3>
+          <p class="help-intro" data-i18n="help_stock_intro">Use this to track items received into store and issued out.</p>
+          <ol class="help-steps">
+            <li data-i18n="help_stock_s1">Open "Stock Book" under Accounts.</li>
+            <li data-i18n="help_stock_s2">Record items received (Qty In) or issued (Qty Out) against the right item and category.</li>
+            <li data-i18n="help_stock_s3">The remaining quantity is kept automatically, and items running low are highlighted.</li>
+          </ol>
+        </div>
+        <div class="card">
+          <h3 data-i18n="help_ledger_title">Ledger &amp; Budget</h3>
+          <p class="help-intro" data-i18n="help_ledger_intro">Use this to compare your sanctioned budget against actual spending.</p>
+          <ol class="help-steps">
+            <li data-i18n="help_ledger_s1">Open "Ledger &amp; Budget" under Accounts.</li>
+            <li data-i18n="help_ledger_s2">Enter the sanctioned budget for each head at the start of the year.</li>
+            <li data-i18n="help_ledger_s3">Spending and the remaining balance for each head are worked out automatically from your Bill and Cash Book entries.</li>
+          </ol>
+        </div>
+        <div class="card">
+          <h3 data-i18n="help_emp_title">Employees</h3>
+          <p class="help-intro" data-i18n="help_emp_intro">This is the master list of staff used everywhere else in the system.</p>
+          <ol class="help-steps">
+            <li data-i18n="help_emp_s1">Open "Employees" under Administration.</li>
+            <li data-i18n="help_emp_s2">Add each employee's name, designation and scale/BPS once.</li>
+            <li data-i18n="help_emp_s3">These names then appear automatically in Leave Register, Attendance Register and Reports — you never have to re-type them.</li>
+          </ol>
+        </div>
+        <div class="card">
+          <h3 data-i18n="help_leave_title">Leave Register</h3>
+          <p class="help-intro" data-i18n="help_leave_intro">Use this to record every leave application and sanction.</p>
+          <ol class="help-steps">
+            <li data-i18n="help_leave_s1">Open "Leave Register" under Administration.</li>
+            <li data-i18n="help_leave_s2">Select the employee, leave type, and the from/to dates — the number of days fills in automatically.</li>
+            <li data-i18n="help_leave_s3">Add the sanction number/date and reason, then click Save.</li>
+            <li data-i18n="help_leave_s4">The "Leave summary by employee" table at the bottom totals each employee's leave for the year automatically.</li>
+          </ol>
+        </div>
+        <div class="card">
+          <h3 data-i18n="help_att_title">Attendance Register</h3>
+          <p class="help-intro" data-i18n="help_att_intro">Use this for the day-to-day attendance of every employee.</p>
+          <ol class="help-steps">
+            <li data-i18n="help_att_s1">Open "Attendance Register" and pick the month and year.</li>
+            <li data-i18n="help_att_s2">Click a day's cell for an employee to cycle it through Present → Absent → Leave → blank.</li>
+            <li data-i18n="help_att_s3">Click "Fill leave days from Leave Register" to automatically mark that month's approved leave, instead of marking each day by hand.</li>
+            <li data-i18n="help_att_s4">Present / Absent / Leave totals for each employee are calculated automatically at the end of the row.</li>
+          </ol>
+        </div>
+        <div class="card">
+          <h3 data-i18n="help_rep_title">Reports</h3>
+          <p class="help-intro" data-i18n="help_rep_intro">Use this for a combined summary over any period you choose.</p>
+          <ol class="help-steps">
+            <li data-i18n="help_rep_s1">Open "Reports" and pick a date range, or a quick range like "This month".</li>
+            <li data-i18n="help_rep_s2">Click "Generate report" to see Bills, Cash Book, Stock Book and Employees summarised together.</li>
+            <li data-i18n="help_rep_s3">Use "Export report (Excel)" or "Print report" to share or file a copy.</li>
+          </ol>
+        </div>
+        <div class="card">
+          <h3 data-i18n="help_usr_title">Users &amp; Access</h3>
+          <p class="help-intro" data-i18n="help_usr_intro">This controls who can add, edit or delete data.</p>
+          <ol class="help-steps">
+            <li data-i18n="help_usr_s1">New staff create their own account from the sign-in screen — every new account starts as "Guest" (view-only).</li>
+            <li data-i18n="help_usr_s2">An existing Administrator must open "Users &amp; Access" and change that person's role to "Administrator" before they can add, edit or delete anything.</li>
+            <li data-i18n="help_usr_s3">Guests can still see every module and use Print/Export — they just can't change any data.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 data-i18n="help_faqTitle">Frequently asked questions</h3>
+        <details class="faq-item">
+          <summary data-i18n="help_faq1_q">I signed up but I can't add or edit anything — why?</summary>
+          <div class="faq-answer" data-i18n="help_faq1_a">New accounts start as "Guest" (view-only) for safety. Ask an existing Administrator to open "Users &amp; Access" and change your role to Administrator.</div>
+        </details>
+        <details class="faq-item">
+          <summary data-i18n="help_faq2_q">How do I switch between English and Urdu?</summary>
+          <div class="faq-answer" data-i18n="help_faq2_a">Use the language dropdown at the top-right of the page. It switches the whole system immediately and remembers your choice the next time you open it.</div>
+        </details>
+        <details class="faq-item">
+          <summary data-i18n="help_faq3_q">Where is my data stored — is it safe if this computer breaks?</summary>
+          <div class="faq-answer" data-i18n="help_faq3_a">Everything is saved online in this system's shared database, not just on this computer, so it stays safe even if this computer is lost or damaged. It's still good practice to use "Backup (save file)" now and then as an extra copy.</div>
+        </details>
+        <details class="faq-item">
+          <summary data-i18n="help_faq4_q">I made a mistake in an entry — can I fix it?</summary>
+          <div class="faq-answer" data-i18n="help_faq4_a">Yes. Find the entry in its list and click "Edit" (Administrators only), correct the fields, and save again.</div>
+        </details>
+        <details class="faq-item">
+          <summary data-i18n="help_faq5_q">Can more than one person use the system at the same time?</summary>
+          <div class="faq-answer" data-i18n="help_faq5_a">Yes — everyone signed in sees the same shared data. If two people save at almost the same moment, both changes are kept safely.</div>
+        </details>
+        <details class="faq-item">
+          <summary data-i18n="help_faq6_q">What's the connection between Leave Register and Attendance Register?</summary>
+          <div class="faq-answer" data-i18n="help_faq6_a">Once a leave is recorded in the Leave Register, open the Attendance Register for that month and click "Fill leave days from Leave Register" — it marks those days for you instead of you marking each one by hand.</div>
+        </details>
+        <details class="faq-item">
+          <summary data-i18n="help_faq7_q">How do I print something from this system?</summary>
+          <div class="faq-answer" data-i18n="help_faq7_a">Most panels have a Print button. It prepares a clean printable page without the sidebar or on-screen buttons.</div>
+        </details>
+        <details class="faq-item">
+          <summary data-i18n="help_faq8_q">Can I get this data into Excel?</summary>
+          <div class="faq-answer" data-i18n="help_faq8_a">Yes — Reports and most registers have an Export (CSV/Excel) button so you can open the data directly in Excel.</div>
+        </details>
+        <details class="faq-item">
+          <summary data-i18n="help_faq9_q">I forgot my password — what should I do?</summary>
+          <div class="faq-answer" data-i18n="help_faq9_a">This system doesn't yet have an automatic "forgot password" option. Please contact an Administrator for help.</div>
+        </details>
+        <details class="faq-item">
+          <summary data-i18n="help_faq10_q">Who can see this data — is it private to our office?</summary>
+          <div class="faq-answer" data-i18n="help_faq10_a">Only people who sign in with an account on this system can see it. Access is controlled by the Administrator/Guest roles, and further enforced by the database's own security rules.</div>
+        </details>
+      </div>
+    </section>
+
   </main>
 </div>
 
 <footer class="appfoot">Bill, Cash Book, Stock &amp; Ledger Register — all data stays saved in this browser on this computer. Use "Backup" regularly and before switching computers.</footer>
+
+<button id="chatToggleBtn" title="Team Chat">💬<span class="chat-badge" id="chatBadge" style="display:none;">0</span></button>
+<div id="chatPanel">
+  <div class="chat-head">
+    <div>
+      <h3 data-i18n="chat_title">Team Chat</h3>
+      <div class="chat-online" id="chatOnlineLabel"></div>
+    </div>
+    <button id="chatCloseBtn">✕</button>
+  </div>
+  <div class="chat-messages" id="chatMessages"></div>
+  <div class="chat-input-bar">
+    <textarea id="chatInput" data-i18n-placeholder="chat_typeMessage" placeholder="Type a message…"></textarea>
+    <button id="chatSendBtn" data-i18n="chat_send">Send</button>
+  </div>
+</div>
 </div>
 <div class="pb-modal-overlay" id="pbModalOverlay">
   <div class="pb-modal">
@@ -1181,7 +1560,8 @@ var OLD_CATEGORY_MIGRATION_MAP = {
   "Other Stores": "A03942-COST OF OTHER STORES"
 };
 
-function normalizeData(data){
+function normalizeData(data, seedDefaults){
+  if(seedDefaults===undefined) seedDefaults = true;
   data.bills = data.bills || [];
   data.cash = data.cash || [];
   data.stock = data.stock || [];
@@ -1219,9 +1599,11 @@ function normalizeData(data){
   });
 
   data.employees = data.employees || [];
-  if(data.employees.length===0 && DEFAULT_EMPLOYEES.length>0){
+  if(seedDefaults && data.employees.length===0 && DEFAULT_EMPLOYEES.length>0){
     data.employees = DEFAULT_EMPLOYEES.map(function(e){ return Object.assign({id:uid()}, e); });
   }
+  data.leaveRegister = data.leaveRegister || [];
+  data.attendance = data.attendance || [];
   data.allowanceRates = (data.allowanceRates && data.allowanceRates.length)? data.allowanceRates : DEFAULT_ALLOWANCE_RATES.slice();
   data.deductionRates = (data.deductionRates && data.deductionRates.length)? data.deductionRates : DEFAULT_DEDUCTION_RATES.slice();
 
@@ -1273,18 +1655,17 @@ function loadData(){
 }
 
 var firebaseConfig = {
-  apiKey: "AIzaSyBuxxpoEqQAq5u-1Opx70rakxoNJNZibXc",
-  authDomain: "bill-register-system.firebaseapp.com",
-  projectId: "bill-register-system",
-  storageBucket: "bill-register-system.firebasestorage.app",
-  messagingSenderId: "98586989345",
-  appId: "1:98586989345:web:89dc1bae9958456085e460",
-  measurementId: "G-KKD67X6ZTG"
+  apiKey: "AIzaSyCWl8dktUjAGF_JLMuZun2w3g_xnX3WBkU",
+  authDomain: "camp-office-project.firebaseapp.com",
+  projectId: "camp-office-project",
+  storageBucket: "camp-office-project.firebasestorage.app",
+  messagingSenderId: "246340921152",
+  appId: "1:246340921152:web:84b0a687a00a95523f23ca5"
 };
 firebase.initializeApp(firebaseConfig);
 var auth = firebase.auth();
 var db = firebase.firestore();
-var SHARED_DOC_REF = db.collection("appData").doc("shared");
+var SHARED_DOC_REF = db.collection("appData_bill").doc("shared");
 var SUPPRESS_NEXT_SNAPSHOT_RENDER = false;
 
 var STATE = loadData(); /* placeholder until the real data arrives from Firestore, see fetchStateFromFirestore() */
@@ -1322,7 +1703,7 @@ function mergeItemMaster(serverIM, localIM){
   });
   return out;
 }
-var MERGE_BY_ID_FIELDS = ["bills","cash","stock","employees"];
+var MERGE_BY_ID_FIELDS = ["bills","cash","stock","employees","leaveRegister","attendance"];
 var MERGE_DICT_FIELDS = ["headOverrides","payslipData"];
 function mergeStates(serverState, localState){
   var merged = {};
@@ -1355,7 +1736,15 @@ function saveData(deletedIds){
     pendingDeletedIds = {};
     db.runTransaction(function(tx){
       return tx.get(SHARED_DOC_REF).then(function(snap){
-        var serverState = normalizeData(snap.exists? snap.data() : {});
+        /* seedDefaults:false — this reads the server's copy purely to merge it with our local
+           copy. If the shared document doesn't exist yet (very first save ever), the local
+           copy has already been seeded with the default employee list at boot; re-seeding it
+           here too would generate a second set of employees with brand-new random ids, and the
+           id-based merge below would keep both copies as "different" records — doubling every
+           employee. Seeding stays on for every other normalizeData() call (first-ever app load,
+           realtime updates, Restore from file), where there's no separately-seeded copy to
+           collide with. */
+        var serverState = normalizeData(snap.exists? snap.data() : {}, false);
         var merged = mergeStates(serverState, localSnapshot);
         Object.keys(toDelete).forEach(function(field){
           if(Array.isArray(merged[field])){
@@ -1443,6 +1832,12 @@ var I18N_UI = {
 en: {
   app_title:"Bill, Cash Book, Stock & Ledger Register",
   app_subtitle:"Contingent Bill · Cash Book · Stock Book · Ledger & Budget · Employees — one system, saved on this computer",
+  att_absent:"Absent", att_daysMarked:"day(s) marked", att_fillFromLeave:"Fill leave days from Leave Register",
+  att_leave:"Leave", att_month:"Month", att_month_1:"January", att_month_2:"February", att_month_3:"March", att_month_4:"April",
+  att_month_5:"May", att_month_6:"June", att_month_7:"July", att_month_8:"August", att_month_9:"September", att_month_10:"October",
+  att_month_11:"November", att_month_12:"December", att_notMarked:"Not marked",
+  att_panelDesc:"Pick a month, then click a cell to mark it: Present, Absent or Leave. Click again to cycle, or click once more to clear it.",
+  att_panelTitle:"Attendance Register", att_pickMonth:"Month", att_present:"Present",
   auth_backToSignin:"Back to sign in", auth_confirmPassword:"Confirm password", auth_createAccount:"Create an account",
   auth_createAccountBtn:"Create account", auth_createNewAccount:"Create a new account", auth_email:"Email",
   auth_newAccountsNote:"New accounts start as \"Guest\" (view-only). An existing Administrator must upgrade your role afterwards.",
@@ -1483,8 +1878,86 @@ en: {
   ledger_panelDesc:"Generated automatically from the Contingent Bill entries. Final Budget and Prior Expenditure can be corrected here if the reference figures change.",
   ledger_panelTitle:"Ledger & Budget — Head-wise Summary", ledger_priorExpenditure:"Prior Expenditure", ledger_remainingBudget:"Remaining Budget",
   ledger_searchHeads:"Search heads", ledger_totalDeductions:"Total Deductions", ledger_totalExpenditure:"Total Expenditure", ledger_totalGross:"Total Gross",
-  nav_bill:"Contingent Bill", nav_cash:"Cash Book", nav_data:"Data", nav_employees:"Employees", nav_ledger:"Ledger & Budget",
-  nav_modules:"Modules", nav_reports:"Reports", nav_stock:"Stock Book", nav_users:"Users & Access",
+  lv_addLeave:"Add a leave entry", lv_allEmployees:"All employees", lv_allLeaveTypes:"All leave types",
+  lv_casual:"Casual Leave (CL)", lv_earned:"Earned Leave (EL)", lv_employee:"Employee", lv_extraOrdinary:"Extraordinary Leave (EOL)",
+  lv_leaveType:"Leave type", lv_medical:"Medical Leave", lv_noLeaveMatch:"No leave entries match. Add one above, or clear filters.",
+  lv_noLeaveThisYear:"No leave recorded for this year.", lv_noOfDays:"No. of days", lv_other:"Other",
+  lv_panelDesc:"Record every leave availed by staff — Casual, Earned, Medical, Extraordinary or other leave. Number of days is counted automatically from the dates.",
+  lv_panelTitle:"Leave Register", lv_reason:"Reason / purpose", lv_sanctionDate:"Sanction date", lv_sanctionNo:"Sanction / Order No",
+  lv_searchTitle:"Search & filter leave register", lv_selectEmployee:"Select employee…", lv_summaryTitle:"Leave summary by employee (selected year)",
+  lv_totalDays:"Total days", lv_year:"Year",
+  nav_attendance:"Attendance Register",
+  nav_bill:"Contingent Bill", nav_cash:"Cash Book", nav_data:"Data", nav_employees:"Employees", nav_leave:"Leave Register", nav_ledger:"Ledger & Budget",
+  nav_modules:"Modules", nav_accountsSection:"Accounts", nav_adminSection:"Administration", nav_reports:"Reports", nav_stock:"Stock Book", nav_users:"Users & Access",
+  nav_helpSection:"Help", nav_help:"Help / Guide",
+  help_title:"Help & User Guide", help_desc:"A quick, practical guide to using each part of this system — plus answers to common questions.",
+  help_introTitle:"How this system works",
+  help_introText:"This is one shared system for the whole office — everything you enter is saved online immediately and every other signed-in user sees the same information. You don't need to press a separate \"Save data\" button anywhere except when adding an entry; each module saves as soon as you click its own Save button. If you're new here, start with \"Employees\" so names appear correctly everywhere else, then explore the module you need from the sidebar on the left.",
+  help_bill_title:"Contingent Bill", help_bill_intro:"Use this to record every contingent bill your office prepares.",
+  help_bill_s1:"Click \"Contingent Bill\" in the sidebar.",
+  help_bill_s2:"Fill in the bill's head, date, amount and description in the entry form.",
+  help_bill_s3:"Add any deductions — the Net Payment is calculated for you automatically.",
+  help_bill_s4:"Click \"Save\" to add it to the register below.",
+  help_bill_s5:"Use the search box to find an old bill, and the Print / Export buttons to get a paper or Excel copy.",
+  help_cash_title:"Cash Book", help_cash_intro:"Use this to record every cash receipt and payment, in the order they happen.",
+  help_cash_s1:"Open \"Cash Book\" under Accounts.",
+  help_cash_s2:"Add each receipt or payment with its date and particulars, as it happens.",
+  help_cash_s3:"The running balance is calculated automatically after every entry.",
+  help_cash_s4:"Check \"Reports\" for a period-wise summary whenever you need one.",
+  help_stock_title:"Stock Book", help_stock_intro:"Use this to track items received into store and issued out.",
+  help_stock_s1:"Open \"Stock Book\" under Accounts.",
+  help_stock_s2:"Record items received (Qty In) or issued (Qty Out) against the right item and category.",
+  help_stock_s3:"The remaining quantity is kept automatically, and items running low are highlighted.",
+  help_ledger_title:"Ledger & Budget", help_ledger_intro:"Use this to compare your sanctioned budget against actual spending.",
+  help_ledger_s1:"Open \"Ledger & Budget\" under Accounts.",
+  help_ledger_s2:"Enter the sanctioned budget for each head at the start of the year.",
+  help_ledger_s3:"Spending and the remaining balance for each head are worked out automatically from your Bill and Cash Book entries.",
+  help_emp_title:"Employees", help_emp_intro:"This is the master list of staff used everywhere else in the system.",
+  help_emp_s1:"Open \"Employees\" under Administration.",
+  help_emp_s2:"Add each employee's name, designation and scale/BPS once.",
+  help_emp_s3:"These names then appear automatically in Leave Register, Attendance Register and Reports — you never have to re-type them.",
+  help_leave_title:"Leave Register", help_leave_intro:"Use this to record every leave application and sanction.",
+  help_leave_s1:"Open \"Leave Register\" under Administration.",
+  help_leave_s2:"Select the employee, leave type, and the from/to dates — the number of days fills in automatically.",
+  help_leave_s3:"Add the sanction number/date and reason, then click Save.",
+  help_leave_s4:"The \"Leave summary by employee\" table at the bottom totals each employee's leave for the year automatically.",
+  help_att_title:"Attendance Register", help_att_intro:"Use this for the day-to-day attendance of every employee.",
+  help_att_s1:"Open \"Attendance Register\" and pick the month and year.",
+  help_att_s2:"Click a day's cell for an employee to cycle it through Present → Absent → Leave → blank.",
+  help_att_s3:"Click \"Fill leave days from Leave Register\" to automatically mark that month's approved leave, instead of marking each day by hand.",
+  help_att_s4:"Present / Absent / Leave totals for each employee are calculated automatically at the end of the row.",
+  help_rep_title:"Reports", help_rep_intro:"Use this for a combined summary over any period you choose.",
+  help_rep_s1:"Open \"Reports\" and pick a date range, or a quick range like \"This month\".",
+  help_rep_s2:"Click \"Generate report\" to see Bills, Cash Book, Stock Book and Employees summarised together.",
+  help_rep_s3:"Use \"Export report (Excel)\" or \"Print report\" to share or file a copy.",
+  help_usr_title:"Users & Access", help_usr_intro:"This controls who can add, edit or delete data.",
+  help_usr_s1:"New staff create their own account from the sign-in screen — every new account starts as \"Guest\" (view-only).",
+  help_usr_s2:"An existing Administrator must open \"Users & Access\" and change that person's role to \"Administrator\" before they can add, edit or delete anything.",
+  help_usr_s3:"Guests can still see every module and use Print/Export — they just can't change any data.",
+  help_faqTitle:"Frequently asked questions",
+  help_faq1_q:"I signed up but I can't add or edit anything — why?",
+  help_faq1_a:"New accounts start as \"Guest\" (view-only) for safety. Ask an existing Administrator to open \"Users & Access\" and change your role to Administrator.",
+  help_faq2_q:"How do I switch between English and Urdu?",
+  help_faq2_a:"Use the language dropdown at the top-right of the page. It switches the whole system immediately and remembers your choice the next time you open it.",
+  help_faq3_q:"Where is my data stored — is it safe if this computer breaks?",
+  help_faq3_a:"Everything is saved online in this system's shared database, not just on this computer, so it stays safe even if this computer is lost or damaged. It's still good practice to use \"Backup (save file)\" now and then as an extra copy.",
+  help_faq4_q:"I made a mistake in an entry — can I fix it?",
+  help_faq4_a:"Yes. Find the entry in its list and click \"Edit\" (Administrators only), correct the fields, and save again.",
+  help_faq5_q:"Can more than one person use the system at the same time?",
+  help_faq5_a:"Yes — everyone signed in sees the same shared data. If two people save at almost the same moment, both changes are kept safely.",
+  help_faq6_q:"What's the connection between Leave Register and Attendance Register?",
+  help_faq6_a:"Once a leave is recorded in the Leave Register, open the Attendance Register for that month and click \"Fill leave days from Leave Register\" — it marks those days for you instead of you marking each one by hand.",
+  help_faq7_q:"How do I print something from this system?",
+  help_faq7_a:"Most panels have a Print button. It prepares a clean printable page without the sidebar or on-screen buttons.",
+  help_faq8_q:"Can I get this data into Excel?",
+  help_faq8_a:"Yes — Reports and most registers have an Export (CSV/Excel) button so you can open the data directly in Excel.",
+  help_faq9_q:"I forgot my password — what should I do?",
+  help_faq9_a:"This system doesn't yet have an automatic \"forgot password\" option. Please contact an Administrator for help.",
+  help_faq10_q:"Who can see this data — is it private to our office?",
+  help_faq10_a:"Only people who sign in with an account on this system can see it. Access is controlled by the Administrator/Guest roles, and further enforced by the database's own security rules.",
+  chat_title:"Team Chat", chat_typeMessage:"Type a message…", chat_send:"Send",
+  chat_onlineCount:"{n} online", chat_noMessages:"No messages yet — say hello!",
+  chat_you:"You", chat_guest:"Guest",
   opt_addNewValue:"+ Add a new value…", opt_allAnyNotIssued:"All (any / not issued)", opt_allBillNumbers:"All bill numbers",
   opt_allBps:"All BPS", opt_allCnic:"All CNIC", opt_allDepartments:"All departments", opt_allDescriptions:"All descriptions",
   opt_allDesignations:"All designations", opt_allDob:"All dates of birth", opt_allHeads:"All heads", opt_allItems:"All items",
@@ -1492,7 +1965,7 @@ en: {
   opt_allVendors:"All vendors", opt_allVoucherNumbers:"All voucher/bill numbers", opt_any:"Any", opt_no:"No", opt_none:"— none —",
   opt_selectBank:"Select bank…", opt_selectBps:"Select BPS…", opt_selectDepartment:"Select department…", opt_selectDesignation:"Select designation…",
   opt_selectIssuedTo:"Select issued to…", opt_selectParticulars:"Select particulars…", opt_selectVendorName:"Select vendor name…",
-  opt_selectVendorNo:"Select vendor no…", opt_yes:"Yes",
+  opt_selectVendorNo:"Select vendor no…", opt_selectReason:"Select reason…", opt_yes:"Yes",
   ps_annualIncrement:"Annual increment %", ps_financialYear:"Financial Year", ps_fullFY:"Full financial year", ps_incrementFrom:"Increment effective from",
   ps_mode:"Mode", ps_month:"Month", ps_preparedByDesignation:"Prepared by (designation)", ps_preparedByName:"Prepared by (name)",
   ps_regenTemplates:"Regenerate templates", ps_singleMonth:"Single month",
@@ -1535,6 +2008,12 @@ en: {
 ur: {
   app_title:"بل، کیش بک، سٹاک اور لیجر رجسٹر",
   app_subtitle:"کنٹینجنٹ بل · کیش بک · سٹاک بک · لیجر اینڈ بجٹ · ملازمین — ایک سسٹم، اس کمپیوٹر پر محفوظ",
+  att_absent:"غیر حاضر", att_daysMarked:"دن نشان زد", att_fillFromLeave:"لیو رجسٹر سے رخصت کے دن بھریں",
+  att_leave:"رخصت", att_month:"مہینہ", att_month_1:"جنوری", att_month_2:"فروری", att_month_3:"مارچ", att_month_4:"اپریل",
+  att_month_5:"مئی", att_month_6:"جون", att_month_7:"جولائی", att_month_8:"اگست", att_month_9:"ستمبر", att_month_10:"اکتوبر",
+  att_month_11:"نومبر", att_month_12:"دسمبر", att_notMarked:"نشان زد نہیں",
+  att_panelDesc:"مہینہ منتخب کریں، پھر خانے پر کلک کر کے نشان لگائیں: حاضر، غیر حاضر یا رخصت۔ دوبارہ کلک کرنے سے تبدیل ہوگا، ایک بار اور کلک کرنے سے صاف ہو جائے گا۔",
+  att_panelTitle:"حاضری رجسٹر", att_pickMonth:"مہینہ", att_present:"حاضر",
   auth_backToSignin:"سائن ان پر واپس جائیں", auth_confirmPassword:"پاسورڈ کی تصدیق", auth_createAccount:"اکاؤنٹ بنائیں",
   auth_createAccountBtn:"اکاؤنٹ بنائیں", auth_createNewAccount:"نیا اکاؤنٹ بنائیں", auth_email:"ای میل",
   auth_newAccountsNote:"نئے اکاؤنٹس \"Guest\" (صرف دیکھنے والے) کے طور پر شروع ہوتے ہیں۔ کوئی موجودہ Administrator بعد میں آپ کا role اپ گریڈ کرے گا۔",
@@ -1575,8 +2054,86 @@ ur: {
   ledger_panelDesc:"کنٹینجنٹ بل اندراجات سے خودکار طور پر تیار۔ اگر حوالہ اعداد و شمار تبدیل ہوں تو Final Budget اور Prior Expenditure یہاں درست کیے جا سکتے ہیں۔",
   ledger_panelTitle:"لیجر اینڈ بجٹ — ہیڈ وار خلاصہ", ledger_priorExpenditure:"سابقہ اخراجات", ledger_remainingBudget:"باقی بجٹ",
   ledger_searchHeads:"ہیڈز تلاش کریں", ledger_totalDeductions:"کل کٹوتیاں", ledger_totalExpenditure:"کل اخراجات", ledger_totalGross:"کل مجموعی رقم",
-  nav_bill:"کنٹینجنٹ بل", nav_cash:"کیش بک", nav_data:"ڈیٹا", nav_employees:"ملازمین", nav_ledger:"لیجر اینڈ بجٹ",
-  nav_modules:"ماڈیولز", nav_reports:"رپورٹس", nav_stock:"سٹاک بک", nav_users:"یوزرز اینڈ ایکسیس",
+  lv_addLeave:"نئی رخصت درج کریں", lv_allEmployees:"تمام ملازمین", lv_allLeaveTypes:"تمام اقسامِ رخصت",
+  lv_casual:"کیژول لیو (CL)", lv_earned:"ارنڈ لیو (EL)", lv_employee:"ملازم", lv_extraOrdinary:"ایکسٹرا آرڈینری لیو (EOL)",
+  lv_leaveType:"رخصت کی قسم", lv_medical:"میڈیکل لیو", lv_noLeaveMatch:"کوئی رخصت میچ نہیں کرتی۔ اوپر ایک درج کریں، یا فلٹرز صاف کریں۔",
+  lv_noLeaveThisYear:"اس سال کے لیے کوئی رخصت درج نہیں۔", lv_noOfDays:"دنوں کی تعداد", lv_other:"دیگر",
+  lv_panelDesc:"عملے کی ہر رخصت درج کریں — کیژول، ارنڈ، میڈیکل، ایکسٹرا آرڈینری یا دیگر۔ دنوں کی تعداد تاریخوں سے خودکار شمار ہوتی ہے۔",
+  lv_panelTitle:"لیو رجسٹر", lv_reason:"وجہ / مقصد", lv_sanctionDate:"منظوری کی تاریخ", lv_sanctionNo:"منظوری / آرڈر نمبر",
+  lv_searchTitle:"لیو رجسٹر تلاش اور فلٹر کریں", lv_selectEmployee:"ملازم منتخب کریں…", lv_summaryTitle:"ملازم کے مطابق رخصت کا خلاصہ (منتخب سال)",
+  lv_totalDays:"کل دن", lv_year:"سال",
+  nav_attendance:"حاضری رجسٹر",
+  nav_bill:"کنٹینجنٹ بل", nav_cash:"کیش بک", nav_data:"ڈیٹا", nav_employees:"ملازمین", nav_leave:"لیو رجسٹر", nav_ledger:"لیجر اینڈ بجٹ",
+  nav_modules:"ماڈیولز", nav_accountsSection:"اکاؤنٹس", nav_adminSection:"انتظامیہ", nav_reports:"رپورٹس", nav_stock:"سٹاک بک", nav_users:"یوزرز اینڈ ایکسیس",
+  nav_helpSection:"مدد", nav_help:"مدد / رہنمائی",
+  help_title:"مدد اور صارف رہنما", help_desc:"اس سسٹم کے ہر حصے کو استعمال کرنے کا مختصر اور عملی رہنما — ساتھ ہی عام سوالات کے جوابات۔",
+  help_introTitle:"یہ سسٹم کیسے کام کرتا ہے",
+  help_introText:"یہ پورے آفس کے لیے ایک مشترکہ سسٹم ہے — آپ جو کچھ بھی درج کریں گے وہ فوراً آن لائن محفوظ ہو جاتا ہے اور ہر سائن اِن یوزر کو وہی معلومات نظر آتی ہیں۔ کہیں الگ سے \"ڈیٹا محفوظ کریں\" کا بٹن دبانے کی ضرورت نہیں — ہر ماڈیول اپنے Save بٹن پر کلک کرتے ہی محفوظ ہو جاتا ہے۔ اگر آپ نئے ہیں تو پہلے \"Employees\" میں تمام ملازمین کے نام درج کریں تاکہ باقی جگہوں پر بھی درست نظر آئیں، پھر بائیں طرف سائیڈبار سے مطلوبہ ماڈیول کھولیں۔",
+  help_bill_title:"کنٹیجنٹ بل", help_bill_intro:"آفس کا ہر کنٹیجنٹ بل یہاں درج کریں۔",
+  help_bill_s1:"سائیڈبار میں \"Contingent Bill\" پر کلک کریں۔",
+  help_bill_s2:"بل کا ہیڈ، تاریخ، رقم اور تفصیل فارم میں درج کریں۔",
+  help_bill_s3:"کوئی کٹوتی ہو تو شامل کریں — Net Payment خودکار حساب ہو جائے گا۔",
+  help_bill_s4:"\"Save\" پر کلک کر کے نیچے رجسٹر میں شامل کر دیں۔",
+  help_bill_s5:"پرانا بل تلاش کرنے کے لیے سرچ باکس، اور کاغذی/ایکسل کاپی کے لیے Print/Export بٹن استعمال کریں۔",
+  help_cash_title:"کیش بک", help_cash_intro:"ہر نقد وصولی اور ادائیگی، جس ترتیب سے ہو، یہاں درج کریں۔",
+  help_cash_s1:"Accounts کے تحت \"Cash Book\" کھولیں۔",
+  help_cash_s2:"ہر وصولی یا ادائیگی اس کی تاریخ اور تفصیل کے ساتھ، جیسے ہی ہو، درج کریں۔",
+  help_cash_s3:"ہر اندراج کے بعد چلتا بیلنس خودکار حساب ہو جاتا ہے۔",
+  help_cash_s4:"جب بھی ضرورت ہو، \"Reports\" میں مدت کے حساب سے خلاصہ دیکھ لیں۔",
+  help_stock_title:"اسٹاک بک", help_stock_intro:"اسٹور میں آنے والی اور جاری ہونے والی اشیاء یہاں ٹریک کریں۔",
+  help_stock_s1:"Accounts کے تحت \"Stock Book\" کھولیں۔",
+  help_stock_s2:"درست آئٹم اور کیٹگری کے مطابق موصول (Qty In) یا جاری (Qty Out) شدہ مقدار درج کریں۔",
+  help_stock_s3:"بقایا مقدار خودکار برقرار رہتی ہے، اور کم اسٹاک والی اشیاء نمایاں ہو جاتی ہیں۔",
+  help_ledger_title:"لیجر اور بجٹ", help_ledger_intro:"منظور شدہ بجٹ کو اصل اخراجات سے یہاں موازنہ کریں۔",
+  help_ledger_s1:"Accounts کے تحت \"Ledger & Budget\" کھولیں۔",
+  help_ledger_s2:"سال کے شروع میں ہر ہیڈ کا منظور شدہ بجٹ درج کریں۔",
+  help_ledger_s3:"ہر ہیڈ کے اخراجات اور بقایا رقم آپ کے بل اور کیش بک اندراجات سے خودکار نکل آتی ہے۔",
+  help_emp_title:"ملازمین", help_emp_intro:"یہ عملے کی مرکزی فہرست ہے جو سسٹم میں ہر جگہ استعمال ہوتی ہے۔",
+  help_emp_s1:"Administration کے تحت \"Employees\" کھولیں۔",
+  help_emp_s2:"ہر ملازم کا نام، عہدہ اور اسکیل/BPS ایک بار درج کریں۔",
+  help_emp_s3:"یہ نام پھر خودکار طور پر Leave Register، Attendance Register اور Reports میں نظر آتے ہیں — دوبارہ ٹائپ کرنے کی ضرورت نہیں۔",
+  help_leave_title:"لیو رجسٹر", help_leave_intro:"ہر رخصت کی درخواست اور منظوری یہاں درج کریں۔",
+  help_leave_s1:"Administration کے تحت \"Leave Register\" کھولیں۔",
+  help_leave_s2:"ملازم، رخصت کی قسم اور From/To تاریخیں منتخب کریں — دنوں کی تعداد خودکار بھر جائے گی۔",
+  help_leave_s3:"منظوری نمبر/تاریخ اور وجہ درج کر کے Save پر کلک کریں۔",
+  help_leave_s4:"نیچے \"Leave summary by employee\" جدول ہر ملازم کی سالانہ رخصت کا مجموعہ خودکار دکھاتی ہے۔",
+  help_att_title:"اٹینڈنس رجسٹر", help_att_intro:"ہر ملازم کی روزانہ حاضری کے لیے یہ استعمال کریں۔",
+  help_att_s1:"\"Attendance Register\" کھول کر مہینہ اور سال منتخب کریں۔",
+  help_att_s2:"کسی ملازم کے کسی دن کے خانے پر کلک کریں تو وہ Present → Absent → Leave → خالی کی ترتیب میں بدلتا جائے گا۔",
+  help_att_s3:"ہر دن الگ سے نشان زد کرنے کے بجائے \"Fill leave days from Leave Register\" پر کلک کر کے اس مہینے کی منظور شدہ رخصت خودکار بھر لیں۔",
+  help_att_s4:"ہر قطار کے آخر میں Present/Absent/Leave کی کل تعداد خودکار حساب ہو جاتی ہے۔",
+  help_rep_title:"رپورٹس", help_rep_intro:"کسی بھی منتخب مدت کا مشترکہ خلاصہ یہاں سے حاصل کریں۔",
+  help_rep_s1:"\"Reports\" کھول کر تاریخوں کی رینج منتخب کریں، یا \"This month\" جیسی فوری رینج استعمال کریں۔",
+  help_rep_s2:"\"Generate report\" پر کلک کریں تو Bills، Cash Book، Stock Book اور Employees کا مشترکہ خلاصہ نظر آئے گا۔",
+  help_rep_s3:"کاپی محفوظ کرنے یا شیئر کرنے کے لیے \"Export report (Excel)\" یا \"Print report\" استعمال کریں۔",
+  help_usr_title:"یوزرز اینڈ ایکسیس", help_usr_intro:"یہ کنٹرول کرتا ہے کہ کون ڈیٹا شامل، ترمیم یا حذف کر سکتا ہے۔",
+  help_usr_s1:"نیا عملہ سائن اِن اسکرین سے خود اپنا اکاؤنٹ بناتا ہے — ہر نیا اکاؤنٹ \"Guest\" (صرف دیکھنے والا) کے طور پر شروع ہوتا ہے۔",
+  help_usr_s2:"کسی موجودہ Administrator کو \"Users & Access\" کھول کر اس شخص کا role \"Administrator\" میں بدلنا ہوگا، تب ہی وہ کچھ شامل/ترمیم/حذف کر سکے گا۔",
+  help_usr_s3:"Guest ہر ماڈیول دیکھ سکتا ہے اور Print/Export استعمال کر سکتا ہے — بس ڈیٹا تبدیل نہیں کر سکتا۔",
+  help_faqTitle:"اکثر پوچھے گئے سوالات",
+  help_faq1_q:"میں نے اکاؤنٹ بنایا لیکن کچھ شامل یا ترمیم نہیں کر سکتا — کیوں؟",
+  help_faq1_a:"حفاظت کی خاطر نئے اکاؤنٹس \"Guest\" (صرف دیکھنے والے) کے طور پر شروع ہوتے ہیں۔ کسی موجودہ Administrator سے کہیں کہ وہ \"Users & Access\" کھول کر آپ کا role Administrator میں بدل دے۔",
+  help_faq2_q:"انگریزی اور اردو کے درمیان کیسے تبدیل کروں؟",
+  help_faq2_a:"صفحے کے اوپر دائیں طرف زبان والی ڈراپ ڈاؤن استعمال کریں۔ یہ فوراً پورا سسٹم بدل دیتی ہے اور اگلی بار کھولنے پر آپ کی پسند یاد رکھتی ہے۔",
+  help_faq3_q:"میرا ڈیٹا کہاں محفوظ ہے — اگر یہ کمپیوٹر خراب ہو جائے تو کیا ہوگا؟",
+  help_faq3_a:"سب کچھ اس سسٹم کے مشترکہ آن لائن ڈیٹا بیس میں محفوظ ہے، صرف اس کمپیوٹر پر نہیں — اس لیے کمپیوٹر خراب یا گم ہونے پر بھی ڈیٹا محفوظ رہتا ہے۔ اس کے باوجود کبھی کبھار \"Backup (save file)\" استعمال کرنا ایک اضافی احتیاط کے طور پر اچھی عادت ہے۔",
+  help_faq4_q:"کسی اندراج میں غلطی ہو گئی — کیا میں اسے ٹھیک کر سکتا ہوں؟",
+  help_faq4_a:"جی ہاں۔ اس فہرست میں اندراج تلاش کریں اور \"Edit\" پر کلک کریں (صرف Administrators)، فیلڈز درست کریں اور دوبارہ Save کریں۔",
+  help_faq5_q:"کیا ایک سے زیادہ لوگ بیک وقت سسٹم استعمال کر سکتے ہیں؟",
+  help_faq5_a:"جی ہاں — سائن اِن ہر شخص کو وہی مشترکہ ڈیٹا نظر آتا ہے۔ اگر دو لوگ تقریباً ایک ہی وقت میں Save کریں، تو دونوں کی تبدیلیاں محفوظ رہتی ہیں۔",
+  help_faq6_q:"Leave Register اور Attendance Register کا آپس میں کیا تعلق ہے؟",
+  help_faq6_a:"جب Leave Register میں رخصت درج ہو جائے، تو اس مہینے کا Attendance Register کھول کر \"Fill leave days from Leave Register\" پر کلک کریں — یہ خودکار وہ دن نشان زد کر دے گا، آپ کو ہر دن الگ سے نشان زد نہیں کرنا پڑے گا۔",
+  help_faq7_q:"اس سسٹم سے پرنٹ کیسے نکالوں؟",
+  help_faq7_a:"زیادہ تر پینلز میں Print بٹن موجود ہے۔ یہ سائیڈبار اور اسکرین کے بٹنوں کے بغیر ایک صاف پرنٹ کے قابل صفحہ تیار کرتا ہے۔",
+  help_faq8_q:"کیا میں یہ ڈیٹا ایکسل میں لے جا سکتا ہوں؟",
+  help_faq8_a:"جی ہاں — Reports اور زیادہ تر رجسٹرز میں Export (CSV/Excel) بٹن موجود ہے جس سے آپ ڈیٹا براہ راست ایکسل میں کھول سکتے ہیں۔",
+  help_faq9_q:"میں اپنا پاس ورڈ بھول گیا — کیا کروں؟",
+  help_faq9_a:"اس سسٹم میں ابھی خودکار \"پاس ورڈ بھول گئے\" کی سہولت موجود نہیں۔ براہ کرم مدد کے لیے کسی Administrator سے رابطہ کریں۔",
+  help_faq10_q:"یہ ڈیٹا کون دیکھ سکتا ہے — کیا یہ صرف ہمارے آفس کے لیے محفوظ ہے؟",
+  help_faq10_a:"صرف وہی لوگ دیکھ سکتے ہیں جو اس سسٹم پر اپنے اکاؤنٹ سے سائن اِن ہوں۔ رسائی Administrator/Guest کے roles سے کنٹرول ہوتی ہے، اور مزید ڈیٹا بیس کے اپنے سیکیورٹی rules سے محفوظ ہے۔",
+  chat_title:"ٹیم چیٹ", chat_typeMessage:"پیغام لکھیں…", chat_send:"بھیجیں",
+  chat_onlineCount:"{n} آن لائن", chat_noMessages:"ابھی تک کوئی پیغام نہیں — سلام کہیں!",
+  chat_you:"آپ", chat_guest:"مہمان",
   opt_addNewValue:"+ نئی ویلیو شامل کریں…", opt_allAnyNotIssued:"تمام (کوئی بھی / جاری نہیں)", opt_allBillNumbers:"تمام بل نمبرز",
   opt_allBps:"تمام BPS", opt_allCnic:"تمام CNIC", opt_allDepartments:"تمام شعبے", opt_allDescriptions:"تمام تفصیلات",
   opt_allDesignations:"تمام عہدے", opt_allDob:"تمام تاریخ پیدائش", opt_allHeads:"تمام ہیڈز", opt_allItems:"تمام اشیاء",
@@ -1584,7 +2141,7 @@ ur: {
   opt_allVendors:"تمام وینڈرز", opt_allVoucherNumbers:"تمام واؤچر/بل نمبرز", opt_any:"کوئی بھی", opt_no:"نہیں", opt_none:"— کوئی نہیں —",
   opt_selectBank:"بینک منتخب کریں…", opt_selectBps:"BPS منتخب کریں…", opt_selectDepartment:"شعبہ منتخب کریں…", opt_selectDesignation:"عہدہ منتخب کریں…",
   opt_selectIssuedTo:"جاری کردہ منتخب کریں…", opt_selectParticulars:"تفصیلات منتخب کریں…", opt_selectVendorName:"وینڈر کا نام منتخب کریں…",
-  opt_selectVendorNo:"وینڈر نمبر منتخب کریں…", opt_yes:"ہاں",
+  opt_selectVendorNo:"وینڈر نمبر منتخب کریں…", opt_selectReason:"وجہ منتخب کریں…", opt_yes:"ہاں",
   ps_annualIncrement:"سالانہ اضافہ %", ps_financialYear:"مالی سال", ps_fullFY:"مکمل مالی سال", ps_incrementFrom:"اضافہ مؤثر از",
   ps_mode:"موڈ", ps_month:"مہینہ", ps_preparedByDesignation:"تیار کردہ (عہدہ)", ps_preparedByName:"تیار کردہ (نام)",
   ps_regenTemplates:"ٹیمپلیٹس دوبارہ تیار کریں", ps_singleMonth:"ایک مہینہ",
@@ -1653,10 +2210,17 @@ function applyUILang(lang){
     var val = I18N_UI[lang][key];
     if(val!=null) el.textContent = val;
   });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(function(el){
+    var key = el.getAttribute("data-i18n-placeholder");
+    var val = I18N_UI[lang][key];
+    if(val!=null) el.placeholder = val;
+  });
   refreshSelectPlaceholders();
   var sel = document.getElementById("uiLangSelect");
   if(sel) sel.value = lang;
   try{ localStorage.setItem(UI_LANG_STORAGE_KEY, lang); }catch(e){}
+  if(typeof renderChatOnline==="function") renderChatOnline();
+  if(typeof renderChatMessages==="function") renderChatMessages();
 }
 (function initUILang(){
   var saved = "en";
@@ -2750,6 +3314,8 @@ function renderAll(){
   renderLedger();
   renderEmployees();
   renderAllowanceDeductionTables();
+  renderLeaveRegister();
+  renderAttendance();
   renderUsers();
   recalcBillPreview();
   renderReports();
@@ -3143,6 +3709,361 @@ document.getElementById("e_exportBtn").addEventListener("click", function(){
   downloadCSV("employees.csv", rows);
 });
 
+/* ================= LEAVE REGISTER MODULE ================= */
+var leaveEditId = null;
+var LEAVE_TYPES = ["Casual Leave (CL)","Earned Leave (EL)","Medical Leave","Extraordinary Leave (EOL)","Other"];
+function employeeLabel(id){
+  var e = STATE.employees.find(function(x){ return x.id===id; });
+  if(!e) return "";
+  return (e.persNo? e.persNo+" - " : "") + e.name;
+}
+function calcLeaveDays(fromStr, toStr){
+  if(!fromStr || !toStr) return 0;
+  var f = new Date(fromStr+"T00:00:00");
+  var tt = new Date(toStr+"T00:00:00");
+  var diff = Math.round((tt-f)/86400000)+1;
+  return diff>0? diff : 0;
+}
+wireSelectOrAdd("lv_reason","lv_reason_new");
+function populateLeaveReasonList(){
+  populateSelectOrAdd("lv_reason", STATE.leaveRegister.map(function(lv){ return lv.reason; }), t("opt_selectReason"));
+}
+function populateLeaveEmployeeSelects(){
+  var sorted = STATE.employees.slice().sort(function(a,b){ return (a.name||"").localeCompare(b.name||""); });
+  var opts = sorted.map(function(e){ return "<option value='"+esc(e.id)+"'>"+esc((e.persNo? e.persNo+" - ":"")+e.name)+"</option>"; }).join("");
+  var mainSel = document.getElementById("lv_employee");
+  var keepMain = mainSel.value;
+  mainSel.innerHTML = "<option value=''>"+esc(t("lv_selectEmployee"))+"</option>" + opts;
+  if(keepMain) mainSel.value = keepMain;
+  var filtSel = document.getElementById("lvf_employee");
+  var keepFilt = filtSel.value;
+  filtSel.innerHTML = "<option value=''>"+esc(t("lv_allEmployees"))+"</option>" + opts;
+  if(keepFilt) filtSel.value = keepFilt;
+}
+function updateLeaveDaysPreview(){
+  var days = calcLeaveDays(document.getElementById("lv_from").value, document.getElementById("lv_to").value);
+  document.getElementById("lv_days").value = days? String(days) : "";
+}
+["lv_from","lv_to"].forEach(function(id){
+  document.getElementById(id).addEventListener("input", updateLeaveDaysPreview);
+  document.getElementById(id).addEventListener("change", updateLeaveDaysPreview);
+});
+function resetLeaveForm(){
+  leaveEditId = null;
+  document.getElementById("leaveFormTitle").textContent = t("lv_addLeave");
+  document.getElementById("lv_saveBtn").textContent = "Save entry";
+  document.getElementById("lv_cancelBtn").style.display = "none";
+  populateLeaveEmployeeSelects();
+  document.getElementById("lv_employee").value = "";
+  document.getElementById("lv_leaveType").value = LEAVE_TYPES[0];
+  document.getElementById("lv_from").value = todayStr();
+  document.getElementById("lv_to").value = todayStr();
+  document.getElementById("lv_sanctionNo").value = "";
+  document.getElementById("lv_sanctionDate").value = "";
+  populateLeaveReasonList();
+  resetSelectOrAdd("lv_reason","lv_reason_new");
+  document.getElementById("lv_remarks").value = "";
+  updateLeaveDaysPreview();
+}
+document.getElementById("lv_saveBtn").addEventListener("click", function(){
+  var empId = document.getElementById("lv_employee").value;
+  if(!empId){ toast("Please select an employee."); return; }
+  var from = document.getElementById("lv_from").value;
+  var to = document.getElementById("lv_to").value;
+  if(!from || !to){ toast("Both \"Date from\" and \"Date to\" are required."); return; }
+  if(to < from){ toast("\"Date to\" cannot be before \"Date from\"."); return; }
+  var rec = {
+    id: leaveEditId || uid(),
+    employeeId: empId,
+    leaveType: document.getElementById("lv_leaveType").value,
+    from: from,
+    to: to,
+    days: calcLeaveDays(from, to),
+    sanctionNo: document.getElementById("lv_sanctionNo").value.trim(),
+    sanctionDate: document.getElementById("lv_sanctionDate").value,
+    reason: getSelectOrAddValue("lv_reason","lv_reason_new"),
+    remarks: document.getElementById("lv_remarks").value.trim()
+  };
+  if(leaveEditId){
+    var idx = STATE.leaveRegister.findIndex(function(x){ return x.id===leaveEditId; });
+    STATE.leaveRegister[idx] = rec;
+    toast("Entry updated.");
+  } else {
+    STATE.leaveRegister.push(rec);
+    toast("Entry saved.");
+  }
+  saveData();
+  resetLeaveForm();
+  renderLeaveRegister();
+});
+document.getElementById("lv_cancelBtn").addEventListener("click", resetLeaveForm);
+function editLeave(id){
+  var lv = STATE.leaveRegister.find(function(x){ return x.id===id; });
+  if(!lv) return;
+  leaveEditId = id;
+  document.getElementById("leaveFormTitle").textContent = t("form_editEntry");
+  document.getElementById("lv_saveBtn").textContent = "Update entry";
+  document.getElementById("lv_cancelBtn").style.display = "inline-block";
+  populateLeaveEmployeeSelects();
+  document.getElementById("lv_employee").value = lv.employeeId;
+  document.getElementById("lv_leaveType").value = lv.leaveType;
+  document.getElementById("lv_from").value = lv.from;
+  document.getElementById("lv_to").value = lv.to;
+  document.getElementById("lv_sanctionNo").value = lv.sanctionNo;
+  document.getElementById("lv_sanctionDate").value = lv.sanctionDate;
+  populateLeaveReasonList();
+  setSelectOrAddValue("lv_reason","lv_reason_new", lv.reason);
+  document.getElementById("lv_remarks").value = lv.remarks;
+  updateLeaveDaysPreview();
+  document.getElementById("panel-leave").scrollIntoView({behavior:"smooth"});
+}
+function deleteLeave(id){
+  if(!confirm("Delete this leave entry?")) return;
+  STATE.leaveRegister = STATE.leaveRegister.filter(function(x){ return x.id!==id; });
+  saveData({leaveRegister:[id]});
+  renderLeaveRegister();
+  toast("Entry deleted.");
+}
+function populateLeaveFilterSelects(){
+  populateLeaveEmployeeSelects();
+  var sel = document.getElementById("lvf_leaveType");
+  var keep = sel.value;
+  sel.innerHTML = "<option value=''>"+esc(t("lv_allLeaveTypes"))+"</option>" +
+    LEAVE_TYPES.map(function(v){ return "<option value='"+esc(v)+"'>"+esc(v)+"</option>"; }).join("");
+  if(keep) sel.value = keep;
+}
+function filteredLeave(){
+  var emp = document.getElementById("lvf_employee").value;
+  var type = document.getElementById("lvf_leaveType").value;
+  var from = document.getElementById("lvf_from").value;
+  var to = document.getElementById("lvf_to").value;
+  return STATE.leaveRegister.filter(function(lv){
+    if(emp && lv.employeeId!==emp) return false;
+    if(type && lv.leaveType!==type) return false;
+    if(from && lv.to < from) return false;
+    if(to && lv.from > to) return false;
+    return true;
+  });
+}
+function leaveYearOptions(){
+  var years = uniqueSorted(STATE.leaveRegister.map(function(lv){ return lv.from? lv.from.slice(0,4) : null; }));
+  var thisYear = String(new Date().getFullYear());
+  if(years.indexOf(thisYear)===-1) years.push(thisYear);
+  return years.sort();
+}
+function populateLeaveYearSelect(){
+  var sel = document.getElementById("lvs_year");
+  var keep = sel.value;
+  var years = leaveYearOptions();
+  sel.innerHTML = years.map(function(y){ return "<option value='"+y+"'>"+y+"</option>"; }).join("");
+  sel.value = (keep && years.indexOf(keep)!==-1)? keep : String(new Date().getFullYear());
+}
+function renderLeaveSummary(){
+  populateLeaveYearSelect();
+  var year = document.getElementById("lvs_year").value;
+  var byEmp = {};
+  STATE.leaveRegister.forEach(function(lv){
+    if(!lv.from || lv.from.slice(0,4)!==year) return;
+    byEmp[lv.employeeId] = byEmp[lv.employeeId] || {};
+    byEmp[lv.employeeId][lv.leaveType] = (byEmp[lv.employeeId][lv.leaveType]||0) + (Number(lv.days)||0);
+  });
+  var body = document.getElementById("leaveSummaryBody");
+  body.innerHTML = "";
+  var empIds = Object.keys(byEmp);
+  if(empIds.length===0){
+    body.innerHTML = '<tr class="empty-row"><td colspan="7" data-i18n="lv_noLeaveThisYear">No leave recorded for this year.</td></tr>';
+    return;
+  }
+  empIds.sort(function(a,b){ return employeeLabel(a).localeCompare(employeeLabel(b)); });
+  empIds.forEach(function(id){
+    var row = byEmp[id];
+    var total = 0;
+    LEAVE_TYPES.forEach(function(tpe){ total += (row[tpe]||0); });
+    var tr = document.createElement("tr");
+    tr.innerHTML = "<td>"+esc(employeeLabel(id))+"</td>"+
+      LEAVE_TYPES.map(function(tpe){ return "<td class='num'>"+(row[tpe]||0)+"</td>"; }).join("")+
+      "<td class='num'><b>"+total+"</b></td>";
+    body.appendChild(tr);
+  });
+}
+document.getElementById("lvs_year").addEventListener("change", renderLeaveSummary);
+function renderLeaveRegister(){
+  populateLeaveFilterSelects();
+  var list = filteredLeave().slice().sort(function(a,b){ return (a.from||"").localeCompare(b.from||""); });
+  var body = document.getElementById("leaveTableBody");
+  body.innerHTML = "";
+  if(list.length===0){
+    body.innerHTML = '<tr class="empty-row"><td colspan="11" data-i18n="lv_noLeaveMatch">No leave entries match. Add one above, or clear filters.</td></tr>';
+  }
+  list.forEach(function(lv, i){
+    var tr = document.createElement("tr");
+    tr.innerHTML =
+      "<td>"+(i+1)+"</td><td>"+esc(employeeLabel(lv.employeeId))+"</td><td>"+esc(lv.leaveType)+"</td>"+
+      "<td>"+esc(lv.from)+"</td><td>"+esc(lv.to)+"</td><td class='num'>"+esc(lv.days)+"</td>"+
+      "<td>"+esc(lv.sanctionNo)+"</td><td>"+esc(lv.sanctionDate)+"</td><td>"+esc(lv.reason)+"</td><td>"+esc(lv.remarks)+"</td>"+
+      "<td class='row-actions'><button class='btn ghost small' data-edit='"+lv.id+"'>Edit</button>"+
+      "<button class='btn danger small' data-del='"+lv.id+"'>Delete</button></td>";
+    body.appendChild(tr);
+  });
+  body.querySelectorAll("[data-edit]").forEach(function(el){ el.addEventListener("click", function(){ editLeave(el.dataset.edit); }); });
+  body.querySelectorAll("[data-del]").forEach(function(el){ el.addEventListener("click", function(){ deleteLeave(el.dataset.del); }); });
+  document.getElementById("leaveCount").textContent = STATE.leaveRegister.length+" entr"+(STATE.leaveRegister.length===1?"y":"ies");
+  document.getElementById("leaveResultCount").textContent = "Showing "+list.length+" of "+STATE.leaveRegister.length;
+  renderLeaveSummary();
+}
+["lvf_employee","lvf_leaveType","lvf_from","lvf_to"].forEach(function(id){
+  document.getElementById(id).addEventListener("input", renderLeaveRegister);
+  document.getElementById(id).addEventListener("change", renderLeaveRegister);
+});
+document.getElementById("lvf_clear").addEventListener("click", function(){
+  ["lvf_employee","lvf_leaveType","lvf_from","lvf_to"].forEach(function(id){ document.getElementById(id).value=""; });
+  renderLeaveRegister();
+});
+document.getElementById("lv_exportBtn").addEventListener("click", function(){
+  var list = filteredLeave();
+  var rows = [["Sr#","Employee","Leave Type","Date from","Date to","No. of days","Sanction/Order No","Sanction date","Reason","Remarks"]];
+  list.forEach(function(lv,i){ rows.push([i+1, employeeLabel(lv.employeeId), lv.leaveType, lv.from, lv.to, lv.days, lv.sanctionNo, lv.sanctionDate, lv.reason, lv.remarks]); });
+  downloadCSV("leave_register.csv", rows);
+});
+resetLeaveForm();
+
+/* ================= ATTENDANCE REGISTER MODULE ================= */
+var ATT_STATUS_CYCLE = ["", "P", "A", "L"];
+function pad2(n){ return String(n).padStart(2,"0"); }
+function daysInMonth(year, month){ return new Date(year, month, 0).getDate(); }
+function attDateStr(year, month, day){ return year+"-"+pad2(month)+"-"+pad2(day); }
+function attCellId(employeeId, dateStr){ return employeeId+"_"+dateStr; }
+function attRecordFor(employeeId, dateStr){
+  var id = attCellId(employeeId, dateStr);
+  return STATE.attendance.find(function(a){ return a.id===id; });
+}
+function populateAttYearSelect(){
+  var sel = document.getElementById("att_year");
+  var years = uniqueSorted(
+    STATE.attendance.map(function(a){ return a.date? a.date.slice(0,4) : null; })
+      .concat(STATE.leaveRegister.map(function(lv){ return lv.from? lv.from.slice(0,4) : null; }))
+  );
+  var thisYear = String(new Date().getFullYear());
+  if(years.indexOf(thisYear)===-1) years.push(thisYear);
+  years = uniqueSorted(years);
+  var keep = sel.value;
+  sel.innerHTML = years.map(function(y){ return "<option value='"+y+"'>"+y+"</option>"; }).join("");
+  sel.value = (keep && years.indexOf(keep)!==-1)? keep : thisYear;
+}
+(function initAttMonthYear(){
+  document.getElementById("att_month").value = String(new Date().getMonth()+1);
+})();
+function cycleAttCell(employeeId, dateStr){
+  if(!isAdmin()){ toast("Only an Administrator can mark attendance."); return; }
+  var rec = attRecordFor(employeeId, dateStr);
+  var cur = rec? rec.status : "";
+  var next = ATT_STATUS_CYCLE[(ATT_STATUS_CYCLE.indexOf(cur)+1) % ATT_STATUS_CYCLE.length];
+  var id = attCellId(employeeId, dateStr);
+  var idx = STATE.attendance.findIndex(function(a){ return a.id===id; });
+  if(next===""){
+    if(idx!==-1){ STATE.attendance.splice(idx,1); saveData({attendance:[id]}); }
+  } else {
+    var newRec = {id:id, employeeId:employeeId, date:dateStr, status:next};
+    if(idx!==-1){ STATE.attendance[idx] = newRec; } else { STATE.attendance.push(newRec); }
+    saveData();
+  }
+  renderAttendance();
+}
+function renderAttendance(){
+  populateAttYearSelect();
+  var year = Number(document.getElementById("att_year").value);
+  var month = Number(document.getElementById("att_month").value);
+  var nDays = daysInMonth(year, month);
+  var employees = STATE.employees.slice().sort(function(a,b){ return (a.name||"").localeCompare(b.name||""); });
+  var DOW = ["S","M","T","W","T","F","S"];
+
+  var theadHtml = "<tr><th class='att-name-th'>"+esc(t("lv_employee"))+"</th>";
+  for(var d=1; d<=nDays; d++){
+    var dow = new Date(year, month-1, d).getDay();
+    theadHtml += "<th class='att-day-th'>"+d+"<span class='dow'>"+DOW[dow]+"</span></th>";
+  }
+  theadHtml += "<th class='num'>"+esc(t("att_present"))+"</th><th class='num'>"+esc(t("att_absent"))+"</th><th class='num'>"+esc(t("att_leave"))+"</th></tr>";
+
+  var tbodyRows = "";
+  var totalMarked = 0;
+  employees.forEach(function(e){
+    var row = "<tr><td class='att-name-cell'>"+esc((e.persNo? e.persNo+" - ":"")+e.name)+"</td>";
+    var pCount=0, aCount=0, lCount=0;
+    for(var d=1; d<=nDays; d++){
+      var dateStr = attDateStr(year, month, d);
+      var rec = attRecordFor(e.id, dateStr);
+      var status = rec? rec.status : "";
+      if(status){ totalMarked++; }
+      if(status==="P") pCount++;
+      else if(status==="A") aCount++;
+      else if(status==="L") lCount++;
+      row += "<td class='att-cell' data-emp='"+esc(e.id)+"' data-date='"+dateStr+"' data-status='"+status+"'>"+status+"</td>";
+    }
+    row += "<td class='att-total-cell num'>"+pCount+"</td><td class='att-total-cell num'>"+aCount+"</td><td class='att-total-cell num'>"+lCount+"</td></tr>";
+    tbodyRows += row;
+  });
+
+  var table = document.getElementById("attGridTable");
+  table.innerHTML = "<thead>"+theadHtml+"</thead><tbody>"+tbodyRows+"</tbody>";
+  table.querySelectorAll(".att-cell").forEach(function(el){
+    el.addEventListener("click", function(){ cycleAttCell(el.dataset.emp, el.dataset.date); });
+  });
+  document.getElementById("attMarkedCount").textContent = totalMarked+" "+t("att_daysMarked");
+}
+["att_month","att_year"].forEach(function(id){
+  document.getElementById(id).addEventListener("change", renderAttendance);
+});
+document.getElementById("att_fillLeaveBtn").addEventListener("click", function(){
+  if(!isAdmin()){ toast("Only an Administrator can do this."); return; }
+  var year = Number(document.getElementById("att_year").value);
+  var month = Number(document.getElementById("att_month").value);
+  var nDays = daysInMonth(year, month);
+  var monthStart = attDateStr(year, month, 1);
+  var monthEnd = attDateStr(year, month, nDays);
+  var filled = 0;
+  STATE.leaveRegister.forEach(function(lv){
+    if(!lv.from || !lv.to) return;
+    if(lv.to < monthStart || lv.from > monthEnd) return;
+    for(var d=1; d<=nDays; d++){
+      var dateStr = attDateStr(year, month, d);
+      if(dateStr < lv.from || dateStr > lv.to) continue;
+      var id = attCellId(lv.employeeId, dateStr);
+      var idx = STATE.attendance.findIndex(function(a){ return a.id===id; });
+      if(idx===-1){
+        STATE.attendance.push({id:id, employeeId:lv.employeeId, date:dateStr, status:"L"});
+        filled++;
+      }
+    }
+  });
+  if(filled>0){ saveData(); toast(filled+" day(s) filled in from the Leave Register."); }
+  else { toast("Nothing to fill — no matching leave, or already marked."); }
+  renderAttendance();
+});
+document.getElementById("att_exportBtn").addEventListener("click", function(){
+  var year = Number(document.getElementById("att_year").value);
+  var month = Number(document.getElementById("att_month").value);
+  var nDays = daysInMonth(year, month);
+  var employees = STATE.employees.slice().sort(function(a,b){ return (a.name||"").localeCompare(b.name||""); });
+  var header = ["Employee"];
+  for(var d=1; d<=nDays; d++){ header.push(String(d)); }
+  header.push("Present","Absent","Leave");
+  var rows = [header];
+  employees.forEach(function(e){
+    var row = [(e.persNo? e.persNo+" - ":"")+e.name];
+    var pCount=0, aCount=0, lCount=0;
+    for(var d=1; d<=nDays; d++){
+      var dateStr = attDateStr(year, month, d);
+      var rec = attRecordFor(e.id, dateStr);
+      var status = rec? rec.status : "";
+      if(status==="P") pCount++; else if(status==="A") aCount++; else if(status==="L") lCount++;
+      row.push(status);
+    }
+    row.push(pCount, aCount, lCount);
+    rows.push(row);
+  });
+  downloadCSV("attendance_"+String(year)+"-"+pad2(month)+".csv", rows);
+});
+
 function renderAllowanceDeductionTables(){
   populateDistinctSelect(document.getElementById("af_bps"), STATE.allowanceRates.map(function(r){ return r.bps; }));
   populateDistinctSelect(document.getElementById("af_desc"), STATE.allowanceRates.map(function(r){ return r.desc; }));
@@ -3258,6 +4179,7 @@ auth.onAuthStateChanged(function(user){
         showAppScreen();
         startRealtimeSync();
         renderUsers();
+        startChat();
       });
     }).catch(function(err){
       toast("Could not load your account: "+err.message);
@@ -3265,8 +4187,183 @@ auth.onAuthStateChanged(function(user){
   } else {
     CURRENT_USER = null;
     if(unsubscribeSharedDoc){ unsubscribeSharedDoc(); unsubscribeSharedDoc = null; }
+    stopChat();
     showLoginScreen();
   }
+});
+
+/* ================= TEAM CHAT ================= */
+var CHAT_MESSAGES = [];
+var CHAT_PRESENCE = {};        /* uid -> {email, role, lastSeen(ms)} */
+var chatUnsubMessages = null;
+var chatUnsubPresence = null;
+var chatHeartbeatTimer = null;
+var chatUnreadCount = 0;
+var CHAT_ONLINE_WINDOW_MS = 60000;   /* consider a user "online" if seen within the last 60s */
+var CHAT_HEARTBEAT_MS = 25000;
+
+function chatDisplayName(msg){
+  if(!msg) return "?";
+  return msg.senderName || (msg.senderEmail? msg.senderEmail.split("@")[0] : "?");
+}
+function tsToMillis(ts){
+  if(!ts) return 0;
+  if(typeof ts.toMillis==="function") return ts.toMillis();
+  if(ts.seconds!=null) return ts.seconds*1000;
+  return 0;
+}
+function fmtChatTime(ms){
+  if(!ms) return "";
+  var d = new Date(ms);
+  var h = d.getHours(), m = d.getMinutes();
+  var ap = h>=12? "PM":"AM";
+  var h12 = h%12; if(h12===0) h12=12;
+  return h12+":"+(m<10?"0":"")+m+" "+ap;
+}
+function startChat(){
+  if(!CURRENT_USER) return;
+  stopChat(); /* guard against double-start */
+
+  var chatFirstSnapshot = true;
+  chatUnsubMessages = db.collection("chatMessages").orderBy("timestamp","desc").limit(150)
+    .onSnapshot(function(snap){
+      var list = [];
+      snap.forEach(function(doc){ list.push(doc.data()); });
+      list.reverse();
+      CHAT_MESSAGES = list;
+      if(!chatFirstSnapshot){
+        var panel = document.getElementById("chatPanel");
+        var isOpen = panel && panel.classList.contains("open");
+        snap.docChanges().forEach(function(ch){
+          if(ch.type==="added"){
+            var d = ch.doc.data();
+            if(!isOpen && (!CURRENT_USER || d.senderUid!==CURRENT_USER.uid)) chatUnreadCount++;
+          }
+        });
+        updateChatBadge();
+      }
+      chatFirstSnapshot = false;
+      renderChatMessages();
+    }, function(err){
+      /* Most likely cause: Firestore security rules on this project don't
+         yet allow the "chatMessages" collection — see firestore.rules file
+         for the block that needs to be added. Fail quietly in the UI. */
+      console.error("Chat messages listener error:", err);
+    });
+
+  chatUnsubPresence = db.collection("presence").onSnapshot(function(snap){
+    var map = {};
+    snap.forEach(function(doc){
+      var d = doc.data();
+      map[doc.id] = {email:d.email, role:d.role, lastSeen:tsToMillis(d.lastSeen)};
+    });
+    CHAT_PRESENCE = map;
+    renderChatOnline();
+  }, function(err){
+    console.error("Presence listener error:", err);
+  });
+
+  sendPresenceHeartbeat();
+  chatHeartbeatTimer = setInterval(sendPresenceHeartbeat, CHAT_HEARTBEAT_MS);
+}
+function stopChat(){
+  if(chatUnsubMessages){ chatUnsubMessages(); chatUnsubMessages = null; }
+  if(chatUnsubPresence){ chatUnsubPresence(); chatUnsubPresence = null; }
+  if(chatHeartbeatTimer){ clearInterval(chatHeartbeatTimer); chatHeartbeatTimer = null; }
+  CHAT_MESSAGES = [];
+  CHAT_PRESENCE = {};
+  chatUnreadCount = 0;
+  updateChatBadge();
+}
+function sendPresenceHeartbeat(){
+  if(!CURRENT_USER) return;
+  db.collection("presence").doc(CURRENT_USER.uid).set({
+    email: CURRENT_USER.username,
+    role: isAdmin()? "admin":"guest",
+    lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+  }, {merge:true}).catch(function(err){ console.error("Presence heartbeat failed:", err); });
+}
+function renderChatOnline(){
+  var lang = document.documentElement.getAttribute("data-ui-lang") || "en";
+  var now = Date.now();
+  var n = 0;
+  var presence = CHAT_PRESENCE || {};
+  Object.keys(presence).forEach(function(uid){
+    if(now - presence[uid].lastSeen < CHAT_ONLINE_WINDOW_MS) n++;
+  });
+  var label = (I18N_UI[lang].chat_onlineCount || "{n} online").replace("{n}", n);
+  var el = document.getElementById("chatOnlineLabel");
+  if(el) el.textContent = label;
+}
+function escChat(s){
+  s = (s==null)? "" : String(s);
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function renderChatMessages(){
+  var lang = document.documentElement.getAttribute("data-ui-lang") || "en";
+  var body = document.getElementById("chatMessages");
+  if(!body) return;
+  var wasNearBottom = (body.scrollHeight - body.scrollTop - body.clientHeight) < 60;
+  body.innerHTML = "";
+  CHAT_MESSAGES = CHAT_MESSAGES || [];
+  if(CHAT_MESSAGES.length===0){
+    body.innerHTML = "<div class='chat-empty'>"+escChat(I18N_UI[lang].chat_noMessages||"No messages yet — say hello!")+"</div>";
+    return;
+  }
+  CHAT_MESSAGES.forEach(function(msg){
+    var mine = CURRENT_USER && msg.senderUid===CURRENT_USER.uid;
+    var name = mine? (I18N_UI[lang].chat_you||"You") : chatDisplayName(msg);
+    var time = fmtChatTime(tsToMillis(msg.timestamp));
+    var div = document.createElement("div");
+    div.className = "chat-msg"+(mine?" mine":"");
+    div.innerHTML = "<div class='chat-msg-meta'>"+escChat(name)+(time? " · "+escChat(time):"")+"</div>"+
+      "<div class='chat-msg-bubble'>"+escChat(msg.text)+"</div>";
+    body.appendChild(div);
+  });
+  if(wasNearBottom) body.scrollTop = body.scrollHeight;
+}
+function updateChatBadge(){
+  var badge = document.getElementById("chatBadge");
+  if(!badge) return;
+  if(chatUnreadCount>0){ badge.style.display="flex"; badge.textContent = chatUnreadCount>99? "99+":chatUnreadCount; }
+  else { badge.style.display="none"; }
+}
+function sendChatMessage(){
+  if(!CURRENT_USER) return;
+  var input = document.getElementById("chatInput");
+  var text = input.value.trim();
+  if(!text) return;
+  input.value = "";
+  db.collection("chatMessages").add({
+    text: text,
+    senderUid: CURRENT_USER.uid,
+    senderEmail: CURRENT_USER.username,
+    senderName: CURRENT_USER.username? CURRENT_USER.username.split("@")[0] : "",
+    senderRole: isAdmin()? "admin":"guest",
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+  }).catch(function(err){
+    toast("Could not send message: "+err.message);
+    input.value = text; /* give it back so nothing is lost */
+  });
+}
+document.getElementById("chatSendBtn").addEventListener("click", sendChatMessage);
+document.getElementById("chatInput").addEventListener("keydown", function(ev){
+  if(ev.key==="Enter" && !ev.shiftKey){ ev.preventDefault(); sendChatMessage(); }
+});
+document.getElementById("chatToggleBtn").addEventListener("click", function(){
+  var panel = document.getElementById("chatPanel");
+  var opening = !panel.classList.contains("open");
+  panel.classList.toggle("open");
+  if(opening){
+    chatUnreadCount = 0;
+    updateChatBadge();
+    var body = document.getElementById("chatMessages");
+    if(body) body.scrollTop = body.scrollHeight;
+    document.getElementById("chatInput").focus();
+  }
+});
+document.getElementById("chatCloseBtn").addEventListener("click", function(){
+  document.getElementById("chatPanel").classList.remove("open");
 });
 
 var ALL_USERS_CACHE = [];
