@@ -516,7 +516,7 @@
   .payslip-page .slip-tools{margin:-8px 0 14px;}
 
   @media print{
-    nav.sidenav,.search-bar,.btnbar,.topbar,.row-actions,.card.entry-form,footer.appfoot,.auth-screen,.userbar{display:none !important;}
+    nav.sidenav,.search-bar,.btnbar,.topbar,.row-actions,.row-actions-th,.card.entry-form,footer.appfoot,.auth-screen,.userbar{display:none !important;}
     .shell{display:block;}
     main{padding:0;max-width:none;}
     body{background:#fff;}
@@ -554,6 +554,7 @@
 .pb-print-sig-img{height:42px;max-width:160px;object-fit:contain;display:block;margin-bottom:2px;}
 .pb-print-masthead{display:none;}
 .pb-print-signfoot{display:none;}
+.pb-print-extra-fields{display:none;}
 @media print{
   .pb-print-masthead{display:flex !important;align-items:center;gap:12px;border-bottom:2px solid #B8860B;padding-bottom:8px;margin-bottom:14px;}
   .pb-print-masthead img{height:56px;width:auto;}
@@ -561,7 +562,25 @@
   .pb-print-masthead .pb-mh-t1{font-weight:700;font-size:15px;color:#153A5B;}
   .pb-print-masthead .pb-mh-t2{font-size:11px;color:#444;}
   .pb-print-signfoot{display:block !important;margin-top:24px;padding-top:8px;border-top:1px solid #999;font-size:12px;color:#222;}
+  .pb-print-extra-fields{display:block !important;font-size:11.5px;color:#222;margin-bottom:12px;line-height:1.7;border-bottom:1px dashed #999;padding-bottom:8px;}
+  .pb-print-extra-fields .hf-row{display:flex;justify-content:space-between;flex-wrap:wrap;gap:2px 20px;}
 }
+.hf-modal-overlay{position:fixed;inset:0;background:rgba(10,20,30,.55);display:none;align-items:center;justify-content:center;z-index:99999;}
+.hf-modal{background:#fff;border-radius:10px;padding:22px 24px;max-width:420px;width:92%;max-height:85vh;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,.3);}
+.hf-modal h3{margin:0 0 4px;font-size:16px;color:#153A5B;}
+.hf-modal .pb-sub{font-size:12px;color:#666;margin-bottom:14px;line-height:1.7;}
+.hf-modal .field{margin-bottom:12px;}
+.hf-modal label{display:block;font-size:12.5px;margin-bottom:4px;color:#333;}
+.hf-modal input[type=text]{width:100%;padding:8px 10px;border:1px solid #ccc;border-radius:6px;font-size:14px;box-sizing:border-box;font-family:inherit;}
+.hf-check-row{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid #eee;}
+.hf-check-row:last-of-type{border-bottom:none;}
+.hf-check-row input[type=checkbox]{margin-top:3px;}
+.hf-check-row .hf-check-label{font-size:13px;color:#222;display:block;}
+.hf-check-row .hf-check-sub{font-size:11px;color:#777;}
+.hf-modal .pb-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;}
+.hf-modal button{padding:8px 18px;border-radius:6px;border:none;cursor:pointer;font-size:13.5px;}
+.hf-modal .pb-cancel{background:#eee;color:#333;}
+.hf-modal .pb-confirm{background:#1F4E78;color:#fff;font-weight:600;}
 </style>
 </head>
 <body>
@@ -572,6 +591,7 @@
     <div class="pb-mh-t2">Supreme Court of Pakistan, Islamabad</div>
   </div>
 </div>
+<div class="pb-print-extra-fields" id="pbPrintExtraFields"></div>
 
 
 <!-- ================= AUTH: FIRST-RUN SETUP ================= -->
@@ -670,6 +690,8 @@
         </select>
       </label>
       <button id="globalPrintBtn" data-i18n="btn_printCurrent">Print current view</button>
+      <button id="hfConfigBtn" type="button" class="btn ghost small" style="display:none;" title="Report header/footer fields / رپورٹ ہیڈر/فوٹر فیلڈز">☰ Header/Footer</button>
+      <button id="colsConfigBtn" type="button" class="btn ghost small" style="display:none;" title="Choose which columns to print / پرنٹ کے لیے کالم منتخب کریں">☰ Select Columns</button>
       <span><span data-i18n="lbl_signedInAs">Signed in as</span> <b id="currentUserLabel">—</b> <span class="role-badge" id="currentUserRole">User</span></span>
       <a href="../" class="btn ghost small" title="Home / پورٹل پر واپس جائیں" style="text-decoration:none;">🏠 Home</a>
       <a href="../#ads" class="btn ghost small" title="اشتہارات دیکھیں / View Advertisements" style="text-decoration:none;">📢 اشتہارات / Ads</a>
@@ -797,12 +819,12 @@
         <span class="count-chip" id="billResultCount">Showing 0 of 0</span>
       </div>
       <div class="table-wrap">
-        <table>
+        <table class="print-cols-table">
           <thead><tr>
-            <th data-i18n="th_sr">Sr#</th><th data-i18n="lbl_date">Date</th><th data-i18n="lbl_billNo">Bill No</th><th data-i18n="lbl_vendorNo">Vendor No</th><th data-i18n="lbl_vendorName">Vendor Name</th><th data-i18n="th_contingentHead">Contingent Head</th>
-            <th class="num" data-i18n="th_gross">Gross</th><th class="num" data-i18n="th_incTax">Inc.Tax</th><th class="num" data-i18n="th_gst">GST</th><th class="num" data-i18n="th_pst">PST</th>
-            <th class="num" data-i18n="th_other">Other</th><th class="num" data-i18n="th_comm">Comm.</th><th class="num" data-i18n="th_totalDed">Total Ded.</th><th class="num" data-i18n="th_netPayment">Net Payment</th>
-            <th data-i18n="th_ao">A.O.</th><th data-i18n="lbl_remarks">Remarks</th><th data-i18n="th_actions">Actions</th>
+            <th data-i18n="th_sr">Sr#</th><th data-col="date" data-i18n="lbl_date">Date</th><th data-col="billNo" data-i18n="lbl_billNo">Bill No</th><th data-col="vendorNo" data-i18n="lbl_vendorNo">Vendor No</th><th data-col="vendorName" data-i18n="lbl_vendorName">Vendor Name</th><th data-col="head" data-i18n="th_contingentHead">Contingent Head</th>
+            <th class="num" data-col="gross" data-i18n="th_gross">Gross</th><th class="num" data-col="it" data-i18n="th_incTax">Inc.Tax</th><th class="num" data-col="gst" data-i18n="th_gst">GST</th><th class="num" data-col="pst" data-i18n="th_pst">PST</th>
+            <th class="num" data-col="other" data-i18n="th_other">Other</th><th class="num" data-col="comm" data-i18n="th_comm">Comm.</th><th class="num" data-col="ded" data-i18n="th_totalDed">Total Ded.</th><th class="num" data-col="net" data-i18n="th_netPayment">Net Payment</th>
+            <th data-col="ao" data-i18n="th_ao">A.O.</th><th data-col="remarks" data-i18n="lbl_remarks">Remarks</th><th class="row-actions-th" data-i18n="th_actions">Actions</th>
           </tr></thead>
           <tbody id="billTableBody"></tbody>
           <tfoot><tr id="billTotalsRow"></tr></tfoot>
@@ -869,8 +891,8 @@
         <span class="count-chip" id="cashResultCount">Showing 0 of 0</span>
       </div>
       <div class="table-wrap">
-        <table>
-          <thead><tr><th data-i18n="th_sr">Sr#</th><th data-i18n="lbl_date">Date</th><th data-i18n="cash_voucherBillNo">Voucher/Bill No</th><th data-i18n="cash_particulars">Particulars</th><th data-i18n="th_head">Head</th><th class="num" data-i18n="th_receipt">Receipt</th><th class="num" data-i18n="th_payment">Payment</th><th class="num" data-i18n="th_balance">Balance</th><th data-i18n="th_actions">Actions</th></tr></thead>
+        <table class="print-cols-table">
+          <thead><tr><th data-i18n="th_sr">Sr#</th><th data-col="date" data-i18n="lbl_date">Date</th><th data-col="voucher" data-i18n="cash_voucherBillNo">Voucher/Bill No</th><th data-col="particulars" data-i18n="cash_particulars">Particulars</th><th data-col="head" data-i18n="th_head">Head</th><th class="num" data-col="receipt" data-i18n="th_receipt">Receipt</th><th class="num" data-col="payment" data-i18n="th_payment">Payment</th><th class="num" data-col="balance" data-i18n="th_balance">Balance</th><th class="row-actions-th" data-i18n="th_actions">Actions</th></tr></thead>
           <tbody id="cashTableBody"></tbody>
           <tfoot><tr id="cashTotalsRow"></tr></tfoot>
         </table>
@@ -1011,8 +1033,8 @@
         <span class="count-chip" id="stockResultCount">Showing 0 of 0</span>
       </div>
       <div class="table-wrap">
-        <table>
-          <thead><tr><th data-i18n="th_sr">Sr#</th><th data-i18n="lbl_date">Date</th><th data-i18n="lbl_billNo">Bill No</th><th data-i18n="th_headCategory">Head/Category</th><th data-i18n="th_item">Item</th><th class="num" data-i18n="stock_qtyInShort">Qty In</th><th class="num" data-i18n="stock_qtyOutShort">Qty Out</th><th class="num" data-i18n="stock_balanceQty">Balance Qty</th><th class="num" data-i18n="th_rate">Rate</th><th class="num" data-i18n="th_value">Value</th><th data-i18n="th_issuedTo">Issued To</th><th data-i18n="th_expectedReturn">Expected Return</th><th data-i18n="th_status">Status</th><th data-i18n="lbl_remarks">Remarks</th><th data-i18n="th_actions">Actions</th></tr></thead>
+        <table class="print-cols-table">
+          <thead><tr><th data-i18n="th_sr">Sr#</th><th data-col="date" data-i18n="lbl_date">Date</th><th data-col="billNo" data-i18n="lbl_billNo">Bill No</th><th data-col="category" data-i18n="th_headCategory">Head/Category</th><th data-col="item" data-i18n="th_item">Item</th><th class="num" data-col="qtyIn" data-i18n="stock_qtyInShort">Qty In</th><th class="num" data-col="qtyOut" data-i18n="stock_qtyOutShort">Qty Out</th><th class="num" data-col="balanceQty" data-i18n="stock_balanceQty">Balance Qty</th><th class="num" data-col="rate" data-i18n="th_rate">Rate</th><th class="num" data-col="value" data-i18n="th_value">Value</th><th data-col="issuedTo" data-i18n="th_issuedTo">Issued To</th><th data-col="expectedReturn" data-i18n="th_expectedReturn">Expected Return</th><th data-col="status" data-i18n="th_status">Status</th><th data-col="remarks" data-i18n="lbl_remarks">Remarks</th><th class="row-actions-th" data-i18n="th_actions">Actions</th></tr></thead>
           <tbody id="stockTableBody"></tbody>
         </table>
       </div>
@@ -1044,11 +1066,11 @@
         <button class="btn secondary small" id="ledgerExportBtn" data-i18n="btn_exportCsv">Export visible rows (CSV)</button>
       </div>
       <div class="table-wrap">
-        <table>
+        <table class="print-cols-table">
           <thead><tr>
-            <th data-i18n="th_sr">Sr#</th><th data-i18n="th_contingentHead">Contingent Head</th><th class="num" data-i18n="ledger_noOfBills">No. of Bills</th><th class="num" data-i18n="ledger_totalGross">Total Gross</th>
-            <th class="num" data-i18n="ledger_totalDeductions">Total Deductions</th><th class="num" data-i18n="ledger_netExpThisSystem">Net Expenditure (this system)</th>
-            <th class="num" data-i18n="ledger_finalBudget">Final Budget</th><th class="num" data-i18n="ledger_priorExpenditure">Prior Expenditure</th><th class="num" data-i18n="ledger_totalExpenditure">Total Expenditure</th><th class="num" data-i18n="ledger_remainingBudget">Remaining Budget</th>
+            <th data-i18n="th_sr">Sr#</th><th data-col="head" data-i18n="th_contingentHead">Contingent Head</th><th class="num" data-col="noOfBills" data-i18n="ledger_noOfBills">No. of Bills</th><th class="num" data-col="totalGross" data-i18n="ledger_totalGross">Total Gross</th>
+            <th class="num" data-col="totalDeductions" data-i18n="ledger_totalDeductions">Total Deductions</th><th class="num" data-col="netExp" data-i18n="ledger_netExpThisSystem">Net Expenditure (this system)</th>
+            <th class="num" data-col="finalBudget" data-i18n="ledger_finalBudget">Final Budget</th><th class="num" data-col="priorExp" data-i18n="ledger_priorExpenditure">Prior Expenditure</th><th class="num" data-col="totalExp" data-i18n="ledger_totalExpenditure">Total Expenditure</th><th class="num" data-col="remainingBudget" data-i18n="ledger_remainingBudget">Remaining Budget</th>
           </tr></thead>
           <tbody id="ledgerTableBody"></tbody>
           <tfoot><tr id="ledgerTotalsRow"></tr></tfoot>
@@ -1142,8 +1164,8 @@
         <span class="count-chip" id="employeeResultCount">Showing 0 of 0</span>
       </div>
       <div class="table-wrap">
-        <table>
-          <thead><tr><th data-i18n="emp_persNo">Pers #</th><th data-i18n="lbl_name">Name</th><th data-i18n="emp_soName">Son of</th><th data-i18n="emp_mobile">Mobile No</th><th data-i18n="emp_designation">Designation</th><th data-i18n="emp_department">Department</th><th data-i18n="th_bps">BPS</th><th data-i18n="th_status">Status</th><th data-i18n="emp_cnic">CNIC</th><th data-i18n="emp_gpfNo">GPF #</th><th data-i18n="th_dob">DOB</th><th data-i18n="emp_bank">Bank</th><th data-i18n="emp_accountNo">Account No</th><th data-i18n="th_actions">Actions</th></tr></thead>
+        <table class="print-cols-table">
+          <thead><tr><th data-col="persNo" data-i18n="emp_persNo">Pers #</th><th data-col="name" data-i18n="lbl_name">Name</th><th data-col="soName" data-i18n="emp_soName">Son of</th><th data-col="mobile" data-i18n="emp_mobile">Mobile No</th><th data-col="designation" data-i18n="emp_designation">Designation</th><th data-col="department" data-i18n="emp_department">Department</th><th data-col="bps" data-i18n="th_bps">BPS</th><th data-col="status" data-i18n="th_status">Status</th><th data-col="cnic" data-i18n="emp_cnic">CNIC</th><th data-col="gpf" data-i18n="emp_gpfNo">GPF #</th><th data-col="dob" data-i18n="th_dob">DOB</th><th data-col="bank" data-i18n="emp_bank">Bank</th><th data-col="account" data-i18n="emp_accountNo">Account No</th><th class="row-actions-th" data-i18n="th_actions">Actions</th></tr></thead>
           <tbody id="employeeTableBody"></tbody>
         </table>
       </div>
@@ -1237,8 +1259,8 @@
         <span class="count-chip" id="leaveResultCount">Showing 0 of 0</span>
       </div>
       <div class="table-wrap">
-        <table>
-          <thead><tr><th data-i18n="th_sr">Sr#</th><th data-i18n="lv_employee">Employee</th><th data-i18n="lv_leaveType">Leave type</th><th data-i18n="lbl_dateFrom">Date from</th><th data-i18n="lbl_dateTo">Date to</th><th class="num" data-i18n="lv_noOfDays">No. of days</th><th data-i18n="lv_sanctionNo">Sanction / Order No</th><th data-i18n="lv_sanctionDate">Sanction date</th><th data-i18n="lv_reason">Reason / purpose</th><th data-i18n="lbl_remarks">Remarks</th><th data-i18n="th_actions">Actions</th></tr></thead>
+        <table class="print-cols-table">
+          <thead><tr><th data-i18n="th_sr">Sr#</th><th data-col="employee" data-i18n="lv_employee">Employee</th><th data-col="leaveType" data-i18n="lv_leaveType">Leave type</th><th data-col="from" data-i18n="lbl_dateFrom">Date from</th><th data-col="to" data-i18n="lbl_dateTo">Date to</th><th class="num" data-col="days" data-i18n="lv_noOfDays">No. of days</th><th data-col="sanctionNo" data-i18n="lv_sanctionNo">Sanction / Order No</th><th data-col="sanctionDate" data-i18n="lv_sanctionDate">Sanction date</th><th data-col="reason" data-i18n="lv_reason">Reason / purpose</th><th data-col="remarks" data-i18n="lbl_remarks">Remarks</th><th class="row-actions-th" data-i18n="th_actions">Actions</th></tr></thead>
           <tbody id="leaveTableBody"></tbody>
         </table>
       </div>
@@ -1614,6 +1636,46 @@
   </div>
 </div>
 <div class="pb-print-signfoot" id="pbPrintSignfoot"></div>
+<div class="hf-modal-overlay" id="hfModalOverlay">
+  <div class="hf-modal">
+    <h3 id="hfModalTitle">Header/Footer Fields</h3>
+    <div class="pb-sub">اس رپورٹ کے پرنٹ پر یہ اختیاری فیلڈز دکھانے ہیں یا نہیں، منتخب کریں (صرف Administrator کو نظر آتا ہے)۔<br>Choose which optional fields should appear when this report is printed (Administrator only).</div>
+    <div class="field"><label>دفتر کا پتہ / Office Address</label><input type="text" id="hfOfficeAddress" placeholder="e.g. Camp Office, Prosecutor General Punjab, Supreme Court of Pakistan, Islamabad"></div>
+    <div class="field"><label>رابطہ نمبر / Contact Number</label><input type="text" id="hfOfficeContact" placeholder="e.g. 051-1234567"></div>
+    <div class="hf-check-row">
+      <input type="checkbox" id="hfChkDateDiary">
+      <label for="hfChkDateDiary"><span class="hf-check-label">تاریخ اور ڈائری نمبر / Date &amp; Diary No.</span><span class="hf-check-sub">Prints today's date, with a blank line for the diary number.</span></label>
+    </div>
+    <div class="hf-check-row">
+      <input type="checkbox" id="hfChkAddress">
+      <label for="hfChkAddress"><span class="hf-check-label">دفتر کا پتہ/رابطہ نمبر / Office Address &amp; Contact</span><span class="hf-check-sub">Prints the office address and contact number set above.</span></label>
+    </div>
+    <div class="hf-check-row">
+      <input type="checkbox" id="hfChkPrepared">
+      <label for="hfChkPrepared"><span class="hf-check-label">تیار کردہ افسر کا نام/عہدہ / Prepared By Name &amp; Designation</span><span class="hf-check-sub">Prints the name/designation saved from the "Before Printing" box.</span></label>
+    </div>
+    <div class="hf-check-row">
+      <input type="checkbox" id="hfChkReference">
+      <label for="hfChkReference"><span class="hf-check-label">حوالہ نمبر / Reference No.</span><span class="hf-check-sub">Prints a blank line for a reference/file number.</span></label>
+    </div>
+    <div class="pb-actions">
+      <button type="button" class="pb-cancel" id="hfCancelBtn">Cancel</button>
+      <button type="button" class="pb-confirm" id="hfSaveBtn">محفوظ کریں / Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="hf-modal-overlay" id="colsModalOverlay">
+  <div class="hf-modal">
+    <h3 id="colsModalTitle">Select print columns</h3>
+    <div class="pb-sub">اس رپورٹ کے پرنٹ پر یہ کالم دکھانے ہیں یا نہیں، منتخب کریں (صرف Administrator کو نظر آتا ہے، اسکرین یا Excel/CSV پر اثر نہیں پڑے گا)۔<br>Choose which columns should appear when this report is printed (Administrator only — does not affect the screen view or Excel/CSV export).</div>
+    <div id="colsCheckboxWrap"></div>
+    <div class="pb-actions">
+      <button type="button" class="pb-cancel" id="colsCancelBtn">Cancel</button>
+      <button type="button" class="pb-confirm" id="colsSaveBtn">محفوظ کریں / Save</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1707,6 +1769,10 @@ function normalizeData(data, seedDefaults){
   data.headOverrides = data.headOverrides || {};
   data.openingCash = data.openingCash || 0;
   data.officeName = data.officeName || "";
+  data.officeAddress = data.officeAddress || "";
+  data.officeContact = data.officeContact || "";
+  data.headerFooterConfig = data.headerFooterConfig || {};
+  data.printColumns = data.printColumns || {};
   data.itemMaster = data.itemMaster || {};
 
   /* one-time migration: fold any old custom stock categories into the real Contingent Heads */
@@ -1849,7 +1915,7 @@ function mergeItemMaster(serverIM, localIM){
   return out;
 }
 var MERGE_BY_ID_FIELDS = ["bills","cash","stock","employees","leaveRegister","attendance"];
-var MERGE_DICT_FIELDS = ["headOverrides","payslipData","itemTypes","contingentDeductionRates"];
+var MERGE_DICT_FIELDS = ["headOverrides","payslipData","itemTypes","contingentDeductionRates","headerFooterConfig","printColumns"];
 function mergeStates(serverState, localState){
   var merged = {};
   MERGE_BY_ID_FIELDS.forEach(function(f){ merged[f] = mergeArrayById(serverState[f], localState[f]); });
@@ -2593,10 +2659,12 @@ document.getElementById("b_saveBtn").addEventListener("click", function(){
     other: Number(document.getElementById("b_other").value)||0,
     comm: Number(document.getElementById("b_comm").value)||0,
     ao: document.getElementById("b_ao").value,
-    remarks: document.getElementById("b_remarks").value.trim()
+    remarks: document.getElementById("b_remarks").value.trim(),
+    createdBy: (CURRENT_USER? CURRENT_USER.username : "")
   };
   if(billEditId){
     var idx = STATE.bills.findIndex(function(x){ return x.id===billEditId; });
+    rec.createdBy = STATE.bills[idx].createdBy;
     STATE.bills[idx] = rec;
     toast("Bill updated.");
   } else {
@@ -2746,11 +2814,11 @@ function renderBills(){
     sums.gross+=b.gross; sums.it+=b.it; sums.gst+=b.gst; sums.pst+=b.pst; sums.other+=b.other; sums.comm+=b.comm; sums.ded+=ded; sums.net+=net;
     var tr = document.createElement("tr");
     tr.innerHTML =
-      "<td>"+(i+1)+"</td><td>"+esc(b.date)+"</td><td>"+esc(b.billNo)+"</td><td>"+esc(b.vendorNo)+"</td><td>"+esc(b.vendorName)+"</td>"+
-      "<td>"+esc(b.head)+"</td><td class='num'>"+fmt(b.gross)+"</td><td class='num'>"+fmt(b.it)+"</td><td class='num'>"+fmt(b.gst)+"</td>"+
-      "<td class='num'>"+fmt(b.pst)+"</td><td class='num'>"+fmt(b.other)+"</td><td class='num'>"+fmt(b.comm)+"</td>"+
-      "<td class='num'>"+fmt(ded)+"</td><td class='num'>"+fmt(net)+"</td>"+
-      "<td><span class='tag "+(b.ao==="Yes"?"yes":"no")+"'>"+esc(b.ao)+"</span></td><td>"+esc(b.remarks)+"</td>"+
+      "<td>"+(i+1)+"</td><td data-col='date'>"+esc(b.date)+"</td><td data-col='billNo'>"+esc(b.billNo)+"</td><td data-col='vendorNo'>"+esc(b.vendorNo)+"</td><td data-col='vendorName'>"+esc(b.vendorName)+"</td>"+
+      "<td data-col='head'>"+esc(b.head)+"</td><td class='num' data-col='gross'>"+fmt(b.gross)+"</td><td class='num' data-col='it'>"+fmt(b.it)+"</td><td class='num' data-col='gst'>"+fmt(b.gst)+"</td>"+
+      "<td class='num' data-col='pst'>"+fmt(b.pst)+"</td><td class='num' data-col='other'>"+fmt(b.other)+"</td><td class='num' data-col='comm'>"+fmt(b.comm)+"</td>"+
+      "<td class='num' data-col='ded'>"+fmt(ded)+"</td><td class='num' data-col='net'>"+fmt(net)+"</td>"+
+      "<td data-col='ao'><span class='tag "+(b.ao==="Yes"?"yes":"no")+"'>"+esc(b.ao)+"</span></td><td data-col='remarks'>"+esc(b.remarks)+"</td>"+
       "<td class='row-actions'><button class='btn ghost small' data-edit='"+b.id+"'>Edit</button><button class='btn danger small' data-del='"+b.id+"'>Delete</button></td>";
     body.appendChild(tr);
   });
@@ -2759,9 +2827,10 @@ function renderBills(){
 
   document.getElementById("billTotalsRow").innerHTML =
     "<td colspan='6'>TOTAL ("+list.length+" bill"+(list.length===1?"":"s")+")</td>"+
-    "<td class='num'>"+fmt(sums.gross)+"</td><td class='num'>"+fmt(sums.it)+"</td><td class='num'>"+fmt(sums.gst)+"</td>"+
-    "<td class='num'>"+fmt(sums.pst)+"</td><td class='num'>"+fmt(sums.other)+"</td><td class='num'>"+fmt(sums.comm)+"</td>"+
-    "<td class='num'>"+fmt(sums.ded)+"</td><td class='num'>"+fmt(sums.net)+"</td><td colspan='3'></td>";
+    "<td class='num' data-col='gross'>"+fmt(sums.gross)+"</td><td class='num' data-col='it'>"+fmt(sums.it)+"</td><td class='num' data-col='gst'>"+fmt(sums.gst)+"</td>"+
+    "<td class='num' data-col='pst'>"+fmt(sums.pst)+"</td><td class='num' data-col='other'>"+fmt(sums.other)+"</td><td class='num' data-col='comm'>"+fmt(sums.comm)+"</td>"+
+    "<td class='num' data-col='ded'>"+fmt(sums.ded)+"</td><td class='num' data-col='net'>"+fmt(sums.net)+"</td><td colspan='3'></td>";
+  applyColumnPrintCss();
 
   document.getElementById("billCount").textContent = STATE.bills.length+" bill"+(STATE.bills.length===1?"":"s");
   document.getElementById("billResultCount").textContent = "Showing "+list.length+" of "+STATE.bills.length;
@@ -2847,10 +2916,12 @@ document.getElementById("c_saveBtn").addEventListener("click", function(){
     particulars: particulars,
     receipt: Number(document.getElementById("c_receipt").value)||0,
     payment: Number(document.getElementById("c_payment").value)||0,
-    head: document.getElementById("c_head").value
+    head: document.getElementById("c_head").value,
+    createdBy: (CURRENT_USER? CURRENT_USER.username : "")
   };
   if(cashEditId){
     var idx = STATE.cash.findIndex(function(x){ return x.id===cashEditId; });
+    rec.createdBy = STATE.cash[idx].createdBy;
     STATE.cash[idx] = rec;
     toast("Entry updated.");
   } else {
@@ -2928,9 +2999,9 @@ function renderCash(){
     var srIndex = STATE.cash.findIndex(function(x){return x.id===c.id;}) + 1;
     var tr = document.createElement("tr");
     tr.innerHTML =
-      "<td>"+srIndex+"</td><td>"+esc(c.date)+"</td><td>"+esc(c.voucher)+"</td><td>"+esc(c.particulars)+"</td><td>"+esc(c.head)+"</td>"+
-      "<td class='num'>"+(c.receipt? fmt(c.receipt):"")+"</td><td class='num'>"+(c.payment? fmt(c.payment):"")+"</td>"+
-      "<td class='num'>"+fmt(c.balance)+"</td>"+
+      "<td>"+srIndex+"</td><td data-col='date'>"+esc(c.date)+"</td><td data-col='voucher'>"+esc(c.voucher)+"</td><td data-col='particulars'>"+esc(c.particulars)+"</td><td data-col='head'>"+esc(c.head)+"</td>"+
+      "<td class='num' data-col='receipt'>"+(c.receipt? fmt(c.receipt):"")+"</td><td class='num' data-col='payment'>"+(c.payment? fmt(c.payment):"")+"</td>"+
+      "<td class='num' data-col='balance'>"+fmt(c.balance)+"</td>"+
       "<td class='row-actions'><button class='btn ghost small' data-edit='"+c.id+"'>Edit</button><button class='btn danger small' data-del='"+c.id+"'>Delete</button></td>";
     body.appendChild(tr);
   });
@@ -2939,7 +3010,8 @@ function renderCash(){
 
   document.getElementById("cashTotalsRow").innerHTML =
     "<td colspan='5'>TOTAL ("+list.length+" entr"+(list.length===1?"y":"ies")+")</td>"+
-    "<td class='num'>"+fmt(sumR)+"</td><td class='num'>"+fmt(sumP)+"</td><td class='num'>"+fmt(current)+"</td><td></td>";
+    "<td class='num' data-col='receipt'>"+fmt(sumR)+"</td><td class='num' data-col='payment'>"+fmt(sumP)+"</td><td class='num' data-col='balance'>"+fmt(current)+"</td><td></td>";
+  applyColumnPrintCss();
 
   document.getElementById("cashCount").textContent = STATE.cash.length+" entr"+(STATE.cash.length===1?"y":"ies");
   document.getElementById("cashResultCount").textContent = "Showing "+list.length+" of "+STATE.cash.length;
@@ -3206,13 +3278,15 @@ document.getElementById("s_saveBtn").addEventListener("click", function(){
     expectedReturn: trackReturn? document.getElementById("s_expectedReturn").value : "",
     returned: wasReturned,
     returnedDate: wasReturned? (todayISO()) : "",
-    issueGroupId: (stockEditId && STATE.stock.find(function(x){return x.id===stockEditId;}))? (STATE.stock.find(function(x){return x.id===stockEditId;}).issueGroupId||"") : ""
+    issueGroupId: (stockEditId && STATE.stock.find(function(x){return x.id===stockEditId;}))? (STATE.stock.find(function(x){return x.id===stockEditId;}).issueGroupId||"") : "",
+    createdBy: (CURRENT_USER? CURRENT_USER.username : "")
   };
   addItemToCategory(category, item);
   if(stockEditId){
     var idx = STATE.stock.findIndex(function(x){ return x.id===stockEditId; });
     if(wasReturned && !STATE.stock[idx].returned) rec.returnedDate = todayISO();
     else if(wasReturned) rec.returnedDate = STATE.stock[idx].returnedDate || todayISO();
+    rec.createdBy = STATE.stock[idx].createdBy;
     STATE.stock[idx] = rec;
     toast("Movement updated.");
   } else {
@@ -3375,12 +3449,12 @@ function renderStock(){
     var st = stockStatus(s);
     var tr = document.createElement("tr");
     tr.innerHTML =
-      "<td>"+srIndex+"</td><td>"+esc(s.date)+"</td><td>"+esc(s.billNo)+"</td><td>"+esc(s.category)+"</td><td>"+esc(s.item)+"</td>"+
-      "<td class='num'>"+(s.qtyIn? fmt(s.qtyIn):"")+"</td><td class='num'>"+(s.qtyOut? fmt(s.qtyOut):"")+"</td>"+
-      "<td class='num "+(s.balance<0?'neg':'')+"'>"+fmt(s.balance)+"</td><td class='num'>"+fmt(s.rate)+"</td><td class='num'>"+fmt(s.value)+"</td>"+
-      "<td>"+esc(s.issuedTo)+"</td><td>"+esc(s.expectedReturn)+"</td>"+
-      "<td><span class='tag "+st.cls+"'>"+esc(st.label)+"</span></td>"+
-      "<td>"+esc(s.remarks)+"</td>"+
+      "<td>"+srIndex+"</td><td data-col='date'>"+esc(s.date)+"</td><td data-col='billNo'>"+esc(s.billNo)+"</td><td data-col='category'>"+esc(s.category)+"</td><td data-col='item'>"+esc(s.item)+"</td>"+
+      "<td class='num' data-col='qtyIn'>"+(s.qtyIn? fmt(s.qtyIn):"")+"</td><td class='num' data-col='qtyOut'>"+(s.qtyOut? fmt(s.qtyOut):"")+"</td>"+
+      "<td class='num "+(s.balance<0?'neg':'')+"' data-col='balanceQty'>"+fmt(s.balance)+"</td><td class='num' data-col='rate'>"+fmt(s.rate)+"</td><td class='num' data-col='value'>"+fmt(s.value)+"</td>"+
+      "<td data-col='issuedTo'>"+esc(s.issuedTo)+"</td><td data-col='expectedReturn'>"+esc(s.expectedReturn)+"</td>"+
+      "<td data-col='status'><span class='tag "+st.cls+"'>"+esc(st.label)+"</span></td>"+
+      "<td data-col='remarks'>"+esc(s.remarks)+"</td>"+
       "<td class='row-actions'>"+
         (s.trackReturn && !s.returned? "<button class='btn secondary small' data-return='"+s.id+"'>Returned</button>" : "")+
         "<button class='btn ghost small' data-edit='"+s.id+"'>Edit</button><button class='btn danger small' data-del='"+s.id+"'>Delete</button></td>";
@@ -3392,6 +3466,7 @@ function renderStock(){
 
   document.getElementById("stockCount").textContent = STATE.stock.length+" entr"+(STATE.stock.length===1?"y":"ies");
   document.getElementById("stockResultCount").textContent = "Showing "+list.length+" of "+STATE.stock.length;
+  applyColumnPrintCss();
 }
 ["sf_from","sf_to","sf_billNo","sf_item","sf_category","sf_issuedTo","sf_onlyPending"].forEach(function(id){
   document.getElementById(id).addEventListener("input", renderStock);
@@ -3549,12 +3624,12 @@ function renderLedger(){
     sums.finalBudget+=r.finalBudget; sums.prior+=r.prior; sums.totalExp+=r.totalExp; sums.remaining+=r.remaining;
     var tr = document.createElement("tr");
     tr.innerHTML =
-      "<td>"+r.sr+"</td><td>"+esc(r.label)+"</td><td class='num'>"+r.count+"</td><td class='num'>"+fmt(r.gross)+"</td>"+
-      "<td class='num'>"+fmt(r.ded)+"</td><td class='num'>"+fmt(r.net)+"</td>"+
-      "<td class='num editable' data-field='finalBudget' data-head=\""+esc(r.label)+"\" title='Click to edit'>"+fmt(r.finalBudget)+"</td>"+
-      "<td class='num editable' data-field='prior' data-head=\""+esc(r.label)+"\" title='Click to edit'>"+fmt(r.prior)+"</td>"+
-      "<td class='num'>"+fmt(r.totalExp)+"</td>"+
-      "<td class='num "+(r.remaining<0?'neg':'')+"'>"+fmt(r.remaining)+"</td>";
+      "<td>"+r.sr+"</td><td data-col='head'>"+esc(r.label)+"</td><td class='num' data-col='noOfBills'>"+r.count+"</td><td class='num' data-col='totalGross'>"+fmt(r.gross)+"</td>"+
+      "<td class='num' data-col='totalDeductions'>"+fmt(r.ded)+"</td><td class='num' data-col='netExp'>"+fmt(r.net)+"</td>"+
+      "<td class='num editable' data-col='finalBudget' data-field='finalBudget' data-head=\""+esc(r.label)+"\" title='Click to edit'>"+fmt(r.finalBudget)+"</td>"+
+      "<td class='num editable' data-col='priorExp' data-field='prior' data-head=\""+esc(r.label)+"\" title='Click to edit'>"+fmt(r.prior)+"</td>"+
+      "<td class='num' data-col='totalExp'>"+fmt(r.totalExp)+"</td>"+
+      "<td class='num "+(r.remaining<0?'neg':'')+"' data-col='remainingBudget'>"+fmt(r.remaining)+"</td>";
     body.appendChild(tr);
   });
   body.querySelectorAll(".editable").forEach(function(td){
@@ -3578,11 +3653,12 @@ function renderLedger(){
   });
   document.getElementById("ledgerTotalsRow").innerHTML =
     "<td colspan='2'>TOTAL ("+list.length+" head"+(list.length===1?"":"s")+")</td>"+
-    "<td class='num'>"+sums.count+"</td><td class='num'>"+fmt(sums.gross)+"</td><td class='num'>"+fmt(sums.ded)+"</td>"+
-    "<td class='num'>"+fmt(sums.net)+"</td><td class='num'>"+fmt(sums.finalBudget)+"</td><td class='num'>"+fmt(sums.prior)+"</td>"+
-    "<td class='num'>"+fmt(sums.totalExp)+"</td><td class='num "+(sums.remaining<0?'neg':'')+"'>"+fmt(sums.remaining)+"</td>";
+    "<td class='num' data-col='noOfBills'>"+sums.count+"</td><td class='num' data-col='totalGross'>"+fmt(sums.gross)+"</td><td class='num' data-col='totalDeductions'>"+fmt(sums.ded)+"</td>"+
+    "<td class='num' data-col='netExp'>"+fmt(sums.net)+"</td><td class='num' data-col='finalBudget'>"+fmt(sums.finalBudget)+"</td><td class='num' data-col='priorExp'>"+fmt(sums.prior)+"</td>"+
+    "<td class='num' data-col='totalExp'>"+fmt(sums.totalExp)+"</td><td class='num "+(sums.remaining<0?'neg':'')+"' data-col='remainingBudget'>"+fmt(sums.remaining)+"</td>";
 
   document.getElementById("ledgerResultCount").textContent = "Showing "+list.length+" of "+getHeads().length;
+  applyColumnPrintCss();
 }
 ["lf_head","lf_activity"].forEach(function(id){
   document.getElementById(id).addEventListener("input", renderLedger);
@@ -3916,10 +3992,12 @@ document.getElementById("e_saveBtn").addEventListener("click", function(){
     gpf: document.getElementById("e_gpf").value.trim(),
     bank: getSelectOrAddValue("e_bank","e_bank_new"),
     account: document.getElementById("e_account").value.trim(),
-    serviceLength: document.getElementById("e_serviceLength").value.trim()
+    serviceLength: document.getElementById("e_serviceLength").value.trim(),
+    createdBy: (CURRENT_USER? CURRENT_USER.username : "")
   };
   if(employeeEditId){
     var idx = STATE.employees.findIndex(function(x){ return x.id===employeeEditId; });
+    rec.createdBy = STATE.employees[idx].createdBy;
     STATE.employees[idx] = rec;
     toast("Employee updated.");
   } else {
@@ -4032,9 +4110,9 @@ function renderEmployees(){
     var cnicDisplay = showSensitive? esc(e.cnic) : "<span class='masked'>"+esc(maskValue(e.cnic))+"</span>";
     var acctDisplay = showSensitive? esc(e.account) : "<span class='masked'>"+esc(maskValue(e.account))+"</span>";
     tr.innerHTML =
-      "<td>"+esc(e.persNo)+(dupPers? " <span class='tag overdue'>Duplicate</span>":"")+"</td><td>"+esc(e.name)+"</td><td>"+esc(e.soName)+"</td><td>"+esc(e.mobile)+"</td><td>"+esc(e.designation)+"</td><td>"+esc(e.department)+"</td>"+
-      "<td>"+esc(e.bps)+"</td><td>"+esc(e.status)+"</td><td>"+cnicDisplay+(dupCnic? " <span class='tag overdue'>Duplicate</span>":"")+"</td><td>"+esc(e.gpf)+"</td><td>"+esc(e.dob)+"</td>"+
-      "<td>"+esc(e.bank)+"</td><td>"+acctDisplay+"</td>"+
+      "<td data-col='persNo'>"+esc(e.persNo)+(dupPers? " <span class='tag overdue'>Duplicate</span>":"")+"</td><td data-col='name'>"+esc(e.name)+"</td><td data-col='soName'>"+esc(e.soName)+"</td><td data-col='mobile'>"+esc(e.mobile)+"</td><td data-col='designation'>"+esc(e.designation)+"</td><td data-col='department'>"+esc(e.department)+"</td>"+
+      "<td data-col='bps'>"+esc(e.bps)+"</td><td data-col='status'>"+esc(e.status)+"</td><td data-col='cnic'>"+cnicDisplay+(dupCnic? " <span class='tag overdue'>Duplicate</span>":"")+"</td><td data-col='gpf'>"+esc(e.gpf)+"</td><td data-col='dob'>"+esc(e.dob)+"</td>"+
+      "<td data-col='bank'>"+esc(e.bank)+"</td><td data-col='account'>"+acctDisplay+"</td>"+
       "<td class='row-actions'><button class='btn secondary small view-only-btn' data-payslip='"+e.id+"'>Pay Slip</button><button class='btn ghost small' data-edit='"+e.id+"'>Edit</button>"+
       (isAdmin()? "<button class='btn danger small' data-del='"+e.id+"'>Delete</button>" : "")+"</td>";
     body.appendChild(tr);
@@ -4044,6 +4122,7 @@ function renderEmployees(){
   body.querySelectorAll("[data-del]").forEach(function(el){ el.addEventListener("click", function(){ deleteEmployee(el.dataset.del); }); });
   document.getElementById("employeeCount").textContent = STATE.employees.length+" employee"+(STATE.employees.length===1?"":"s");
   document.getElementById("employeeResultCount").textContent = "Showing "+list.length+" of "+STATE.employees.length;
+  applyColumnPrintCss();
 }
 ["ef_name","ef_department","ef_designation","ef_bps","ef_status","ef_persNo","ef_cnic","ef_dob","ef_showSensitive"].forEach(function(id){
   document.getElementById(id).addEventListener("input", renderEmployees);
@@ -4134,10 +4213,12 @@ document.getElementById("lv_saveBtn").addEventListener("click", function(){
     sanctionNo: document.getElementById("lv_sanctionNo").value.trim(),
     sanctionDate: document.getElementById("lv_sanctionDate").value,
     reason: getSelectOrAddValue("lv_reason","lv_reason_new"),
-    remarks: document.getElementById("lv_remarks").value.trim()
+    remarks: document.getElementById("lv_remarks").value.trim(),
+    createdBy: (CURRENT_USER? CURRENT_USER.username : "")
   };
   if(leaveEditId){
     var idx = STATE.leaveRegister.findIndex(function(x){ return x.id===leaveEditId; });
+    rec.createdBy = STATE.leaveRegister[idx].createdBy;
     STATE.leaveRegister[idx] = rec;
     toast("Entry updated.");
   } else {
@@ -4250,9 +4331,9 @@ function renderLeaveRegister(){
   list.forEach(function(lv, i){
     var tr = document.createElement("tr");
     tr.innerHTML =
-      "<td>"+(i+1)+"</td><td>"+esc(employeeLabel(lv.employeeId))+"</td><td>"+esc(lv.leaveType)+"</td>"+
-      "<td>"+esc(lv.from)+"</td><td>"+esc(lv.to)+"</td><td class='num'>"+esc(lv.days)+"</td>"+
-      "<td>"+esc(lv.sanctionNo)+"</td><td>"+esc(lv.sanctionDate)+"</td><td>"+esc(lv.reason)+"</td><td>"+esc(lv.remarks)+"</td>"+
+      "<td>"+(i+1)+"</td><td data-col='employee'>"+esc(employeeLabel(lv.employeeId))+"</td><td data-col='leaveType'>"+esc(lv.leaveType)+"</td>"+
+      "<td data-col='from'>"+esc(lv.from)+"</td><td data-col='to'>"+esc(lv.to)+"</td><td class='num' data-col='days'>"+esc(lv.days)+"</td>"+
+      "<td data-col='sanctionNo'>"+esc(lv.sanctionNo)+"</td><td data-col='sanctionDate'>"+esc(lv.sanctionDate)+"</td><td data-col='reason'>"+esc(lv.reason)+"</td><td data-col='remarks'>"+esc(lv.remarks)+"</td>"+
       "<td class='row-actions'><button class='btn ghost small' data-edit='"+lv.id+"'>Edit</button>"+
       "<button class='btn danger small' data-del='"+lv.id+"'>Delete</button></td>";
     body.appendChild(tr);
@@ -4262,6 +4343,7 @@ function renderLeaveRegister(){
   document.getElementById("leaveCount").textContent = STATE.leaveRegister.length+" entr"+(STATE.leaveRegister.length===1?"y":"ies");
   document.getElementById("leaveResultCount").textContent = "Showing "+list.length+" of "+STATE.leaveRegister.length;
   renderLeaveSummary();
+  applyColumnPrintCss();
 }
 ["lvf_employee","lvf_leaveType","lvf_from","lvf_to"].forEach(function(id){
   document.getElementById(id).addEventListener("input", renderLeaveRegister);
@@ -4315,7 +4397,7 @@ function cycleAttCell(employeeId, dateStr){
   if(next===""){
     if(idx!==-1){ STATE.attendance.splice(idx,1); saveData({attendance:[id]}); }
   } else {
-    var newRec = {id:id, employeeId:employeeId, date:dateStr, status:next};
+    var newRec = {id:id, employeeId:employeeId, date:dateStr, status:next, markedBy: (CURRENT_USER? CURRENT_USER.username : "")};
     if(idx!==-1){ STATE.attendance[idx] = newRec; } else { STATE.attendance.push(newRec); }
     saveData();
   }
@@ -4490,6 +4572,8 @@ function updateUserBar(){
   roleEl.textContent = CURRENT_USER? (isAdmin()? "Administrator" : "Guest") : "";
   roleEl.className = "role-badge" + (isAdmin()? " admin":"");
   document.getElementById("usersNavBtn").style.display = isAdmin()? "flex":"none";
+  document.getElementById("hfConfigBtn").style.display = isAdmin()? "inline-flex":"none";
+  document.getElementById("colsConfigBtn").style.display = isAdmin()? "inline-flex":"none";
   document.body.classList.toggle("guest-mode", !isAdmin());
 }
 function showAppScreen(){
@@ -4829,14 +4913,152 @@ function ensurePageSizeStyleEl(){
 function setPageSize(sizeKey){
   ensurePageSizeStyleEl().textContent = PAGE_SIZE_CSS[sizeKey] || PAGE_SIZE_CSS.A4;
 }
+/* ================= Item 18: optional report header/footer fields ================= */
+var PANEL_LABELS = {
+  bill:"Contingent Bill", cash:"Cash Book", stock:"Stock Register", ledger:"Ledger & Budget",
+  employees:"Employees", leave:"Leave Register", attendance:"Attendance Register", reports:"Reports"
+};
+function currentPanelKey(){
+  var active = document.querySelector(".panel.active");
+  return active? active.id.replace("panel-","") : "";
+}
+function buildPrintExtraFieldsHtml(){
+  var key = currentPanelKey();
+  var cfg = (STATE.headerFooterConfig && STATE.headerFooterConfig[key]) || {};
+  var rows = [];
+  if(cfg.dateDiary){
+    rows.push("<div class='hf-row'><span>Date / تاریخ: <bdi>"+esc(todayStr())+"</bdi></span><span>Diary No. / ڈائری نمبر: ______________</span></div>");
+  }
+  if(cfg.address && (STATE.officeAddress || STATE.officeContact)){
+    rows.push("<div class='hf-row'><span>Address / پتہ: <bdi>"+esc(STATE.officeAddress||"—")+"</bdi></span><span>Contact / رابطہ: <bdi>"+esc(STATE.officeContact||"—")+"</bdi></span></div>");
+  }
+  if(cfg.prepared && (STATE.preparedByName || STATE.preparedByDesignation)){
+    rows.push("<div class='hf-row'><span>Prepared by / تیار کردہ: <bdi>"+esc(STATE.preparedByName||"—")+"</bdi></span><span><bdi>"+esc(STATE.preparedByDesignation||"")+"</bdi></span></div>");
+  }
+  if(cfg.reference){
+    rows.push("<div class='hf-row'><span>Reference No. / حوالہ نمبر: ______________</span></div>");
+  }
+  return rows.join("");
+}
 function printCurrentView(){
   var payslipOpen = document.getElementById("payslipOverlay").style.display === "flex";
   if(payslipOpen){ document.body.classList.add("payslip-mode"); }
+  document.getElementById("pbPrintExtraFields").innerHTML = buildPrintExtraFieldsHtml();
   window.print();
 }
 window.addEventListener("afterprint", function(){ document.body.classList.remove("payslip-mode"); });
 document.getElementById("globalPaperSize").addEventListener("change", function(){ setPageSize(this.value); });
 document.getElementById("globalPrintBtn").addEventListener("click", printCurrentView);
+document.getElementById("hfConfigBtn").addEventListener("click", function(){
+  if(!isAdmin()){ toast("Only an Administrator can change header/footer fields."); return; }
+  var key = currentPanelKey();
+  var cfg = (STATE.headerFooterConfig && STATE.headerFooterConfig[key]) || {};
+  document.getElementById("hfModalTitle").textContent = "Header/Footer Fields — "+(PANEL_LABELS[key]||key);
+  document.getElementById("hfOfficeAddress").value = STATE.officeAddress || "";
+  document.getElementById("hfOfficeContact").value = STATE.officeContact || "";
+  document.getElementById("hfChkDateDiary").checked = !!cfg.dateDiary;
+  document.getElementById("hfChkAddress").checked = !!cfg.address;
+  document.getElementById("hfChkPrepared").checked = !!cfg.prepared;
+  document.getElementById("hfChkReference").checked = !!cfg.reference;
+  document.getElementById("hfModalOverlay").style.display = "flex";
+});
+document.getElementById("hfCancelBtn").addEventListener("click", function(){
+  document.getElementById("hfModalOverlay").style.display = "none";
+});
+document.getElementById("hfSaveBtn").addEventListener("click", function(){
+  if(!isAdmin()){ toast("Only an Administrator can change header/footer fields."); return; }
+  var key = currentPanelKey();
+  STATE.officeAddress = document.getElementById("hfOfficeAddress").value.trim();
+  STATE.officeContact = document.getElementById("hfOfficeContact").value.trim();
+  STATE.headerFooterConfig = STATE.headerFooterConfig || {};
+  STATE.headerFooterConfig[key] = {
+    dateDiary: document.getElementById("hfChkDateDiary").checked,
+    address: document.getElementById("hfChkAddress").checked,
+    prepared: document.getElementById("hfChkPrepared").checked,
+    reference: document.getElementById("hfChkReference").checked
+  };
+  saveData();
+  document.getElementById("hfModalOverlay").style.display = "none";
+  toast("Header/Footer settings saved for "+(PANEL_LABELS[key]||key)+".");
+});
+
+/* ================= Item 38: choose which columns print =================
+   Every panel here is a separate, permanent DOM element (unlike Record Section, where
+   several register types share one physical table) — so, exactly like DCMS, it is safe to
+   build ONE combined print stylesheet covering every stored panel's column choices at once;
+   whichever panel is actually on screen when the user prints is the only one that matters.
+   Several panels (Stock, Employees) contain more than one table — the "main" record table in
+   each panel carries class="print-cols-table" so column selection only ever targets that one
+   table, never the smaller reference/reminder tables beside it.
+   Deliberately out of scope (documented, not an oversight):
+   - Stock Book's "Pending returns & reminders" card — a live reminder list, not the register.
+   - Employees' "Allowance rates" / "Deduction rates" reference tables — static lookup data.
+   - Leave Register's "Leave summary by employee" — a derived per-employee pivot, not the register.
+   - Attendance Register — a calendar grid (one column per day of the month, 28-31 of them);
+     hiding individual days would defeat the register's whole purpose, and the day columns are
+     generated dynamically per month rather than being a fixed field list.
+   - Reports panel's 4 sub-reports — narrow summary tables (2-5 cols each), same reasoning as
+     the equivalent skip in DCMS and Case Notice.
+   - Pay Slip — a fixed-format financial document (allowances/deductions side by side), not a
+     row-per-record register table.
+   Excel/CSV exports are, as in every other system, never filtered by this setting. */
+function collectPanelColumns(panelKey){
+  var table = document.querySelector("#panel-"+panelKey+" table.print-cols-table");
+  if(!table) return [];
+  var cols = [];
+  table.querySelectorAll("thead [data-col]").forEach(function(th){ cols.push({key: th.dataset.col, label: th.textContent.trim()}); });
+  return cols;
+}
+function applyColumnPrintCss(){
+  var styleId = "colPrintStyle";
+  var style = document.getElementById(styleId);
+  if(!style){ style = document.createElement("style"); style.id = styleId; document.head.appendChild(style); }
+  var rules = [];
+  Object.keys(STATE.printColumns||{}).forEach(function(panelKey){
+    var cfg = STATE.printColumns[panelKey] || {};
+    var hidden = Object.keys(cfg).filter(function(k){ return cfg[k]===false; });
+    if(!hidden.length) return;
+    var sel = hidden.map(function(k){ return "#panel-"+panelKey+" [data-col='"+k+"']"; }).join(",");
+    rules.push(sel+"{display:none !important;}");
+  });
+  style.textContent = rules.length? ("@media print{ "+rules.join(" ")+" }") : "";
+}
+function renderColsCheckboxes(panelKey, cols){
+  var stored = (STATE.printColumns && STATE.printColumns[panelKey]) || {};
+  var html = "";
+  cols.forEach(function(c){
+    var checked = stored[c.key]!==false;
+    html += "<div class='hf-check-row'><input type='checkbox' class='colsChk' data-key='"+esc(c.key)+"'"+(checked?" checked":"")+">"+
+      "<label><span class='hf-check-label'>"+esc(c.label)+"</span></label></div>";
+  });
+  document.getElementById("colsCheckboxWrap").innerHTML = html || "<p>No printable columns.</p>";
+}
+document.getElementById("colsConfigBtn").addEventListener("click", function(){
+  if(!isAdmin()){ toast("Only an Administrator can change print columns."); return; }
+  var key = currentPanelKey();
+  var cols = collectPanelColumns(key);
+  if(!cols.length){ toast("This panel has no printable table."); return; }
+  document.getElementById("colsModalTitle").textContent = "Select print columns — "+(PANEL_LABELS[key]||key);
+  document.getElementById("colsModalOverlay").dataset.key = key;
+  renderColsCheckboxes(key, cols);
+  document.getElementById("colsModalOverlay").style.display = "flex";
+});
+document.getElementById("colsCancelBtn").addEventListener("click", function(){
+  document.getElementById("colsModalOverlay").style.display = "none";
+});
+document.getElementById("colsSaveBtn").addEventListener("click", function(){
+  if(!isAdmin()){ toast("Only an Administrator can change print columns."); return; }
+  var key = document.getElementById("colsModalOverlay").dataset.key;
+  var result = {};
+  document.querySelectorAll("#colsCheckboxWrap .colsChk").forEach(function(chk){ result[chk.dataset.key] = chk.checked; });
+  STATE.printColumns = STATE.printColumns || {};
+  STATE.printColumns[key] = result;
+  saveData();
+  document.getElementById("colsModalOverlay").style.display = "none";
+  applyColumnPrintCss();
+  toast("Column settings saved for "+(PANEL_LABELS[key]||key)+".");
+});
+
 document.getElementById("uiLangSelect").addEventListener("change", function(){ applyUILang(this.value); });
 setPageSize("A4");
 
