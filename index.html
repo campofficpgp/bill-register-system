@@ -168,6 +168,29 @@
     color:var(--muted);
   }
 
+  /* ---------- Sidebar collapse/expand ---------- */
+  .sidenav-collapse-btn{
+    width:100%;display:flex;align-items:center;justify-content:space-between;
+    background:var(--navy-tint);border:none;border-bottom:1px solid var(--border);
+    padding:9px 14px;margin-bottom:4px;font-size:12px;font-weight:600;
+    color:var(--navy-dark);cursor:pointer;font-family:inherit;
+  }
+  .sidenav-collapse-btn:hover{background:var(--border);}
+  .sidenav-expand-btn{
+    display:none;
+    position:fixed;top:92px;left:0;z-index:80;
+    background:var(--navy);color:#fff;border:none;
+    border-radius:0 8px 8px 0;padding:12px 9px;font-size:15px;
+    cursor:pointer;box-shadow:var(--shadow);font-family:inherit;
+  }
+  .sidenav-expand-btn:hover{background:var(--navy-dark);}
+  body.nav-hidden nav.sidenav{display:none;}
+  body.nav-hidden main{max-width:none;}
+  body.nav-hidden .sidenav-expand-btn{display:flex;align-items:center;gap:6px;}
+  @media(max-width:640px){
+    .sidenav-expand-btn{top:auto;bottom:14px;left:14px;border-radius:8px;}
+  }
+
   main{flex:1;padding:22px 26px 60px;max-width:1400px;}
   .panel{display:none;}
   .panel.active{display:block;}
@@ -706,6 +729,9 @@
 
 <div class="shell">
   <nav class="sidenav">
+    <button type="button" id="sidenavCollapseBtn" class="sidenav-collapse-btn" title="Hide menu / مینو چھپائیں">
+      <span data-i18n="nav_hideMenu">Hide menu</span> <span>◀</span>
+    </button>
     <div class="navnote" data-i18n="nav_modules">Modules</div>
     <button class="tab-btn active" data-tab="bill"><span class="dot"></span> <span data-i18n="nav_bill">Contingent Bill</span></button>
     <div class="navnote" data-i18n="nav_accountsSection">Accounts</div>
@@ -725,6 +751,7 @@
     <div class="navnote" data-i18n="nav_helpSection">Help</div>
     <button class="tab-btn" data-tab="help"><span class="dot"></span> <span data-i18n="nav_help">Help / Guide</span></button>
   </nav>
+  <button type="button" id="sidenavExpandBtn" class="sidenav-expand-btn" title="Show menu / مینو دکھائیں">☰ <span data-i18n="nav_showMenu">Show menu</span></button>
 
   <main>
     <div class="guest-banner" data-i18n="guest_banner">You're signed in as a <b>Guest</b> — you can view and print everything, but adding, editing, or deleting is limited to Administrators.</div>
@@ -2118,7 +2145,7 @@ en: {
   nav_attendance:"Attendance Register",
   nav_bill:"Contingent Bill", nav_cash:"Cash Book", nav_data:"Data", nav_employees:"Employees", nav_leave:"Leave Register", nav_ledger:"Ledger & Budget",
   nav_modules:"Modules", nav_accountsSection:"Accounts", nav_adminSection:"Administration", nav_reports:"Reports", nav_stock:"Stock Book", nav_users:"Users & Access",
-  nav_helpSection:"Help", nav_help:"Help / Guide",
+  nav_helpSection:"Help", nav_help:"Help / Guide", nav_hideMenu:"Hide menu", nav_showMenu:"Show menu",
   help_title:"Help & User Guide", help_desc:"A quick, practical guide to using each part of this system — plus answers to common questions.",
   help_introTitle:"How this system works",
   help_introText:"This is one shared system for the whole office — everything you enter is saved online immediately and every other signed-in user sees the same information. You don't need to press a separate \"Save data\" button anywhere except when adding an entry; each module saves as soon as you click its own Save button. If you're new here, start with \"Employees\" so names appear correctly everywhere else, then explore the module you need from the sidebar on the left.",
@@ -2306,7 +2333,7 @@ ur: {
   nav_attendance:"حاضری رجسٹر",
   nav_bill:"کنٹینجنٹ بل", nav_cash:"کیش بک", nav_data:"ڈیٹا", nav_employees:"ملازمین", nav_leave:"لیو رجسٹر", nav_ledger:"لیجر اینڈ بجٹ",
   nav_modules:"ماڈیولز", nav_accountsSection:"اکاؤنٹس", nav_adminSection:"انتظامیہ", nav_reports:"رپورٹس", nav_stock:"سٹاک بک", nav_users:"یوزرز اینڈ ایکسیس",
-  nav_helpSection:"مدد", nav_help:"مدد / رہنمائی",
+  nav_helpSection:"مدد", nav_help:"مدد / رہنمائی", nav_hideMenu:"مینو چھپائیں", nav_showMenu:"مینو دکھائیں",
   help_title:"مدد اور صارف رہنما", help_desc:"اس سسٹم کے ہر حصے کو استعمال کرنے کا مختصر اور عملی رہنما — ساتھ ہی عام سوالات کے جوابات۔",
   help_introTitle:"یہ سسٹم کیسے کام کرتا ہے",
   help_introText:"یہ پورے آفس کے لیے ایک مشترکہ سسٹم ہے — آپ جو کچھ بھی درج کریں گے وہ فوراً آن لائن محفوظ ہو جاتا ہے اور ہر سائن اِن یوزر کو وہی معلومات نظر آتی ہیں۔ کہیں الگ سے \"ڈیٹا محفوظ کریں\" کا بٹن دبانے کی ضرورت نہیں — ہر ماڈیول اپنے Save بٹن پر کلک کرتے ہی محفوظ ہو جاتا ہے۔ اگر آپ نئے ہیں تو پہلے \"Employees\" میں تمام ملازمین کے نام درج کریں تاکہ باقی جگہوں پر بھی درست نظر آئیں، پھر بائیں طرف سائیڈبار سے مطلوبہ ماڈیول کھولیں۔",
@@ -2501,6 +2528,21 @@ document.querySelectorAll(".tab-btn").forEach(function(btn){
     var btn = document.querySelector('.tab-btn[data-tab="'+last+'"]');
     if(btn) btn.click();
   }
+})();
+
+/* ---------------- Sidebar collapse/expand ---------------- */
+(function(){
+  var collapseBtn = document.getElementById("sidenavCollapseBtn");
+  var expandBtn = document.getElementById("sidenavExpandBtn");
+  function setNavHidden(hidden){
+    document.body.classList.toggle("nav-hidden", hidden);
+    try{ localStorage.setItem(STORAGE_KEY+"_navHidden", hidden ? "1" : "0"); }catch(e){}
+  }
+  if(collapseBtn) collapseBtn.addEventListener("click", function(){ setNavHidden(true); });
+  if(expandBtn) expandBtn.addEventListener("click", function(){ setNavHidden(false); });
+  try{
+    if(localStorage.getItem(STORAGE_KEY+"_navHidden")==="1") setNavHidden(true);
+  }catch(e){}
 })();
 
 /* ---------------- Office name ---------------- */
