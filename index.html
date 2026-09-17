@@ -411,6 +411,11 @@
   .att-name-cell{display:flex;align-items:center;gap:6px;justify-content:space-between;}
   .att-edit-emp-btn{flex:none;padding:2px 7px;font-size:11px;line-height:1.4;}
   .att-legend i.blank{background:#fff;border:1px solid var(--border);}
+  .att-holiday-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+  .att-holiday-chip{display:inline-flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--border-strong);border-radius:20px;padding:5px 8px 5px 12px;font-size:12.5px;}
+  .att-holiday-chip .att-holiday-chip-date{font-weight:700;color:var(--navy-dark);}
+  .att-holiday-chip button{border:none;background:var(--danger-tint);color:var(--danger);border-radius:50%;width:19px;height:19px;line-height:1;cursor:pointer;font-size:12px;font-family:inherit;flex:none;}
+  .att-holiday-chip button:hover{background:var(--danger);color:#fff;}
   .toast{
     position:fixed;bottom:20px;right:20px;background:var(--navy-dark);color:#fff;
     padding:11px 18px;border-radius:var(--radius);box-shadow:0 4px 14px rgba(0,0,0,.25);
@@ -1346,6 +1351,16 @@
         </div>
       </div>
 
+      <div class="search-bar att-admin-only" id="att_holidayFormWrap">
+        <h3 data-i18n="att_declareHoliday">Declare a holiday for a specific date (applies to all employees)</h3>
+        <div class="grid cols-4">
+          <div class="field"><label data-i18n="att_holidayDate">Date</label><input type="date" id="att_holidayDateInput"></div>
+          <div class="field" style="grid-column:span 2;"><label data-i18n="att_holidayLabel">Reason / label (e.g. 14 August, Eid)</label><input type="text" id="att_holidayLabelInput" placeholder="e.g. 14 August, Eid-ul-Fitr"></div>
+          <div class="field" style="align-self:end;"><button class="btn secondary" id="att_declareHolidayBtn" data-i18n="att_declareHolidayBtn">Declare Holiday</button></div>
+        </div>
+        <div class="att-holiday-chips" id="att_holidayList"></div>
+      </div>
+
       <div class="att-legend">
         <span><i class="blank"></i> <span data-i18n="att_notMarked">Not marked</span></span>
         <span><i class="p"></i> <b>P</b> — <span data-i18n="att_present">Present</span></span>
@@ -1842,6 +1857,7 @@ function normalizeData(data, seedDefaults){
   }
   data.leaveRegister = data.leaveRegister || [];
   data.attendance = data.attendance || [];
+  data.holidays = data.holidays || [];
   data.allowanceRates = (data.allowanceRates && data.allowanceRates.length)? data.allowanceRates : DEFAULT_ALLOWANCE_RATES.slice();
   data.deductionRates = (data.deductionRates && data.deductionRates.length)? data.deductionRates : DEFAULT_DEDUCTION_RATES.slice();
 
@@ -1947,7 +1963,7 @@ function mergeItemMaster(serverIM, localIM){
   });
   return out;
 }
-var MERGE_BY_ID_FIELDS = ["bills","cash","stock","employees","leaveRegister","attendance"];
+var MERGE_BY_ID_FIELDS = ["bills","cash","stock","employees","leaveRegister","attendance","holidays"];
 var MERGE_DICT_FIELDS = ["headOverrides","payslipData","itemTypes","contingentDeductionRates","headerFooterConfig","printColumns"];
 function mergeStates(serverState, localState){
   var merged = {};
@@ -2076,8 +2092,8 @@ var I18N_UI = {
 en: {
   app_title:"Bill, Cash Book, Stock & Ledger Register",
   app_subtitle:"Contingent Bill · Cash Book · Stock Book · Ledger & Budget · Employees — one system, saved on this computer",
-  att_absent:"Absent", att_addEmployee:"Add Employee", att_daysMarked:"day(s) marked", att_editEmployee:"Edit", att_fillFromLeave:"Fill leave days from Leave Register",
-  att_holiday:"Holiday", att_leave:"Leave", att_month:"Month", att_month_1:"January", att_month_2:"February", att_month_3:"March", att_month_4:"April",
+  att_absent:"Absent", att_addEmployee:"Add Employee", att_daysMarked:"day(s) marked", att_declareHoliday:"Declare a holiday for a specific date (applies to all employees)", att_declareHolidayBtn:"Declare Holiday", att_editEmployee:"Edit", att_fillFromLeave:"Fill leave days from Leave Register",
+  att_holiday:"Holiday", att_holidayDate:"Date", att_holidayLabel:"Reason / label (e.g. 14 August, Eid)", att_holidayListTitle:"Declared holidays (click × to remove)", att_holidayNeedBoth:"Please pick a date and enter a reason / label.", att_holidayAdded:"Holiday declared.", att_holidayAlready:"This date is already declared as a holiday — remove it first if you want to change it.", att_holidayRemoved:"Holiday removed.", att_removeHoliday:"Remove", att_leave:"Leave", att_month:"Month", att_month_1:"January", att_month_2:"February", att_month_3:"March", att_month_4:"April",
   att_month_5:"May", att_month_6:"June", att_month_7:"July", att_month_8:"August", att_month_9:"September", att_month_10:"October",
   att_month_11:"November", att_month_12:"December", att_notMarked:"Not marked",
   att_panelDesc:"Pick a month, then click a cell to mark it: Present, Absent or Leave. Click again to cycle, or click once more to clear it.",
@@ -2264,8 +2280,8 @@ en: {
 ur: {
   app_title:"بل، کیش بک، سٹاک اور لیجر رجسٹر",
   app_subtitle:"کنٹینجنٹ بل · کیش بک · سٹاک بک · لیجر اینڈ بجٹ · ملازمین — ایک سسٹم، اس کمپیوٹر پر محفوظ",
-  att_absent:"غیر حاضر", att_addEmployee:"نیا ملازم شامل کریں", att_daysMarked:"دن نشان زد", att_editEmployee:"ترمیم", att_fillFromLeave:"لیو رجسٹر سے رخصت کے دن بھریں",
-  att_holiday:"چھٹی", att_leave:"رخصت", att_month:"مہینہ", att_month_1:"جنوری", att_month_2:"فروری", att_month_3:"مارچ", att_month_4:"اپریل",
+  att_absent:"غیر حاضر", att_addEmployee:"نیا ملازم شامل کریں", att_daysMarked:"دن نشان زد", att_declareHoliday:"کسی خاص تاریخ کو چھٹی قرار دیں (تمام ملازمین کے لیے)", att_declareHolidayBtn:"چھٹی قرار دیں", att_editEmployee:"ترمیم", att_fillFromLeave:"لیو رجسٹر سے رخصت کے دن بھریں",
+  att_holiday:"چھٹی", att_holidayDate:"تاریخ", att_holidayLabel:"وجہ / عنوان (مثلاً 14 اگست، عید)", att_holidayListTitle:"قرار دی گئی چھٹیاں (ہٹانے کے لیے × دبائیں)", att_holidayNeedBoth:"براہ کرم تاریخ منتخب کریں اور وجہ / عنوان درج کریں۔", att_holidayAdded:"چھٹی قرار دے دی گئی۔", att_holidayAlready:"اس تاریخ کو پہلے ہی چھٹی قرار دیا جا چکا ہے — تبدیل کرنے کے لیے پہلے اسے ہٹائیں۔", att_holidayRemoved:"چھٹی ہٹا دی گئی۔", att_removeHoliday:"ہٹائیں", att_leave:"رخصت", att_month:"مہینہ", att_month_1:"جنوری", att_month_2:"فروری", att_month_3:"مارچ", att_month_4:"اپریل",
   att_month_5:"مئی", att_month_6:"جون", att_month_7:"جولائی", att_month_8:"اگست", att_month_9:"ستمبر", att_month_10:"اکتوبر",
   att_month_11:"نومبر", att_month_12:"دسمبر", att_notMarked:"نشان زد نہیں",
   att_panelDesc:"مہینہ منتخب کریں، پھر خانے پر کلک کر کے نشان لگائیں: حاضر، غیر حاضر یا رخصت۔ دوبارہ کلک کرنے سے تبدیل ہوگا، ایک بار اور کلک کرنے سے صاف ہو جائے گا۔",
@@ -4463,6 +4479,8 @@ function renderAttendance(){
     return (a.name||"").localeCompare(b.name||"");
   });
   var DOW = ["S","M","T","W","T","F","S"];
+  var holidaysByDate = {};
+  (STATE.holidays||[]).forEach(function(h){ holidaysByDate[h.date] = h; });
 
   var theadHtml = "<tr><th class='att-name-th'>"+esc(t("lv_employee"))+"</th><th>"+esc(t("emp_designation"))+"</th><th>"+esc(t("th_bps"))+"</th>";
   for(var d=1; d<=nDays; d++){
@@ -4481,14 +4499,16 @@ function renderAttendance(){
       var rec = attRecordFor(e.id, dateStr);
       var status = rec? rec.status : "";
       var dowForCell = new Date(year, month-1, d).getDay();
-      var isAutoHoliday = (!status && dowForCell===0);
+      var customHoliday = holidaysByDate[dateStr];
+      var isAutoHoliday = (!status && (dowForCell===0 || customHoliday));
       if(status){ totalMarked++; }
       if(status==="P") pCount++;
       else if(status==="A") aCount++;
       else if(status==="L") lCount++;
       var cellDisplayStatus = isAutoHoliday ? "H" : status;
-      var cellText = isAutoHoliday ? esc(t("att_holiday")) : status;
-      row += "<td class='att-cell' data-emp='"+esc(e.id)+"' data-date='"+dateStr+"' data-status='"+cellDisplayStatus+"'>"+cellText+"</td>";
+      var cellText = isAutoHoliday ? (customHoliday ? esc(customHoliday.label) : esc(t("att_holiday"))) : status;
+      var cellTitleAttr = customHoliday ? (" title='"+esc(customHoliday.label)+"'") : "";
+      row += "<td class='att-cell' data-emp='"+esc(e.id)+"' data-date='"+dateStr+"' data-status='"+cellDisplayStatus+"'"+cellTitleAttr+">"+cellText+"</td>";
     }
     row += "<td class='att-total-cell num'>"+pCount+"</td><td class='att-total-cell num'>"+aCount+"</td><td class='att-total-cell num'>"+lCount+"</td></tr>";
     tbodyRows += row;
@@ -4508,12 +4528,47 @@ function renderAttendance(){
     });
   });
   document.getElementById("attMarkedCount").textContent = totalMarked+" "+t("att_daysMarked");
+  renderAttHolidayList();
 }
 document.getElementById("att_addEmployeeBtn").addEventListener("click", function(){
   var tabBtn = document.querySelector('.tab-btn[data-tab="employees"]');
   if(tabBtn) tabBtn.click();
   resetEmployeeForm();
   document.getElementById("panel-employees").scrollIntoView({behavior:"smooth"});
+});
+function renderAttHolidayList(){
+  var wrap = document.getElementById("att_holidayList");
+  if(!wrap) return;
+  var list = (STATE.holidays||[]).slice().sort(function(a,b){ return (a.date||"").localeCompare(b.date||""); });
+  wrap.innerHTML = list.map(function(h){
+    return "<span class='att-holiday-chip'><span class='att-holiday-chip-date'>"+esc(h.date)+"</span> \u2014 "+esc(h.label)+" <button type='button' class='att-holiday-remove-btn' data-id='"+esc(h.id)+"' title='"+esc(t("att_removeHoliday"))+"'>&times;</button></span>";
+  }).join("");
+  wrap.querySelectorAll(".att-holiday-remove-btn").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      if(!isAdmin()){ toast("Only an Administrator can do this."); return; }
+      var id = btn.dataset.id;
+      var idx = STATE.holidays.findIndex(function(h){ return h.id===id; });
+      if(idx!==-1){
+        STATE.holidays.splice(idx,1);
+        saveData({holidays:[id]});
+        renderAttendance();
+        toast(t("att_holidayRemoved"));
+      }
+    });
+  });
+}
+document.getElementById("att_declareHolidayBtn").addEventListener("click", function(){
+  if(!isAdmin()){ toast("Only an Administrator can do this."); return; }
+  var dateVal = document.getElementById("att_holidayDateInput").value;
+  var labelVal = document.getElementById("att_holidayLabelInput").value.trim();
+  if(!dateVal || !labelVal){ toast(t("att_holidayNeedBoth")); return; }
+  var already = (STATE.holidays||[]).find(function(h){ return h.date===dateVal; });
+  if(already){ toast(t("att_holidayAlready")); return; }
+  STATE.holidays.push({id:uid(), date:dateVal, label:labelVal, createdBy:(CURRENT_USER? CURRENT_USER.username : "")});
+  saveData();
+  document.getElementById("att_holidayLabelInput").value = "";
+  renderAttendance();
+  toast(t("att_holidayAdded"));
 });
 ["att_month","att_year"].forEach(function(id){
   document.getElementById(id).addEventListener("change", renderAttendance);
