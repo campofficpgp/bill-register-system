@@ -376,6 +376,7 @@
   .att-cell[data-status="P"]{background:var(--success-tint);color:var(--success);}
   .att-cell[data-status="A"]{background:var(--danger-tint);color:var(--danger);}
   .att-cell[data-status="L"]{background:var(--amber-tint);color:var(--amber);}
+  .att-cell[data-status="H"]{background:var(--bg);color:var(--muted);font-style:italic;font-size:11px;}
   td.att-total-cell{font-weight:700;background:#F7F6F2;}
   .att-legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;font-size:12.5px;}
   .att-legend span{display:inline-flex;align-items:center;gap:6px;}
@@ -383,6 +384,9 @@
   .att-legend i.p{background:var(--success-tint);border:1px solid var(--success);}
   .att-legend i.a{background:var(--danger-tint);border:1px solid var(--danger);}
   .att-legend i.l{background:var(--amber-tint);border:1px solid var(--amber);}
+  .att-legend i.h{background:var(--bg);border:1px solid var(--border-strong);}
+  .att-name-cell{display:flex;align-items:center;gap:6px;justify-content:space-between;}
+  .att-edit-emp-btn{flex:none;padding:2px 7px;font-size:11px;line-height:1.4;}
   .att-legend i.blank{background:#fff;border:1px solid var(--border);}
   .toast{
     position:fixed;bottom:20px;right:20px;background:var(--navy-dark);color:#fff;
@@ -1309,6 +1313,7 @@
             </select>
           </div>
           <div class="field"><label data-i18n="lv_year">Year</label><select id="att_year"></select></div>
+          <div class="field" style="align-self:end;"><button class="btn secondary att-admin-only" id="att_addEmployeeBtn" data-i18n="att_addEmployee">Add Employee</button></div>
           <div class="field" style="align-self:end;"><button class="btn secondary att-admin-only" id="att_fillLeaveBtn" data-i18n="att_fillFromLeave">Fill leave days from Leave Register</button></div>
           <div class="field" style="align-self:end;"><button class="btn ghost small" id="att_exportBtn" data-i18n="btn_exportCsv">Export visible rows (CSV)</button></div>
         </div>
@@ -1319,6 +1324,7 @@
         <span><i class="p"></i> <b>P</b> — <span data-i18n="att_present">Present</span></span>
         <span><i class="a"></i> <b>A</b> — <span data-i18n="att_absent">Absent</span></span>
         <span><i class="l"></i> <b>L</b> — <span data-i18n="att_leave">Leave</span></span>
+        <span><i class="h"></i> <span data-i18n="att_holiday">Holiday</span></span>
       </div>
 
       <div class="att-grid-wrap">
@@ -2043,8 +2049,8 @@ var I18N_UI = {
 en: {
   app_title:"Bill, Cash Book, Stock & Ledger Register",
   app_subtitle:"Contingent Bill · Cash Book · Stock Book · Ledger & Budget · Employees — one system, saved on this computer",
-  att_absent:"Absent", att_daysMarked:"day(s) marked", att_fillFromLeave:"Fill leave days from Leave Register",
-  att_leave:"Leave", att_month:"Month", att_month_1:"January", att_month_2:"February", att_month_3:"March", att_month_4:"April",
+  att_absent:"Absent", att_addEmployee:"Add Employee", att_daysMarked:"day(s) marked", att_editEmployee:"Edit", att_fillFromLeave:"Fill leave days from Leave Register",
+  att_holiday:"Holiday", att_leave:"Leave", att_month:"Month", att_month_1:"January", att_month_2:"February", att_month_3:"March", att_month_4:"April",
   att_month_5:"May", att_month_6:"June", att_month_7:"July", att_month_8:"August", att_month_9:"September", att_month_10:"October",
   att_month_11:"November", att_month_12:"December", att_notMarked:"Not marked",
   att_panelDesc:"Pick a month, then click a cell to mark it: Present, Absent or Leave. Click again to cycle, or click once more to clear it.",
@@ -2231,8 +2237,8 @@ en: {
 ur: {
   app_title:"بل، کیش بک، سٹاک اور لیجر رجسٹر",
   app_subtitle:"کنٹینجنٹ بل · کیش بک · سٹاک بک · لیجر اینڈ بجٹ · ملازمین — ایک سسٹم، اس کمپیوٹر پر محفوظ",
-  att_absent:"غیر حاضر", att_daysMarked:"دن نشان زد", att_fillFromLeave:"لیو رجسٹر سے رخصت کے دن بھریں",
-  att_leave:"رخصت", att_month:"مہینہ", att_month_1:"جنوری", att_month_2:"فروری", att_month_3:"مارچ", att_month_4:"اپریل",
+  att_absent:"غیر حاضر", att_addEmployee:"نیا ملازم شامل کریں", att_daysMarked:"دن نشان زد", att_editEmployee:"ترمیم", att_fillFromLeave:"لیو رجسٹر سے رخصت کے دن بھریں",
+  att_holiday:"چھٹی", att_leave:"رخصت", att_month:"مہینہ", att_month_1:"جنوری", att_month_2:"فروری", att_month_3:"مارچ", att_month_4:"اپریل",
   att_month_5:"مئی", att_month_6:"جون", att_month_7:"جولائی", att_month_8:"اگست", att_month_9:"ستمبر", att_month_10:"اکتوبر",
   att_month_11:"نومبر", att_month_12:"دسمبر", att_notMarked:"نشان زد نہیں",
   att_panelDesc:"مہینہ منتخب کریں، پھر خانے پر کلک کر کے نشان لگائیں: حاضر، غیر حاضر یا رخصت۔ دوبارہ کلک کرنے سے تبدیل ہوگا، ایک بار اور کلک کرنے سے صاف ہو جائے گا۔",
@@ -4408,7 +4414,12 @@ function renderAttendance(){
   var year = Number(document.getElementById("att_year").value);
   var month = Number(document.getElementById("att_month").value);
   var nDays = daysInMonth(year, month);
-  var employees = STATE.employees.slice().sort(function(a,b){ return (a.name||"").localeCompare(b.name||""); });
+  var employees = STATE.employees.slice().sort(function(a,b){
+    var ba = parseInt(a.bps,10); if(isNaN(ba)) ba = -1;
+    var bb = parseInt(b.bps,10); if(isNaN(bb)) bb = -1;
+    if(bb !== ba) return bb - ba;
+    return (a.name||"").localeCompare(b.name||"");
+  });
   var DOW = ["S","M","T","W","T","F","S"];
 
   var theadHtml = "<tr><th class='att-name-th'>"+esc(t("lv_employee"))+"</th><th>"+esc(t("emp_designation"))+"</th><th>"+esc(t("th_bps"))+"</th>";
@@ -4421,17 +4432,21 @@ function renderAttendance(){
   var tbodyRows = "";
   var totalMarked = 0;
   employees.forEach(function(e){
-    var row = "<tr><td class='att-name-cell'>"+esc((e.persNo? e.persNo+" - ":"")+e.name)+"</td><td>"+esc(e.designation)+"</td><td>"+esc(e.bps)+"</td>";
+    var row = "<tr><td class='att-name-cell'><span>"+esc((e.persNo? e.persNo+" - ":"")+e.name)+"</span><button class='btn ghost small att-edit-emp-btn att-admin-only' data-empid='"+esc(e.id)+"' data-i18n=\"att_editEmployee\" title=\"Edit employee\">Edit</button></td><td>"+esc(e.designation)+"</td><td>"+esc(e.bps)+"</td>";
     var pCount=0, aCount=0, lCount=0;
     for(var d=1; d<=nDays; d++){
       var dateStr = attDateStr(year, month, d);
       var rec = attRecordFor(e.id, dateStr);
       var status = rec? rec.status : "";
+      var dowForCell = new Date(year, month-1, d).getDay();
+      var isAutoHoliday = (!status && dowForCell===0);
       if(status){ totalMarked++; }
       if(status==="P") pCount++;
       else if(status==="A") aCount++;
       else if(status==="L") lCount++;
-      row += "<td class='att-cell' data-emp='"+esc(e.id)+"' data-date='"+dateStr+"' data-status='"+status+"'>"+status+"</td>";
+      var cellDisplayStatus = isAutoHoliday ? "H" : status;
+      var cellText = isAutoHoliday ? esc(t("att_holiday")) : status;
+      row += "<td class='att-cell' data-emp='"+esc(e.id)+"' data-date='"+dateStr+"' data-status='"+cellDisplayStatus+"'>"+cellText+"</td>";
     }
     row += "<td class='att-total-cell num'>"+pCount+"</td><td class='att-total-cell num'>"+aCount+"</td><td class='att-total-cell num'>"+lCount+"</td></tr>";
     tbodyRows += row;
@@ -4442,8 +4457,22 @@ function renderAttendance(){
   table.querySelectorAll(".att-cell").forEach(function(el){
     el.addEventListener("click", function(){ cycleAttCell(el.dataset.emp, el.dataset.date); });
   });
+  table.querySelectorAll(".att-edit-emp-btn").forEach(function(el){
+    el.addEventListener("click", function(ev){
+      ev.stopPropagation();
+      var tabBtn = document.querySelector('.tab-btn[data-tab="employees"]');
+      if(tabBtn) tabBtn.click();
+      editEmployee(el.dataset.empid);
+    });
+  });
   document.getElementById("attMarkedCount").textContent = totalMarked+" "+t("att_daysMarked");
 }
+document.getElementById("att_addEmployeeBtn").addEventListener("click", function(){
+  var tabBtn = document.querySelector('.tab-btn[data-tab="employees"]');
+  if(tabBtn) tabBtn.click();
+  resetEmployeeForm();
+  document.getElementById("panel-employees").scrollIntoView({behavior:"smooth"});
+});
 ["att_month","att_year"].forEach(function(id){
   document.getElementById(id).addEventListener("change", renderAttendance);
 });
@@ -4477,7 +4506,12 @@ document.getElementById("att_exportBtn").addEventListener("click", function(){
   var year = Number(document.getElementById("att_year").value);
   var month = Number(document.getElementById("att_month").value);
   var nDays = daysInMonth(year, month);
-  var employees = STATE.employees.slice().sort(function(a,b){ return (a.name||"").localeCompare(b.name||""); });
+  var employees = STATE.employees.slice().sort(function(a,b){
+    var ba = parseInt(a.bps,10); if(isNaN(ba)) ba = -1;
+    var bb = parseInt(b.bps,10); if(isNaN(bb)) bb = -1;
+    if(bb !== ba) return bb - ba;
+    return (a.name||"").localeCompare(b.name||"");
+  });
   var header = ["Employee","Designation","BPS"];
   for(var d=1; d<=nDays; d++){ header.push(String(d)); }
   header.push("Present","Absent","Leave");
