@@ -545,8 +545,8 @@
     text-align:center;font-size:19px;font-weight:700;padding:13px;border:2px solid var(--navy);
     border-radius:6px;margin-top:8px;color:var(--navy-dark);
   }
-  .payslip-sign{display:flex;justify-content:space-between;margin-top:60px;font-size:12.5px;}
-  .payslip-sign div{text-align:center;width:260px;border-top:1px solid var(--text);padding-top:6px;line-height:1.4;}
+  .payslip-sign{display:flex;justify-content:space-between;gap:14px;margin-top:60px;font-size:12.5px;page-break-inside:avoid;break-inside:avoid;}
+  .payslip-sign div{text-align:center;flex:1;min-width:0;border-top:1px solid var(--text);padding-top:6px;line-height:1.4;}
   .payslip-page{page-break-after:always;}
   .payslip-page:last-child{page-break-after:auto;}
   .payslip-page + .payslip-page{border-top:2px dashed var(--border-strong);margin-top:26px;padding-top:26px;}
@@ -569,8 +569,9 @@
   .payslip-page .slip-tools{margin:-8px 0 14px;}
 
   @media print{
-    nav.sidenav,.search-bar,.btnbar,.topbar,.row-actions,.row-actions-th,.card.entry-form,footer.appfoot,.auth-screen,.userbar{display:none !important;}
-    .shell{display:block;}
+    nav.sidenav,.search-bar,.btnbar,.topbar,.row-actions,.row-actions-th,.card.entry-form,footer.appfoot,.auth-screen,.userbar,
+    .panel-head p,#chatToggleBtn,#chatPanel,.appfoot-copyright{display:none !important;}
+    .shell{display:block;min-height:0;}
     main{padding:0;max-width:none;}
     body{background:#fff;}
     .card{box-shadow:none;border:1px solid #999;}
@@ -586,7 +587,11 @@
 
 /* ===== Prepared-by print sign-off + Punjab Govt masthead ===== */
 .pb-modal-overlay{position:fixed;inset:0;background:rgba(10,20,30,.55);display:none;align-items:center;justify-content:center;z-index:99999;}
-.pb-modal{background:#fff;border-radius:10px;padding:22px 24px;max-width:400px;width:92%;box-shadow:0 12px 40px rgba(0,0,0,.3);}
+.pb-modal{background:#fff;border-radius:10px;padding:22px 24px;max-width:560px;width:92%;box-shadow:0 12px 40px rgba(0,0,0,.3);}
+.pb-stamp-cols{display:flex;gap:16px;flex-wrap:wrap;}
+.pb-stamp-col{flex:1;min-width:200px;}
+.pb-stamp-col h4{margin:0 0 8px;font-size:12.5px;color:#153A5B;border-bottom:1px solid #eee;padding-bottom:4px;}
+.pb-modal textarea{width:100%;padding:8px 10px;border:1px solid #ccc;border-radius:6px;font-size:13px;box-sizing:border-box;font-family:inherit;resize:vertical;}
 .pb-modal h3{margin:0 0 4px;font-size:16px;color:#153A5B;}
 .pb-modal .pb-sub{font-size:12px;color:#666;margin-bottom:14px;line-height:1.7;}
 .pb-modal .field{margin-bottom:12px;}
@@ -614,7 +619,7 @@
   .pb-print-masthead .pb-mh-text{line-height:1.5;}
   .pb-print-masthead .pb-mh-t1{font-weight:700;font-size:15px;color:#153A5B;}
   .pb-print-masthead .pb-mh-t2{font-size:11px;color:#444;}
-  .pb-print-signfoot{display:block !important;margin-top:24px;padding-top:8px;border-top:1px solid #999;font-size:12px;color:#222;}
+  .pb-print-signfoot{display:block !important;margin-top:14px;padding-top:6px;border-top:1px solid #999;font-size:11.5px;color:#222;page-break-inside:avoid;break-inside:avoid;}
   .pb-print-extra-fields{display:block !important;font-size:11.5px;color:#222;margin-bottom:12px;line-height:1.7;border-bottom:1px dashed #999;padding-bottom:8px;}
   .pb-print-extra-fields .hf-row{display:flex;justify-content:space-between;flex-wrap:wrap;gap:2px 20px;}
 }
@@ -699,6 +704,8 @@
       </div>
       <div class="field"><label data-i18n="ps_preparedByName">Prepared by (name)</label><input type="text" id="ps_preparedByName" placeholder="e.g. Muhammad Ali"></div>
       <div class="field"><label data-i18n="ps_preparedByDesignation">Prepared by (designation)</label><input type="text" id="ps_preparedByDesignation" placeholder="e.g. Accounts Officer"></div>
+      <div class="field"><label data-i18n="ps_approvedByName">Approved by (name)</label><input type="text" id="ps_approvedByName" placeholder="(optional)"></div>
+      <div class="field"><label data-i18n="ps_approvedByDesignation">Approved by (designation)</label><input type="text" id="ps_approvedByDesignation" placeholder="(optional)"></div>
       <button class="btn" id="ps_printBtn" data-i18n="btn_print">Print</button>
       <button class="btn ghost" id="ps_regenBtn" title="Discard your edits and refill from current rates" data-i18n="ps_regenTemplates">Regenerate templates</button>
       <button class="btn ghost" id="ps_closeBtn" data-i18n="btn_close">Close</button>
@@ -1697,21 +1704,21 @@
 </div>
 <div class="pb-modal-overlay" id="pbModalOverlay">
   <div class="pb-modal">
-    <h3>پرنٹ سے پہلے / Before Printing</h3>
-    <div class="pb-sub">براہ کرم اپنا نام اور عہدہ درج کریں — یہ اس پرنٹ پر بطور دستخط شامل ہو گا۔<br>Please enter your name and designation — this will appear as the signature on this print.</div>
-    <div class="field"><label>نام / Name</label><input type="text" id="pbName" placeholder="e.g. Iftikhar Ahmed"></div>
-    <div class="field"><label>عہدہ / Designation</label><input type="text" id="pbDesig" placeholder="e.g. Junior Clerk, Camp Office Prosecutor General Punjab, Supreme Court of Pakistan, Islamabad"></div>
-    <div class="field pb-sig-field">
-      <label>ڈیجیٹل دستخط (اختیاری) / Digital Signature (optional)</label>
-      <div class="pb-sig-row">
-        <div class="pb-sig-preview-wrap" id="pbSigPreviewWrap" style="display:none;">
-          <img id="pbSigPreview" alt="signature">
-          <button type="button" id="pbSigRemoveBtn" title="Remove signature">✕</button>
-        </div>
-        <input type="file" id="pbSigFile" accept="image/*">
+    <h3>پرنٹ سائن آف / Print Sign-off</h3>
+    <div class="pb-sub">دستاویز پرنٹ ہونے سے پہلے دونوں طرف کی تفصیلات چیک/ترمیم کر لیں۔<br>Check or edit both sides' details before printing.</div>
+    <div class="pb-stamp-cols">
+      <div class="pb-stamp-col">
+        <h4>Prepared by / تیار کردہ</h4>
+        <div class="field"><label>نام / Name</label><input type="text" id="pbLeftName" placeholder="e.g. Iftikhar Ahmed"></div>
+        <div class="field"><label>عہدہ / Designation</label><input type="text" id="pbLeftDesig" placeholder="e.g. Junior Clerk"></div>
+        <div class="field"><label>دفتر کا پتہ / Office Address</label><textarea id="pbLeftAddress" rows="2" placeholder="Camp Office Prosecutor General Punjab, Supreme Court of Pakistan, Islamabad"></textarea></div>
       </div>
-      <div class="pb-sig-hint">اپنے دستخط کی تصویر اپلوڈ کریں — یہ آپ کے پروفائل میں محفوظ ہو کر ہر سسٹم میں کام آئے گی۔<br>Upload an image of your signature — it's saved to your profile and reused across every system.</div>
-      <div class="pb-sig-progress" id="pbSigProgress" style="display:none;"></div>
+      <div class="pb-stamp-col">
+        <h4>Approved by / منظور کردہ</h4>
+        <div class="field"><label>نام / Name</label><input type="text" id="pbRightName" placeholder="(optional)"></div>
+        <div class="field"><label>عہدہ / Designation</label><input type="text" id="pbRightDesig" placeholder="(optional)"></div>
+        <div class="field"><label>دفتر کا پتہ / Office Address</label><textarea id="pbRightAddress" rows="2" placeholder="Camp Office Prosecutor General Punjab, Supreme Court of Pakistan, Islamabad"></textarea></div>
+      </div>
     </div>
     <div class="pb-actions">
       <button type="button" class="pb-cancel" id="pbCancelBtn">Cancel</button>
@@ -1910,6 +1917,8 @@ function normalizeData(data, seedDefaults){
   data.contingentDeductionRates = data.contingentDeductionRates || Object.assign({}, DEFAULT_CONTINGENT_DEDUCTION_RATES);
   data.preparedByName = data.preparedByName || "Iftikhar Ahmed";
   data.preparedByDesignation = data.preparedByDesignation || "Junior Clerk, Camp Office Prosecutor General Punjab, Supreme Court of Pakistan, Islamabad";
+  data.approvedByName = data.approvedByName || "";
+  data.approvedByDesignation = data.approvedByDesignation || "";
   return data;
 }
 function migrateAllowanceRatesJuly2026(rates){
@@ -2278,7 +2287,9 @@ en: {
   opt_selectBank:"Select bank…", opt_selectBps:"Select BPS…", opt_selectDepartment:"Select department…", opt_selectDesignation:"Select designation…",
   opt_selectIssuedTo:"Select issued to…", opt_selectParticulars:"Select particulars…", opt_selectVendorName:"Select vendor name…",
   opt_selectVendorNo:"Select vendor no…", opt_selectReason:"Select reason…", opt_yes:"Yes",
-  ps_annualIncrement:"Annual increment %", ps_financialYear:"Financial Year", ps_fullFY:"Full financial year", ps_incrementFrom:"Increment effective from",
+  ps_annualIncrement:"Annual increment %",
+  ps_approvedByDesignation:"Approved by (designation)", ps_approvedByName:"Approved by (name)",
+  ps_financialYear:"Financial Year", ps_fullFY:"Full financial year", ps_incrementFrom:"Increment effective from",
   ps_mode:"Mode", ps_month:"Month", ps_preparedByDesignation:"Prepared by (designation)", ps_preparedByName:"Prepared by (name)",
   ps_regenTemplates:"Regenerate templates", ps_singleMonth:"Single month",
   rep_allTime:"All-time", rep_asOf:"as of", rep_before:"before", rep_billsByHead:"Contingent Bills — by Head", rep_cashByHead:"Cash Book — by Head",
@@ -2470,7 +2481,9 @@ ur: {
   opt_selectBank:"بینک منتخب کریں…", opt_selectBps:"BPS منتخب کریں…", opt_selectDepartment:"شعبہ منتخب کریں…", opt_selectDesignation:"عہدہ منتخب کریں…",
   opt_selectIssuedTo:"جاری کردہ منتخب کریں…", opt_selectParticulars:"تفصیلات منتخب کریں…", opt_selectVendorName:"وینڈر کا نام منتخب کریں…",
   opt_selectVendorNo:"وینڈر نمبر منتخب کریں…", opt_selectReason:"وجہ منتخب کریں…", opt_yes:"ہاں",
-  ps_annualIncrement:"سالانہ اضافہ %", ps_financialYear:"مالی سال", ps_fullFY:"مکمل مالی سال", ps_incrementFrom:"اضافہ مؤثر از",
+  ps_annualIncrement:"سالانہ اضافہ %",
+  ps_approvedByDesignation:"منظور کردہ (عہدہ)", ps_approvedByName:"منظور کردہ (نام)",
+  ps_financialYear:"مالی سال", ps_fullFY:"مکمل مالی سال", ps_incrementFrom:"اضافہ مؤثر از",
   ps_mode:"موڈ", ps_month:"مہینہ", ps_preparedByDesignation:"تیار کردہ (عہدہ)", ps_preparedByName:"تیار کردہ (نام)",
   ps_regenTemplates:"ٹیمپلیٹس دوبارہ تیار کریں", ps_singleMonth:"ایک مہینہ",
   rep_allTime:"تمام وقت", rep_asOf:"بمطابق", rep_before:"سے پہلے", rep_billsByHead:"کنٹینجنٹ بلز — ہیڈ کے مطابق", rep_cashByHead:"کیش بک — ہیڈ کے مطابق",
@@ -3822,6 +3835,8 @@ document.getElementById("restoreFile").addEventListener("change", function(e){
         allowanceRatesVersion: incoming.allowanceRatesVersion,
         preparedByName: incoming.preparedByName || "",
         preparedByDesignation: incoming.preparedByDesignation || "",
+        approvedByName: incoming.approvedByName || "",
+        approvedByDesignation: incoming.approvedByDesignation || "",
         itemTypes: incoming.itemTypes || {},
         contingentDeductionRates: incoming.contingentDeductionRates || undefined
       });
@@ -5440,7 +5455,7 @@ var I18N = {
     paySlip:"Pay Slip", employeeNo:"Employee No", name:"Name", designation:"Designation",
     department:"Department", bps:"BPS / Scale", cnic:"CNIC", bank:"Bank", account:"Account No",
     description:"Description", amount:"Amount", grossPay:"Gross Pay", totalDeductions:"Total Deductions",
-    netPay:"Net Pay", preparedBy:"Prepared by", signature:"Employee Signature",
+    netPay:"Net Pay", preparedBy:"Prepared by", approvedBy:"Approved by", signature:"Employee Signature",
     noEarnings:"No allowance rates found for this BPS.", noDeductions:"No deduction rates found for this BPS.",
     incrementNote:"Includes annual increment of",
     certificate:"This is a computer-generated pay slip. The preparer/maker of this slip shall not be held responsible for any error or discrepancy herein."
@@ -5449,7 +5464,7 @@ var I18N = {
     paySlip:"تنخواہ سلپ", employeeNo:"ملازم نمبر", name:"نام", designation:"عہدہ",
     department:"شعبہ", bps:"بی پی ایس / سکیل", cnic:"شناختی کارڈ نمبر", bank:"بینک", account:"اکاؤنٹ نمبر",
     description:"تفصیل", amount:"رقم", grossPay:"مجموعی تنخواہ", totalDeductions:"کل کٹوتیاں",
-    netPay:"خالص تنخواہ", preparedBy:"تیار کردہ", signature:"ملازم کے دستخط",
+    netPay:"خالص تنخواہ", preparedBy:"تیار کردہ", approvedBy:"منظور کردہ", signature:"ملازم کے دستخط",
     noEarnings:"اس بی پی ایس کے لیے کوئی الاؤنس ریٹ نہیں ملا۔", noDeductions:"اس بی پی ایس کے لیے کوئی کٹوتی نہیں ملی۔",
     incrementNote:"سالانہ اضافہ شامل ہے:",
     certificate:"یہ ایک کمپیوٹر سے تیار کردہ تنخواہ سلپ ہے۔ اس سلپ کو تیار کرنے والا کسی بھی غلطی یا تضاد کا ذمہ دار نہیں ہوگا۔"
@@ -5505,6 +5520,8 @@ function openPaySlip(employeeId){
   }
   document.getElementById("ps_preparedByName").value = STATE.preparedByName;
   document.getElementById("ps_preparedByDesignation").value = STATE.preparedByDesignation;
+  document.getElementById("ps_approvedByName").value = STATE.approvedByName;
+  document.getElementById("ps_approvedByDesignation").value = STATE.approvedByDesignation;
   populateFySelects();
   overlay.style.display = "flex";
   renderPaySlip();
@@ -5516,6 +5533,16 @@ document.getElementById("ps_preparedByName").addEventListener("change", function
 });
 document.getElementById("ps_preparedByDesignation").addEventListener("change", function(){
   STATE.preparedByDesignation = this.value.trim();
+  saveData();
+  renderPaySlip();
+});
+document.getElementById("ps_approvedByName").addEventListener("change", function(){
+  STATE.approvedByName = this.value.trim();
+  saveData();
+  renderPaySlip();
+});
+document.getElementById("ps_approvedByDesignation").addEventListener("change", function(){
+  STATE.approvedByDesignation = this.value.trim();
   saveData();
   renderPaySlip();
 });
@@ -5600,7 +5627,7 @@ function buildEditableSlipHtml(e, monthVal, lang, incPercent, incFromVal){
     "</table>"+
     "<div class='slip-tools'><button type='button' class='btn ghost small add-row-btn' data-emp='"+esc(e.id)+"' data-month='"+esc(monthVal)+"' data-section='deductions'>+ Add deduction row</button></div>"+
     "<div class='payslip-net' id='net-"+esc(e.id)+"-"+esc(monthVal)+"'>"+t.netPay+": "+fmt(totals.net)+"</div>"+
-    "<div class='payslip-sign'><div>"+t.preparedBy+(STATE.preparedByName? ("<br><b>"+esc(STATE.preparedByName)+"</b>") : "")+(STATE.preparedByDesignation? ("<br>"+esc(STATE.preparedByDesignation)) : "")+"</div><div>"+t.signature+"</div></div>"+
+    "<div class='payslip-sign'><div>"+t.preparedBy+(STATE.preparedByName? ("<br><b>"+esc(STATE.preparedByName)+"</b>") : "")+(STATE.preparedByDesignation? ("<br>"+esc(STATE.preparedByDesignation)) : "")+"</div><div>"+t.signature+"</div><div>"+t.approvedBy+(STATE.approvedByName? ("<br><b>"+esc(STATE.approvedByName)+"</b>") : "")+(STATE.approvedByDesignation? ("<br>"+esc(STATE.approvedByDesignation)) : "")+"</div></div>"+
     "<div class='field-hint' style='margin-top:18px;text-align:center;font-style:italic;'>"+esc(t.certificate)+"</div>";
 }
 function renderPaySlip(){
@@ -5770,112 +5797,98 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
 /* Boot happens inside auth.onAuthStateChanged() above, once Firebase reports whether
    someone is already signed in (it checks this automatically on every page load). */
 
-/* ===== Prepared-by print sign-off (asks every time before printing) ===== */
+/* ===== Prepared-by / Approved-by print sign-off stamp (two-sided, editable in place right
+   before every print — replaces the old single-sided popup + digital-signature-upload flow) ===== */
 (function(){
-  var LS_KEY = "campoffice_preparedBy_v1";
-  function loadSaved(){
-    try{ var raw = localStorage.getItem(LS_KEY); if(raw){ var v = JSON.parse(raw); if(v && (v.name || v.designation)) return v; } }catch(e){}
-    return {name: (STATE.preparedByName || "Iftikhar Ahmed"), designation: (STATE.preparedByDesignation || "Junior Clerk, Camp Office Prosecutor General Punjab, Supreme Court of Pakistan, Islamabad")};
+  var LS_KEY = "campoffice_preparedApproved_v1";
+  function defaultLeft(){
+    return {
+      name: STATE.preparedByName || "Iftikhar Ahmed",
+      designation: STATE.preparedByDesignation || "Junior Clerk, Camp Office Prosecutor General Punjab, Supreme Court of Pakistan, Islamabad",
+      address: "Camp Office Prosecutor General Punjab\nSupreme Court Of Pakistan\nIslamabad"
+    };
   }
-  function saveLast(name,desig){ try{ localStorage.setItem(LS_KEY, JSON.stringify({name:name,designation:desig})); }catch(e){} }
+  function defaultRight(){
+    return {
+      name: STATE.approvedByName || "",
+      designation: STATE.approvedByDesignation || "",
+      address: "Camp Office Prosecutor General Punjab\nSupreme Court Of Pakistan\nIslamabad"
+    };
+  }
+  function loadSaved(){
+    try{
+      var raw = localStorage.getItem(LS_KEY);
+      if(raw){ var v = JSON.parse(raw); if(v && v.left && v.right) return v; }
+    }catch(e){}
+    return {left: defaultLeft(), right: defaultRight()};
+  }
+  function saveLast(v){ try{ localStorage.setItem(LS_KEY, JSON.stringify(v)); }catch(e){} }
   function escHtmlLocal(s){ return String(s==null?"":s).replace(/[&<>"]/g, function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];}); }
   var overlay = document.getElementById("pbModalOverlay");
-  var nameInput = document.getElementById("pbName");
-  var desigInput = document.getElementById("pbDesig");
+  var leftNameInput = document.getElementById("pbLeftName");
+  var leftDesigInput = document.getElementById("pbLeftDesig");
+  var leftAddressInput = document.getElementById("pbLeftAddress");
+  var rightNameInput = document.getElementById("pbRightName");
+  var rightDesigInput = document.getElementById("pbRightDesig");
+  var rightAddressInput = document.getElementById("pbRightAddress");
   var confirmBtn = document.getElementById("pbConfirmBtn");
   var cancelBtn = document.getElementById("pbCancelBtn");
   var footEl = document.getElementById("pbPrintSignfoot");
-  var sigFile = document.getElementById("pbSigFile");
-  var sigPreviewWrap = document.getElementById("pbSigPreviewWrap");
-  var sigPreview = document.getElementById("pbSigPreview");
-  var sigRemoveBtn = document.getElementById("pbSigRemoveBtn");
-  var sigProgress = document.getElementById("pbSigProgress");
-  if(!overlay || !nameInput || typeof window.print !== "function") return;
+  if(!overlay || !leftNameInput || typeof window.print !== "function") return;
   var _nativePrint = window.print.bind(window);
 
-  /* ---- digital signature (optional; stored on the user's account, reused across every camp-office system) ---- */
-  function currentSigUrl(){ return (CURRENT_USER && CURRENT_USER.signatureURL) || ""; }
-  function showSigPreview(url){
-    if(url && sigPreview && sigPreviewWrap){ sigPreview.src = url; sigPreviewWrap.style.display = "inline-flex"; }
-    else if(sigPreviewWrap){ sigPreviewWrap.style.display = "none"; if(sigPreview) sigPreview.src = ""; }
-  }
-  function saveSignatureUrl(url){
-    if(CURRENT_USER){ CURRENT_USER.signatureURL = url; }
-    if(typeof db !== "undefined" && CURRENT_USER && CURRENT_USER.uid){
-      db.collection("users").doc(CURRENT_USER.uid).set({signatureURL:url}, {merge:true}).catch(function(err){ if(typeof toast==="function") toast("Signature could not be saved: "+err.message); });
-    }
-  }
-  if(sigFile){
-    sigFile.addEventListener("change", function(){
-      var f = sigFile.files && sigFile.files[0];
-      if(!f) return;
-      if(!/^image\//.test(f.type)){ if(typeof toast==="function") toast("Please choose an image file."); sigFile.value = ""; return; }
-      if(f.size > 2*1024*1024){ if(typeof toast==="function") toast("Signature image should be under 2MB."); sigFile.value = ""; return; }
-      var fd = new FormData();
-      fd.append("file", f);
-      fd.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-      var xhr = new XMLHttpRequest();
-      xhr.open("POST", "https://api.cloudinary.com/v1_1/"+CLOUDINARY_CLOUD_NAME+"/image/upload");
-      if(sigProgress){ sigProgress.style.display = "block"; sigProgress.textContent = "اپلوڈ ہو رہا ہے... / Uploading… 0%"; }
-      xhr.upload.onprogress = function(ev){
-        if(ev.lengthComputable && sigProgress){ sigProgress.textContent = "اپلوڈ ہو رہا ہے... / Uploading… "+Math.round(ev.loaded/ev.total*100)+"%"; }
-      };
-      xhr.onload = function(){
-        if(sigProgress) sigProgress.style.display = "none";
-        sigFile.value = "";
-        try{
-          var res = JSON.parse(xhr.responseText);
-          if(res && res.secure_url){
-            showSigPreview(res.secure_url);
-            saveSignatureUrl(res.secure_url);
-            if(typeof toast==="function") toast("Signature saved.");
-          } else if(typeof toast==="function") toast("Signature upload failed.");
-        }catch(e){ if(typeof toast==="function") toast("Signature upload failed."); }
-      };
-      xhr.onerror = function(){ if(sigProgress) sigProgress.style.display = "none"; if(typeof toast==="function") toast("Signature upload failed — check your internet connection."); };
-      xhr.send(fd);
-    });
-  }
-  if(sigRemoveBtn){
-    sigRemoveBtn.addEventListener("click", function(){
-      showSigPreview("");
-      saveSignatureUrl("");
-    });
+  function stampSideHtml(label, side, isRight){
+    var lines = [side.name, side.designation, side.address].filter(function(v){ return v && v.trim(); });
+    var bodyHtml = lines.length
+      ? lines.map(function(l){ return "<div>"+escHtmlLocal(l).replace(/\n/g,"<br>")+"</div>"; }).join("")
+      : "<div style='min-height:26px;'>&nbsp;</div>"; /* blank space left for a hand signature */
+    return "<div class='pb-stamp-side"+(isRight?" right":"")+"' style='flex:1;min-width:0;"+(isRight?"text-align:right;":"")+"'>"+
+      "<div style='font-weight:700;margin-bottom:3px;'>"+escHtmlLocal(label)+"</div>"+bodyHtml+"</div>";
   }
 
   function doPrint(){
-    var name = nameInput.value.trim();
-    var desig = desigInput.value.trim();
-    var sigUrl = currentSigUrl();
-    saveLast(name, desig);
+    var stamp = {
+      left: {name: leftNameInput.value.trim(), designation: leftDesigInput.value.trim(), address: leftAddressInput.value.trim()},
+      right: {name: rightNameInput.value.trim(), designation: rightDesigInput.value.trim(), address: rightAddressInput.value.trim()}
+    };
+    saveLast(stamp);
     if(document.body.classList.contains("payslip-mode")){
-      STATE.preparedByName = name;
-      STATE.preparedByDesignation = desig;
-      var pbn = document.getElementById("ps_preparedByName"); if(pbn) pbn.value = name;
-      var pbd = document.getElementById("ps_preparedByDesignation"); if(pbd) pbd.value = desig;
+      STATE.preparedByName = stamp.left.name;
+      STATE.preparedByDesignation = stamp.left.designation;
+      STATE.approvedByName = stamp.right.name;
+      STATE.approvedByDesignation = stamp.right.designation;
+      var pbn = document.getElementById("ps_preparedByName"); if(pbn) pbn.value = stamp.left.name;
+      var pbd = document.getElementById("ps_preparedByDesignation"); if(pbd) pbd.value = stamp.left.designation;
+      var pan = document.getElementById("ps_approvedByName"); if(pan) pan.value = stamp.right.name;
+      var pad = document.getElementById("ps_approvedByDesignation"); if(pad) pad.value = stamp.right.designation;
       if(typeof renderPaySlip === "function") renderPaySlip();
       if(footEl) footEl.innerHTML = "";
       try{ if(typeof saveData === "function") saveData(); }catch(e){}
     } else if(footEl){
       var cgdNote = "<div style=\"margin-top:4px;font-size:10.5px;color:#666;\">This is a computer generated document. / یہ ایک کمپیوٹر سے تیار کردہ دستاویز ہے۔</div>";
-      var sigImgHtml = sigUrl ? ("<img src=\""+sigUrl+"\" class=\"pb-print-sig-img\" alt=\"signature\">") : "";
-      footEl.innerHTML = sigImgHtml + ((name||desig) ? ("Prepared by: <b>"+escHtmlLocal(name)+"</b>"+(desig? (", "+escHtmlLocal(desig)) : "")) : "") + cgdNote;
+      footEl.innerHTML = "<div style='display:flex;justify-content:space-between;gap:16px;'>"+
+        stampSideHtml("Prepared by / تیار کردہ", stamp.left, false)+
+        stampSideHtml("Approved by / منظور کردہ", stamp.right, true)+
+        "</div>"+cgdNote;
     }
     overlay.style.display = "none";
     _nativePrint();
   }
   window.print = function(){
     var saved = loadSaved();
-    nameInput.value = saved.name || "";
-    desigInput.value = saved.designation || "";
-    showSigPreview(currentSigUrl());
+    leftNameInput.value = saved.left.name || "";
+    leftDesigInput.value = saved.left.designation || "";
+    leftAddressInput.value = saved.left.address || "";
+    rightNameInput.value = saved.right.name || "";
+    rightDesigInput.value = saved.right.designation || "";
+    rightAddressInput.value = saved.right.address || "";
     overlay.style.display = "flex";
-    setTimeout(function(){ nameInput.focus(); nameInput.select(); }, 30);
+    setTimeout(function(){ leftNameInput.focus(); leftNameInput.select(); }, 30);
   };
   confirmBtn.addEventListener("click", doPrint);
   cancelBtn.addEventListener("click", function(){ overlay.style.display = "none"; });
   overlay.addEventListener("click", function(e){ if(e.target === overlay) overlay.style.display = "none"; });
-  [nameInput, desigInput].forEach(function(inp){
+  [leftNameInput, leftDesigInput, rightNameInput, rightDesigInput].forEach(function(inp){
     inp.addEventListener("keydown", function(e){ if(e.key==="Enter"){ e.preventDefault(); doPrint(); } });
   });
 })();
