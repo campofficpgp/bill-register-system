@@ -4531,9 +4531,12 @@ document.getElementById("logoutBtn").addEventListener("click", function(){
 auth.onAuthStateChanged(function(user){
   if(user){
     db.collection("users").doc(user.uid).get().then(function(snap){
-      var role = snap.exists? (snap.data().role||"guest") : "guest";
-      var theme = snap.exists? (snap.data().theme||null) : null;
-      var signatureURL = snap.exists? (snap.data().signatureURL||"") : "";
+            var d = snap.exists? snap.data() : {};
+      var role = d.role || ((d.roleV2==="admin" || d.roleV2==="super_admin") ? "admin" : "guest");
+      var theme = d.theme||null;
+      var signatureURL = d.signatureURL||"";
+      
+      
       CURRENT_USER = {uid:user.uid, username:user.email, role:role, signatureURL:signatureURL};
       if(theme) applyTheme(theme);
       fetchStateFromFirestore(function(){
