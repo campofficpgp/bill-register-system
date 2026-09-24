@@ -591,11 +591,26 @@
 
   @media print{
     nav.sidenav,.search-bar,.btnbar,.topbar,.row-actions,.row-actions-th,.card.entry-form,footer.appfoot,.auth-screen,.userbar,
-    .panel-head p,#chatToggleBtn,#chatPanel,.appfoot-copyright{display:none !important;}
+    .panel-head p,#chatToggleBtn,#chatPanel,.appfoot-copyright,.att-edit-emp-btn,#pendingReturnsCard{display:none !important;}
     .shell{display:block;min-height:0;}
     main{padding:0;max-width:none;}
     body{background:#fff;}
     .card{box-shadow:none;border:1px solid #999;}
+    /* #pendingReturnsCard (Stock Book's "Pending returns & reminders" widget, with its
+       "Mark returned" buttons) is a live on-screen reminder list, not part of the Stock
+       Register itself — same reasoning it's already excluded from the print-columns picker
+       below, so it's excluded from printing entirely rather than printing action buttons. */
+    /* Attendance Register: up to 31 day-columns — let the grid shrink to fit the printed
+       page width instead of overflowing and splitting oddly across sheets (the on-screen
+       sticky/scrolling layout is print-only overridden here; screen view is unaffected). */
+    .att-grid-wrap{overflow-x:visible !important;border:none !important;}
+    table.att-grid{width:100% !important;table-layout:auto;font-size:9px;}
+    table.att-grid td.att-name-cell, table.att-grid th.att-name-th{
+      position:static !important;box-shadow:none !important;min-width:0 !important;max-width:none !important;
+      padding:3px 4px !important;white-space:normal !important;
+    }
+    table.att-grid .att-day-th{min-width:0 !important;padding:2px 1px !important;}
+    table.att-grid .att-cell{width:auto !important;height:auto !important;padding:2px 0 !important;line-height:1.3 !important;}
     body:not(.payslip-mode) .payslip-overlay{display:none !important;}
     body.payslip-mode > #appMain,
     body.payslip-mode > .toast,
@@ -4947,6 +4962,15 @@ function ensurePageSizeStyleEl(){
 function setPageSize(sizeKey){
   ensurePageSizeStyleEl().textContent = PAGE_SIZE_CSS[sizeKey] || PAGE_SIZE_CSS.A4;
 }
+function ensureAttPrintOrientationStyleEl(){
+  var el = document.getElementById("attPrintOrientationStyle");
+  if(!el){
+    el = document.createElement("style");
+    el.id = "attPrintOrientationStyle";
+    document.head.appendChild(el);
+  }
+  return el;
+}
 /* ================= Item 18: optional report header/footer fields ================= */
 var PANEL_LABELS = {
   bill:"Contingent Bill", cash:"Cash Book", stock:"Stock Register", ledger:"Ledger & Budget",
@@ -4978,6 +5002,11 @@ function printCurrentView(){
   var payslipOpen = document.getElementById("payslipOverlay").style.display === "flex";
   if(payslipOpen){ document.body.classList.add("payslip-mode"); }
   document.getElementById("pbPrintExtraFields").innerHTML = buildPrintExtraFieldsHtml();
+  // Attendance Register can have up to 31 day-columns — always print it landscape so the
+  // whole month fits on the page width, regardless of the paper size chosen above. Other
+  // panels are unaffected (orientation style is cleared for them).
+  ensureAttPrintOrientationStyleEl().textContent =
+    (currentPanelKey()==="attendance") ? "@media print{ @page{ size: landscape; } }" : "";
   window.print();
 }
 window.addEventListener("afterprint", function(){ document.body.classList.remove("payslip-mode"); });
