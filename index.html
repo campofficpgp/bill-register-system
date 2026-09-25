@@ -1020,7 +1020,21 @@ html,body{overflow-x:hidden;}
       <div class="panel-head">
         <div>
           <h2>Fields Manager — Super Admin only</h2>
-          <p>یہاں آپ Contingent Bill رجسٹر میں نئے فیلڈز (خانے) شامل کر سکتے ہیں، ان کا نام بدل سکتے ہیں، ڈراپ ڈاؤن آپشنز تبدیل کر سکتے ہیں، یا انہیں حذف کر سکتے ہیں۔ غلطی ہونے پر "پچھلی حالت پر واپس" بٹن سے فوراً واپس آ سکتے ہیں۔<br>Add, rename, edit (dropdown options), or delete custom data-entry fields for the Contingent Bill register. Built-in fields (Date, Bill No, Gross, Tax, etc.) cannot be removed here, since the whole system's calculations depend on them — only fields you add yourself through this page can be changed or deleted.</p>
+          <p>اوپر رجسٹر منتخب کریں، پھر اس میں نئے فیلڈز (خانے) شامل کر سکتے ہیں، ان کا نام بدل سکتے ہیں، ڈراپ ڈاؤن آپشنز تبدیل کر سکتے ہیں، یا انہیں حذف کر سکتے ہیں۔ غلطی ہونے پر "پچھلی حالت پر واپس" بٹن سے فوراً واپس آ سکتے ہیں۔<br>Pick a register above, then add, rename, edit (dropdown options), or delete custom data-entry fields for it. Built-in fields (Date, Bill No, Gross, Tax, etc.) cannot be removed here, since the whole system's calculations depend on them — only fields you add yourself through this page can be changed or deleted. Ledger &amp; Budget (auto-computed from Bill entries) and Attendance Register (a day-by-day grid, not a per-record form) don't have their own custom fields, since neither has a record form to attach a value to.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="grid cols-2">
+          <div class="field"><label>Register / رجسٹر</label>
+            <select id="fm_register">
+              <option value="bill">Contingent Bill</option>
+              <option value="cash">Cash Book</option>
+              <option value="stock">Stock Book</option>
+              <option value="employees">Employees</option>
+              <option value="leave">Leave Register</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -1044,6 +1058,7 @@ html,body{overflow-x:hidden;}
             <select id="fm_newType">
               <option value="text">Text</option>
               <option value="number">Number</option>
+              <option value="date">Date</option>
               <option value="dropdown">Dropdown</option>
             </select>
           </div>
@@ -1092,6 +1107,7 @@ html,body{overflow-x:hidden;}
           <div class="field"><label data-i18n="cash_headOptional">Contingent head (optional)</label><select id="c_head"><option value="" data-i18n="opt_none">— none —</option></select></div>
           <div class="field"><label data-i18n="cash_resultingBalance">Resulting balance (auto, on save)</label><input type="text" id="c_previewBal" disabled></div>
         </div>
+        <div class="grid cols-4" style="margin-top:12px;" id="c_customFieldsContainer"></div>
         <div class="btnbar">
           <button class="btn" id="c_saveBtn" data-i18n="btn_saveEntry">Save entry</button>
           <button class="btn ghost" id="c_cancelBtn" style="display:none;" data-i18n="btn_cancelEdit">Cancel edit</button>
@@ -1197,6 +1213,7 @@ html,body{overflow-x:hidden;}
           <div class="field"><label data-i18n="stock_returnedQ">Returned?</label><select id="s_returned" disabled><option value="no" data-i18n="stock_notYetReturned">Not yet returned</option><option value="yes" data-i18n="stock_returned">Returned</option></select></div>
         </div>
         <div class="field-hint" id="s_itemTypeHint" style="margin-top:6px;"></div>
+        <div class="grid cols-4" style="margin-top:12px;" id="s_customFieldsContainer"></div>
         <div class="btnbar">
           <button class="btn" id="s_saveBtn" data-i18n="btn_saveMovement">Save movement</button>
           <button class="btn ghost" id="s_cancelBtn" style="display:none;" data-i18n="btn_cancelEdit">Cancel edit</button>
@@ -1359,6 +1376,7 @@ html,body{overflow-x:hidden;}
         <div class="grid cols-2" style="margin-top:12px;">
           <div class="field"><label data-i18n="emp_serviceLength">Service length (as of last update)</label><input type="text" id="e_serviceLength" placeholder="e.g. 16 Years 08 Months"></div>
         </div>
+        <div class="grid cols-4" style="margin-top:12px;" id="e_customFieldsContainer"></div>
         <div class="btnbar">
           <button class="btn" id="e_saveBtn" data-i18n="btn_saveEmployee">Save employee</button>
           <button class="btn ghost" id="e_cancelBtn" style="display:none;" data-i18n="btn_cancelEdit">Cancel edit</button>
@@ -1463,6 +1481,7 @@ html,body{overflow-x:hidden;}
           </div>
           <div class="field"><label data-i18n="lbl_remarks">Remarks</label><input type="text" id="lv_remarks"></div>
         </div>
+        <div class="grid cols-4" style="margin-top:12px;" id="lv_customFieldsContainer"></div>
         <div class="btnbar">
           <button class="btn" id="lv_saveBtn" data-i18n="btn_saveEntry">Save entry</button>
           <button class="btn ghost" id="lv_cancelBtn" style="display:none;" data-i18n="btn_cancelEdit">Cancel edit</button>
@@ -1768,9 +1787,20 @@ function normalizeData(data, seedDefaults){
   data.itemMaster = data.itemMaster || {};
 
   /* Fields Manager (Super Admin only): custom data-entry fields added on top of the
-     built-in Contingent Bill columns, plus a single one-step-back undo snapshot. */
-  data.billFieldDefs = data.billFieldDefs || [];
-  data.billFieldDefsUndo = (data.billFieldDefsUndo !== undefined) ? data.billFieldDefsUndo : null;
+     built-in columns of each register (Contingent Bill, Cash Book, Stock Book,
+     Employees, Leave Register), plus a single one-step-back undo snapshot.
+     One-time migration: this used to be Bill-only (data.billFieldDefs) — fold any
+     fields already added that way into the new per-register structure. */
+  data.customFieldDefs = data.customFieldDefs || {};
+  ["bill","cash","stock","employees","leave"].forEach(function(k){
+    data.customFieldDefs[k] = data.customFieldDefs[k] || [];
+  });
+  if(Array.isArray(data.billFieldDefs) && data.billFieldDefs.length && data.customFieldDefs.bill.length===0){
+    data.customFieldDefs.bill = data.billFieldDefs;
+  }
+  delete data.billFieldDefs;
+  data.customFieldDefsUndo = (data.customFieldDefsUndo !== undefined) ? data.customFieldDefsUndo : null;
+  delete data.billFieldDefsUndo;
 
   /* one-time migration: fold any old custom stock categories into the real Contingent Heads */
   Object.keys(OLD_CATEGORY_MIGRATION_MAP).forEach(function(oldCat){
@@ -2662,7 +2692,7 @@ function resetBillForm(){
   document.getElementById("b_other").value="0";
   document.getElementById("b_comm").value="0";
   document.getElementById("b_remarks").value="";
-  renderBillCustomFieldInputs();
+  renderCustomFieldInputs("bill");
   recalcBillPreview();
 }
 
@@ -2688,7 +2718,7 @@ document.getElementById("b_saveBtn").addEventListener("click", function(){
     comm: Number(document.getElementById("b_comm").value)||0,
     ao: document.getElementById("b_ao").value,
     remarks: document.getElementById("b_remarks").value.trim(),
-    customData: collectBillCustomFieldValues(),
+    customData: collectCustomFieldValues("bill"),
     createdBy: (CURRENT_USER? CURRENT_USER.username : "")
   };
   if(billEditId){
@@ -2728,8 +2758,8 @@ function editBill(id){
   document.getElementById("b_other").value = b.other;
   document.getElementById("b_comm").value = b.comm;
   document.getElementById("b_remarks").value = b.remarks;
-  renderBillCustomFieldInputs();
-  populateBillCustomFieldInputs(b);
+  renderCustomFieldInputs("bill");
+  populateCustomFieldInputs("bill", b);
   recalcBillPreview();
   document.getElementById("panel-bill").scrollIntoView({behavior:"smooth"});
 }
@@ -2831,31 +2861,12 @@ function filteredBills(){
 }
 
 /* ---- Fields Manager: custom columns rendered on top of the built-in Contingent Bill table ---- */
-function syncBillCustomHeaders(){
-  var theadRow = document.querySelector("#panel-bill table.print-cols-table thead tr");
-  if(!theadRow) return;
-  theadRow.querySelectorAll("th[data-customcol]").forEach(function(th){ th.remove(); });
-  var actionsTh = theadRow.querySelector(".row-actions-th");
-  (STATE.billFieldDefs||[]).forEach(function(f){
-    var th = document.createElement("th");
-    th.setAttribute("data-customcol", f.key);
-    th.textContent = f.label;
-    if(actionsTh) theadRow.insertBefore(th, actionsTh); else theadRow.appendChild(th);
-  });
-}
-function billCustomTds(b){
-  return (STATE.billFieldDefs||[]).map(function(f){
-    var val = (b.customData && b.customData[f.key]!=null) ? b.customData[f.key] : "";
-    return "<td data-col='cf_"+f.key+"'>"+esc(val)+"</td>";
-  }).join("");
-}
-
 function renderBills(){
   populateBillFilterSelects();
   populateBillEntryValueLists();
-  renderBillCustomFieldInputs();
-  syncBillCustomHeaders();
-  var customCount = (STATE.billFieldDefs||[]).length;
+  renderCustomFieldInputs("bill");
+  syncCustomHeaders("bill");
+  var customCount = customFieldDefs("bill").length;
   var list = filteredBills();
   var body = document.getElementById("billTableBody");
   body.innerHTML="";
@@ -2873,7 +2884,7 @@ function renderBills(){
       "<td class='num' data-col='pst'>"+fmt(b.pst)+"</td><td class='num' data-col='other'>"+fmt(b.other)+"</td><td class='num' data-col='comm'>"+fmt(b.comm)+"</td>"+
       "<td class='num' data-col='ded'>"+fmt(ded)+"</td><td class='num' data-col='net'>"+fmt(net)+"</td>"+
       "<td data-col='ao'><span class='tag "+(b.ao==="Yes"?"yes":"no")+"'>"+esc(b.ao)+"</span></td><td data-col='remarks'>"+esc(b.remarks)+"</td>"+
-      billCustomTds(b)+
+      customFieldTds("bill", b)+
       "<td class='row-actions'><button class='btn ghost small' data-edit='"+b.id+"'>Edit</button><button class='btn danger small' data-del='"+b.id+"'>Delete</button></td>";
     body.appendChild(tr);
   });
@@ -2901,66 +2912,116 @@ document.getElementById("bf_clear").addEventListener("click", function(){
 });
 document.getElementById("b_exportBtn").addEventListener("click", function(){
   var list = filteredBills();
-  var defs = STATE.billFieldDefs||[];
-  var rows = [["Sr#","Date","Bill No","Vendor No","Vendor Name","Contingent Head","Gross","Income Tax","GST","PST","Other Ded.","Commission Ded.","Total Deductions","Net Payment","A.O. Allowed","Remarks"].concat(defs.map(function(f){ return f.label; }))];
+  var defs = customFieldDefs("bill");
+  var rows = [["Sr#","Date","Bill No","Vendor No","Vendor Name","Contingent Head","Gross","Income Tax","GST","PST","Other Ded.","Commission Ded.","Total Deductions","Net Payment","A.O. Allowed","Remarks"].concat(customFieldCsvHeaders("bill"))];
   list.forEach(function(b,i){
-    var row = [i+1,b.date,b.billNo,b.vendorNo,b.vendorName,b.head,b.gross,b.it,b.gst,b.pst,b.other,b.comm,totalDed(b),netPayment(b),b.ao,b.remarks];
-    defs.forEach(function(f){ row.push((b.customData && b.customData[f.key]!=null) ? b.customData[f.key] : ""); });
+    var row = [i+1,b.date,b.billNo,b.vendorNo,b.vendorName,b.head,b.gross,b.it,b.gst,b.pst,b.other,b.comm,totalDed(b),netPayment(b),b.ao,b.remarks].concat(customFieldCsvValues("bill", b));
     rows.push(row);
   });
   downloadCSV("contingent_bills.csv", rows);
 });
 
-/* ---- Fields Manager: dynamic inputs injected into the bill entry form ---- */
-function renderBillCustomFieldInputs(){
-  var wrap = document.getElementById("b_customFieldsContainer");
+/* ================= CUSTOM FIELDS (Fields Manager, Super Admin only) =================
+   Works the same way across every register that has its own add/edit entry form:
+   Contingent Bill, Cash Book, Stock Book, Employees and Leave Register. (Ledger &
+   Budget is auto-computed from Bill entries — there's no per-record form to attach a
+   custom field value to — and Attendance Register is a day-by-day click grid, not a
+   record form either, so neither of those two can take custom fields the same way.) */
+var CUSTOM_FIELD_REGISTERS = {
+  bill:      { label:"Contingent Bill", panelId:"panel-bill",      formContainer:"b_customFieldsContainer",  renderFn:function(){ renderBills(); } },
+  cash:      { label:"Cash Book",       panelId:"panel-cash",      formContainer:"c_customFieldsContainer",  renderFn:function(){ renderCash(); } },
+  stock:     { label:"Stock Book",      panelId:"panel-stock",     formContainer:"s_customFieldsContainer",  renderFn:function(){ renderStock(); } },
+  employees: { label:"Employees",       panelId:"panel-employees", formContainer:"e_customFieldsContainer",  renderFn:function(){ renderEmployees(); } },
+  leave:     { label:"Leave Register",  panelId:"panel-leave",     formContainer:"lv_customFieldsContainer", renderFn:function(){ renderLeaveRegister(); } }
+};
+function customFieldDefs(registerKey){
+  STATE.customFieldDefs = STATE.customFieldDefs || {};
+  STATE.customFieldDefs[registerKey] = STATE.customFieldDefs[registerKey] || [];
+  return STATE.customFieldDefs[registerKey];
+}
+function fieldTypeLabel(type){
+  return {text:"Text", number:"Number", dropdown:"Dropdown", date:"Date"}[type] || type;
+}
+function syncCustomHeaders(registerKey){
+  var cfg = CUSTOM_FIELD_REGISTERS[registerKey];
+  var theadRow = cfg && document.querySelector("#"+cfg.panelId+" table.print-cols-table thead tr");
+  if(!theadRow) return;
+  theadRow.querySelectorAll("th[data-customcol]").forEach(function(th){ th.remove(); });
+  var actionsTh = theadRow.querySelector(".row-actions-th");
+  customFieldDefs(registerKey).forEach(function(f){
+    var th = document.createElement("th");
+    th.setAttribute("data-customcol", f.key);
+    th.textContent = f.label;
+    if(actionsTh) theadRow.insertBefore(th, actionsTh); else theadRow.appendChild(th);
+  });
+}
+function customFieldTds(registerKey, rec){
+  return customFieldDefs(registerKey).map(function(f){
+    var val = (rec.customData && rec.customData[f.key]!=null) ? rec.customData[f.key] : "";
+    return "<td data-col='cf_"+f.key+"'>"+esc(val)+"</td>";
+  }).join("");
+}
+function customFieldCsvHeaders(registerKey){
+  return customFieldDefs(registerKey).map(function(f){ return f.label; });
+}
+function customFieldCsvValues(registerKey, rec){
+  return customFieldDefs(registerKey).map(function(f){ return (rec.customData && rec.customData[f.key]!=null) ? rec.customData[f.key] : ""; });
+}
+function renderCustomFieldInputs(registerKey){
+  var cfg = CUSTOM_FIELD_REGISTERS[registerKey];
+  var wrap = cfg && document.getElementById(cfg.formContainer);
   if(!wrap) return;
-  var defs = STATE.billFieldDefs||[];
-  wrap.innerHTML = defs.map(function(f){
+  wrap.innerHTML = customFieldDefs(registerKey).map(function(f){
     var inputHtml;
     if(f.type==="dropdown"){
       var opts = (f.options||[]).map(function(o){ return "<option value='"+esc(o)+"'>"+esc(o)+"</option>"; }).join("");
-      inputHtml = "<select id='cf_"+f.key+"'><option value=''>—</option>"+opts+"</select>";
+      inputHtml = "<select id='cf_"+registerKey+"_"+f.key+"'><option value=''>—</option>"+opts+"</select>";
     } else if(f.type==="number"){
-      inputHtml = "<input type='number' step='0.01' id='cf_"+f.key+"'>";
+      inputHtml = "<input type='number' step='0.01' id='cf_"+registerKey+"_"+f.key+"'>";
+    } else if(f.type==="date"){
+      inputHtml = "<input type='date' id='cf_"+registerKey+"_"+f.key+"'>";
     } else {
-      inputHtml = "<input type='text' id='cf_"+f.key+"'>";
+      inputHtml = "<input type='text' id='cf_"+registerKey+"_"+f.key+"'>";
     }
     return "<div class='field'><label>"+esc(f.label)+"</label>"+inputHtml+"</div>";
   }).join("");
 }
-function collectBillCustomFieldValues(){
+function collectCustomFieldValues(registerKey){
   var out = {};
-  (STATE.billFieldDefs||[]).forEach(function(f){
-    var el = document.getElementById("cf_"+f.key);
+  customFieldDefs(registerKey).forEach(function(f){
+    var el = document.getElementById("cf_"+registerKey+"_"+f.key);
     if(el) out[f.key] = el.value;
   });
   return out;
 }
-function populateBillCustomFieldInputs(b){
-  (STATE.billFieldDefs||[]).forEach(function(f){
-    var el = document.getElementById("cf_"+f.key);
-    if(el) el.value = (b.customData && b.customData[f.key]!=null) ? b.customData[f.key] : "";
+function populateCustomFieldInputs(registerKey, rec){
+  customFieldDefs(registerKey).forEach(function(f){
+    var el = document.getElementById("cf_"+registerKey+"_"+f.key);
+    if(el) el.value = (rec.customData && rec.customData[f.key]!=null) ? rec.customData[f.key] : "";
   });
 }
-
-/* ================= FIELDS MANAGER (SUPER ADMIN ONLY) ================= */
-function snapshotBillFieldDefsForUndo(){
-  STATE.billFieldDefsUndo = JSON.parse(JSON.stringify(STATE.billFieldDefs||[]));
+function snapshotCustomFieldDefsForUndo(registerKey){
+  STATE.customFieldDefsUndo = { registerKey: registerKey, defs: JSON.parse(JSON.stringify(customFieldDefs(registerKey))) };
+}
+function currentFmRegister(){
+  var sel = document.getElementById("fm_register");
+  var key = sel? sel.value : "bill";
+  return CUSTOM_FIELD_REGISTERS[key]? key : "bill";
 }
 function renderFieldsManager(){
+  var registerKey = currentFmRegister();
   var undoBtn = document.getElementById("fm_undoBtn");
-  if(undoBtn) undoBtn.disabled = !STATE.billFieldDefsUndo;
+  if(undoBtn) undoBtn.disabled = !(STATE.customFieldDefsUndo && STATE.customFieldDefsUndo.registerKey===registerKey);
   var body = document.getElementById("fm_fieldsTableBody");
   if(!body) return;
-  var defs = STATE.billFieldDefs||[];
+  var defs = customFieldDefs(registerKey);
   if(defs.length===0){
-    body.innerHTML = "<tr class='empty-row'><td colspan='4'>No custom fields yet — add one below.</td></tr>";
+    body.innerHTML = "<tr class='empty-row'><td colspan='4'>No custom fields yet for "+esc(CUSTOM_FIELD_REGISTERS[registerKey].label)+" — add one below.</td></tr>";
   } else {
     body.innerHTML = defs.map(function(f){
       return "<tr>"+
         "<td>"+esc(f.label)+"</td>"+
-        "<td>"+esc(f.type)+"</td>"+
+        "<td>"+esc(fieldTypeLabel(f.type))+"</td>"+
         "<td>"+(f.type==="dropdown"? esc((f.options||[]).join(", ")) : "—")+"</td>"+
         "<td class='row-actions'>"+
           "<button class='btn ghost small' data-fm-rename='"+f.key+"'>Rename</button>"+
@@ -2969,15 +3030,17 @@ function renderFieldsManager(){
         "</td></tr>";
     }).join("");
   }
-  body.querySelectorAll("[data-fm-rename]").forEach(function(el){ el.addEventListener("click", function(){ renameBillField(el.dataset.fmRename); }); });
-  body.querySelectorAll("[data-fm-editopts]").forEach(function(el){ el.addEventListener("click", function(){ editBillFieldOptions(el.dataset.fmEditopts); }); });
-  body.querySelectorAll("[data-fm-del]").forEach(function(el){ el.addEventListener("click", function(){ deleteBillField(el.dataset.fmDel); }); });
+  body.querySelectorAll("[data-fm-rename]").forEach(function(el){ el.addEventListener("click", function(){ renameCustomField(registerKey, el.dataset.fmRename); }); });
+  body.querySelectorAll("[data-fm-editopts]").forEach(function(el){ el.addEventListener("click", function(){ editCustomFieldOptions(registerKey, el.dataset.fmEditopts); }); });
+  body.querySelectorAll("[data-fm-del]").forEach(function(el){ el.addEventListener("click", function(){ deleteCustomField(registerKey, el.dataset.fmDel); }); });
 }
+document.getElementById("fm_register").addEventListener("change", renderFieldsManager);
 document.getElementById("fm_newType").addEventListener("change", function(){
   document.getElementById("fm_newOptionsWrap").style.display = (this.value==="dropdown")? "" : "none";
 });
 document.getElementById("fm_addBtn").addEventListener("click", function(){
   if(!isSuperAdmin()){ toast("Only a Super Admin can manage fields."); return; }
+  var registerKey = currentFmRegister();
   var label = document.getElementById("fm_newLabel").value.trim();
   var type = document.getElementById("fm_newType").value;
   if(!label){ toast("Field name is required."); return; }
@@ -2986,68 +3049,69 @@ document.getElementById("fm_addBtn").addEventListener("click", function(){
     options = document.getElementById("fm_newOptions").value.split(",").map(function(s){ return s.trim(); }).filter(Boolean);
     if(options.length===0){ toast("Enter at least one dropdown option."); return; }
   }
-  snapshotBillFieldDefsForUndo();
-  STATE.billFieldDefs.push({ key: "cf_"+uid(), label: label, type: type, options: options });
+  snapshotCustomFieldDefsForUndo(registerKey);
+  customFieldDefs(registerKey).push({ key: "cf_"+uid(), label: label, type: type, options: options });
   saveData();
   document.getElementById("fm_newLabel").value = "";
   document.getElementById("fm_newOptions").value = "";
   document.getElementById("fm_newType").value = "text";
   document.getElementById("fm_newOptionsWrap").style.display = "none";
   renderFieldsManager();
-  renderBills();
-  toast("Field added.");
+  CUSTOM_FIELD_REGISTERS[registerKey].renderFn();
+  toast("Field added to "+CUSTOM_FIELD_REGISTERS[registerKey].label+".");
 });
-function renameBillField(key){
+function renameCustomField(registerKey, key){
   if(!isSuperAdmin()){ toast("Only a Super Admin can manage fields."); return; }
-  var f = (STATE.billFieldDefs||[]).find(function(x){ return x.key===key; });
+  var f = customFieldDefs(registerKey).find(function(x){ return x.key===key; });
   if(!f) return;
   var newLabel = prompt("New name for this field:", f.label);
   if(newLabel===null) return;
   newLabel = newLabel.trim();
   if(!newLabel){ toast("Field name cannot be empty."); return; }
-  snapshotBillFieldDefsForUndo();
+  snapshotCustomFieldDefsForUndo(registerKey);
   f.label = newLabel;
   saveData();
   renderFieldsManager();
-  renderBills();
+  CUSTOM_FIELD_REGISTERS[registerKey].renderFn();
   toast("Field renamed.");
 }
-function editBillFieldOptions(key){
+function editCustomFieldOptions(registerKey, key){
   if(!isSuperAdmin()){ toast("Only a Super Admin can manage fields."); return; }
-  var f = (STATE.billFieldDefs||[]).find(function(x){ return x.key===key; });
+  var f = customFieldDefs(registerKey).find(function(x){ return x.key===key; });
   if(!f) return;
   var current = (f.options||[]).join(", ");
   var newOpts = prompt("Dropdown options (comma-separated):", current);
   if(newOpts===null) return;
   var options = newOpts.split(",").map(function(s){ return s.trim(); }).filter(Boolean);
   if(options.length===0){ toast("Enter at least one dropdown option."); return; }
-  snapshotBillFieldDefsForUndo();
+  snapshotCustomFieldDefsForUndo(registerKey);
   f.options = options;
   saveData();
   renderFieldsManager();
-  renderBills();
+  CUSTOM_FIELD_REGISTERS[registerKey].renderFn();
   toast("Options updated.");
 }
-function deleteBillField(key){
+function deleteCustomField(registerKey, key){
   if(!isSuperAdmin()){ toast("Only a Super Admin can manage fields."); return; }
-  var f = (STATE.billFieldDefs||[]).find(function(x){ return x.key===key; });
+  var f = customFieldDefs(registerKey).find(function(x){ return x.key===key; });
   if(!f) return;
-  if(!confirm('Delete the field "'+f.label+'"? Existing bill entries will keep their data hidden (it comes back if you Undo).')) return;
-  snapshotBillFieldDefsForUndo();
-  STATE.billFieldDefs = STATE.billFieldDefs.filter(function(x){ return x.key!==key; });
+  if(!confirm('Delete the field "'+f.label+'"? Existing entries will keep their data hidden (it comes back if you Undo).')) return;
+  snapshotCustomFieldDefsForUndo(registerKey);
+  STATE.customFieldDefs[registerKey] = customFieldDefs(registerKey).filter(function(x){ return x.key!==key; });
   saveData();
   renderFieldsManager();
-  renderBills();
+  CUSTOM_FIELD_REGISTERS[registerKey].renderFn();
   toast("Field deleted.");
 }
 document.getElementById("fm_undoBtn").addEventListener("click", function(){
   if(!isSuperAdmin()){ toast("Only a Super Admin can manage fields."); return; }
-  if(!STATE.billFieldDefsUndo) return;
-  STATE.billFieldDefs = STATE.billFieldDefsUndo;
-  STATE.billFieldDefsUndo = null;
+  var registerKey = currentFmRegister();
+  if(!STATE.customFieldDefsUndo || STATE.customFieldDefsUndo.registerKey!==registerKey) return;
+  STATE.customFieldDefs[registerKey] = STATE.customFieldDefsUndo.defs;
+  STATE.customFieldDefsUndo = null;
   saveData();
   renderFieldsManager();
-  renderBills();
+  CUSTOM_FIELD_REGISTERS[registerKey].renderFn();
   toast("Reverted to the previous state.");
 });
 
@@ -3089,6 +3153,7 @@ function resetCashForm(){
   document.getElementById("c_receipt").value="0";
   document.getElementById("c_payment").value="0";
   document.getElementById("c_head").value="";
+  renderCustomFieldInputs("cash");
   updateCashPreview();
 }
 function updateCashPreview(){
@@ -3117,6 +3182,7 @@ document.getElementById("c_saveBtn").addEventListener("click", function(){
     receipt: Number(document.getElementById("c_receipt").value)||0,
     payment: Number(document.getElementById("c_payment").value)||0,
     head: document.getElementById("c_head").value,
+    customData: collectCustomFieldValues("cash"),
     createdBy: (CURRENT_USER? CURRENT_USER.username : "")
   };
   if(cashEditId){
@@ -3148,6 +3214,8 @@ function editCash(id){
   document.getElementById("c_receipt").value = c.receipt;
   document.getElementById("c_payment").value = c.payment;
   document.getElementById("c_head").value = c.head || "";
+  renderCustomFieldInputs("cash");
+  populateCustomFieldInputs("cash", c);
   updateCashPreview();
   document.getElementById("panel-cash").scrollIntoView({behavior:"smooth"});
 }
@@ -3183,6 +3251,9 @@ function filteredCashWithBalances(){
 function renderCash(){
   populateCashFilterSelects();
   populateCashEntryValueLists();
+  renderCustomFieldInputs("cash");
+  syncCustomHeaders("cash");
+  var customCount = customFieldDefs("cash").length;
   var all = computeCashBalances(STATE.cash);
   var current = all.length? all[all.length-1].balance : STATE.openingCash;
   document.getElementById("cashCurrent").value = fmt(current);
@@ -3191,7 +3262,7 @@ function renderCash(){
   var body = document.getElementById("cashTableBody");
   body.innerHTML="";
   if(list.length===0){
-    body.innerHTML = '<tr class="empty-row"><td colspan="9">No entries match. Add a transaction above, or clear filters.</td></tr>';
+    body.innerHTML = '<tr class="empty-row"><td colspan="'+(9+customCount)+'">No entries match. Add a transaction above, or clear filters.</td></tr>';
   }
   var sumR=0, sumP=0;
   list.forEach(function(c){
@@ -3202,6 +3273,7 @@ function renderCash(){
       "<td>"+srIndex+"</td><td data-col='date'>"+esc(c.date)+"</td><td data-col='voucher'>"+esc(c.voucher)+"</td><td data-col='particulars'>"+esc(c.particulars)+"</td><td data-col='head'>"+esc(c.head)+"</td>"+
       "<td class='num' data-col='receipt'>"+(c.receipt? fmt(c.receipt):"")+"</td><td class='num' data-col='payment'>"+(c.payment? fmt(c.payment):"")+"</td>"+
       "<td class='num' data-col='balance'>"+fmt(c.balance)+"</td>"+
+      customFieldTds("cash", c)+
       "<td class='row-actions'><button class='btn ghost small' data-edit='"+c.id+"'>Edit</button><button class='btn danger small' data-del='"+c.id+"'>Delete</button></td>";
     body.appendChild(tr);
   });
@@ -3210,7 +3282,7 @@ function renderCash(){
 
   document.getElementById("cashTotalsRow").innerHTML =
     "<td colspan='5'>TOTAL ("+list.length+" entr"+(list.length===1?"y":"ies")+")</td>"+
-    "<td class='num' data-col='receipt'>"+fmt(sumR)+"</td><td class='num' data-col='payment'>"+fmt(sumP)+"</td><td class='num' data-col='balance'>"+fmt(current)+"</td><td></td>";
+    "<td class='num' data-col='receipt'>"+fmt(sumR)+"</td><td class='num' data-col='payment'>"+fmt(sumP)+"</td><td class='num' data-col='balance'>"+fmt(current)+"</td><td colspan='"+(1+customCount)+"'></td>";
   applyColumnPrintCss();
 
   document.getElementById("cashCount").textContent = STATE.cash.length+" entr"+(STATE.cash.length===1?"y":"ies");
@@ -3226,10 +3298,10 @@ document.getElementById("cf_clear").addEventListener("click", function(){
 });
 document.getElementById("c_exportBtn").addEventListener("click", function(){
   var list = filteredCashWithBalances();
-  var rows = [["Sr#","Date","Voucher/Bill No","Particulars","Head","Receipt","Payment","Balance"]];
+  var rows = [["Sr#","Date","Voucher/Bill No","Particulars","Head","Receipt","Payment","Balance"].concat(customFieldCsvHeaders("cash"))];
   list.forEach(function(c){
     var srIndex = STATE.cash.findIndex(function(x){return x.id===c.id;}) + 1;
-    rows.push([srIndex,c.date,c.voucher,c.particulars,c.head,c.receipt,c.payment,c.balance]);
+    rows.push([srIndex,c.date,c.voucher,c.particulars,c.head,c.receipt,c.payment,c.balance].concat(customFieldCsvValues("cash", c)));
   });
   downloadCSV("cash_book.csv", rows);
 });
@@ -3452,6 +3524,7 @@ function resetStockForm(){
   document.getElementById("s_expectedReturn").disabled = true;
   document.getElementById("s_returned").value="no";
   document.getElementById("s_returned").disabled = true;
+  renderCustomFieldInputs("stock");
   refreshItemListForCategory();
 }
 document.getElementById("s_saveBtn").addEventListener("click", function(){
@@ -3479,6 +3552,7 @@ document.getElementById("s_saveBtn").addEventListener("click", function(){
     returned: wasReturned,
     returnedDate: wasReturned? (todayISO()) : "",
     issueGroupId: (stockEditId && STATE.stock.find(function(x){return x.id===stockEditId;}))? (STATE.stock.find(function(x){return x.id===stockEditId;}).issueGroupId||"") : "",
+    customData: collectCustomFieldValues("stock"),
     createdBy: (CURRENT_USER? CURRENT_USER.username : "")
   };
   addItemToCategory(category, item);
@@ -3532,6 +3606,8 @@ function editStock(id){
   document.getElementById("s_expectedReturn").value = s.expectedReturn || "";
   document.getElementById("s_returned").value = s.returned? "yes":"no";
   applyItemTypeBehaviorToStockForm();
+  renderCustomFieldInputs("stock");
+  populateCustomFieldInputs("stock", s);
   document.getElementById("panel-stock").scrollIntoView({behavior:"smooth"});
 }
 function deleteStock(id){
@@ -3636,13 +3712,16 @@ function renderStock(){
   populateDistinctSelect(document.getElementById("sf_billNo"), STATE.stock.map(function(s){ return s.billNo; }));
   populateDistinctSelect(document.getElementById("sf_issuedTo"), STATE.stock.map(function(s){ return s.issuedTo; }));
   populateIssuedToList();
+  renderCustomFieldInputs("stock");
+  syncCustomHeaders("stock");
+  var customCount = customFieldDefs("stock").length;
   renderStockSummary();
   renderPendingReturns();
   var list = filteredStockWithBalances();
   var body = document.getElementById("stockTableBody");
   body.innerHTML = "";
   if(list.length===0){
-    body.innerHTML = '<tr class="empty-row"><td colspan="15">No movements match. Add a movement above, or clear filters.</td></tr>';
+    body.innerHTML = '<tr class="empty-row"><td colspan="'+(15+customCount)+'">No movements match. Add a movement above, or clear filters.</td></tr>';
   }
   list.forEach(function(s){
     var srIndex = STATE.stock.findIndex(function(x){return x.id===s.id;}) + 1;
@@ -3655,6 +3734,7 @@ function renderStock(){
       "<td data-col='issuedTo'>"+esc(s.issuedTo)+"</td><td data-col='expectedReturn'>"+esc(s.expectedReturn)+"</td>"+
       "<td data-col='status'><span class='tag "+st.cls+"'>"+esc(st.label)+"</span></td>"+
       "<td data-col='remarks'>"+esc(s.remarks)+"</td>"+
+      customFieldTds("stock", s)+
       "<td class='row-actions'>"+
         (s.trackReturn && !s.returned? "<button class='btn secondary small' data-return='"+s.id+"'>Returned</button>" : "")+
         "<button class='btn ghost small' data-edit='"+s.id+"'>Edit</button><button class='btn danger small' data-del='"+s.id+"'>Delete</button></td>";
@@ -3680,10 +3760,10 @@ document.getElementById("sf_clear").addEventListener("click", function(){
 });
 document.getElementById("s_exportBtn").addEventListener("click", function(){
   var list = filteredStockWithBalances();
-  var rows = [["Sr#","Date","Bill No","Head/Category","Item","Type","Qty In","Qty Out","Balance Qty","Rate","Value","Issued To","Expected Return","Status","Issue Group","Remarks"]];
+  var rows = [["Sr#","Date","Bill No","Head/Category","Item","Type","Qty In","Qty Out","Balance Qty","Rate","Value","Issued To","Expected Return","Status","Issue Group","Remarks"].concat(customFieldCsvHeaders("stock"))];
   list.forEach(function(s){
     var srIndex = STATE.stock.findIndex(function(x){return x.id===s.id;}) + 1;
-    rows.push([srIndex,s.date,s.billNo,s.category,s.item,(s.itemType==="nonConsumable"?"Non-consumable":"Consumable"),s.qtyIn,s.qtyOut,s.balance,s.rate,s.value,s.issuedTo,s.expectedReturn,stockStatus(s).label,s.issueGroupId||"",s.remarks]);
+    rows.push([srIndex,s.date,s.billNo,s.category,s.item,(s.itemType==="nonConsumable"?"Non-consumable":"Consumable"),s.qtyIn,s.qtyOut,s.balance,s.rate,s.value,s.issuedTo,s.expectedReturn,stockStatus(s).label,s.issueGroupId||"",s.remarks].concat(customFieldCsvValues("stock", s)));
   });
   downloadCSV("stock_book.csv", rows);
 });
@@ -4111,6 +4191,7 @@ function resetEmployeeForm(){
   resetSelectOrAdd("e_bank","e_bank_new");
   resetSelectOrAdd("e_bps","e_bps_new");
   document.getElementById("e_status").value="Active Permanent";
+  renderCustomFieldInputs("employees");
 }
 document.getElementById("e_saveBtn").addEventListener("click", function(){
   var name = document.getElementById("e_name").value.trim();
@@ -4137,6 +4218,7 @@ document.getElementById("e_saveBtn").addEventListener("click", function(){
     bank: getSelectOrAddValue("e_bank","e_bank_new"),
     account: document.getElementById("e_account").value.trim(),
     serviceLength: document.getElementById("e_serviceLength").value.trim(),
+    customData: collectCustomFieldValues("employees"),
     createdBy: (CURRENT_USER? CURRENT_USER.username : "")
   };
   if(employeeEditId){
@@ -4176,6 +4258,8 @@ function editEmployee(id){
   setSelectOrAddValue("e_bank","e_bank_new", e.bank);
   document.getElementById("e_account").value = e.account;
   document.getElementById("e_serviceLength").value = e.serviceLength;
+  renderCustomFieldInputs("employees");
+  populateCustomFieldInputs("employees", e);
   document.getElementById("panel-employees").scrollIntoView({behavior:"smooth"});
 }
 function deleteEmployee(id){
@@ -4234,12 +4318,15 @@ function filteredEmployees(){
 function renderEmployees(){
   populateEmployeeFilterSelects();
   populateEmployeeEntryValueLists();
+  renderCustomFieldInputs("employees");
+  syncCustomHeaders("employees");
+  var customCount = customFieldDefs("employees").length;
   var list = filteredEmployees();
   var showSensitive = document.getElementById("ef_showSensitive").checked;
   var body = document.getElementById("employeeTableBody");
   body.innerHTML = "";
   if(list.length===0){
-    body.innerHTML = '<tr class="empty-row"><td colspan="14">No employees match. Add one above, or clear filters.</td></tr>';
+    body.innerHTML = '<tr class="empty-row"><td colspan="'+(14+customCount)+'">No employees match. Add one above, or clear filters.</td></tr>';
   }
   var persCounts = {}, cnicCounts = {};
   STATE.employees.forEach(function(e){
@@ -4257,6 +4344,7 @@ function renderEmployees(){
       "<td data-col='persNo'>"+esc(e.persNo)+(dupPers? " <span class='tag overdue'>Duplicate</span>":"")+"</td><td data-col='name'>"+esc(e.name)+"</td><td data-col='soName'>"+esc(e.soName)+"</td><td data-col='mobile'>"+esc(e.mobile)+"</td><td data-col='designation'>"+esc(e.designation)+"</td><td data-col='department'>"+esc(e.department)+"</td>"+
       "<td data-col='bps'>"+esc(e.bps)+"</td><td data-col='status'>"+esc(e.status)+"</td><td data-col='cnic'>"+cnicDisplay+(dupCnic? " <span class='tag overdue'>Duplicate</span>":"")+"</td><td data-col='gpf'>"+esc(e.gpf)+"</td><td data-col='dob'>"+esc(e.dob)+"</td>"+
       "<td data-col='bank'>"+esc(e.bank)+"</td><td data-col='account'>"+acctDisplay+"</td>"+
+      customFieldTds("employees", e)+
       "<td class='row-actions'><button class='btn secondary small view-only-btn' data-payslip='"+e.id+"'>Pay Slip</button><button class='btn ghost small' data-edit='"+e.id+"'>Edit</button>"+
       (isAdmin()? "<button class='btn danger small' data-del='"+e.id+"'>Delete</button>" : "")+"</td>";
     body.appendChild(tr);
@@ -4279,8 +4367,8 @@ document.getElementById("ef_clear").addEventListener("click", function(){
 });
 document.getElementById("e_exportBtn").addEventListener("click", function(){
   var list = filteredEmployees();
-  var rows = [["Pers#","Name","Son of","Mobile No","Designation","Department","BPS","Status","CNIC","GPF#","DOB","Bank","Account No","Service Length"]];
-  list.forEach(function(e){ rows.push([e.persNo,e.name,e.soName,e.mobile,e.designation,e.department,e.bps,e.status,e.cnic,e.gpf,e.dob,e.bank,e.account,e.serviceLength]); });
+  var rows = [["Pers#","Name","Son of","Mobile No","Designation","Department","BPS","Status","CNIC","GPF#","DOB","Bank","Account No","Service Length"].concat(customFieldCsvHeaders("employees"))];
+  list.forEach(function(e){ rows.push([e.persNo,e.name,e.soName,e.mobile,e.designation,e.department,e.bps,e.status,e.cnic,e.gpf,e.dob,e.bank,e.account,e.serviceLength].concat(customFieldCsvValues("employees", e))); });
   downloadCSV("employees.csv", rows);
 });
 
@@ -4338,6 +4426,7 @@ function resetLeaveForm(){
   populateLeaveReasonList();
   resetSelectOrAdd("lv_reason","lv_reason_new");
   document.getElementById("lv_remarks").value = "";
+  renderCustomFieldInputs("leave");
   updateLeaveDaysPreview();
 }
 document.getElementById("lv_saveBtn").addEventListener("click", function(){
@@ -4358,6 +4447,7 @@ document.getElementById("lv_saveBtn").addEventListener("click", function(){
     sanctionDate: document.getElementById("lv_sanctionDate").value,
     reason: getSelectOrAddValue("lv_reason","lv_reason_new"),
     remarks: document.getElementById("lv_remarks").value.trim(),
+    customData: collectCustomFieldValues("leave"),
     createdBy: (CURRENT_USER? CURRENT_USER.username : "")
   };
   if(leaveEditId){
@@ -4391,6 +4481,8 @@ function editLeave(id){
   populateLeaveReasonList();
   setSelectOrAddValue("lv_reason","lv_reason_new", lv.reason);
   document.getElementById("lv_remarks").value = lv.remarks;
+  renderCustomFieldInputs("leave");
+  populateCustomFieldInputs("leave", lv);
   updateLeaveDaysPreview();
   document.getElementById("panel-leave").scrollIntoView({behavior:"smooth"});
 }
@@ -4466,11 +4558,14 @@ function renderLeaveSummary(){
 document.getElementById("lvs_year").addEventListener("change", renderLeaveSummary);
 function renderLeaveRegister(){
   populateLeaveFilterSelects();
+  renderCustomFieldInputs("leave");
+  syncCustomHeaders("leave");
+  var customCount = customFieldDefs("leave").length;
   var list = filteredLeave().slice().sort(function(a,b){ return (a.from||"").localeCompare(b.from||""); });
   var body = document.getElementById("leaveTableBody");
   body.innerHTML = "";
   if(list.length===0){
-    body.innerHTML = '<tr class="empty-row"><td colspan="11" data-i18n="lv_noLeaveMatch">No leave entries match. Add one above, or clear filters.</td></tr>';
+    body.innerHTML = '<tr class="empty-row"><td colspan="'+(11+customCount)+'" data-i18n="lv_noLeaveMatch">No leave entries match. Add one above, or clear filters.</td></tr>';
   }
   list.forEach(function(lv, i){
     var tr = document.createElement("tr");
@@ -4478,6 +4573,7 @@ function renderLeaveRegister(){
       "<td>"+(i+1)+"</td><td data-col='employee'>"+esc(employeeLabel(lv.employeeId))+"</td><td data-col='leaveType'>"+esc(lv.leaveType)+"</td>"+
       "<td data-col='from'>"+esc(lv.from)+"</td><td data-col='to'>"+esc(lv.to)+"</td><td class='num' data-col='days'>"+esc(lv.days)+"</td>"+
       "<td data-col='sanctionNo'>"+esc(lv.sanctionNo)+"</td><td data-col='sanctionDate'>"+esc(lv.sanctionDate)+"</td><td data-col='reason'>"+esc(lv.reason)+"</td><td data-col='remarks'>"+esc(lv.remarks)+"</td>"+
+      customFieldTds("leave", lv)+
       "<td class='row-actions'><button class='btn ghost small' data-edit='"+lv.id+"'>Edit</button>"+
       "<button class='btn danger small' data-del='"+lv.id+"'>Delete</button></td>";
     body.appendChild(tr);
@@ -4499,8 +4595,8 @@ document.getElementById("lvf_clear").addEventListener("click", function(){
 });
 document.getElementById("lv_exportBtn").addEventListener("click", function(){
   var list = filteredLeave();
-  var rows = [["Sr#","Employee","Leave Type","Date from","Date to","No. of days","Sanction/Order No","Sanction date","Reason","Remarks"]];
-  list.forEach(function(lv,i){ rows.push([i+1, employeeLabel(lv.employeeId), lv.leaveType, lv.from, lv.to, lv.days, lv.sanctionNo, lv.sanctionDate, lv.reason, lv.remarks]); });
+  var rows = [["Sr#","Employee","Leave Type","Date from","Date to","No. of days","Sanction/Order No","Sanction date","Reason","Remarks"].concat(customFieldCsvHeaders("leave"))];
+  list.forEach(function(lv,i){ rows.push([i+1, employeeLabel(lv.employeeId), lv.leaveType, lv.from, lv.to, lv.days, lv.sanctionNo, lv.sanctionDate, lv.reason, lv.remarks].concat(customFieldCsvValues("leave", lv))); });
   downloadCSV("leave_register.csv", rows);
 });
 resetLeaveForm();
