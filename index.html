@@ -896,6 +896,7 @@ html,body{overflow-x:hidden;}
     <button class="tab-btn" data-tab="employees"><span class="dot"></span> <span data-i18n="nav_employees">Employees</span></button>
     <button class="tab-btn" data-tab="leave"><span class="dot"></span> <span data-i18n="nav_leave">Leave Register</span></button>
     <button class="tab-btn" data-tab="attendance"><span class="dot"></span> <span data-i18n="nav_attendance">Attendance Register</span></button>
+    <button class="tab-btn" data-tab="fieldsmgr" id="fieldsMgrTabBtn" style="display:none;"><span class="dot"></span> <span>Fields Manager (Super Admin)</span></button>
     <div class="navnote" data-i18n="nav_data">Data</div>
     <button id="btnBackup"><span class="dot"></span> <span data-i18n="btn_backup">Backup (save file)</span></button>
     <button id="btnRestore"><span class="dot"></span> <span data-i18n="btn_restore">Restore from file</span></button>
@@ -973,6 +974,7 @@ html,body{overflow-x:hidden;}
         <div class="grid cols-2" style="margin-top:12px;">
           <div class="field" style="grid-column:1/-1;"><label data-i18n="lbl_remarks">Remarks</label><input type="text" id="b_remarks" placeholder="Optional"></div>
         </div>
+        <div class="grid cols-4" style="margin-top:12px;" id="b_customFieldsContainer"></div>
         <div class="btnbar">
           <button class="btn" id="b_saveBtn" data-i18n="btn_saveBill">Save bill</button>
           <button class="btn ghost" id="b_cancelBtn" style="display:none;" data-i18n="btn_cancelEdit">Cancel edit</button>
@@ -1010,6 +1012,49 @@ html,body{overflow-x:hidden;}
           <tbody id="billTableBody"></tbody>
           <tfoot><tr id="billTotalsRow"></tr></tfoot>
         </table>
+      </div>
+    </section>
+
+    <!-- ================= FIELDS MANAGER (SUPER ADMIN ONLY) ================= -->
+    <section class="panel" id="panel-fieldsmgr">
+      <div class="panel-head">
+        <div>
+          <h2>Fields Manager — Super Admin only</h2>
+          <p>یہاں آپ Contingent Bill رجسٹر میں نئے فیلڈز (خانے) شامل کر سکتے ہیں، ان کا نام بدل سکتے ہیں، ڈراپ ڈاؤن آپشنز تبدیل کر سکتے ہیں، یا انہیں حذف کر سکتے ہیں۔ غلطی ہونے پر "پچھلی حالت پر واپس" بٹن سے فوراً واپس آ سکتے ہیں۔<br>Add, rename, edit (dropdown options), or delete custom data-entry fields for the Contingent Bill register. Built-in fields (Date, Bill No, Gross, Tax, etc.) cannot be removed here, since the whole system's calculations depend on them — only fields you add yourself through this page can be changed or deleted.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="btnbar" style="margin-bottom:10px;">
+          <button class="btn ghost" id="fm_undoBtn" disabled>↺ پچھلی حالت پر واپس / Undo last change</button>
+        </div>
+        <div class="table-wrap">
+          <table class="print-cols-table">
+            <thead><tr><th>Field name / لیبل</th><th>Type</th><th>Dropdown options</th><th class="row-actions-th">Actions</th></tr></thead>
+            <tbody id="fm_fieldsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card entry-form">
+        <h3>نیا فیلڈ شامل کریں / Add a new field</h3>
+        <div class="grid cols-4">
+          <div class="field"><label>Field name / لیبل</label><input type="text" id="fm_newLabel" placeholder="e.g. Project Code"></div>
+          <div class="field"><label>Type</label>
+            <select id="fm_newType">
+              <option value="text">Text</option>
+              <option value="number">Number</option>
+              <option value="dropdown">Dropdown</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:span 2;display:none;" id="fm_newOptionsWrap">
+            <label>Dropdown options (comma-separated) / آپشنز کوما سے الگ کریں</label>
+            <input type="text" id="fm_newOptions" placeholder="e.g. Pending, Approved, Rejected">
+          </div>
+        </div>
+        <div class="btnbar" style="margin-top:10px;">
+          <button class="btn" id="fm_addBtn">Add field</button>
+        </div>
       </div>
     </section>
 
@@ -1721,6 +1766,11 @@ function normalizeData(data, seedDefaults){
   data.headerFooterConfig = data.headerFooterConfig || {};
   data.printColumns = data.printColumns || {};
   data.itemMaster = data.itemMaster || {};
+
+  /* Fields Manager (Super Admin only): custom data-entry fields added on top of the
+     built-in Contingent Bill columns, plus a single one-step-back undo snapshot. */
+  data.billFieldDefs = data.billFieldDefs || [];
+  data.billFieldDefsUndo = (data.billFieldDefsUndo !== undefined) ? data.billFieldDefsUndo : null;
 
   /* one-time migration: fold any old custom stock categories into the real Contingent Heads */
   Object.keys(OLD_CATEGORY_MIGRATION_MAP).forEach(function(oldCat){
@@ -2612,6 +2662,7 @@ function resetBillForm(){
   document.getElementById("b_other").value="0";
   document.getElementById("b_comm").value="0";
   document.getElementById("b_remarks").value="";
+  renderBillCustomFieldInputs();
   recalcBillPreview();
 }
 
@@ -2637,6 +2688,7 @@ document.getElementById("b_saveBtn").addEventListener("click", function(){
     comm: Number(document.getElementById("b_comm").value)||0,
     ao: document.getElementById("b_ao").value,
     remarks: document.getElementById("b_remarks").value.trim(),
+    customData: collectBillCustomFieldValues(),
     createdBy: (CURRENT_USER? CURRENT_USER.username : "")
   };
   if(billEditId){
@@ -2676,6 +2728,8 @@ function editBill(id){
   document.getElementById("b_other").value = b.other;
   document.getElementById("b_comm").value = b.comm;
   document.getElementById("b_remarks").value = b.remarks;
+  renderBillCustomFieldInputs();
+  populateBillCustomFieldInputs(b);
   recalcBillPreview();
   document.getElementById("panel-bill").scrollIntoView({behavior:"smooth"});
 }
@@ -2776,14 +2830,37 @@ function filteredBills(){
   });
 }
 
+/* ---- Fields Manager: custom columns rendered on top of the built-in Contingent Bill table ---- */
+function syncBillCustomHeaders(){
+  var theadRow = document.querySelector("#panel-bill table.print-cols-table thead tr");
+  if(!theadRow) return;
+  theadRow.querySelectorAll("th[data-customcol]").forEach(function(th){ th.remove(); });
+  var actionsTh = theadRow.querySelector(".row-actions-th");
+  (STATE.billFieldDefs||[]).forEach(function(f){
+    var th = document.createElement("th");
+    th.setAttribute("data-customcol", f.key);
+    th.textContent = f.label;
+    if(actionsTh) theadRow.insertBefore(th, actionsTh); else theadRow.appendChild(th);
+  });
+}
+function billCustomTds(b){
+  return (STATE.billFieldDefs||[]).map(function(f){
+    var val = (b.customData && b.customData[f.key]!=null) ? b.customData[f.key] : "";
+    return "<td data-col='cf_"+f.key+"'>"+esc(val)+"</td>";
+  }).join("");
+}
+
 function renderBills(){
   populateBillFilterSelects();
   populateBillEntryValueLists();
+  renderBillCustomFieldInputs();
+  syncBillCustomHeaders();
+  var customCount = (STATE.billFieldDefs||[]).length;
   var list = filteredBills();
   var body = document.getElementById("billTableBody");
   body.innerHTML="";
   if(list.length===0){
-    body.innerHTML = '<tr class="empty-row"><td colspan="17">No bills match. Add a bill above, or clear filters.</td></tr>';
+    body.innerHTML = '<tr class="empty-row"><td colspan="'+(17+customCount)+'">No bills match. Add a bill above, or clear filters.</td></tr>';
   }
   var sums = {gross:0,it:0,gst:0,pst:0,other:0,comm:0,ded:0,net:0};
   list.forEach(function(b, i){
@@ -2796,6 +2873,7 @@ function renderBills(){
       "<td class='num' data-col='pst'>"+fmt(b.pst)+"</td><td class='num' data-col='other'>"+fmt(b.other)+"</td><td class='num' data-col='comm'>"+fmt(b.comm)+"</td>"+
       "<td class='num' data-col='ded'>"+fmt(ded)+"</td><td class='num' data-col='net'>"+fmt(net)+"</td>"+
       "<td data-col='ao'><span class='tag "+(b.ao==="Yes"?"yes":"no")+"'>"+esc(b.ao)+"</span></td><td data-col='remarks'>"+esc(b.remarks)+"</td>"+
+      billCustomTds(b)+
       "<td class='row-actions'><button class='btn ghost small' data-edit='"+b.id+"'>Edit</button><button class='btn danger small' data-del='"+b.id+"'>Delete</button></td>";
     body.appendChild(tr);
   });
@@ -2806,7 +2884,7 @@ function renderBills(){
     "<td colspan='6'>TOTAL ("+list.length+" bill"+(list.length===1?"":"s")+")</td>"+
     "<td class='num' data-col='gross'>"+fmt(sums.gross)+"</td><td class='num' data-col='it'>"+fmt(sums.it)+"</td><td class='num' data-col='gst'>"+fmt(sums.gst)+"</td>"+
     "<td class='num' data-col='pst'>"+fmt(sums.pst)+"</td><td class='num' data-col='other'>"+fmt(sums.other)+"</td><td class='num' data-col='comm'>"+fmt(sums.comm)+"</td>"+
-    "<td class='num' data-col='ded'>"+fmt(sums.ded)+"</td><td class='num' data-col='net'>"+fmt(sums.net)+"</td><td colspan='3'></td>";
+    "<td class='num' data-col='ded'>"+fmt(sums.ded)+"</td><td class='num' data-col='net'>"+fmt(sums.net)+"</td><td colspan='"+(3+customCount)+"'></td>";
   applyColumnPrintCss();
 
   document.getElementById("billCount").textContent = STATE.bills.length+" bill"+(STATE.bills.length===1?"":"s");
@@ -2823,9 +2901,154 @@ document.getElementById("bf_clear").addEventListener("click", function(){
 });
 document.getElementById("b_exportBtn").addEventListener("click", function(){
   var list = filteredBills();
-  var rows = [["Sr#","Date","Bill No","Vendor No","Vendor Name","Contingent Head","Gross","Income Tax","GST","PST","Other Ded.","Commission Ded.","Total Deductions","Net Payment","A.O. Allowed","Remarks"]];
-  list.forEach(function(b,i){ rows.push([i+1,b.date,b.billNo,b.vendorNo,b.vendorName,b.head,b.gross,b.it,b.gst,b.pst,b.other,b.comm,totalDed(b),netPayment(b),b.ao,b.remarks]); });
+  var defs = STATE.billFieldDefs||[];
+  var rows = [["Sr#","Date","Bill No","Vendor No","Vendor Name","Contingent Head","Gross","Income Tax","GST","PST","Other Ded.","Commission Ded.","Total Deductions","Net Payment","A.O. Allowed","Remarks"].concat(defs.map(function(f){ return f.label; }))];
+  list.forEach(function(b,i){
+    var row = [i+1,b.date,b.billNo,b.vendorNo,b.vendorName,b.head,b.gross,b.it,b.gst,b.pst,b.other,b.comm,totalDed(b),netPayment(b),b.ao,b.remarks];
+    defs.forEach(function(f){ row.push((b.customData && b.customData[f.key]!=null) ? b.customData[f.key] : ""); });
+    rows.push(row);
+  });
   downloadCSV("contingent_bills.csv", rows);
+});
+
+/* ---- Fields Manager: dynamic inputs injected into the bill entry form ---- */
+function renderBillCustomFieldInputs(){
+  var wrap = document.getElementById("b_customFieldsContainer");
+  if(!wrap) return;
+  var defs = STATE.billFieldDefs||[];
+  wrap.innerHTML = defs.map(function(f){
+    var inputHtml;
+    if(f.type==="dropdown"){
+      var opts = (f.options||[]).map(function(o){ return "<option value='"+esc(o)+"'>"+esc(o)+"</option>"; }).join("");
+      inputHtml = "<select id='cf_"+f.key+"'><option value=''>—</option>"+opts+"</select>";
+    } else if(f.type==="number"){
+      inputHtml = "<input type='number' step='0.01' id='cf_"+f.key+"'>";
+    } else {
+      inputHtml = "<input type='text' id='cf_"+f.key+"'>";
+    }
+    return "<div class='field'><label>"+esc(f.label)+"</label>"+inputHtml+"</div>";
+  }).join("");
+}
+function collectBillCustomFieldValues(){
+  var out = {};
+  (STATE.billFieldDefs||[]).forEach(function(f){
+    var el = document.getElementById("cf_"+f.key);
+    if(el) out[f.key] = el.value;
+  });
+  return out;
+}
+function populateBillCustomFieldInputs(b){
+  (STATE.billFieldDefs||[]).forEach(function(f){
+    var el = document.getElementById("cf_"+f.key);
+    if(el) el.value = (b.customData && b.customData[f.key]!=null) ? b.customData[f.key] : "";
+  });
+}
+
+/* ================= FIELDS MANAGER (SUPER ADMIN ONLY) ================= */
+function snapshotBillFieldDefsForUndo(){
+  STATE.billFieldDefsUndo = JSON.parse(JSON.stringify(STATE.billFieldDefs||[]));
+}
+function renderFieldsManager(){
+  var undoBtn = document.getElementById("fm_undoBtn");
+  if(undoBtn) undoBtn.disabled = !STATE.billFieldDefsUndo;
+  var body = document.getElementById("fm_fieldsTableBody");
+  if(!body) return;
+  var defs = STATE.billFieldDefs||[];
+  if(defs.length===0){
+    body.innerHTML = "<tr class='empty-row'><td colspan='4'>No custom fields yet — add one below.</td></tr>";
+  } else {
+    body.innerHTML = defs.map(function(f){
+      return "<tr>"+
+        "<td>"+esc(f.label)+"</td>"+
+        "<td>"+esc(f.type)+"</td>"+
+        "<td>"+(f.type==="dropdown"? esc((f.options||[]).join(", ")) : "—")+"</td>"+
+        "<td class='row-actions'>"+
+          "<button class='btn ghost small' data-fm-rename='"+f.key+"'>Rename</button>"+
+          (f.type==="dropdown"? "<button class='btn ghost small' data-fm-editopts='"+f.key+"'>Edit options</button>" : "")+
+          "<button class='btn danger small' data-fm-del='"+f.key+"'>Delete</button>"+
+        "</td></tr>";
+    }).join("");
+  }
+  body.querySelectorAll("[data-fm-rename]").forEach(function(el){ el.addEventListener("click", function(){ renameBillField(el.dataset.fmRename); }); });
+  body.querySelectorAll("[data-fm-editopts]").forEach(function(el){ el.addEventListener("click", function(){ editBillFieldOptions(el.dataset.fmEditopts); }); });
+  body.querySelectorAll("[data-fm-del]").forEach(function(el){ el.addEventListener("click", function(){ deleteBillField(el.dataset.fmDel); }); });
+}
+document.getElementById("fm_newType").addEventListener("change", function(){
+  document.getElementById("fm_newOptionsWrap").style.display = (this.value==="dropdown")? "" : "none";
+});
+document.getElementById("fm_addBtn").addEventListener("click", function(){
+  if(!isSuperAdmin()){ toast("Only a Super Admin can manage fields."); return; }
+  var label = document.getElementById("fm_newLabel").value.trim();
+  var type = document.getElementById("fm_newType").value;
+  if(!label){ toast("Field name is required."); return; }
+  var options = [];
+  if(type==="dropdown"){
+    options = document.getElementById("fm_newOptions").value.split(",").map(function(s){ return s.trim(); }).filter(Boolean);
+    if(options.length===0){ toast("Enter at least one dropdown option."); return; }
+  }
+  snapshotBillFieldDefsForUndo();
+  STATE.billFieldDefs.push({ key: "cf_"+uid(), label: label, type: type, options: options });
+  saveData();
+  document.getElementById("fm_newLabel").value = "";
+  document.getElementById("fm_newOptions").value = "";
+  document.getElementById("fm_newType").value = "text";
+  document.getElementById("fm_newOptionsWrap").style.display = "none";
+  renderFieldsManager();
+  renderBills();
+  toast("Field added.");
+});
+function renameBillField(key){
+  if(!isSuperAdmin()){ toast("Only a Super Admin can manage fields."); return; }
+  var f = (STATE.billFieldDefs||[]).find(function(x){ return x.key===key; });
+  if(!f) return;
+  var newLabel = prompt("New name for this field:", f.label);
+  if(newLabel===null) return;
+  newLabel = newLabel.trim();
+  if(!newLabel){ toast("Field name cannot be empty."); return; }
+  snapshotBillFieldDefsForUndo();
+  f.label = newLabel;
+  saveData();
+  renderFieldsManager();
+  renderBills();
+  toast("Field renamed.");
+}
+function editBillFieldOptions(key){
+  if(!isSuperAdmin()){ toast("Only a Super Admin can manage fields."); return; }
+  var f = (STATE.billFieldDefs||[]).find(function(x){ return x.key===key; });
+  if(!f) return;
+  var current = (f.options||[]).join(", ");
+  var newOpts = prompt("Dropdown options (comma-separated):", current);
+  if(newOpts===null) return;
+  var options = newOpts.split(",").map(function(s){ return s.trim(); }).filter(Boolean);
+  if(options.length===0){ toast("Enter at least one dropdown option."); return; }
+  snapshotBillFieldDefsForUndo();
+  f.options = options;
+  saveData();
+  renderFieldsManager();
+  renderBills();
+  toast("Options updated.");
+}
+function deleteBillField(key){
+  if(!isSuperAdmin()){ toast("Only a Super Admin can manage fields."); return; }
+  var f = (STATE.billFieldDefs||[]).find(function(x){ return x.key===key; });
+  if(!f) return;
+  if(!confirm('Delete the field "'+f.label+'"? Existing bill entries will keep their data hidden (it comes back if you Undo).')) return;
+  snapshotBillFieldDefsForUndo();
+  STATE.billFieldDefs = STATE.billFieldDefs.filter(function(x){ return x.key!==key; });
+  saveData();
+  renderFieldsManager();
+  renderBills();
+  toast("Field deleted.");
+}
+document.getElementById("fm_undoBtn").addEventListener("click", function(){
+  if(!isSuperAdmin()){ toast("Only a Super Admin can manage fields."); return; }
+  if(!STATE.billFieldDefsUndo) return;
+  STATE.billFieldDefs = STATE.billFieldDefsUndo;
+  STATE.billFieldDefsUndo = null;
+  saveData();
+  renderFieldsManager();
+  renderBills();
+  toast("Reverted to the previous state.");
 });
 
 /* ================= CASH BOOK MODULE ================= */
@@ -3720,6 +3943,7 @@ function renderAll(){
   renderLeaveRegister();
   renderAttendance();
   renderUsers();
+  renderFieldsManager();
   recalcBillPreview();
   renderReports();
 }
@@ -4539,6 +4763,10 @@ document.getElementById("themeSwitcher").addEventListener("change", function(){
 /* ================= AUTH: Firebase login, signup, roles ================= */
 var CURRENT_USER = null;
 function isAdmin(){ return !!(CURRENT_USER && CURRENT_USER.role==="admin"); }
+/* Super Admin is a stricter tier than Admin — used only to gate the Fields Manager
+   (adding/renaming/deleting custom data-entry fields). Every Super Admin is also an
+   Admin, but not every Admin is a Super Admin. */
+function isSuperAdmin(){ return !!(CURRENT_USER && CURRENT_USER.role==="admin" && CURRENT_USER.isSuperAdmin===true); }
 
 function showSetupScreen(){
   document.getElementById("authSetupScreen").style.display="flex";
@@ -4561,6 +4789,8 @@ function updateUserBar(){
   document.getElementById("hfConfigBtn").style.display = isAdmin()? "inline-flex":"none";
   document.getElementById("colsConfigBtn").style.display = isAdmin()? "inline-flex":"none";
   document.body.classList.toggle("guest-mode", !isAdmin());
+  var fieldsMgrTabBtn = document.getElementById("fieldsMgrTabBtn");
+  if(fieldsMgrTabBtn) fieldsMgrTabBtn.style.display = isSuperAdmin()? "flex":"none";
 }
 function showAppScreen(){
   document.getElementById("authSetupScreen").style.display="none";
@@ -4632,9 +4862,10 @@ auth.onAuthStateChanged(function(user){
       var role = d.role || ((d.roleV2==="admin" || d.roleV2==="super_admin") ? "admin" : "guest");
       var theme = d.theme||null;
       var signatureURL = d.signatureURL||"";
-      
-      
-      CURRENT_USER = {uid:user.uid, username:user.email, role:role, signatureURL:signatureURL};
+      var isSuperAdminFlag = (d.roleV2==="super_admin");
+
+
+      CURRENT_USER = {uid:user.uid, username:user.email, role:role, signatureURL:signatureURL, isSuperAdmin:isSuperAdminFlag};
       if(theme) applyTheme(theme);
       fetchStateFromFirestore(function(){
         showAppScreen();
