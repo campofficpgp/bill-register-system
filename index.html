@@ -1178,7 +1178,7 @@ html,body{overflow-x:hidden;}
           <div class="field" style="align-self:end;"><button class="btn secondary" id="s_addItemBtn" style="width:100%;" data-i18n="stock_addItemBtn">Add item to this head</button></div>
         </div>
         <div class="field-hint" data-i18n="stock_typeHint" style="margin-top:6px;">Consumable items (Ball Points, Rims, Registers…) are issued with no return rule. Non-consumable items (Books, Laptops, Chairs…) automatically require return tracking, and their issue entries skip Bill No / Rate.</div>
-        <div class="grid cols-2" style="margin-top:10px;">
+        <div class="grid cols-2" id="stockAddHeadRow" style="margin-top:10px;display:none;">
           <div class="field"><label data-i18n="stock_addExtraHead">Add an extra head (not in the budget list)</label><input type="text" id="s_newCategoryName" placeholder="e.g. Sports Equipment"></div>
           <div class="field" style="align-self:end;"><button class="btn ghost" id="s_addCategoryBtn" style="width:100%;" data-i18n="stock_addExtraHeadBtn">Add extra head</button></div>
         </div>
@@ -1294,7 +1294,7 @@ html,body{overflow-x:hidden;}
         <span class="count-chip" id="ledgerCount">41 heads</span>
       </div>
 
-      <div class="card">
+      <div class="card" id="ledgerAddHeadCard" style="display:none;">
         <h3 data-i18n="ledger_addHeadTitle">Add a new Contingent Head</h3>
         <div class="grid cols-2">
           <div class="field"><label data-i18n="ledger_addHeadLabel">New head name</label><input type="text" id="ledger_newHeadName" placeholder="e.g. A03950-NEW HEAD NAME"></div>
@@ -2602,6 +2602,7 @@ function getHeads(){
    Cash Book, Stock Book and Ledger & Budget alike, since all four read the
    head list from getHeads()/itemMaster. */
 function addContingentHead(name){
+  if(!isSuperAdmin()) return {ok:false, msg:"Only a Super Admin can add a Contingent Head."};
   name = (name||"").trim();
   if(!name) return {ok:false, msg:"Type a head name first."};
   var exists = getHeads().some(function(h){ return h.label===name; });
@@ -2617,6 +2618,7 @@ function addContingentHead(name){
    Book and Stock Book entries, the item master, and any budget correction /
    custom-field data already recorded against it (headOverrides). */
 function renameContingentHead(oldLabel, newLabel){
+  if(!isSuperAdmin()) return {ok:false, msg:"Only a Super Admin can rename a Contingent Head."};
   oldLabel = (oldLabel||"").trim();
   newLabel = (newLabel||"").trim();
   if(!oldLabel || !newLabel) return {ok:false, msg:"Head name can't be empty."};
@@ -3542,6 +3544,7 @@ document.getElementById("s_addItemBtn").addEventListener("click", function(){
   toast("Item added to \""+cat+"\".");
 });
 document.getElementById("s_addCategoryBtn").addEventListener("click", function(){
+  if(!isSuperAdmin()){ toast("Only a Super Admin can add a Contingent Head."); return; }
   var name = document.getElementById("s_newCategoryName").value.trim();
   var res = addContingentHead(name);
   if(!res.ok){ toast(res.msg); return; }
@@ -4018,7 +4021,7 @@ function wireLedgerCustomFieldEditing(body){
 }
 function wireLedgerHeadRenaming(body){
   body.querySelectorAll(".editable-head").forEach(function(td){
-    if(!isAdmin()){ return; }
+    if(!isSuperAdmin()){ return; }
     td.style.cursor="pointer";
     td.style.textDecoration="underline dotted";
     td.addEventListener("click", function(){
@@ -4117,6 +4120,7 @@ document.getElementById("lf_clear").addEventListener("click", function(){
   renderLedger();
 });
 document.getElementById("ledger_addHeadBtn").addEventListener("click", function(){
+  if(!isSuperAdmin()){ toast("Only a Super Admin can add a Contingent Head."); return; }
   var name = document.getElementById("ledger_newHeadName").value.trim();
   var res = addContingentHead(name);
   if(!res.ok){ toast(res.msg); return; }
@@ -5057,6 +5061,12 @@ function updateUserBar(){
   document.body.classList.toggle("guest-mode", !isAdmin());
   var fieldsMgrTabBtn = document.getElementById("fieldsMgrTabBtn");
   if(fieldsMgrTabBtn) fieldsMgrTabBtn.style.display = isSuperAdmin()? "flex":"none";
+  /* Adding/renaming Contingent Heads is reserved for the Super Admin only —
+     the system's owner — not every Administrator/data-entry operator. */
+  var ledgerAddHeadCard = document.getElementById("ledgerAddHeadCard");
+  if(ledgerAddHeadCard) ledgerAddHeadCard.style.display = isSuperAdmin()? "block":"none";
+  var stockAddHeadRow = document.getElementById("stockAddHeadRow");
+  if(stockAddHeadRow) stockAddHeadRow.style.display = isSuperAdmin()? "grid":"none";
 }
 function showAppScreen(){
   document.getElementById("authSetupScreen").style.display="none";
