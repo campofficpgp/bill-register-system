@@ -1020,7 +1020,7 @@ html,body{overflow-x:hidden;}
       <div class="panel-head">
         <div>
           <h2>Fields Manager — Super Admin only</h2>
-          <p>اوپر رجسٹر منتخب کریں، پھر اس میں نئے فیلڈز (خانے) شامل کر سکتے ہیں، ان کا نام بدل سکتے ہیں، ڈراپ ڈاؤن آپشنز تبدیل کر سکتے ہیں، یا انہیں حذف کر سکتے ہیں۔ غلطی ہونے پر "پچھلی حالت پر واپس" بٹن سے فوراً واپس آ سکتے ہیں۔<br>Pick a register above, then add, rename, edit (dropdown options), or delete custom data-entry fields for it. Built-in fields (Date, Bill No, Gross, Tax, etc.) cannot be removed here, since the whole system's calculations depend on them — only fields you add yourself through this page can be changed or deleted. Ledger &amp; Budget (auto-computed from Bill entries) and Attendance Register (a day-by-day grid, not a per-record form) don't have their own custom fields, since neither has a record form to attach a value to.</p>
+          <p>اوپر رجسٹر منتخب کریں، پھر اس میں نئے فیلڈز (خانے) شامل کر سکتے ہیں، ان کا نام بدل سکتے ہیں، ڈراپ ڈاؤن آپشنز تبدیل کر سکتے ہیں، یا انہیں حذف کر سکتے ہیں۔ غلطی ہونے پر "پچھلی حالت پر واپس" بٹن سے فوراً واپس آ سکتے ہیں۔<br>Pick a register above, then add, rename, edit (dropdown options), or delete custom data-entry fields for it. Built-in fields (Date, Bill No, Gross, Tax, etc.) cannot be removed here, since the whole system's calculations depend on them — only fields you add yourself through this page can be changed or deleted. Ledger &amp; Budget works a little differently: it has no add/edit entry form (its rows are the 41 fixed Contingent Heads), so a custom field there shows up as one more click-to-edit column against each head, the same way Final Budget and Prior Expenditure already work. Attendance Register (a day-by-day grid, not a per-record form) still can't take custom fields the same way, since it has no per-record value to attach one to.</p>
         </div>
       </div>
 
@@ -1033,6 +1033,7 @@ html,body{overflow-x:hidden;}
               <option value="stock">Stock Book</option>
               <option value="employees">Employees</option>
               <option value="leave">Leave Register</option>
+              <option value="ledger">Ledger &amp; Budget</option>
             </select>
           </div>
         </div>
@@ -1792,7 +1793,7 @@ function normalizeData(data, seedDefaults){
      One-time migration: this used to be Bill-only (data.billFieldDefs) — fold any
      fields already added that way into the new per-register structure. */
   data.customFieldDefs = data.customFieldDefs || {};
-  ["bill","cash","stock","employees","leave"].forEach(function(k){
+  ["bill","cash","stock","employees","leave","ledger"].forEach(function(k){
     data.customFieldDefs[k] = data.customFieldDefs[k] || [];
   });
   if(Array.isArray(data.billFieldDefs) && data.billFieldDefs.length && data.customFieldDefs.bill.length===0){
@@ -2923,16 +2924,21 @@ document.getElementById("b_exportBtn").addEventListener("click", function(){
 
 /* ================= CUSTOM FIELDS (Fields Manager, Super Admin only) =================
    Works the same way across every register that has its own add/edit entry form:
-   Contingent Bill, Cash Book, Stock Book, Employees and Leave Register. (Ledger &
-   Budget is auto-computed from Bill entries — there's no per-record form to attach a
-   custom field value to — and Attendance Register is a day-by-day click grid, not a
-   record form either, so neither of those two can take custom fields the same way.) */
+   Contingent Bill, Cash Book, Stock Book, Employees and Leave Register. Ledger &
+   Budget has no add/edit form of its own (its 41 rows are the fixed Contingent
+   Heads, generated from Bill entries) — for that one register, a custom field
+   shows up as one more click-to-edit column per head instead, the same pattern
+   already used for its Final Budget / Prior Expenditure columns (see
+   renderLedger()'s .editable-cf handler below), so it has no formContainer here.
+   Attendance Register is a day-by-day click grid, not a record form either, so it
+   still can't take custom fields the same way as any of the above. */
 var CUSTOM_FIELD_REGISTERS = {
   bill:      { label:"Contingent Bill", panelId:"panel-bill",      formContainer:"b_customFieldsContainer",  renderFn:function(){ renderBills(); } },
   cash:      { label:"Cash Book",       panelId:"panel-cash",      formContainer:"c_customFieldsContainer",  renderFn:function(){ renderCash(); } },
   stock:     { label:"Stock Book",      panelId:"panel-stock",     formContainer:"s_customFieldsContainer",  renderFn:function(){ renderStock(); } },
   employees: { label:"Employees",       panelId:"panel-employees", formContainer:"e_customFieldsContainer",  renderFn:function(){ renderEmployees(); } },
-  leave:     { label:"Leave Register",  panelId:"panel-leave",     formContainer:"lv_customFieldsContainer", renderFn:function(){ renderLeaveRegister(); } }
+  leave:     { label:"Leave Register",  panelId:"panel-leave",     formContainer:"lv_customFieldsContainer", renderFn:function(){ renderLeaveRegister(); } },
+  ledger:    { label:"Ledger & Budget", panelId:"panel-ledger",    formContainer:null,                       renderFn:function(){ renderLedger(); } }
 };
 function customFieldDefs(registerKey){
   STATE.customFieldDefs = STATE.customFieldDefs || {};
@@ -3871,10 +3877,52 @@ function ledgerRows(){
     var net = bills.reduce(function(s,b){ return s+netPayment(b); }, 0);
     var totalExp = h.prior + net;
     var remaining = h.finalBudget - totalExp;
+    var ov = STATE.headOverrides[h.label] || {};
     return {
       sr:i+1, label:h.label, count:bills.length, gross:gross, ded:ded, net:net,
-      finalBudget:h.finalBudget, prior:h.prior, totalExp:totalExp, remaining:remaining
+      finalBudget:h.finalBudget, prior:h.prior, totalExp:totalExp, remaining:remaining,
+      customData: ov.customData || {}
     };
+  });
+}
+/* Ledger's custom fields (Fields Manager, register "ledger") attach to each fixed
+   Contingent Head rather than to an added/deleted record, so they're edited the same
+   click-to-prompt way as the existing Final Budget / Prior Expenditure columns just
+   above — not through an add/edit entry form like the other registers. */
+function ledgerCustomFieldTd(f, r){
+  var val = (r.customData && r.customData[f.key]!=null) ? r.customData[f.key] : "";
+  return "<td class='editable-cf' data-col='cf_"+f.key+"' data-cfkey='"+esc(f.key)+"' data-cftype='"+esc(f.type)+"' data-cfoptions=\""+esc((f.options||[]).join("|"))+"\" data-head=\""+esc(r.label)+"\" title='Click to edit'>"+esc(val)+"</td>";
+}
+function wireLedgerCustomFieldEditing(body){
+  body.querySelectorAll(".editable-cf").forEach(function(td){
+    if(!isAdmin()){ return; }
+    td.style.cursor="pointer";
+    td.style.textDecoration="underline dotted";
+    td.addEventListener("click", function(){
+      var key = td.dataset.cfkey, type = td.dataset.cftype, head = td.dataset.head;
+      var current = td.textContent;
+      var val;
+      if(type==="dropdown"){
+        var opts = td.dataset.cfoptions? td.dataset.cfoptions.split("|") : [];
+        val = prompt("New value for this field — "+head+" (one of: "+opts.join(", ")+"):", current);
+        if(val===null) return;
+        val = val.trim();
+        if(val && opts.indexOf(val)===-1){ toast("Please enter one of: "+opts.join(", ")); return; }
+      } else if(type==="number"){
+        val = prompt("New value for this field — "+head+":", current);
+        if(val===null) return;
+        if(val.trim()!=="" && isNaN(Number(val))){ toast("Please enter a number."); return; }
+      } else {
+        val = prompt("New value for this field — "+head+" ("+(type==="date"?"YYYY-MM-DD":"text")+"):", current);
+        if(val===null) return;
+      }
+      STATE.headOverrides[head] = STATE.headOverrides[head] || {};
+      STATE.headOverrides[head].customData = STATE.headOverrides[head].customData || {};
+      STATE.headOverrides[head].customData[key] = val;
+      saveData();
+      renderLedger();
+      toast("Updated.");
+    });
   });
 }
 function populateLedgerFilterSelect(){
@@ -3892,11 +3940,14 @@ function filteredLedger(){
 }
 function renderLedger(){
   populateLedgerFilterSelect();
+  syncCustomHeaders("ledger");
+  var customDefs = customFieldDefs("ledger");
+  var customCount = customDefs.length;
   var list = filteredLedger();
   var body = document.getElementById("ledgerTableBody");
   body.innerHTML = "";
   if(list.length===0){
-    body.innerHTML = '<tr class="empty-row"><td colspan="10">No heads match this filter.</td></tr>';
+    body.innerHTML = '<tr class="empty-row"><td colspan="'+(10+customCount)+'">No heads match this filter.</td></tr>';
   }
   var sums = {count:0,gross:0,ded:0,net:0,finalBudget:0,prior:0,totalExp:0,remaining:0};
   list.forEach(function(r){
@@ -3909,7 +3960,8 @@ function renderLedger(){
       "<td class='num editable' data-col='finalBudget' data-field='finalBudget' data-head=\""+esc(r.label)+"\" title='Click to edit'>"+fmt(r.finalBudget)+"</td>"+
       "<td class='num editable' data-col='priorExp' data-field='prior' data-head=\""+esc(r.label)+"\" title='Click to edit'>"+fmt(r.prior)+"</td>"+
       "<td class='num' data-col='totalExp'>"+fmt(r.totalExp)+"</td>"+
-      "<td class='num "+(r.remaining<0?'neg':'')+"' data-col='remainingBudget'>"+fmt(r.remaining)+"</td>";
+      "<td class='num "+(r.remaining<0?'neg':'')+"' data-col='remainingBudget'>"+fmt(r.remaining)+"</td>"+
+      customDefs.map(function(f){ return ledgerCustomFieldTd(f, r); }).join("");
     body.appendChild(tr);
   });
   body.querySelectorAll(".editable").forEach(function(td){
@@ -3931,11 +3983,13 @@ function renderLedger(){
       toast("Updated.");
     });
   });
+  wireLedgerCustomFieldEditing(body);
   document.getElementById("ledgerTotalsRow").innerHTML =
     "<td colspan='2'>TOTAL ("+list.length+" head"+(list.length===1?"":"s")+")</td>"+
     "<td class='num' data-col='noOfBills'>"+sums.count+"</td><td class='num' data-col='totalGross'>"+fmt(sums.gross)+"</td><td class='num' data-col='totalDeductions'>"+fmt(sums.ded)+"</td>"+
     "<td class='num' data-col='netExp'>"+fmt(sums.net)+"</td><td class='num' data-col='finalBudget'>"+fmt(sums.finalBudget)+"</td><td class='num' data-col='priorExp'>"+fmt(sums.prior)+"</td>"+
-    "<td class='num' data-col='totalExp'>"+fmt(sums.totalExp)+"</td><td class='num "+(sums.remaining<0?'neg':'')+"' data-col='remainingBudget'>"+fmt(sums.remaining)+"</td>";
+    "<td class='num' data-col='totalExp'>"+fmt(sums.totalExp)+"</td><td class='num "+(sums.remaining<0?'neg':'')+"' data-col='remainingBudget'>"+fmt(sums.remaining)+"</td>"+
+    (customCount? "<td colspan='"+customCount+"'>—</td>" : "");
 
   document.getElementById("ledgerResultCount").textContent = "Showing "+list.length+" of "+getHeads().length;
   applyColumnPrintCss();
@@ -3951,8 +4005,8 @@ document.getElementById("lf_clear").addEventListener("click", function(){
 });
 document.getElementById("ledgerExportBtn").addEventListener("click", function(){
   var list = filteredLedger();
-  var rows = [["Sr#","Contingent Head","No. of Bills","Total Gross","Total Deductions","Net Expenditure","Final Budget","Prior Expenditure","Total Expenditure","Remaining Budget"]];
-  list.forEach(function(r){ rows.push([r.sr,r.label,r.count,r.gross,r.ded,r.net,r.finalBudget,r.prior,r.totalExp,r.remaining]); });
+  var rows = [["Sr#","Contingent Head","No. of Bills","Total Gross","Total Deductions","Net Expenditure","Final Budget","Prior Expenditure","Total Expenditure","Remaining Budget"].concat(customFieldCsvHeaders("ledger"))];
+  list.forEach(function(r){ rows.push([r.sr,r.label,r.count,r.gross,r.ded,r.net,r.finalBudget,r.prior,r.totalExp,r.remaining].concat(customFieldCsvValues("ledger", r))); });
   downloadCSV("ledger_budget.csv", rows);
 });
 
