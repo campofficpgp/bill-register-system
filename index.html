@@ -1294,6 +1294,15 @@ html,body{overflow-x:hidden;}
         <span class="count-chip" id="ledgerCount">41 heads</span>
       </div>
 
+      <div class="card">
+        <h3 data-i18n="ledger_addHeadTitle">Add a new Contingent Head</h3>
+        <div class="grid cols-2">
+          <div class="field"><label data-i18n="ledger_addHeadLabel">New head name</label><input type="text" id="ledger_newHeadName" placeholder="e.g. A03950-NEW HEAD NAME"></div>
+          <div class="field" style="align-self:end;"><button class="btn ghost" id="ledger_addHeadBtn" style="width:100%;" data-i18n="ledger_addHeadBtn">Add head</button></div>
+        </div>
+        <div class="field-hint" data-i18n="ledger_addHeadHint" style="margin-top:6px;">The new head is available immediately in Contingent Bill, Cash Book, Stock Book and here in Ledger &amp; Budget. Click any head's name in the table below to rename it — the change carries over everywhere it's used.</div>
+      </div>
+
       <div class="search-bar">
         <h3 data-i18n="ledger_searchHeads">Search heads</h3>
         <div class="grid cols-2">
@@ -1787,6 +1796,14 @@ function normalizeData(data, seedDefaults){
   data.printColumns = data.printColumns || {};
   data.itemMaster = data.itemMaster || {};
 
+  /* Contingent Heads beyond the fixed 41: heads added by an Administrator at
+     runtime (label only — budget figures are corrected the same way as any
+     other head, via headOverrides), and labels of the original 41 that have
+     been renamed away (so the old, hardcoded label stops showing up once its
+     replacement exists). */
+  data.customHeads = data.customHeads || [];
+  data.hiddenDefaultHeads = data.hiddenDefaultHeads || [];
+
   /* Fields Manager (Super Admin only): custom data-entry fields added on top of the
      built-in columns of each register (Contingent Bill, Cash Book, Stock Book,
      Employees, Leave Register), plus a single one-step-back undo snapshot.
@@ -2132,6 +2149,8 @@ en: {
   ledger_panelDesc:"Generated automatically from the Contingent Bill entries. Final Budget and Prior Expenditure can be corrected here if the reference figures change.",
   ledger_panelTitle:"Ledger & Budget — Head-wise Summary", ledger_priorExpenditure:"Prior Expenditure", ledger_remainingBudget:"Remaining Budget",
   ledger_searchHeads:"Search heads", ledger_totalDeductions:"Total Deductions", ledger_totalExpenditure:"Total Expenditure", ledger_totalGross:"Total Gross",
+  ledger_addHeadTitle:"Add a new Contingent Head", ledger_addHeadLabel:"New head name", ledger_addHeadBtn:"Add head",
+  ledger_addHeadHint:"The new head is available immediately in Contingent Bill, Cash Book, Stock Book and here in Ledger & Budget. Click any head's name in the table below to rename it — the change carries over everywhere it's used.",
   lv_addLeave:"Add a leave entry", lv_allEmployees:"All employees", lv_allLeaveTypes:"All leave types",
   lv_casual:"Casual Leave (CL)", lv_earned:"Earned Leave (EL)", lv_employee:"Employee", lv_extraOrdinary:"Extraordinary Leave (EOL)",
   lv_leaveType:"Leave type", lv_medical:"Medical Leave", lv_noLeaveMatch:"No leave entries match. Add one above, or clear filters.",
@@ -2326,6 +2345,8 @@ ur: {
   ledger_panelDesc:"کنٹینجنٹ بل اندراجات سے خودکار طور پر تیار۔ اگر حوالہ اعداد و شمار تبدیل ہوں تو Final Budget اور Prior Expenditure یہاں درست کیے جا سکتے ہیں۔",
   ledger_panelTitle:"لیجر اینڈ بجٹ — ہیڈ وار خلاصہ", ledger_priorExpenditure:"سابقہ اخراجات", ledger_remainingBudget:"باقی بجٹ",
   ledger_searchHeads:"ہیڈز تلاش کریں", ledger_totalDeductions:"کل کٹوتیاں", ledger_totalExpenditure:"کل اخراجات", ledger_totalGross:"کل مجموعی رقم",
+  ledger_addHeadTitle:"نیا کنٹینجنٹ ہیڈ شامل کریں", ledger_addHeadLabel:"نئے ہیڈ کا نام", ledger_addHeadBtn:"ہیڈ شامل کریں",
+  ledger_addHeadHint:"نیا ہیڈ فوری طور پر کنٹینجنٹ بل، کیش بک، سٹاک بک اور یہاں لیجر اینڈ بجٹ میں دستیاب ہوگا۔ نیچے دی گئی فہرست میں کسی بھی ہیڈ کے نام پر کلک کر کے اسے تبدیل کریں — یہ تبدیلی ہر جگہ لاگو ہوگی جہاں یہ ہیڈ استعمال ہوتا ہے۔",
   lv_addLeave:"نئی رخصت درج کریں", lv_allEmployees:"تمام ملازمین", lv_allLeaveTypes:"تمام اقسامِ رخصت",
   lv_casual:"کیژول لیو (CL)", lv_earned:"ارنڈ لیو (EL)", lv_employee:"ملازم", lv_extraOrdinary:"ایکسٹرا آرڈینری لیو (EOL)",
   lv_leaveType:"رخصت کی قسم", lv_medical:"میڈیکل لیو", lv_noLeaveMatch:"کوئی رخصت میچ نہیں کرتی۔ اوپر ایک درج کریں، یا فلٹرز صاف کریں۔",
@@ -2565,7 +2586,10 @@ officeInput.addEventListener("input", function(){
 
 /* ---------------- Head list helpers ---------------- */
 function getHeads(){
-  return DEFAULT_HEADS.map(function(h){
+  var hidden = STATE.hiddenDefaultHeads || [];
+  var base = DEFAULT_HEADS.filter(function(h){ return hidden.indexOf(h.label)===-1; });
+  var custom = (STATE.customHeads||[]).map(function(label){ return {label:label, finalBudget:0, prior:0}; });
+  return base.concat(custom).map(function(h){
     var ov = STATE.headOverrides[h.label] || {};
     return {
       label: h.label,
@@ -2573,6 +2597,76 @@ function getHeads(){
       prior: (ov.prior!=null? ov.prior : h.prior)
     };
   });
+}
+/* Add a Contingent Head beyond the fixed 41 — usable immediately from Bill,
+   Cash Book, Stock Book and Ledger & Budget alike, since all four read the
+   head list from getHeads()/itemMaster. */
+function addContingentHead(name){
+  name = (name||"").trim();
+  if(!name) return {ok:false, msg:"Type a head name first."};
+  var exists = getHeads().some(function(h){ return h.label===name; });
+  if(exists) return {ok:false, msg:"That head already exists."};
+  STATE.customHeads = STATE.customHeads || [];
+  STATE.customHeads.push(name);
+  STATE.itemMaster[name] = STATE.itemMaster[name] || [];
+  saveData();
+  return {ok:true};
+}
+/* Rename any Contingent Head — one of the original 41 or a custom-added one —
+   and cascade the new label to every place the old one is stored: Bill, Cash
+   Book and Stock Book entries, the item master, and any budget correction /
+   custom-field data already recorded against it (headOverrides). */
+function renameContingentHead(oldLabel, newLabel){
+  oldLabel = (oldLabel||"").trim();
+  newLabel = (newLabel||"").trim();
+  if(!oldLabel || !newLabel) return {ok:false, msg:"Head name can't be empty."};
+  if(oldLabel===newLabel) return {ok:true};
+  var newTaken = getHeads().some(function(h){ return h.label===newLabel; });
+  if(newTaken) return {ok:false, msg:"A head named \""+newLabel+"\" already exists."};
+
+  var current = getHeads().find(function(h){ return h.label===oldLabel; });
+  var isDefault = DEFAULT_HEADS.some(function(h){ return h.label===oldLabel; });
+
+  if(isDefault){
+    STATE.hiddenDefaultHeads = STATE.hiddenDefaultHeads || [];
+    if(STATE.hiddenDefaultHeads.indexOf(oldLabel)===-1) STATE.hiddenDefaultHeads.push(oldLabel);
+    STATE.customHeads = STATE.customHeads || [];
+    STATE.customHeads.push(newLabel);
+  } else {
+    STATE.customHeads = STATE.customHeads || [];
+    var ci = STATE.customHeads.indexOf(oldLabel);
+    if(ci!==-1) STATE.customHeads[ci] = newLabel;
+  }
+
+  var ov = STATE.headOverrides[oldLabel] || {};
+  if(current){ ov.finalBudget = current.finalBudget; ov.prior = current.prior; }
+  STATE.headOverrides[newLabel] = ov;
+  delete STATE.headOverrides[oldLabel];
+
+  STATE.itemMaster[newLabel] = STATE.itemMaster[oldLabel] || STATE.itemMaster[newLabel] || [];
+  if(STATE.itemMaster.hasOwnProperty(oldLabel) && oldLabel!==newLabel) delete STATE.itemMaster[oldLabel];
+
+  STATE.bills.forEach(function(b){ if(b.head===oldLabel) b.head=newLabel; });
+  STATE.cash.forEach(function(c){ if(c.head===oldLabel) c.head=newLabel; });
+  STATE.stock.forEach(function(s){ if(s.category===oldLabel) s.category=newLabel; });
+
+  saveData();
+  return {ok:true};
+}
+/* Repopulate every head/category dropdown across all four registers after a
+   head is added or renamed, so the change is visible immediately everywhere
+   without needing a page reload. */
+function refreshHeadDependentUI(){
+  populateHeadSelect(document.getElementById("b_head"), false);
+  populateHeadSelect(document.getElementById("bf_head"), true);
+  populateHeadSelect(document.getElementById("c_head"), false);
+  document.getElementById("c_head").insertAdjacentHTML("afterbegin", "<option value=''>"+esc(t("opt_none"))+"</option>");
+  populateHeadSelect(document.getElementById("cf_head"), true);
+  populateCategorySelect(document.getElementById("s_category"), false);
+  populateCategorySelect(document.getElementById("s_categoryManage"), false);
+  populateCategorySelect(document.getElementById("sf_category"), true);
+  populateCategorySelect(document.getElementById("mi_category"), false);
+  populateLedgerFilterSelect();
 }
 function populateHeadSelect(sel, includeAll){
   sel.innerHTML = "";
@@ -3449,17 +3543,14 @@ document.getElementById("s_addItemBtn").addEventListener("click", function(){
 });
 document.getElementById("s_addCategoryBtn").addEventListener("click", function(){
   var name = document.getElementById("s_newCategoryName").value.trim();
-  if(!name){ toast("Type a head/category name first."); return; }
-  if(STATE.itemMaster[name]){ toast("That head already exists."); return; }
-  STATE.itemMaster[name] = [];
-  saveData();
+  var res = addContingentHead(name);
+  if(!res.ok){ toast(res.msg); return; }
   document.getElementById("s_newCategoryName").value="";
-  populateCategorySelect(document.getElementById("s_category"), false);
-  populateCategorySelect(document.getElementById("s_categoryManage"), false);
-  populateCategorySelect(document.getElementById("sf_category"), true);
+  refreshHeadDependentUI();
   document.getElementById("s_categoryManage").value = name;
   refreshManageHint();
-  toast("New head \""+name+"\" added.");
+  renderLedger();
+  toast("New head \""+name+"\" added — it's now available in Bill, Cash Book and Ledger & Budget too.");
 });
 refreshItemListForCategory();
 refreshManageHint();
@@ -3925,6 +4016,25 @@ function wireLedgerCustomFieldEditing(body){
     });
   });
 }
+function wireLedgerHeadRenaming(body){
+  body.querySelectorAll(".editable-head").forEach(function(td){
+    if(!isAdmin()){ return; }
+    td.style.cursor="pointer";
+    td.style.textDecoration="underline dotted";
+    td.addEventListener("click", function(){
+      var oldLabel = td.dataset.head;
+      var newLabel = prompt("Rename this Contingent Head — it will update everywhere it's used (Bill, Cash Book, Stock Book):", oldLabel);
+      if(newLabel===null) return;
+      newLabel = newLabel.trim();
+      if(!newLabel || newLabel===oldLabel) return;
+      var res = renameContingentHead(oldLabel, newLabel);
+      if(!res.ok){ toast(res.msg); return; }
+      refreshHeadDependentUI();
+      renderAll();
+      toast("Head renamed to \""+newLabel+"\".");
+    });
+  });
+}
 function populateLedgerFilterSelect(){
   populateDistinctSelect(document.getElementById("lf_head"), getHeads().map(function(h){ return h.label; }));
 }
@@ -3955,7 +4065,7 @@ function renderLedger(){
     sums.finalBudget+=r.finalBudget; sums.prior+=r.prior; sums.totalExp+=r.totalExp; sums.remaining+=r.remaining;
     var tr = document.createElement("tr");
     tr.innerHTML =
-      "<td>"+r.sr+"</td><td data-col='head'>"+esc(r.label)+"</td><td class='num' data-col='noOfBills'>"+r.count+"</td><td class='num' data-col='totalGross'>"+fmt(r.gross)+"</td>"+
+      "<td>"+r.sr+"</td><td class='editable-head' data-col='head' data-head=\""+esc(r.label)+"\" title='Click to rename'>"+esc(r.label)+"</td><td class='num' data-col='noOfBills'>"+r.count+"</td><td class='num' data-col='totalGross'>"+fmt(r.gross)+"</td>"+
       "<td class='num' data-col='totalDeductions'>"+fmt(r.ded)+"</td><td class='num' data-col='netExp'>"+fmt(r.net)+"</td>"+
       "<td class='num editable' data-col='finalBudget' data-field='finalBudget' data-head=\""+esc(r.label)+"\" title='Click to edit'>"+fmt(r.finalBudget)+"</td>"+
       "<td class='num editable' data-col='priorExp' data-field='prior' data-head=\""+esc(r.label)+"\" title='Click to edit'>"+fmt(r.prior)+"</td>"+
@@ -3984,6 +4094,7 @@ function renderLedger(){
     });
   });
   wireLedgerCustomFieldEditing(body);
+  wireLedgerHeadRenaming(body);
   document.getElementById("ledgerTotalsRow").innerHTML =
     "<td colspan='2'>TOTAL ("+list.length+" head"+(list.length===1?"":"s")+")</td>"+
     "<td class='num' data-col='noOfBills'>"+sums.count+"</td><td class='num' data-col='totalGross'>"+fmt(sums.gross)+"</td><td class='num' data-col='totalDeductions'>"+fmt(sums.ded)+"</td>"+
@@ -3992,6 +4103,8 @@ function renderLedger(){
     (customCount? "<td colspan='"+customCount+"'>—</td>" : "");
 
   document.getElementById("ledgerResultCount").textContent = "Showing "+list.length+" of "+getHeads().length;
+  var ledgerCountEl = document.getElementById("ledgerCount");
+  if(ledgerCountEl) ledgerCountEl.textContent = getHeads().length+" heads";
   applyColumnPrintCss();
 }
 ["lf_head","lf_activity"].forEach(function(id){
@@ -4002,6 +4115,15 @@ document.getElementById("lf_clear").addEventListener("click", function(){
   document.getElementById("lf_head").value="";
   document.getElementById("lf_activity").value="all";
   renderLedger();
+});
+document.getElementById("ledger_addHeadBtn").addEventListener("click", function(){
+  var name = document.getElementById("ledger_newHeadName").value.trim();
+  var res = addContingentHead(name);
+  if(!res.ok){ toast(res.msg); return; }
+  document.getElementById("ledger_newHeadName").value="";
+  refreshHeadDependentUI();
+  renderLedger();
+  toast("New head \""+name+"\" added — it's now available in Bill, Cash Book and Stock Book too.");
 });
 document.getElementById("ledgerExportBtn").addEventListener("click", function(){
   var list = filteredLedger();
