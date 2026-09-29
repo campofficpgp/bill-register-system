@@ -895,6 +895,7 @@ html,body{overflow-x:hidden;}
     <button class="tab-btn" data-tab="cash"><span class="dot"></span> <span data-i18n="nav_cash">Cash Book</span></button>
     <button class="tab-btn" data-tab="stock"><span class="dot"></span> <span data-i18n="nav_stock">Stock Book</span></button>
     <button class="tab-btn" data-tab="ledger"><span class="dot"></span> <span data-i18n="nav_ledger">Ledger &amp; Budget</span></button>
+    <button class="tab-btn" data-tab="reports"><span class="dot"></span> <span data-i18n="rep_title">Reports</span></button>
     <div class="navnote" data-i18n="nav_adminSection">Administration</div>
     <button class="tab-btn" data-tab="employees"><span class="dot"></span> <span data-i18n="nav_employees">Employees</span></button>
     <button class="tab-btn" data-tab="leave"><span class="dot"></span> <span data-i18n="nav_leave">Leave Register</span></button>
@@ -1335,6 +1336,88 @@ html,body{overflow-x:hidden;}
         </table>
       </div>
       <p class="field-hint" style="margin-top:8px;" data-i18n="ledger_clickToCorrect">Click a Final Budget or Prior Expenditure figure to correct it. Changes are saved automatically.</p>
+    </section>
+
+    <!-- ================= REPORTS ================= -->
+    <section class="panel" id="panel-reports">
+      <div class="panel-head">
+        <div>
+          <h2 data-i18n="rep_title">Reports</h2>
+          <p data-i18n="rep_desc">Pick a date range to get a combined summary of Contingent Bills, Cash Book and Stock Book movements — view on screen, print, or export to Excel.</p>
+        </div>
+        <span class="count-chip" id="reportRangeChip"></span>
+      </div>
+
+      <div class="search-bar">
+        <h3 data-i18n="rep_period">Report period</h3>
+        <div class="grid cols-4">
+          <div class="field"><label data-i18n="rep_fromDate">From date</label><input type="date" id="r_from"></div>
+          <div class="field"><label data-i18n="rep_toDate">To date</label><input type="date" id="r_to"></div>
+          <div class="field"><label data-i18n="rep_quickRange">Quick range</label>
+            <select id="r_quick">
+              <option value="" data-i18n="rep_choose">— choose —</option>
+              <option value="thisMonth" data-i18n="rep_thisMonth">This month</option>
+              <option value="lastMonth" data-i18n="rep_lastMonth">Last month</option>
+              <option value="thisFY" data-i18n="rep_thisFY">This financial year (Jul–Jun)</option>
+              <option value="all" data-i18n="rep_allTime">All-time</option>
+            </select>
+          </div>
+          <div class="field" style="justify-content:flex-end;">
+            <button class="btn" id="r_generateBtn" data-i18n="rep_generate">Generate report</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid cols-4" id="reportStatCards" style="margin-bottom:18px;"></div>
+
+      <div class="card">
+        <h3 data-i18n="rep_billsByHead">Contingent Bills — by Head</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th data-i18n="rep_headGroup">Head / Particulars group</th><th class="num" data-i18n="rep_noOfBills">No. of Bills</th><th class="num" data-i18n="rep_grossTotal">Gross Total</th><th class="num" data-i18n="th_totalDed">Total Ded.</th><th class="num" data-i18n="rep_netTotal">Net Total</th></tr></thead>
+            <tbody id="reportBillsBody"></tbody>
+            <tfoot><tr id="reportBillsTotals"></tr></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 data-i18n="rep_cashByHead">Cash Book — by Head</h3>
+        <p class="field-hint" id="reportCashOpening" style="margin-bottom:8px;"></p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th data-i18n="rep_headGroup">Head / Particulars group</th><th class="num" data-i18n="rep_receipts">Receipts</th><th class="num" data-i18n="rep_payments">Payments</th><th class="num" data-i18n="rep_netMovement">Net Movement</th></tr></thead>
+            <tbody id="reportCashBody"></tbody>
+            <tfoot><tr id="reportCashTotals"></tr></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 data-i18n="rep_stockByCategory">Stock Book — by Category</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th data-i18n="th_headCategory">Head/Category</th><th class="num" data-i18n="rep_qtyIn">Qty In</th><th class="num" data-i18n="rep_qtyOut">Qty Out</th><th class="num" data-i18n="rep_net">Net</th></tr></thead>
+            <tbody id="reportStockBody"></tbody>
+            <tfoot><tr id="reportStockTotals"></tr></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 data-i18n="rep_empOnRecord">Employees on record (as of today, not date-limited)</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th data-i18n="th_bps">BPS</th><th class="num" data-i18n="rep_employees">Employees</th></tr></thead>
+            <tbody id="reportEmpBody"></tbody>
+            <tfoot><tr id="reportEmpTotals"></tr></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <div class="btnbar">
+        <button class="btn secondary" id="r_exportBtn" data-i18n="rep_exportExcel">Export report (Excel)</button>
+      </div>
     </section>
 
     <!-- ================= EMPLOYEES ================= -->
@@ -4612,6 +4695,51 @@ function renderReports(){
   }).join("") : "<tr class='empty-row'><td colspan='2'>"+esc(t("rep_noEmployees"))+"</td></tr>";
   document.getElementById("reportEmpTotals").innerHTML = "<td><b>"+esc(t("rep_totalLabel"))+"</b></td><td class='num'><b>"+STATE.employees.length+"</b></td>";
 }
+document.getElementById("r_quick").addEventListener("change", function(){
+  var v = this.value;
+  if(!v) return;
+  applyQuickRange(v);
+  renderReports();
+});
+document.getElementById("r_generateBtn").addEventListener("click", renderReports);
+document.getElementById("r_exportBtn").addEventListener("click", function(){
+  var d = reportData();
+  var wb = XLSX.utils.book_new();
+
+  var billsHeader = ["Head / Particulars group","No. of Bills","Gross Total","Total Deductions","Net Total"];
+  var billsRows = Object.keys(d.billsByHead).sort().map(function(h){
+    var r = d.billsByHead[h];
+    return [h, r.count, r.gross, r.ded, r.net];
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([billsHeader].concat(billsRows)), "Bills by Head");
+
+  var cashHeader = ["Head / Particulars group","Receipts","Payments","Net Movement"];
+  var cashRows = Object.keys(d.cashByHead).sort().map(function(h){
+    var r = d.cashByHead[h];
+    return [h, r.receipt, r.payment, r.receipt-r.payment];
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([cashHeader].concat(cashRows)), "Cash by Head");
+
+  var stockHeader = ["Head/Category","Qty In","Qty Out","Net"];
+  var stockRows = Object.keys(d.stockByCat).sort().map(function(c){
+    var r = d.stockByCat[c];
+    return [c, r.qtyIn, r.qtyOut, r.qtyIn-r.qtyOut];
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([stockHeader].concat(stockRows)), "Stock by Category");
+
+  var empHeader = ["BPS","Employees"];
+  var empRows = Object.keys(d.empByBps).sort().map(function(b){ return [b, d.empByBps[b]]; });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([empHeader].concat(empRows)), "Employees by BPS");
+
+  var readMe = [
+    ["Bill Register System — Report Export"],
+    ["Exported on: "+todayStr()+(CURRENT_USER? "  by user: "+CURRENT_USER.username : "")],
+    ["Report period: "+(d.from||"All-time")+" to "+(d.to||"All-time")]
+  ];
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(readMe), "Read Me");
+
+  XLSX.writeFile(wb, "bill_register_report_"+todayStr()+".xlsx");
+});
 
 /* ================= EMPLOYEES MODULE ================= */
 var employeeEditId = null;
