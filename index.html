@@ -2909,9 +2909,16 @@ document.querySelectorAll(".tab-btn").forEach(function(btn){
   });
 });
 (function(){
-  var last = localStorage.getItem(STORAGE_KEY+"_activeTab");
-  if(last){
-    var btn = document.querySelector('.tab-btn[data-tab="'+last+'"]');
+  /* A link into this page can ask for a specific tab via #hash (e.g. the portal
+     hub's "Reports" nav item links here as #reports) — that always wins over
+     whatever tab was last open, so a bookmarked/shared link behaves predictably. */
+  var hashTab = (location.hash||"").replace("#","");
+  var target = hashTab && document.querySelector('.tab-btn[data-tab="'+hashTab+'"]') ? hashTab : null;
+  if(!target){
+    target = localStorage.getItem(STORAGE_KEY+"_activeTab");
+  }
+  if(target){
+    var btn = document.querySelector('.tab-btn[data-tab="'+target+'"]');
     if(btn) btn.click();
   }
 })();
