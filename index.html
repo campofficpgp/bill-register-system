@@ -21,6 +21,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><!-- Sends the super-admin security code by email (see "Super Admin Email OTP Gate" below) -->
@@ -794,7 +795,7 @@ html,body{overflow-x:hidden;}
       <div class="field"><label data-i18n="ps_approvedByName">Approved by (name)</label><input type="text" id="ps_approvedByName" placeholder="(optional)"></div>
       <div class="field"><label data-i18n="ps_approvedByDesignation">Approved by (designation)</label><input type="text" id="ps_approvedByDesignation" placeholder="(optional)"></div>
       <button class="btn" id="ps_printBtn" data-i18n="btn_print">Print</button>
-      <button class="btn ghost" id="ps_pdfBtn" title="Choose 'Save as PDF' in the print window" data-i18n="btn_downloadPdf">📄 Download PDF</button>
+      <button class="btn ghost" id="ps_pdfBtn" title="Downloads a ready PDF file directly" data-i18n="btn_downloadPdf">📄 Download PDF</button>
       <button class="btn ghost" id="ps_regenBtn" title="Discard your edits and refill from current rates" data-i18n="ps_regenTemplates">Regenerate templates</button>
       <button class="btn ghost" id="ps_closeBtn" data-i18n="btn_close">Close</button>
     </div>
@@ -823,7 +824,7 @@ html,body{overflow-x:hidden;}
         <a class="nav-item active" href="index.html"><span class="ico">🧾</span><span class="label">Bill Register</span></a>
         <a class="nav-item" href="https://cmpofficepgp.org/weekly-court-roster/" target="_blank"><span class="ico">🗂️</span><span class="label">Weekly Court Roster</span></a>
         <a class="nav-item" href="https://cmpofficepgp.org/camp-office-suite/gallery.html" target="_blank"><span class="ico">🖼️</span><span class="label">Gallery</span></a>
-        <a class="nav-item" href="https://cmpofficepgp.org/camp-office-suite/case-entry.html" target="_blank"><span class="ico">📊</span><span class="label">Reports</span></a>
+        <a class="nav-item" href="#reports" id="navReportsLink"><span class="ico">📊</span><span class="label">Reports</span></a>
         <a class="nav-item" href="https://cmpofficepgp.org/camp-office-suite/employee-directory.html" target="_blank"><span class="ico">🗂️</span><span class="label">Employee Directory</span></a>
       </nav>
       <div class="sidebar-foot">
@@ -872,7 +873,7 @@ html,body{overflow-x:hidden;}
         </select>
       </label>
       <button id="globalPrintBtn" data-i18n="btn_printCurrent">Print current view</button>
-      <button id="globalPdfBtn" title="Choose 'Save as PDF' in the print window" data-i18n="btn_downloadPdfCurrent">📄 Download PDF</button>
+      <button id="globalPdfBtn" title="Downloads a ready PDF file directly" data-i18n="btn_downloadPdfCurrent">📄 Download PDF</button>
       <button id="hfConfigBtn" type="button" class="btn ghost small" style="display:none;" title="Report header/footer fields / رپورٹ ہیڈر/فوٹر فیلڈز">☰ Header/Footer</button>
       <button id="colsConfigBtn" type="button" class="btn ghost small" style="display:none;" title="Choose which columns to print / پرنٹ کے لیے کالم منتخب کریں">☰ Select Columns</button>
       <span><span data-i18n="lbl_signedInAs">Signed in as</span> <b id="currentUserLabel">—</b> <span class="role-badge" id="currentUserRole">User</span></span>
@@ -1822,7 +1823,7 @@ html,body{overflow-x:hidden;}
         </details>
         <details class="faq-item">
           <summary data-i18n="help_faq11_q">Is there a "Download PDF" option too?</summary>
-          <div class="faq-answer" data-i18n="help_faq11_a">Yes — next to Print you'll find a "Download PDF" button. It opens the same print window; just choose "Save as PDF" (or "Microsoft Print to PDF") as the destination there instead of a physical printer.</div>
+          <div class="faq-answer" data-i18n="help_faq11_a">Yes — next to Print you'll find a "Download PDF" button. It builds and downloads a ready PDF file directly, with no print window and no browser header/footer added to it.</div>
         </details>
         <details class="faq-item">
           <summary data-i18n="help_faq8_q">Can I get this data into Excel?</summary>
@@ -2579,7 +2580,7 @@ en: {
   help_faq10_q:"Who can see this data — is it private to our office?",
   help_faq10_a:"Only people who sign in with an account on this system can see it. Access is controlled by the Administrator/Guest roles, and further enforced by the database's own security rules.",
   help_faq11_q:"Is there a \"Download PDF\" option too?",
-  help_faq11_a:"Yes — next to Print you'll find a \"Download PDF\" button. It opens the same print window; just choose \"Save as PDF\" (or \"Microsoft Print to PDF\") as the destination there instead of a physical printer.",
+  help_faq11_a:"Yes — next to Print you'll find a \"Download PDF\" button. It builds and downloads a ready PDF file directly, with no print window and no browser header/footer added to it.",
   chat_title:"Team Chat", chat_typeMessage:"Type a message…", chat_send:"Send",
   chat_onlineCount:"{n} online", chat_noMessages:"No messages yet — say hello!",
   chat_you:"You", chat_guest:"Guest",
@@ -2778,7 +2779,7 @@ ur: {
   help_faq10_q:"یہ ڈیٹا کون دیکھ سکتا ہے — کیا یہ صرف ہمارے آفس کے لیے محفوظ ہے؟",
   help_faq10_a:"صرف وہی لوگ دیکھ سکتے ہیں جو اس سسٹم پر اپنے اکاؤنٹ سے سائن اِن ہوں۔ رسائی Administrator/Guest کے roles سے کنٹرول ہوتی ہے، اور مزید ڈیٹا بیس کے اپنے سیکیورٹی rules سے محفوظ ہے۔",
   help_faq11_q:"کیا \"Download PDF\" کا آپشن بھی موجود ہے؟",
-  help_faq11_a:"جی ہاں — Print کے ساتھ ہی \"Download PDF\" بٹن موجود ہے۔ یہ وہی پرنٹ ونڈو کھولتا ہے؛ بس وہاں پرنٹر کی بجائے \"Save as PDF\" (یا \"Microsoft Print to PDF\") منتخب کر لیں۔",
+  help_faq11_a:"جی ہاں — Print کے ساتھ ہی \"Download PDF\" بٹن موجود ہے۔ یہ کوئی پرنٹ ونڈو کھولے بغیر سیدھی ایک تیار PDF فائل بنا کر ڈاؤن لوڈ کر دیتا ہے — نہ کوئی پرنٹ ونڈو، نہ browser کا کوئی اضافی ہیڈر/فوٹر۔",
   chat_title:"ٹیم چیٹ", chat_typeMessage:"پیغام لکھیں…", chat_send:"بھیجیں",
   chat_onlineCount:"{n} آن لائن", chat_noMessages:"ابھی تک کوئی پیغام نہیں — سلام کہیں!",
   chat_you:"آپ", chat_guest:"مہمان",
@@ -6008,9 +6009,74 @@ function printCurrentView(){
   window.print();
 }
 window.addEventListener("afterprint", function(){ document.body.classList.remove("payslip-mode"); });
+
+/* ================= Item 39: real "Download PDF" — an actual file, not the print dialog =================
+   The old "Download PDF" button just called printCurrentView() and told the user to pick
+   "Save as PDF" in the browser's print window. That works, but the browser stamps its own
+   header/footer (page URL, date, page number) onto the result unless the user manually
+   unchecks "Headers and footers" every time — which looks unprofessional and confused users.
+   This builds a real PDF file client-side (html2pdf.js = html2canvas + jsPDF) and triggers a
+   normal file download — no print window, no browser chrome, nothing to configure.
+   To reuse every bit of the print styling already built for this app (letterhead masthead,
+   sign-off block, column selection, paper size, attendance-landscape) instead of duplicating
+   it, this temporarily flips every "@media print" stylesheet rule to "@media all" for the
+   instant of capture, so html2canvas sees exactly what would have printed — then restores it. */
+function withPrintRulesActive(fn){
+  var touched = [];
+  Array.prototype.forEach.call(document.styleSheets, function(sheet){
+    var rules;
+    try{ rules = sheet.cssRules; }catch(e){ return; } // cross-origin sheet — skip, none of ours are
+    if(!rules) return;
+    Array.prototype.forEach.call(rules, function(rule){
+      if(rule.type === CSSRule.MEDIA_RULE && rule.media && rule.media.mediaText.indexOf("print") !== -1){
+        touched.push({rule: rule, original: rule.media.mediaText});
+        try{ rule.media.mediaText = "all"; }catch(e){/* ignore */}
+      }
+    });
+  });
+  return Promise.resolve().then(fn).finally(function(){
+    touched.forEach(function(t){
+      try{ t.rule.media.mediaText = t.original; }catch(e){/* ignore */}
+    });
+  });
+}
+var PDF_PAPER_MM = {
+  A4: {w:210, h:297}, Legal: {w:215.9, h:355.6}, Foolscap: {w:215.9, h:330.2}
+};
+function downloadCurrentViewAsPdf(paperSizeKey){
+  var btns = [document.getElementById("globalPdfBtn"), document.getElementById("ps_pdfBtn")].filter(Boolean);
+  btns.forEach(function(b){ b.disabled = true; });
+  var payslipOpen = document.getElementById("payslipOverlay").style.display === "flex";
+  if(payslipOpen){ document.body.classList.add("payslip-mode"); }
+  document.getElementById("pbPrintExtraFields").innerHTML = buildPrintExtraFieldsHtml();
+  var isAttendance = currentPanelKey()==="attendance";
+  var paper = PDF_PAPER_MM[paperSizeKey] || PDF_PAPER_MM.A4;
+  var fmt = isAttendance ? [paper.h, paper.w] : [paper.w, paper.h]; // landscape swaps w/h
+  var label = (payslipOpen ? "PaySlip" : (PANEL_LABELS[currentPanelKey()] || "Document")).replace(/[^A-Za-z0-9]+/g,"-");
+  var filename = "CampOffice-BillRegister-"+label+"-"+todayStr()+".pdf";
+  var target = payslipOpen ? document.getElementById("payslipOverlay") : document.querySelector(".shell");
+  withPrintRulesActive(function(){
+    return html2pdf().set({
+      margin: [14,14,14,14],
+      filename: filename,
+      image: {type:"jpeg", quality:0.98},
+      html2canvas: {scale:2, useCORS:true, logging:false, windowWidth: target.scrollWidth},
+      jsPDF: {unit:"mm", format:fmt, orientation: isAttendance ? "landscape" : "portrait"},
+      pagebreak: {mode:["css","legacy"]}
+    }).from(target).save();
+  }).catch(function(err){
+    console.error("PDF export failed:", err);
+    toast("PDF بنانے میں خرابی — دوبارہ کوشش کریں۔ / Could not build the PDF — please try again.");
+  }).finally(function(){
+    document.body.classList.remove("payslip-mode");
+    btns.forEach(function(b){ b.disabled = false; });
+  });
+}
 document.getElementById("globalPaperSize").addEventListener("change", function(){ setPageSize(this.value); });
 document.getElementById("globalPrintBtn").addEventListener("click", printCurrentView);
-document.getElementById("globalPdfBtn").addEventListener("click", printCurrentView);
+document.getElementById("globalPdfBtn").addEventListener("click", function(){
+  downloadCurrentViewAsPdf(document.getElementById("globalPaperSize").value);
+});
 document.getElementById("hfConfigBtn").addEventListener("click", function(){
   if(!isAdmin()){ toast("Only an Administrator can change header/footer fields."); return; }
   var key = currentPanelKey();
@@ -6424,8 +6490,9 @@ document.getElementById("ps_printBtn").addEventListener("click", function(){
   printCurrentView();
 });
 document.getElementById("ps_pdfBtn").addEventListener("click", function(){
-  setPageSize(document.getElementById("ps_paperSize").value);
-  printCurrentView();
+  var sizeKey = document.getElementById("ps_paperSize").value;
+  setPageSize(sizeKey);
+  downloadCurrentViewAsPdf(sizeKey);
 });
 document.getElementById("ps_closeBtn").addEventListener("click", closePaySlip);
 
@@ -6598,6 +6665,14 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       el.addEventListener('click', function(){
         if(window.innerWidth <= 960){ sidebarEl.classList.remove('mobile-open'); backdrop.classList.remove('show'); }
       });
+    });
+    // "Reports" already lives on this page (the Reports tab) — clicking it in the portal
+    // sidebar should just switch to that tab here instead of reloading/opening a new tab.
+    var navReportsLink = document.getElementById('navReportsLink');
+    if(navReportsLink) navReportsLink.addEventListener('click', function(e){
+      e.preventDefault();
+      var tabBtn = document.querySelector('.tab-btn[data-tab="reports"]');
+      if(tabBtn) tabBtn.click();
     });
   })();
 </script>
