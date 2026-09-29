@@ -602,11 +602,17 @@ html,body{overflow-x:hidden;}
 
   @media print{
     nav.sidenav,.search-bar,.btnbar,.topbar,.row-actions,.row-actions-th,.card.entry-form,footer.appfoot,.auth-screen,.userbar,
-    .panel-head p,#chatToggleBtn,#chatPanel,.appfoot-copyright,.att-edit-emp-btn,#pendingReturnsCard{display:none !important;}
+    .panel-head p,#chatToggleBtn,#chatPanel,.appfoot-copyright,.att-edit-emp-btn,#pendingReturnsCard,
+    #ledgerAddHeadCard,#ledgerExportBtn{display:none !important;}
     .shell{display:block;min-height:0;}
     main{padding:0;max-width:none;}
     body{background:#fff;}
     .card{box-shadow:none;border:1px solid #999;}
+    /* Wide tables (Contingent Bill/Cash Book/Stock Book/Ledger with several custom fields
+       added via Field Manager) scroll horizontally on screen (.table-wrap{overflow-x:auto}).
+       Left as-is, only the currently-scrolled-into-view columns would be captured/printed —
+       let the full table render at its natural width instead so every column appears. */
+    .table-wrap{overflow-x:visible !important;}
     /* #pendingReturnsCard (Stock Book's "Pending returns & reminders" widget, with its
        "Mark returned" buttons) is a live on-screen reminder list, not part of the Stock
        Register itself — same reasoning it's already excluded from the print-columns picker
