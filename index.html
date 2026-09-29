@@ -23,9 +23,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-<!-- Sends the super-admin security code by email (see "Super Admin Email OTP Gate" below) -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><!-- Sends the super-admin security code by email (see "Super Admin Email OTP Gate" below) -->
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 html,body{overflow-x:hidden;}
@@ -796,7 +794,7 @@ html,body{overflow-x:hidden;}
       <div class="field"><label data-i18n="ps_approvedByName">Approved by (name)</label><input type="text" id="ps_approvedByName" placeholder="(optional)"></div>
       <div class="field"><label data-i18n="ps_approvedByDesignation">Approved by (designation)</label><input type="text" id="ps_approvedByDesignation" placeholder="(optional)"></div>
       <button class="btn" id="ps_printBtn" data-i18n="btn_print">Print</button>
-      <button class="btn ghost" id="ps_pdfBtn" data-i18n="btn_downloadPdf">📄 Download PDF</button>
+      <button class="btn ghost" id="ps_pdfBtn" title="Choose 'Save as PDF' in the print window" data-i18n="btn_downloadPdf">📄 Download PDF</button>
       <button class="btn ghost" id="ps_regenBtn" title="Discard your edits and refill from current rates" data-i18n="ps_regenTemplates">Regenerate templates</button>
       <button class="btn ghost" id="ps_closeBtn" data-i18n="btn_close">Close</button>
     </div>
@@ -874,7 +872,7 @@ html,body{overflow-x:hidden;}
         </select>
       </label>
       <button id="globalPrintBtn" data-i18n="btn_printCurrent">Print current view</button>
-      <button id="globalPdfBtn" data-i18n="btn_downloadPdfCurrent">📄 Download PDF</button>
+      <button id="globalPdfBtn" title="Choose 'Save as PDF' in the print window" data-i18n="btn_downloadPdfCurrent">📄 Download PDF</button>
       <button id="hfConfigBtn" type="button" class="btn ghost small" style="display:none;" title="Report header/footer fields / رپورٹ ہیڈر/فوٹر فیلڈز">☰ Header/Footer</button>
       <button id="colsConfigBtn" type="button" class="btn ghost small" style="display:none;" title="Choose which columns to print / پرنٹ کے لیے کالم منتخب کریں">☰ Select Columns</button>
       <span><span data-i18n="lbl_signedInAs">Signed in as</span> <b id="currentUserLabel">—</b> <span class="role-badge" id="currentUserRole">User</span></span>
@@ -5700,59 +5698,6 @@ function buildPrintExtraFieldsHtml(){
   }
   return rows.join("");
 }
-/* ================= PDF Download helper (html2pdf.js) =================
-   For views with a dedicated printable element (e.g. the payslip paper),
-   pdfDownload() just snapshots that element directly. For the "whole
-   current view" case there is no dedicated printable div -- normally the
-   @media print CSS is what hides the sidebar/toolbar/search bar/etc.
-   withPrintCssActive() temporarily turns those @media print rules into
-   normal (always-on) rules, takes the snapshot, then removes them again --
-   so the PDF matches exactly what Print would produce. This never touches
-   window.print() itself, so it does not trigger the "prepared by" sign-off
-   modal below -- PDF download is a plain export, not a signed printout. */
-function withPrintCssActive(fn){
-  var css = "";
-  for(var i=0;i<document.styleSheets.length;i++){
-    try{
-      var rules = document.styleSheets[i].cssRules;
-      if(!rules) continue;
-      for(var j=0;j<rules.length;j++){
-        var r = rules[j];
-        if(r.media && r.media.mediaText && r.media.mediaText.indexOf("print")!==-1){
-          for(var k=0;k<r.cssRules.length;k++){ css += r.cssRules[k].cssText + "\n"; }
-        }
-      }
-    }catch(e){}
-  }
-  var styleTag = document.createElement("style");
-  styleTag.textContent = css;
-  document.head.appendChild(styleTag);
-  var cleanup = function(){ try{ document.head.removeChild(styleTag); }catch(e){} };
-  try{ fn(cleanup); }catch(e){ cleanup(); throw e; }
-}
-function pdfCapture(el, filename, orientation, onDone){
-  if(!el){ alert("Nothing to export yet."); if(onDone) onDone(); return; }
-  if(typeof html2pdf === "undefined"){ alert("PDF library did not load — check your internet connection and try again."); if(onDone) onDone(); return; }
-  html2pdf().set({
-    margin: 8,
-    filename: filename || "document.pdf",
-    image: { type: "jpeg", quality: 0.97 },
-    html2canvas: { scale: 2, useCORS: true, allowTaint: true, height: el.scrollHeight, windowHeight: el.scrollHeight },
-    jsPDF: { unit: "mm", format: "a4", orientation: orientation || "portrait" },
-    pagebreak: { mode: ["css", "legacy"] }
-  }).from(el).save().then(function(){ if(onDone) onDone(); }).catch(function(){ if(onDone) onDone(); });
-}
-function pdfDownload(el, filename){ pdfCapture(el, filename, "portrait", null); }
-function downloadCurrentViewPDF(){
-  var payslipOpen = document.getElementById("payslipOverlay").style.display === "flex";
-  if(payslipOpen){ pdfDownload(document.getElementById("payslipPaper"), "payslip.pdf"); return; }
-  document.getElementById("pbPrintExtraFields").innerHTML = buildPrintExtraFieldsHtml();
-  var landscape = currentPanelKey()==="attendance";
-  withPrintCssActive(function(cleanup){
-    pdfCapture(document.body, (currentPanelKey()||"report")+".pdf", landscape ? "landscape" : "portrait", cleanup);
-  });
-}
-
 function printCurrentView(){
   var payslipOpen = document.getElementById("payslipOverlay").style.display === "flex";
   if(payslipOpen){ document.body.classList.add("payslip-mode"); }
@@ -5767,7 +5712,7 @@ function printCurrentView(){
 window.addEventListener("afterprint", function(){ document.body.classList.remove("payslip-mode"); });
 document.getElementById("globalPaperSize").addEventListener("change", function(){ setPageSize(this.value); });
 document.getElementById("globalPrintBtn").addEventListener("click", printCurrentView);
-document.getElementById("globalPdfBtn").addEventListener("click", downloadCurrentViewPDF);
+document.getElementById("globalPdfBtn").addEventListener("click", printCurrentView);
 document.getElementById("hfConfigBtn").addEventListener("click", function(){
   if(!isAdmin()){ toast("Only an Administrator can change header/footer fields."); return; }
   var key = currentPanelKey();
@@ -6181,7 +6126,8 @@ document.getElementById("ps_printBtn").addEventListener("click", function(){
   printCurrentView();
 });
 document.getElementById("ps_pdfBtn").addEventListener("click", function(){
-  pdfDownload(document.getElementById("payslipPaper"), "payslip.pdf");
+  setPageSize(document.getElementById("ps_paperSize").value);
+  printCurrentView();
 });
 document.getElementById("ps_closeBtn").addEventListener("click", closePaySlip);
 
