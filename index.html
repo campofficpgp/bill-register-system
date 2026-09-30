@@ -603,10 +603,23 @@ html,body{overflow-x:hidden;}
   @media print{
     nav.sidenav,.search-bar,.btnbar,.topbar,.row-actions,.row-actions-th,.card.entry-form,footer.appfoot,.auth-screen,.userbar,
     .panel-head p,#chatToggleBtn,#chatPanel,.appfoot-copyright,.att-edit-emp-btn,#pendingReturnsCard,
-    #ledgerAddHeadCard,#ledgerExportBtn{display:none !important;}
+    #ledgerAddHeadCard,#ledgerExportBtn,
+    .sidebar,.sidebar-backdrop{display:none !important;}
+    /* The portal-wide navigation sidebar (Dashboard/Case Management/Reports links etc.) is
+       chrome, not report content — without this it was rendering into every downloaded PDF. */
+    .app-shell{display:block !important;}
+    .main-col{width:100% !important;}
     .shell{display:block;min-height:0;}
     main{padding:0;max-width:none;}
     body{background:#fff;}
+    /* Cash Book's "Opening balance" card (Cash in hand at start / Current cash in hand) is
+       real report content, unlike the Add-Head form above — keep it, but render its number
+       boxes as plain figures instead of bordered on-screen input fields. */
+    #cashOpening,#cashCurrent{border:none !important;background:transparent !important;padding:0 !important;font-weight:600;-webkit-appearance:none;appearance:none;}
+    /* Reports panel: the generic ".panel-head p{display:none}" rule above is meant for the
+       instructional blurb under each panel's title — #reportHeadsNote is different, it says
+       which heads this particular report was filtered to, so keep it visible in print/PDF. */
+    #reportHeadsNote{display:block !important;}
     .card{box-shadow:none;border:1px solid #999;}
     /* Wide tables (Contingent Bill/Cash Book/Stock Book/Ledger with several custom fields
        added via Field Manager) scroll horizontally on screen (.table-wrap{overflow-x:auto}).
@@ -1351,6 +1364,7 @@ html,body{overflow-x:hidden;}
         <div>
           <h2 data-i18n="rep_title">Reports</h2>
           <p data-i18n="rep_desc">Pick a date range to get a combined summary of Contingent Bills, Cash Book and Stock Book movements — view on screen, print, or export to Excel.</p>
+          <p class="field-hint" id="reportHeadsNote" style="margin-top:4px;"></p>
         </div>
         <span class="count-chip" id="reportRangeChip"></span>
       </div>
@@ -1372,6 +1386,9 @@ html,body{overflow-x:hidden;}
           <div class="field" style="justify-content:flex-end;">
             <button class="btn" id="r_generateBtn" data-i18n="rep_generate">Generate report</button>
           </div>
+        </div>
+        <div class="btnbar" style="margin-top:10px;">
+          <button class="btn ghost small" id="r_headsFilterBtn" type="button">🎯 Select Heads <span id="r_headsFilterChip" class="count-chip" style="margin-left:6px;"></span></button>
         </div>
       </div>
 
@@ -1945,6 +1962,22 @@ html,body{overflow-x:hidden;}
     <div class="pb-actions">
       <button type="button" class="pb-cancel" id="colsCancelBtn">Cancel</button>
       <button type="button" class="pb-confirm" id="colsSaveBtn">محفوظ کریں / Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="hf-modal-overlay" id="repHeadsModalOverlay">
+  <div class="hf-modal">
+    <h3>Select Heads — Reports</h3>
+    <div class="pb-sub">صرف وہی Contingent Heads منتخب کریں جن کی رپورٹ (اور PDF) میں چاہیے — باقی رپورٹ سے چھپ جائیں گے۔ کچھ بھی منتخب نہ کریں تو سب heads دکھائی دیں گے۔<br>Pick only the Contingent Heads you want in this report (and its PDF) — the rest stay out. Leave none selected to show every head.</div>
+    <div class="btnbar" style="margin-bottom:8px;">
+      <button type="button" class="btn ghost small" id="repHeadsSelectAllBtn">Select all</button>
+      <button type="button" class="btn ghost small" id="repHeadsClearBtn">Clear (= all heads)</button>
+    </div>
+    <div id="repHeadsCheckboxWrap" style="max-height:340px;overflow-y:auto;"></div>
+    <div class="pb-actions">
+      <button type="button" class="pb-cancel" id="repHeadsCancelBtn">Cancel</button>
+      <button type="button" class="pb-confirm" id="repHeadsSaveBtn">Apply / لاگو کریں</button>
     </div>
   </div>
 </div>
@@ -4608,7 +4641,13 @@ function reportData(){
   var from = document.getElementById("r_from").value;
   var to = document.getElementById("r_to").value;
 
-  var bills = STATE.bills.filter(function(b){ return inDateRange(b.date, from, to); });
+  // Custom Report head filter (REPORT_HEAD_FILTER, set via "🎯 Select Heads" above) — null
+  // means every head; otherwise only rows whose head is in the list are counted at all, so
+  // the filter affects the bill/cash rows themselves, not just which head-groups are shown.
+  var headFilter = (typeof REPORT_HEAD_FILTER!=="undefined") ? REPORT_HEAD_FILTER : null;
+  function headAllowed(h){ return !headFilter || headFilter.indexOf(h)!==-1; }
+
+  var bills = STATE.bills.filter(function(b){ return inDateRange(b.date, from, to) && headAllowed(b.head || "(No head)"); });
   var billsByHead = {};
   bills.forEach(function(b){
     var h = b.head || "(No head)";
@@ -4618,7 +4657,7 @@ function reportData(){
     billsByHead[h].count++; billsByHead[h].gross+=g; billsByHead[h].ded+=ded; billsByHead[h].net+=(g-ded);
   });
 
-  var cashRows = STATE.cash.filter(function(c){ return inDateRange(c.date, from, to); });
+  var cashRows = STATE.cash.filter(function(c){ return inDateRange(c.date, from, to) && headAllowed(c.head || c.particulars || "(No head)"); });
   var cashByHead = {};
   cashRows.forEach(function(c){
     var h = c.head || c.particulars || "(No head)";
@@ -4658,6 +4697,12 @@ function renderReports(){
   var d = reportData();
 
   document.getElementById("reportRangeChip").textContent = (d.from||d.to) ? (t("rep_fromChip")+" "+(d.from||"—")+" "+t("rep_toChip")+" "+(d.to||"—")) : t("rep_allTime");
+  var headsNoteEl = document.getElementById("reportHeadsNote");
+  if(headsNoteEl){
+    headsNoteEl.textContent = REPORT_HEAD_FILTER
+      ? ("Selected heads only ("+REPORT_HEAD_FILTER.length+"): "+REPORT_HEAD_FILTER.join(", ")+" / منتخب کردہ heads")
+      : "";
+  }
 
   var billGrossTotal=0, billNetTotal=0, billCount=0;
   Object.keys(d.billsByHead).forEach(function(h){ billGrossTotal+=d.billsByHead[h].gross; billNetTotal+=d.billsByHead[h].net; billCount+=d.billsByHead[h].count; });
@@ -6061,12 +6106,17 @@ function downloadCurrentViewAsPdf(paperSizeKey){
   var label = (payslipOpen ? "PaySlip" : (PANEL_LABELS[currentPanelKey()] || "Document")).replace(/[^A-Za-z0-9]+/g,"-");
   var filename = "CampOffice-BillRegister-"+label+"-"+todayStr()+".pdf";
   var target = payslipOpen ? document.getElementById("payslipOverlay") : document.querySelector(".shell");
+  /* Reset scroll before capture: html2canvas otherwise offsets the capture by whatever the
+     real page's current scroll position happens to be (left over from browsing a wide table
+     or a different panel), cropping/shifting the result — scrollX/scrollY:0 below tells it
+     not to add that offset, and this scrollTo makes sure there genuinely isn't one to add. */
+  window.scrollTo(0,0);
   withPrintRulesActive(function(){
     return html2pdf().set({
       margin: [14,14,14,14],
       filename: filename,
       image: {type:"jpeg", quality:0.98},
-      html2canvas: {scale:2, useCORS:true, logging:false, windowWidth: target.scrollWidth},
+      html2canvas: {scale:2, useCORS:true, logging:false, windowWidth: target.scrollWidth, scrollX:0, scrollY:0},
       jsPDF: {unit:"mm", format:fmt, orientation: isAttendance ? "landscape" : "portrait"},
       pagebreak: {mode:["css","legacy"]}
     }).from(target).save();
@@ -6191,6 +6241,53 @@ document.getElementById("colsSaveBtn").addEventListener("click", function(){
   document.getElementById("colsModalOverlay").style.display = "none";
   applyColumnPrintCss();
   toast("Column settings saved for "+(PANEL_LABELS[key]||key)+".");
+});
+
+/* ================= Custom Report: filter the Reports panel by selected Contingent Heads =================
+   User-requested (30 Sep 2026): let the office pick just a handful of specific heads instead
+   of always getting the full 41-head breakdown — the same choice carries through to the
+   on-screen report, its "Download PDF", and its Excel export, since all three read from the
+   one reportData()/REPORT_HEAD_FILTER. A plain in-memory filter, like the date-range fields
+   beside it — not saved to STATE/backups, since it's a per-viewing choice, not data. */
+var REPORT_HEAD_FILTER = null; // null = every head; otherwise an array of selected head labels
+function renderReportHeadsCheckboxes(){
+  var heads = getHeads().map(function(h){ return h.label; }).sort();
+  var selected = REPORT_HEAD_FILTER;
+  var html = heads.map(function(h){
+    var checked = !selected || selected.indexOf(h)!==-1;
+    return "<div class='hf-check-row'><input type='checkbox' class='repHeadsChk' value=\""+esc(h)+"\""+(checked?" checked":"")+"><label><span class='hf-check-label'>"+esc(h)+"</span></label></div>";
+  }).join("");
+  document.getElementById("repHeadsCheckboxWrap").innerHTML = html || "<p>No heads found.</p>";
+}
+function updateReportHeadsChip(){
+  var chip = document.getElementById("r_headsFilterChip");
+  if(!chip) return;
+  if(!REPORT_HEAD_FILTER){ chip.textContent = ""; chip.style.display = "none"; }
+  else { chip.textContent = REPORT_HEAD_FILTER.length+" selected"; chip.style.display = "inline-flex"; }
+}
+document.getElementById("r_headsFilterBtn").addEventListener("click", function(){
+  renderReportHeadsCheckboxes();
+  document.getElementById("repHeadsModalOverlay").style.display = "flex";
+});
+document.getElementById("repHeadsCancelBtn").addEventListener("click", function(){
+  document.getElementById("repHeadsModalOverlay").style.display = "none";
+});
+document.getElementById("repHeadsSelectAllBtn").addEventListener("click", function(){
+  document.querySelectorAll("#repHeadsCheckboxWrap .repHeadsChk").forEach(function(chk){ chk.checked = true; });
+});
+document.getElementById("repHeadsClearBtn").addEventListener("click", function(){
+  document.querySelectorAll("#repHeadsCheckboxWrap .repHeadsChk").forEach(function(chk){ chk.checked = false; });
+});
+document.getElementById("repHeadsSaveBtn").addEventListener("click", function(){
+  var all = getHeads().map(function(h){ return h.label; });
+  var checked = [];
+  document.querySelectorAll("#repHeadsCheckboxWrap .repHeadsChk").forEach(function(chk){ if(chk.checked) checked.push(chk.value); });
+  // Every head checked (or none) both mean "no filter" — simpler for the user, and keeps the
+  // printed note from listing all 41 heads by name when nothing was actually excluded.
+  REPORT_HEAD_FILTER = (checked.length===0 || checked.length===all.length) ? null : checked;
+  updateReportHeadsChip();
+  document.getElementById("repHeadsModalOverlay").style.display = "none";
+  renderReports();
 });
 
 document.getElementById("uiLangSelect").addEventListener("change", function(){ applyUILang(this.value); });
