@@ -2509,7 +2509,7 @@ en: {
   auth_backToSignin:"Back to sign in", auth_confirmPassword:"Confirm password", auth_createAccount:"Create an account",
   auth_createAccountBtn:"Create account", auth_createNewAccount:"Create a new account", auth_forgotPassword:"Forgot password?", auth_email:"Email",
   auth_newAccountsNote:"New accounts start as \"Guest\" (view-only). An existing Administrator must upgrade your role afterwards.",
-  auth_password:"Password", auth_signin:"Sign in",
+  auth_password:"Password", auth_signin:"Sign in", auth_signingIn:"Signing in…",
   auth_warnText:"Your data is stored online in this system's shared Firebase database. Only Administrators can add, edit, or delete records; Guests can view everything but cannot change it.",
   auth_yourEmail:"Your email",
   bill_addBill:"Add a bill", bill_panelDesc:"Enter each bill once it is prepared. Total Deductions and Net Payment are calculated automatically.",
@@ -2708,7 +2708,7 @@ ur: {
   auth_backToSignin:"سائن ان پر واپس جائیں", auth_confirmPassword:"پاسورڈ کی تصدیق", auth_createAccount:"اکاؤنٹ بنائیں",
   auth_createAccountBtn:"اکاؤنٹ بنائیں", auth_createNewAccount:"نیا اکاؤنٹ بنائیں", auth_forgotPassword:"پاسورڈ بھول گئے؟", auth_email:"ای میل",
   auth_newAccountsNote:"نئے اکاؤنٹس \"Guest\" (صرف دیکھنے والے) کے طور پر شروع ہوتے ہیں۔ کوئی موجودہ Administrator بعد میں آپ کا role اپ گریڈ کرے گا۔",
-  auth_password:"پاسورڈ", auth_signin:"سائن ان",
+  auth_password:"پاسورڈ", auth_signin:"سائن ان", auth_signingIn:"سائن اِن ہو رہا ہے…",
   auth_warnText:"آپ کا ڈیٹا اس سسٹم کے مشترکہ Firebase database میں آن لائن محفوظ ہوتا ہے۔ صرف Administrator ہی ریکارڈ شامل، ترمیم یا حذف کر سکتا ہے؛ Guest سب کچھ دیکھ سکتا ہے لیکن تبدیل نہیں کر سکتا۔",
   auth_yourEmail:"آپ کا ای میل",
   bill_addBill:"نیا بل شامل کریں", bill_panelDesc:"ہر بل تیار ہوتے ہی درج کریں۔ کل کٹوتیاں اور خالص ادائیگی خودکار طور پر شمار ہوتی ہیں۔",
@@ -5687,12 +5687,16 @@ document.getElementById("setup_password2").addEventListener("keydown", function(
 });
 
 document.getElementById("loginBtn").addEventListener("click", function(){
+  var btn = document.getElementById("loginBtn");
+  if(btn.disabled) return; /* guard against double-clicks while a sign-in is already in progress */
   var email = document.getElementById("login_username").value.trim();
   var pw = document.getElementById("login_password").value;
   var err = document.getElementById("loginError");
   err.textContent = "";
+  btn.disabled = true; btn.textContent = t("auth_signingIn"); /* visible feedback so the button never looks stuck/frozen */
   auth.signInWithEmailAndPassword(email, pw).catch(function(fbErr){
     err.textContent = "Incorrect email or password.";
+    btn.disabled = false; btn.textContent = t("auth_signin");
   });
 });
 document.getElementById("login_password").addEventListener("keydown", function(ev){
