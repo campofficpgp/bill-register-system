@@ -1499,13 +1499,13 @@ html,body{overflow-x:hidden;}
           <div class="field"><label data-i18n="emp_dob">Date of birth</label><input type="text" id="e_dob" placeholder="DD.MM.YYYY"></div>
         </div>
         <div class="grid cols-4" style="margin-top:12px;">
-          <div class="field"><label data-i18n="emp_cnic">CNIC</label><input type="text" id="e_cnic" placeholder="XXXXX-XXXXXXX-X"></div>
+          <div class="field" id="e_cnicField"><label data-i18n="emp_cnic">CNIC</label><input type="text" id="e_cnic" placeholder="XXXXX-XXXXXXX-X"></div>
           <div class="field"><label data-i18n="emp_gpfNo">GPF #</label><input type="text" id="e_gpf"></div>
           <div class="field"><label data-i18n="emp_bank">Bank</label>
             <select id="e_bank"></select>
             <input type="text" id="e_bank_new" placeholder="Type the new bank name" style="display:none;margin-top:6px;">
           </div>
-          <div class="field"><label data-i18n="emp_accountNo">Account No</label><input type="text" id="e_account"></div>
+          <div class="field" id="e_accountField"><label data-i18n="emp_accountNo">Account No</label><input type="text" id="e_account"></div>
         </div>
         <div class="grid cols-2" style="margin-top:12px;">
           <div class="field"><label data-i18n="emp_serviceLength">Service length (as of last update)</label><input type="text" id="e_serviceLength" placeholder="e.g. 16 Years 08 Months"></div>
@@ -1515,6 +1515,7 @@ html,body{overflow-x:hidden;}
           <button class="btn" id="e_saveBtn" data-i18n="btn_saveEmployee">Save employee</button>
           <button class="btn ghost" id="e_cancelBtn" style="display:none;" data-i18n="btn_cancelEdit">Cancel edit</button>
           <button class="btn secondary" id="e_exportBtn" data-i18n="btn_exportCsv">Export visible rows (CSV)</button>
+          <button class="btn secondary" id="e_migrateSensitiveBtn" style="display:none;" title="One-time: moves any CNIC/Account No still stored the old way into secure, Super-Admin-only storage">Move CNIC / Account No to secure storage (Super Admin, one-time)</button>
         </div>
       </div>
 
@@ -1529,11 +1530,11 @@ html,body{overflow-x:hidden;}
         <div class="grid cols-4" style="margin-top:10px;">
           <div class="field"><label data-i18n="emp_serviceStatus">Service status</label><select id="ef_status"><option value="" data-i18n="opt_any">Any</option><option>Active Permanent</option><option>Active Temporary</option><option>On Deputation</option><option>Retired</option><option>Left Service</option></select></div>
           <div class="field"><label data-i18n="emp_employeeNoPersNo">Employee No (Pers #)</label><select id="ef_persNo"><option value="" data-i18n="opt_allPersNo">All Pers #</option></select></div>
-          <div class="field"><label data-i18n="emp_cnic">CNIC</label><select id="ef_cnic"><option value="" data-i18n="opt_allCnic">All CNIC</option></select></div>
+          <div class="field" id="ef_cnicField"><label data-i18n="emp_cnic">CNIC</label><select id="ef_cnic"><option value="" data-i18n="opt_allCnic">All CNIC</option></select></div>
           <div class="field"><label data-i18n="emp_dob">Date of birth</label><select id="ef_dob"><option value="" data-i18n="opt_allDob">All dates of birth</option></select></div>
         </div>
         <div class="grid cols-2" style="margin-top:10px;">
-          <div class="field" style="align-self:end;"><label style="display:flex;align-items:center;gap:6px;"><input type="checkbox" id="ef_showSensitive" style="width:auto;"> <span data-i18n="emp_showCnicAccount">Show CNIC &amp; Account No</span></label></div>
+          <div class="field" style="align-self:end;" id="ef_showSensitiveField"><label style="display:flex;align-items:center;gap:6px;"><input type="checkbox" id="ef_showSensitive" style="width:auto;"> <span data-i18n="emp_showCnicAccount">Show CNIC &amp; Account No</span></label></div>
         </div>
         <div class="btnbar"><button class="btn ghost small" id="ef_clear" data-i18n="btn_clearFilters">Clear filters</button></div>
       </div>
@@ -4820,6 +4821,74 @@ document.getElementById("r_exportBtn").addEventListener("click", function(){
 });
 
 /* ================= EMPLOYEES MODULE ================= */
+/* ---- CNIC / Account No secure storage (Super Admin only) ----
+   These two fields used to live inside each employee record in appData_bill/shared,
+   which any signed-in user can read. They now live in their own Firestore collection,
+   "employeeSensitive" (one document per employee, same id), which the Firestore
+   Security Rules must restrict to Super Admin only:
+     match /employeeSensitive/{empId} { allow read, write: if isSuperAdmin(); }
+   SENSITIVE_MAP is kept as its own variable, deliberately NEVER attached to STATE,
+   so it can never be copied back into appData_bill/shared by saveData()'s generic
+   "copy any STATE key" fallback in mergeStates(). */
+var SENSITIVE_MAP = {}; /* empId -> {cnic, account} — populated only when the signed-in user is a Super Admin */
+function curUiLang(){ return document.documentElement.getAttribute("data-ui-lang") || "en"; }
+function empCnic(e){
+  if(!e) return "";
+  var s = SENSITIVE_MAP[e.id];
+  if(s && s.cnic!==undefined) return s.cnic;
+  return e.cnic || ""; /* legacy fallback: still true for any record not yet moved with the migration button below */
+}
+function empAccount(e){
+  if(!e) return "";
+  var s = SENSITIVE_MAP[e.id];
+  if(s && s.account!==undefined) return s.account;
+  return e.account || "";
+}
+function saveSensitiveFields(empId, cnic, account){
+  SENSITIVE_MAP[empId] = {cnic: cnic||"", account: account||""};
+  return db.collection("employeeSensitive").doc(empId).set({cnic: cnic||"", account: account||""});
+}
+function loadSensitiveMap(callback){
+  if(!isSuperAdmin()){ callback(); return; } /* non-Super-Admins never query this collection —
+     the Firestore Security Rules refuse it anyway; skipping avoids a permission-denied error. */
+  db.collection("employeeSensitive").get().then(function(snap){
+    snap.forEach(function(doc){ SENSITIVE_MAP[doc.id] = doc.data(); });
+    callback();
+  }).catch(function(err){
+    toast("Could not load secure CNIC/Account data: "+err.message);
+    callback();
+  });
+}
+function applySensitiveFieldVisibility(){
+  var canSee = isSuperAdmin();
+  ["e_cnicField","e_accountField","ef_cnicField","ef_showSensitiveField"].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.style.display = canSee? "" : "none";
+  });
+  var migBtn = document.getElementById("e_migrateSensitiveBtn");
+  if(migBtn) migBtn.style.display = canSee? "inline-flex" : "none";
+}
+function migrateLegacyCnicAccountToSecureStorage(){
+  if(!isSuperAdmin()){ toast("Only a Super Admin can do this."); return; }
+  var legacy = STATE.employees.filter(function(e){ return e.cnic || e.account; });
+  if(legacy.length===0){ toast(curUiLang()==="ur"? "منتقل کرنے کے لیے کچھ نہیں — کوئی ملازم کا ریکارڈ پرانے طریقے سے CNIC یا اکاؤنٹ نمبر نہیں رکھتا۔" : "Nothing to move — no employee record still has a CNIC or Account No stored the old way."); return; }
+  if(!confirm(curUiLang()==="ur"? (legacy.length+" ملازمین کا CNIC اور اکاؤنٹ نمبر محفوظ، صرف Super Admin کے لیے مخصوص اسٹوریج میں منتقل کریں؟") : ("Move CNIC and Account No for "+legacy.length+" employee(s) into secure storage, visible only to Super Admins?"))) return;
+  var promises = legacy.map(function(e){
+    var p = saveSensitiveFields(e.id, e.cnic, e.account);
+    delete e.cnic;
+    delete e.account;
+    return p;
+  });
+  Promise.all(promises).then(function(){
+    saveData();
+    renderEmployees();
+    toast(curUiLang()==="ur"? (legacy.length+" ملازمین کا CNIC اور اکاؤنٹ نمبر اب محفوظ طریقے سے رکھا گیا ہے۔") : ("Done. CNIC and Account No for "+legacy.length+" employee(s) are now stored securely."));
+  }).catch(function(err){
+    toast("Some records could not be moved: "+err.message);
+  });
+}
+document.getElementById("e_migrateSensitiveBtn").addEventListener("click", migrateLegacyCnicAccountToSecureStorage);
+
 var employeeEditId = null;
 function maskValue(v){
   v = String(v||"");
@@ -4855,13 +4924,17 @@ document.getElementById("e_saveBtn").addEventListener("click", function(){
   var name = document.getElementById("e_name").value.trim();
   if(!name){ toast("Employee name is required."); return; }
   var persNoVal = document.getElementById("e_persNo").value.trim();
-  var cnicVal = document.getElementById("e_cnic").value.trim();
+  var cnicVal = isSuperAdmin()? document.getElementById("e_cnic").value.trim() : "";
+  var accountVal = isSuperAdmin()? document.getElementById("e_account").value.trim() : "";
   var dupPers = persNoVal && STATE.employees.some(function(x){ return x.id!==employeeEditId && x.persNo && x.persNo===persNoVal; });
   if(dupPers){ toast("Another employee already has Pers # \""+persNoVal+"\". Please check and correct it."); return; }
-  var dupCnic = cnicVal && STATE.employees.some(function(x){ return x.id!==employeeEditId && x.cnic && x.cnic===cnicVal; });
-  if(dupCnic){ toast("Another employee already has this CNIC. Please check and correct it."); return; }
+  if(isSuperAdmin() && cnicVal){
+    var dupCnic = STATE.employees.some(function(x){ return x.id!==employeeEditId && empCnic(x) && empCnic(x)===cnicVal; });
+    if(dupCnic){ toast("Another employee already has this CNIC. Please check and correct it."); return; }
+  }
+  var empId = employeeEditId || uid();
   var rec = {
-    id: employeeEditId || uid(),
+    id: empId,
     persNo: persNoVal,
     name: name,
     soName: document.getElementById("e_soName").value.trim(),
@@ -4871,14 +4944,15 @@ document.getElementById("e_saveBtn").addEventListener("click", function(){
     bps: getSelectOrAddValue("e_bps","e_bps_new"),
     status: document.getElementById("e_status").value,
     dob: document.getElementById("e_dob").value.trim(),
-    cnic: cnicVal,
     gpf: document.getElementById("e_gpf").value.trim(),
     bank: getSelectOrAddValue("e_bank","e_bank_new"),
-    account: document.getElementById("e_account").value.trim(),
     serviceLength: document.getElementById("e_serviceLength").value.trim(),
     customData: collectCustomFieldValues("employees"),
     createdBy: (CURRENT_USER? CURRENT_USER.username : "")
   };
+  /* CNIC and Account No are no longer stored on this record (which lives in
+     appData_bill/shared, readable by any signed-in user) — they go only into the
+     Super-Admin-only "employeeSensitive" collection via saveSensitiveFields() below. */
   if(employeeEditId){
     var idx = STATE.employees.findIndex(function(x){ return x.id===employeeEditId; });
     rec.createdBy = STATE.employees[idx].createdBy;
@@ -4887,6 +4961,9 @@ document.getElementById("e_saveBtn").addEventListener("click", function(){
   } else {
     STATE.employees.push(rec);
     toast("Employee saved.");
+  }
+  if(isSuperAdmin()){
+    saveSensitiveFields(empId, cnicVal, accountVal);
   }
   saveData();
   resetEmployeeForm();
@@ -4911,10 +4988,10 @@ function editEmployee(id){
   setSelectOrAddValue("e_bps","e_bps_new", e.bps);
   document.getElementById("e_status").value = e.status || "Active Permanent";
   document.getElementById("e_dob").value = e.dob;
-  document.getElementById("e_cnic").value = e.cnic;
+  document.getElementById("e_cnic").value = isSuperAdmin()? empCnic(e) : "";
   document.getElementById("e_gpf").value = e.gpf;
   setSelectOrAddValue("e_bank","e_bank_new", e.bank);
-  document.getElementById("e_account").value = e.account;
+  document.getElementById("e_account").value = isSuperAdmin()? empAccount(e) : "";
   document.getElementById("e_serviceLength").value = e.serviceLength;
   renderCustomFieldInputs("employees");
   populateCustomFieldInputs("employees", e);
@@ -4925,6 +5002,10 @@ function deleteEmployee(id){
   if(!confirm("Delete this employee record?")) return;
   STATE.employees = STATE.employees.filter(function(x){ return x.id!==id; });
   saveData({employees:[id]});
+  if(isSuperAdmin()){
+    db.collection("employeeSensitive").doc(id).delete().catch(function(){});
+    delete SENSITIVE_MAP[id];
+  }
   renderEmployees();
   toast("Employee removed.");
 }
@@ -4939,7 +5020,6 @@ function populateEmployeeFilterSelects(){
     {id:"ef_designation", key:"designation"},
     {id:"ef_bps", key:"bps"},
     {id:"ef_persNo", key:"persNo"},
-    {id:"ef_cnic", key:"cnic"},
     {id:"ef_dob", key:"dob"}
   ];
   fields.forEach(function(f){
@@ -4951,6 +5031,16 @@ function populateEmployeeFilterSelects(){
     sel.innerHTML = placeholder + values.map(function(v){ return "<option value='"+esc(v)+"'>"+esc(v)+"</option>"; }).join("");
     if(keep && values.includes(keep)) sel.value = keep;
   });
+  /* CNIC filter is handled separately: its values only come from the Super-Admin-only
+     SENSITIVE_MAP, never from the plain STATE.employees fields. */
+  var cnicSel = document.getElementById("ef_cnic");
+  if(cnicSel){
+    var keepCnic = cnicSel.value;
+    var placeholderCnic = cnicSel.options.length? cnicSel.options[0].outerHTML : "";
+    var cnicValues = isSuperAdmin()? uniqueSorted(STATE.employees.map(function(e){ return empCnic(e); })) : [];
+    cnicSel.innerHTML = placeholderCnic + cnicValues.map(function(v){ return "<option value='"+esc(v)+"'>"+esc(v)+"</option>"; }).join("");
+    if(keepCnic && cnicValues.includes(keepCnic)) cnicSel.value = keepCnic;
+  }
 }
 function filteredEmployees(){
   var name = document.getElementById("ef_name").value;
@@ -4968,7 +5058,7 @@ function filteredEmployees(){
     if(bps && e.bps!==bps) return false;
     if(status && e.status!==status) return false;
     if(persNo && e.persNo!==persNo) return false;
-    if(cnic && e.cnic!==cnic) return false;
+    if(cnic && empCnic(e)!==cnic) return false;
     if(dob && e.dob!==dob) return false;
     return true;
   });
@@ -4980,7 +5070,8 @@ function renderEmployees(){
   syncCustomHeaders("employees");
   var customCount = customFieldDefs("employees").length;
   var list = filteredEmployees();
-  var showSensitive = document.getElementById("ef_showSensitive").checked;
+  var canSeeSensitive = isSuperAdmin();
+  var showSensitive = canSeeSensitive && document.getElementById("ef_showSensitive").checked;
   var body = document.getElementById("employeeTableBody");
   body.innerHTML = "";
   if(list.length===0){
@@ -4989,15 +5080,16 @@ function renderEmployees(){
   var persCounts = {}, cnicCounts = {};
   STATE.employees.forEach(function(e){
     if(e.persNo) persCounts[e.persNo] = (persCounts[e.persNo]||0)+1;
-    if(e.cnic) cnicCounts[e.cnic] = (cnicCounts[e.cnic]||0)+1;
+    var c = empCnic(e);
+    if(c) cnicCounts[c] = (cnicCounts[c]||0)+1;
   });
   list.forEach(function(e){
     var tr = document.createElement("tr");
     var dupPers = e.persNo && persCounts[e.persNo]>1;
-    var dupCnic = e.cnic && cnicCounts[e.cnic]>1;
+    var dupCnic = empCnic(e) && cnicCounts[empCnic(e)]>1;
     if(dupPers || dupCnic) tr.className = "dup-row";
-    var cnicDisplay = showSensitive? esc(e.cnic) : "<span class='masked'>"+esc(maskValue(e.cnic))+"</span>";
-    var acctDisplay = showSensitive? esc(e.account) : "<span class='masked'>"+esc(maskValue(e.account))+"</span>";
+    var cnicDisplay = canSeeSensitive? (showSensitive? esc(empCnic(e)) : "<span class='masked'>"+esc(maskValue(empCnic(e)))+"</span>") : "<span class='masked' title='Super Admin only'>&#128274;</span>";
+    var acctDisplay = canSeeSensitive? (showSensitive? esc(empAccount(e)) : "<span class='masked'>"+esc(maskValue(empAccount(e)))+"</span>") : "<span class='masked' title='Super Admin only'>&#128274;</span>";
     tr.innerHTML =
       "<td data-col='persNo'>"+esc(e.persNo)+(dupPers? " <span class='tag overdue'>Duplicate</span>":"")+"</td><td data-col='name'>"+esc(e.name)+"</td><td data-col='soName'>"+esc(e.soName)+"</td><td data-col='mobile'>"+esc(e.mobile)+"</td><td data-col='designation'>"+esc(e.designation)+"</td><td data-col='department'>"+esc(e.department)+"</td>"+
       "<td data-col='bps'>"+esc(e.bps)+"</td><td data-col='status'>"+esc(e.status)+"</td><td data-col='cnic'>"+cnicDisplay+(dupCnic? " <span class='tag overdue'>Duplicate</span>":"")+"</td><td data-col='gpf'>"+esc(e.gpf)+"</td><td data-col='dob'>"+esc(e.dob)+"</td>"+
@@ -5025,8 +5117,9 @@ document.getElementById("ef_clear").addEventListener("click", function(){
 });
 document.getElementById("e_exportBtn").addEventListener("click", function(){
   var list = filteredEmployees();
+  var canSeeSensitive = isSuperAdmin();
   var rows = [["Pers#","Name","Son of","Mobile No","Designation","Department","BPS","Status","CNIC","GPF#","DOB","Bank","Account No","Service Length"].concat(customFieldCsvHeaders("employees"))];
-  list.forEach(function(e){ rows.push([e.persNo,e.name,e.soName,e.mobile,e.designation,e.department,e.bps,e.status,e.cnic,e.gpf,e.dob,e.bank,e.account,e.serviceLength].concat(customFieldCsvValues("employees", e))); });
+  list.forEach(function(e){ rows.push([e.persNo,e.name,e.soName,e.mobile,e.designation,e.department,e.bps,e.status,(canSeeSensitive? empCnic(e):""),e.gpf,e.dob,e.bank,(canSeeSensitive? empAccount(e):""),e.serviceLength].concat(customFieldCsvValues("employees", e))); });
   downloadCSV("employees.csv", rows);
 });
 
@@ -5545,6 +5638,7 @@ function updateUserBar(){
   if(ledgerAddHeadCard) ledgerAddHeadCard.style.display = isSuperAdmin()? "block":"none";
   var stockAddHeadRow = document.getElementById("stockAddHeadRow");
   if(stockAddHeadRow) stockAddHeadRow.style.display = isSuperAdmin()? "grid":"none";
+  applySensitiveFieldVisibility();
 }
 function showAppScreen(){
   document.getElementById("authSetupScreen").style.display="none";
@@ -5622,10 +5716,12 @@ auth.onAuthStateChanged(function(user){
         CURRENT_USER = {uid:user.uid, username:user.email, role:role, signatureURL:signatureURL, isSuperAdmin:isSuperAdminFlag};
         if(theme) applyTheme(theme);
         fetchStateFromFirestore(function(){
-          showAppScreen();
-          startRealtimeSync();
-          renderUsers();
-          startChat();
+          loadSensitiveMap(function(){
+            showAppScreen();
+            startRealtimeSync();
+            renderUsers();
+            startChat();
+          });
         });
       });
     }).catch(function(err){
@@ -5634,6 +5730,7 @@ auth.onAuthStateChanged(function(user){
   } else {
     spinClearVerified(CURRENT_USER && CURRENT_USER.uid);
     CURRENT_USER = null;
+    SENSITIVE_MAP = {}; /* never keep one user's secure CNIC/Account cache around for the next sign-in on this browser */
     if(unsubscribeSharedDoc){ unsubscribeSharedDoc(); unsubscribeSharedDoc = null; }
     stopChat();
     showLoginScreen();
@@ -6491,9 +6588,9 @@ function buildEditableSlipHtml(e, monthVal, lang, incPercent, incFromVal){
   var slip = ensureSlipData(e.id, monthVal, e.bps, incPercent, incFromVal);
   var totals = slipTotals(slip);
 
-  var showSensitive = document.getElementById("ef_showSensitive") && document.getElementById("ef_showSensitive").checked;
-  var cnicDisplay = showSensitive? e.cnic : maskValue(e.cnic);
-  var acctDisplay = showSensitive? e.account : maskValue(e.account);
+  var showSensitive = isSuperAdmin() && document.getElementById("ef_showSensitive") && document.getElementById("ef_showSensitive").checked;
+  var cnicDisplay = showSensitive? empCnic(e) : maskValue(empCnic(e));
+  var acctDisplay = showSensitive? empAccount(e) : maskValue(empAccount(e));
   var officeName = STATE.officeName || (lang==="ur"? "دفتر" : "Office");
 
   return "<div class='month-flag'>"+esc(monthLabel)+"</div>"+
@@ -6657,8 +6754,9 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var wb = XLSX.utils.book_new();
 
     var empHeaders = ["Pers #","Name","Son of","Mobile No","Designation","Department","Scale/BPS","Service Status","CNIC","GPF #","DOB","Service Length","Bank","Account No"];
+    var empCanSeeSensitive = isSuperAdmin();
     var empRows = STATE.employees.map(function(e){
-      return [e.persNo,e.name,e.soName,e.mobile,e.designation,e.department,e.bps,e.status,e.cnic,e.gpf,e.dob,e.serviceLength,e.bank,e.account];
+      return [e.persNo,e.name,e.soName,e.mobile,e.designation,e.department,e.bps,e.status,(empCanSeeSensitive? empCnic(e):""),e.gpf,e.dob,e.serviceLength,e.bank,(empCanSeeSensitive? empAccount(e):"")];
     });
     var wsEmp = XLSX.utils.aoa_to_sheet([empHeaders].concat(empRows));
     wsEmp["!cols"] = empHeaders.map(function(){ return {wch:16}; });
