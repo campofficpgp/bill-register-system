@@ -2477,6 +2477,25 @@ function startRealtimeSync(){
   });
 }
 
+/* ================= Shared dropdown lists (Super Admin's central "Shared Dropdown
+   Lists" tool) — "BPS" is wired to read from the central list. If the central list
+   hasn't been set up yet, or the read fails for any reason, BPS_DEFAULTS simply keeps
+   its original built-in 22 values below -- nothing breaks, this is a pure addition.
+   Picking up an edited list only requires reopening the BPS dropdown -- never mid-edit. */
+var unsubscribeSharedDropdowns = null;
+function startSharedDropdownsSync(){
+  if(unsubscribeSharedDropdowns) unsubscribeSharedDropdowns();
+  unsubscribeSharedDropdowns = db.collection("appData_sharedDropdowns").doc("shared").onSnapshot(function(snap){
+    if(!snap.exists) return;
+    var lists = (snap.data() || {}).lists;
+    if(!Array.isArray(lists)) return;
+    var bpsList = lists.find(function(l){ return l && l.key === "bps"; });
+    if(bpsList && Array.isArray(bpsList.values) && bpsList.values.length){
+      BPS_DEFAULTS = bpsList.values.slice();
+    }
+  }, function(err){ /* no access yet or offline -- keep the built-in BPS list, fail silently */ });
+}
+
 function toast(msg){
   var t = document.getElementById("toast");
   t.textContent = msg;
@@ -5740,6 +5759,7 @@ auth.onAuthStateChanged(function(user){
           loadSensitiveMap(function(){
             showAppScreen();
             startRealtimeSync();
+            startSharedDropdownsSync();
             renderUsers();
             startChat();
           });
@@ -5753,6 +5773,7 @@ auth.onAuthStateChanged(function(user){
     CURRENT_USER = null;
     SENSITIVE_MAP = {}; /* never keep one user's secure CNIC/Account cache around for the next sign-in on this browser */
     if(unsubscribeSharedDoc){ unsubscribeSharedDoc(); unsubscribeSharedDoc = null; }
+    if(unsubscribeSharedDropdowns){ unsubscribeSharedDropdowns(); unsubscribeSharedDropdowns=null; }
     stopChat();
     showLoginScreen();
   }
