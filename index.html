@@ -398,6 +398,41 @@ html,body{overflow-x:hidden;}
   body.guest-mode input.cell-input{pointer-events:none;background:transparent !important;border-color:transparent !important;}
   body.guest-mode .att-cell{pointer-events:none;}
   body.guest-mode .att-admin-only{display:none !important;}
+  /* ---------- per-user ticks (page key "bill"): a user with his own ticks is read-only PER TAB, using the same rules
+     as guest-mode but scoped to one tab. Users without custom ticks keep the global guest-mode above unchanged. ---------- */
+  body.ro-bill #billFormCard{display:none !important;}
+  body.ro-bill #panel-bill .row-actions button:not(.view-only-btn){display:none !important;}
+  body.ro-cf #billDedRatesCard{display:none !important;}
+  body.ro-cash #panel-cash .entry-form{display:none !important;}
+  body.ro-cash #panel-cash .row-actions button:not(.view-only-btn){display:none !important;}
+  body.ro-stock #panel-stock .entry-form{display:none !important;}
+  body.ro-stock #panel-stock .row-actions button:not(.view-only-btn){display:none !important;}
+  body.ro-stock #pendingReturnsCard button{display:none !important;}
+  body.ro-stock #panel-stock .card h3 + .grid button:not(.view-only-btn){display:none !important;}
+  body.ro-emp #panel-employees .entry-form{display:none !important;}
+  body.ro-emp #panel-employees .row-actions button:not(.view-only-btn){display:none !important;}
+  body.ro-emp #payslipOverlay .row-remove-btn, body.ro-emp #payslipOverlay .add-row-btn, body.ro-emp #ps_regenBtn{display:none !important;}
+  body.ro-emp #payslipOverlay input.cell-input{pointer-events:none;background:transparent !important;border-color:transparent !important;}
+  body.ro-emp #panel-attendance #att_addEmployeeBtn, body.ro-emp #panel-attendance .att-edit-emp-btn{display:none !important;}
+  body.tick-user #panel-fieldsmgr .entry-form, body.tick-user #panel-fieldsmgr .row-actions button{display:none !important;}   /* Fields Manager stays Super Admin only */
+  body.ro-leave #panel-leave .entry-form{display:none !important;}
+  body.ro-leave #panel-leave .row-actions button:not(.view-only-btn){display:none !important;}
+  body.ro-att #panel-attendance .att-cell{pointer-events:none;}
+  body.ro-att #panel-attendance .att-admin-only{display:none !important;}
+  .tick-banner{
+    display:none;background:var(--amber-tint);border:1px solid #E7D6A8;color:#7A5C10;
+    padding:8px 14px;border-radius:var(--radius);font-size:12.5px;margin-bottom:14px;
+  }
+  body.tick-partial .tick-banner{display:block;}
+  /* a button the user has no tick for is dimmed (the server rules are the real lock) */
+  [data-perm].perm-off{opacity:.42; cursor:not-allowed; filter:grayscale(.4);}
+  .no-access{position:fixed; inset:0; z-index:1200; display:none; align-items:center; justify-content:center; background:rgba(15,25,45,.96); padding:16px; box-sizing:border-box;}
+  .no-access.show{display:flex;}
+  .no-access .na-card{max-width:460px; width:100%; box-sizing:border-box; background:#17294a; border:1px solid #3a4f7d; border-radius:14px; padding:26px 24px; text-align:center; color:#fff;}
+  .no-access h2{margin:0 0 8px; font-size:20px; color:#ffd77a;}
+  .no-access .na-ur{direction:rtl; font-size:15px; line-height:2;}
+  .no-access .na-en{font-size:12.5px; opacity:.88;}
+  .no-access a.na-btn{display:inline-block; margin-top:14px; border:1px solid #d4a13d; background:#d4a13d; color:#17294a; border-radius:8px; padding:9px 16px; font-weight:700; font-size:14px; text-decoration:none;}
   .row-actions{display:flex;gap:6px;}
   .count-chip{
     font-size:11.5px;background:var(--navy-tint);color:var(--navy-dark);border-radius:999px;
@@ -826,6 +861,16 @@ html,body{overflow-x:hidden;}
 </div>
 <div class="pb-print-extra-fields" id="pbPrintExtraFields"></div>
 
+<!-- ================= NO ACCESS (no "View" tick for the Bill Register) ================= -->
+<div class="no-access" id="billNoAccess" role="alertdialog" aria-modal="true">
+  <div class="na-card">
+    <h2>رسائی کی اجازت نہیں / No access</h2>
+    <div class="na-ur">آپ کو بل رجسٹر کھولنے کی اجازت نہیں دی گئی۔ ضرورت ہو تو سپر ایڈمن سے رابطہ کریں۔</div>
+    <div class="na-en">You have not been given permission to open the Bill Register. Ask the Super Admin if you need it.</div>
+    <a class="na-btn" href="https://cmpofficepgp.org/camp-office-suite/">پورٹل پر جائیں / Go to portal</a>
+  </div>
+</div>
+
 
 <!-- ================= AUTH: FIRST-RUN SETUP ================= -->
 <div class="fullscreen-overlay auth-screen" id="authSetupScreen" style="display:none;">
@@ -881,8 +926,8 @@ html,body{overflow-x:hidden;}
       <div class="field"><label data-i18n="ps_preparedByDesignation">Prepared by (designation)</label><input type="text" id="ps_preparedByDesignation" placeholder="e.g. Accounts Officer"></div>
       <div class="field"><label data-i18n="ps_approvedByName">Approved by (name)</label><input type="text" id="ps_approvedByName" placeholder="(optional)"></div>
       <div class="field"><label data-i18n="ps_approvedByDesignation">Approved by (designation)</label><input type="text" id="ps_approvedByDesignation" placeholder="(optional)"></div>
-      <button class="btn" id="ps_printBtn" data-i18n="btn_print">Print</button>
-      <button class="btn ghost" id="ps_pdfBtn" title="Downloads a ready PDF file directly" data-i18n="btn_downloadPdf">📄 Download PDF</button>
+      <button class="btn" id="ps_printBtn" data-perm="x" data-i18n="btn_print">Print</button>
+      <button class="btn ghost" id="ps_pdfBtn" data-perm="x" title="Downloads a ready PDF file directly" data-i18n="btn_downloadPdf">📄 Download PDF</button>
       <button class="btn ghost" id="ps_regenBtn" title="Discard your edits and refill from current rates" data-i18n="ps_regenTemplates">Regenerate templates</button>
       <button class="btn ghost" id="ps_closeBtn" data-i18n="btn_close">Close</button>
     </div>
@@ -965,8 +1010,8 @@ html,body{overflow-x:hidden;}
       </label>
       
       
-      <button id="globalPrintBtn" data-i18n="btn_printCurrent">Print current view</button>
-      <button id="globalPdfBtn" title="Downloads a ready PDF file directly" data-i18n="btn_downloadPdfCurrent">📄 Download PDF</button>
+      <button id="globalPrintBtn" data-perm="x" data-i18n="btn_printCurrent">Print current view</button>
+      <button id="globalPdfBtn" data-perm="x" title="Downloads a ready PDF file directly" data-i18n="btn_downloadPdfCurrent">📄 Download PDF</button>
       <button id="hfConfigBtn" type="button" class="btn ghost small" style="display:none;" title="Report header/footer fields / رپورٹ ہیڈر/فوٹر فیلڈز">☰ Header/Footer</button>
       <button id="colsConfigBtn" type="button" class="btn ghost small" style="display:none;" title="Choose which columns to print / پرنٹ کے لیے کالم منتخب کریں">☰ Select Columns</button>
       <span><span data-i18n="lbl_signedInAs">Signed in as</span> <b id="currentUserLabel">—</b> <span class="role-badge" id="currentUserRole">User</span></span>
@@ -996,8 +1041,8 @@ html,body{overflow-x:hidden;}
     <button class="tab-btn" data-tab="attendance"><span class="dot"></span> <span data-i18n="nav_attendance">Attendance Register</span></button>
     <button class="tab-btn" data-tab="fieldsmgr" id="fieldsMgrTabBtn" style="display:none;"><span class="dot"></span> <span>Fields Manager (Super Admin)</span></button>
     <div class="navnote" data-i18n="nav_data">Data</div>
-    <button id="btnBackup"><span class="dot"></span> <span data-i18n="btn_backup">Backup (save file)</span></button>
-    <button id="btnRestore"><span class="dot"></span> <span data-i18n="btn_restore">Restore from file</span></button>
+    <button id="btnBackup" data-perm="x"><span class="dot"></span> <span data-i18n="btn_backup">Backup (save file)</span></button>
+    <button id="btnRestore" data-perm="restore"><span class="dot"></span> <span data-i18n="btn_restore">Restore from file</span></button>
     <input type="file" id="restoreFile" accept="application/json" style="display:none">
     <div class="navnote" data-i18n="nav_helpSection">Help</div>
     <button class="tab-btn" data-tab="help"><span class="dot"></span> <span data-i18n="nav_help">Help / Guide</span></button>
@@ -1005,6 +1050,7 @@ html,body{overflow-x:hidden;}
   <button type="button" id="sidenavExpandBtn" class="sidenav-expand-btn" title="Show menu / مینو دکھائیں">☰ <span data-i18n="nav_showMenu">Show menu</span></button>
 
   <main>
+    <div class="tick-banner" id="tickBanner"><div dir="rtl">آپ کا اکاؤنٹ صرف کچھ ٹیبز میں ایڈٹ کر سکتا ہے، باقی ٹیبز صرف دیکھنے کے لیے ہیں۔</div><div>Your account can edit only some tabs; the other tabs are view-only.</div></div>
     <div class="guest-banner" data-i18n="guest_banner">You're signed in as a <b>Guest</b> — you can view and print everything, but adding, editing, or deleting is limited to Administrators.</div>
 
     <!-- ================= CONTINGENT BILL ================= -->
@@ -1017,7 +1063,7 @@ html,body{overflow-x:hidden;}
         <span class="count-chip" id="billCount">0 bills</span>
       </div>
 
-      <div class="card entry-form">
+      <div class="card entry-form" id="billDedRatesCard">
         <h3 data-i18n="bill_dedRatesTitle">Deduction rates (%) — Administrator only</h3>
         <p class="field-hint" data-i18n="bill_dedRatesDesc">Set the standard percentage for each deduction type here once. "Auto-calculate" below then fills Income Tax / GST / PST / Other / Commission from the Gross amount — you can still edit any value by hand afterwards for a specific bill.</p>
         <div class="grid cols-4">
@@ -1032,7 +1078,7 @@ html,body{overflow-x:hidden;}
         </div>
       </div>
 
-      <div class="card entry-form">
+      <div class="card entry-form" id="billFormCard">
         <h3 id="billFormTitle" data-i18n="bill_addBill">Add a bill</h3>
         <div class="grid cols-4">
           <div class="field"><label data-i18n="lbl_date">Date</label><input type="date" id="b_date"></div>
@@ -1078,7 +1124,7 @@ html,body{overflow-x:hidden;}
         <div class="btnbar">
           <button class="btn" id="b_saveBtn" data-i18n="btn_saveBill">Save bill</button>
           <button class="btn ghost" id="b_cancelBtn" style="display:none;" data-i18n="btn_cancelEdit">Cancel edit</button>
-          <button class="btn secondary" id="b_exportBtn" data-i18n="btn_exportCsv">Export visible rows (CSV)</button>
+          <button class="btn secondary" id="b_exportBtn" data-perm="x" data-i18n="btn_exportCsv">Export visible rows (CSV)</button>
         </div>
       </div>
 
@@ -1212,7 +1258,7 @@ html,body{overflow-x:hidden;}
         <div class="btnbar">
           <button class="btn" id="c_saveBtn" data-i18n="btn_saveEntry">Save entry</button>
           <button class="btn ghost" id="c_cancelBtn" style="display:none;" data-i18n="btn_cancelEdit">Cancel edit</button>
-          <button class="btn secondary" id="c_exportBtn" data-i18n="btn_exportCsv">Export visible rows (CSV)</button>
+          <button class="btn secondary" id="c_exportBtn" data-perm="x" data-i18n="btn_exportCsv">Export visible rows (CSV)</button>
         </div>
       </div>
 
@@ -1318,7 +1364,7 @@ html,body{overflow-x:hidden;}
         <div class="btnbar">
           <button class="btn" id="s_saveBtn" data-i18n="btn_saveMovement">Save movement</button>
           <button class="btn ghost" id="s_cancelBtn" style="display:none;" data-i18n="btn_cancelEdit">Cancel edit</button>
-          <button class="btn secondary" id="s_exportBtn" data-i18n="btn_exportCsv">Export visible rows (CSV)</button>
+          <button class="btn secondary" id="s_exportBtn" data-perm="x" data-i18n="btn_exportCsv">Export visible rows (CSV)</button>
         </div>
       </div>
 
@@ -1416,7 +1462,7 @@ html,body{overflow-x:hidden;}
 
       <div class="results-strip">
         <span class="count-chip" id="ledgerResultCount">Showing 0 of 41</span>
-        <button class="btn secondary small" id="ledgerExportBtn" data-i18n="btn_exportCsv">Export visible rows (CSV)</button>
+        <button class="btn secondary small" id="ledgerExportBtn" data-perm="x" data-i18n="btn_exportCsv">Export visible rows (CSV)</button>
       </div>
       <div class="table-wrap">
         <table class="print-cols-table">
@@ -1514,7 +1560,7 @@ html,body{overflow-x:hidden;}
       </div>
 
       <div class="btnbar">
-        <button class="btn secondary" id="r_exportBtn" data-i18n="rep_exportExcel">Export report (Excel)</button>
+        <button class="btn secondary" id="r_exportBtn" data-perm="x" data-i18n="rep_exportExcel">Export report (Excel)</button>
       </div>
     </section>
 
@@ -1527,7 +1573,7 @@ html,body{overflow-x:hidden;}
         </div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
           <span class="count-chip" id="employeeCount">0 employees</span>
-          <button class="btn secondary small" id="exportMasterDataBtn" data-i18n="emp_exportMasterData">Export Master Data (.xlsx)</button>
+          <button class="btn secondary small" id="exportMasterDataBtn" data-perm="x" data-i18n="emp_exportMasterData">Export Master Data (.xlsx)</button>
         </div>
       </div>
       <div class="field-hint" style="margin-bottom:14px;" data-i18n="emp_masterDataHint">This saves everything below — Employees, Allowance Rates, and Deduction Rates — into one Master_Data.xlsx-style file with today's changes. Browsers can't silently overwrite a file on your computer, so click this whenever you want an updated copy, then save it over your existing Master_Data.xlsx.</div>
@@ -1576,7 +1622,7 @@ html,body{overflow-x:hidden;}
         <div class="btnbar">
           <button class="btn" id="e_saveBtn" data-i18n="btn_saveEmployee">Save employee</button>
           <button class="btn ghost" id="e_cancelBtn" style="display:none;" data-i18n="btn_cancelEdit">Cancel edit</button>
-          <button class="btn secondary" id="e_exportBtn" data-i18n="btn_exportCsv">Export visible rows (CSV)</button>
+          <button class="btn secondary" id="e_exportBtn" data-perm="x" data-i18n="btn_exportCsv">Export visible rows (CSV)</button>
           <button class="btn secondary" id="e_migrateSensitiveBtn" style="display:none;" title="One-time: moves any CNIC/Account No still stored the old way into secure, Super-Admin-only storage">Move CNIC / Account No to secure storage (Super Admin, one-time)</button>
         </div>
       </div>
@@ -1682,7 +1728,7 @@ html,body{overflow-x:hidden;}
         <div class="btnbar">
           <button class="btn" id="lv_saveBtn" data-i18n="btn_saveEntry">Save entry</button>
           <button class="btn ghost" id="lv_cancelBtn" style="display:none;" data-i18n="btn_cancelEdit">Cancel edit</button>
-          <button class="btn secondary" id="lv_exportBtn" data-i18n="btn_exportCsv">Export visible rows (CSV)</button>
+          <button class="btn secondary" id="lv_exportBtn" data-perm="x" data-i18n="btn_exportCsv">Export visible rows (CSV)</button>
         </div>
       </div>
 
@@ -1753,7 +1799,7 @@ html,body{overflow-x:hidden;}
           <div class="field"><label data-i18n="lv_year">Year</label><select id="att_year"></select></div>
           <div class="field" style="align-self:end;"><button class="btn secondary att-admin-only" id="att_addEmployeeBtn" data-i18n="att_addEmployee">Add Employee</button></div>
           <div class="field" style="align-self:end;"><button class="btn secondary att-admin-only" id="att_fillLeaveBtn" data-i18n="att_fillFromLeave">Fill leave days from Leave Register</button></div>
-          <div class="field" style="align-self:end;"><button class="btn ghost small" id="att_exportBtn" data-i18n="btn_exportCsv">Export visible rows (CSV)</button></div>
+          <div class="field" style="align-self:end;"><button class="btn ghost small" id="att_exportBtn" data-perm="x" data-i18n="btn_exportCsv">Export visible rows (CSV)</button></div>
         </div>
       </div>
 
@@ -2059,6 +2105,7 @@ html,body{overflow-x:hidden;}
 </div>
 <div class="toast" id="toast"></div>
 
+<script src="https://cmpofficepgp.org/camp-office-suite/camp-perm.js"></script>
 <script>
 (function(){
 "use strict";
@@ -2496,11 +2543,13 @@ function saveData(deletedIds){
             merged[field] = merged[field].filter(function(item){ return toDelete[field].indexOf(item.id) === -1; });
           }
         });
+        if(isTickUser()){ return billTickWrite(tx, snap, serverState, localSnapshot, merged); }
         tx.set(SHARED_DOC_REF, merged);
         return merged;
       });
     }).then(function(merged){
       STATE = merged;
+      billAfterTickSave();
       if(document.getElementById("appMain").style.display !== "none") renderAll();
     }).catch(function(err){
       SUPPRESS_NEXT_SNAPSHOT_RENDER = false;
@@ -2512,6 +2561,7 @@ function saveData(deletedIds){
    replace-everything operation, so it must NOT merge with whatever is currently online —
    merging would keep records the restore is specifically meant to undo. */
 function forceOverwriteData(){
+  if(isTickUser()){ tickDenied(); return; }
   SUPPRESS_NEXT_SNAPSHOT_RENDER = true;
   clearTimeout(saveTimer);
   pendingDeletedIds = {};
@@ -3039,6 +3089,7 @@ function applyUILang(lang){
 })();
 
 function downloadCSV(filename, rows){
+  if(!xOK()) return;
   var csv = rows.map(function(r){
     return r.map(function(v){
       v = v==null? "" : String(v);
@@ -3098,6 +3149,7 @@ document.querySelectorAll(".tab-btn").forEach(function(btn){
 var officeInput = document.getElementById("officeName");
 officeInput.value = STATE.officeName;
 officeInput.addEventListener("input", function(){
+  if(!tabOK("cf")){ officeInput.value = STATE.officeName; return; }
   STATE.officeName = officeInput.value;
   saveData();
 });
@@ -3258,7 +3310,7 @@ function refreshDeductionRateFields(){
 }
 refreshDeductionRateFields();
 document.getElementById("dr_saveBtn").addEventListener("click", function(){
-  if(!isAdmin()){ toast("Only an Administrator can change deduction rates."); return; }
+  if(!permOK("cf")){ permDeny("Only an Administrator can change deduction rates."); return; }
   STATE.contingentDeductionRates = {
     incomeTax: Number(document.getElementById("dr_incomeTax").value)||0,
     gst: Number(document.getElementById("dr_gst").value)||0,
@@ -3312,6 +3364,7 @@ function resetBillForm(){
 }
 
 document.getElementById("b_saveBtn").addEventListener("click", function(){
+  if(!tabOK("bl")) return;
   var billNo = document.getElementById("b_billNo").value.trim();
   var gross = document.getElementById("b_gross").value;
   var vendorNo = getSelectOrAddValue("b_vendorNo","b_vendorNo_new");
@@ -3353,6 +3406,7 @@ document.getElementById("b_saveBtn").addEventListener("click", function(){
 document.getElementById("b_cancelBtn").addEventListener("click", resetBillForm);
 
 function editBill(id){
+  if(!tabOK("bl")) return;
   var b = STATE.bills.find(function(x){ return x.id===id; });
   if(!b) return;
   billEditId = id;
@@ -3379,6 +3433,7 @@ function editBill(id){
   document.getElementById("panel-bill").scrollIntoView({behavior:"smooth"});
 }
 function deleteBill(id){
+  if(!tabOK("bl")) return;
   if(!confirm("Delete this bill? This cannot be undone.")) return;
   STATE.bills = STATE.bills.filter(function(x){ return x.id!==id; });
   saveData({bills:[id]});
@@ -3744,6 +3799,7 @@ populateHeadSelect(document.getElementById("cf_head"), true);
 
 document.getElementById("cashOpening").value = STATE.openingCash;
 document.getElementById("cashOpening").addEventListener("input", function(){
+  if(!tabOK("ca")){ this.value = STATE.openingCash; return; }
   STATE.openingCash = Number(this.value)||0;
   saveData();
   renderCash();
@@ -3792,6 +3848,7 @@ function updateCashPreview(){
 updateCashPreview();
 
 document.getElementById("c_saveBtn").addEventListener("click", function(){
+  if(!tabOK("ca")) return;
   var particulars = getSelectOrAddValue("c_particulars","c_particulars_new");
   if(!particulars){ toast("Particulars is required."); return; }
   var rec = {
@@ -3821,6 +3878,7 @@ document.getElementById("c_saveBtn").addEventListener("click", function(){
 document.getElementById("c_cancelBtn").addEventListener("click", resetCashForm);
 
 function editCash(id){
+  if(!tabOK("ca")) return;
   var c = STATE.cash.find(function(x){ return x.id===id; });
   if(!c) return;
   cashEditId = id;
@@ -3840,6 +3898,7 @@ function editCash(id){
   document.getElementById("panel-cash").scrollIntoView({behavior:"smooth"});
 }
 function deleteCash(id){
+  if(!tabOK("ca")) return;
   if(!confirm("Delete this cash book entry?")) return;
   STATE.cash = STATE.cash.filter(function(x){ return x.id!==id; });
   saveData({cash:[id]});
@@ -3993,6 +4052,7 @@ function currentStockItemValue(){
   return sel.value;
 }
 function addItemToCategory(cat, item){
+  if(!tabOK("st")) return;
   item = (item||"").trim();
   if(!item) return;
   STATE.itemMaster[cat] = STATE.itemMaster[cat] || [];
@@ -4006,6 +4066,7 @@ function getItemType(cat,item){
   return STATE.itemTypes[itemTypeKey(cat,item)] || "consumable"; // legacy/unclassified items default to Consumable (no forced behavior change)
 }
 function setItemType(cat,item,type){
+  if(!tabOK("st")) return;
   STATE.itemTypes[itemTypeKey(cat,item)] = (type==="nonConsumable")? "nonConsumable" : "consumable";
   saveData();
 }
@@ -4050,6 +4111,7 @@ function refreshManageHint(){
   document.getElementById("s_categoryItemsHint").textContent = items.length? ("Items under \""+cat+"\": "+items.join(", ")) : ("No items saved yet under \""+cat+"\".");
 }
 document.getElementById("s_addItemBtn").addEventListener("click", function(){
+  if(!tabOK("st")) return;
   var cat = document.getElementById("s_categoryManage").value;
   var name = document.getElementById("s_newItemName").value.trim();
   if(!name){ toast("Type an item name first."); return; }
@@ -4146,6 +4208,7 @@ function resetStockForm(){
   refreshItemListForCategory();
 }
 document.getElementById("s_saveBtn").addEventListener("click", function(){
+  if(!tabOK("st")) return;
   var item = currentStockItemValue();
   var category = document.getElementById("s_category").value;
   if(!item){ toast("Pick an item, or choose \"+ Add a new item…\" and type its name."); return; }
@@ -4192,6 +4255,7 @@ document.getElementById("s_saveBtn").addEventListener("click", function(){
 document.getElementById("s_cancelBtn").addEventListener("click", resetStockForm);
 
 function editStock(id){
+  if(!tabOK("st")) return;
   var s = STATE.stock.find(function(x){ return x.id===id; });
   if(!s) return;
   stockEditId = id;
@@ -4229,6 +4293,7 @@ function editStock(id){
   document.getElementById("panel-stock").scrollIntoView({behavior:"smooth"});
 }
 function deleteStock(id){
+  if(!tabOK("st")) return;
   if(!confirm("Delete this stock movement?")) return;
   STATE.stock = STATE.stock.filter(function(x){ return x.id!==id; });
   saveData({stock:[id]});
@@ -4236,6 +4301,7 @@ function deleteStock(id){
   toast("Movement deleted.");
 }
 function markStockReturned(id){
+  if(!tabOK("st")) return;
   var s = STATE.stock.find(function(x){ return x.id===id; });
   if(!s) return;
   s.returned = true;
@@ -4440,6 +4506,7 @@ function resetMultiIssueForm(){
   resetSelectOrAdd("mi_issuedTo","mi_issuedTo_new");
 }
 document.getElementById("mi_saveIssueBtn").addEventListener("click", function(){
+  if(!tabOK("st")) return;
   if(stockIssueStaged.length===0){ toast("Add at least one item to this issue first."); return; }
   var issuedTo = getSelectOrAddValue("mi_issuedTo","mi_issuedTo_new");
   if(!issuedTo){ toast("Enter who this issue was given to."); return; }
@@ -4507,7 +4574,7 @@ function ledgerCustomFieldTd(f, r){
 }
 function wireLedgerCustomFieldEditing(body){
   body.querySelectorAll(".editable-cf").forEach(function(td){
-    if(!isAdmin()){ return; }
+    if(!permOK("cf")){ return; }
     td.style.cursor="pointer";
     td.style.textDecoration="underline dotted";
     td.addEventListener("click", function(){
@@ -4596,7 +4663,7 @@ function renderLedger(){
     body.appendChild(tr);
   });
   body.querySelectorAll(".editable").forEach(function(td){
-    if(!isAdmin()){ return; }
+    if(!permOK("cf")){ return; }
     td.style.cursor="pointer";
     td.style.textDecoration="underline dotted";
     td.addEventListener("click", function(){
@@ -4656,6 +4723,7 @@ document.getElementById("ledgerExportBtn").addEventListener("click", function(){
 
 /* ================= BACKUP / RESTORE ================= */
 document.getElementById("btnBackup").addEventListener("click", function(){
+  if(!xOK()) return;
   var blob = new Blob([JSON.stringify(STATE, null, 2)], {type:"application/json"});
   var url = URL.createObjectURL(blob);
   var a = document.createElement("a");
@@ -4666,10 +4734,12 @@ document.getElementById("btnBackup").addEventListener("click", function(){
   toast("Backup file downloaded.");
 });
 document.getElementById("btnRestore").addEventListener("click", function(){
+  if(isTickUser()){ tickDenied(); return; }   /* restore replaces every key: never delegated by ticks */
   if(!isAdmin()){ toast("Only an Administrator can restore a backup (it replaces the shared online data for everyone)."); return; }
   document.getElementById("restoreFile").click();
 });
 document.getElementById("restoreFile").addEventListener("change", function(e){
+  if(isTickUser()){ tickDenied(); e.target.value = ""; return; }
   var file = e.target.files[0];
   if(!file) return;
   var reader = new FileReader();
@@ -4878,6 +4948,7 @@ document.getElementById("r_quick").addEventListener("change", function(){
 });
 document.getElementById("r_generateBtn").addEventListener("click", renderReports);
 document.getElementById("r_exportBtn").addEventListener("click", function(){
+  if(!xOK()) return;
   var d = reportData();
   var wb = XLSX.utils.book_new();
 
@@ -5017,6 +5088,7 @@ function resetEmployeeForm(){
   renderCustomFieldInputs("employees");
 }
 document.getElementById("e_saveBtn").addEventListener("click", function(){
+  if(!tabOK("em")) return;
   var name = document.getElementById("e_name").value.trim();
   if(!name){ toast("Employee name is required."); return; }
   var persNoVal = document.getElementById("e_persNo").value.trim();
@@ -5068,6 +5140,7 @@ document.getElementById("e_saveBtn").addEventListener("click", function(){
 document.getElementById("e_cancelBtn").addEventListener("click", resetEmployeeForm);
 
 function editEmployee(id){
+  if(!tabOK("em")) return;
   var e = STATE.employees.find(function(x){ return x.id===id; });
   if(!e) return;
   employeeEditId = id;
@@ -5094,7 +5167,7 @@ function editEmployee(id){
   document.getElementById("panel-employees").scrollIntoView({behavior:"smooth"});
 }
 function deleteEmployee(id){
-  if(!isAdmin()){ toast("Only an Administrator can remove an employee record."); return; }
+  if(!permOK("em")){ permDeny("Only an Administrator can remove an employee record."); return; }
   if(!confirm("Delete this employee record?")) return;
   STATE.employees = STATE.employees.filter(function(x){ return x.id!==id; });
   saveData({employees:[id]});
@@ -5192,7 +5265,7 @@ function renderEmployees(){
       "<td data-col='bank'>"+esc(e.bank)+"</td><td data-col='account'>"+acctDisplay+"</td>"+
       customFieldTds("employees", e)+
       "<td class='row-actions'><button class='btn secondary small view-only-btn' data-payslip='"+e.id+"'>Pay Slip</button><button class='btn ghost small' data-edit='"+e.id+"'>Edit</button>"+
-      (isAdmin()? "<button class='btn danger small' data-del='"+e.id+"'>Delete</button>" : "")+"</td>";
+      (permOK("em")? "<button class='btn danger small' data-del='"+e.id+"'>Delete</button>" : "")+"</td>";
     body.appendChild(tr);
   });
   body.querySelectorAll("[data-payslip]").forEach(function(el){ el.addEventListener("click", function(){ openPaySlip(el.dataset.payslip); }); });
@@ -5277,6 +5350,7 @@ function resetLeaveForm(){
   updateLeaveDaysPreview();
 }
 document.getElementById("lv_saveBtn").addEventListener("click", function(){
+  if(!tabOK("lv")) return;
   var empId = document.getElementById("lv_employee").value;
   if(!empId){ toast("Please select an employee."); return; }
   var from = document.getElementById("lv_from").value;
@@ -5312,6 +5386,7 @@ document.getElementById("lv_saveBtn").addEventListener("click", function(){
 });
 document.getElementById("lv_cancelBtn").addEventListener("click", resetLeaveForm);
 function editLeave(id){
+  if(!tabOK("lv")) return;
   var lv = STATE.leaveRegister.find(function(x){ return x.id===id; });
   if(!lv) return;
   leaveEditId = id;
@@ -5334,6 +5409,7 @@ function editLeave(id){
   document.getElementById("panel-leave").scrollIntoView({behavior:"smooth"});
 }
 function deleteLeave(id){
+  if(!tabOK("lv")) return;
   if(!confirm("Delete this leave entry?")) return;
   STATE.leaveRegister = STATE.leaveRegister.filter(function(x){ return x.id!==id; });
   saveData({leaveRegister:[id]});
@@ -5475,7 +5551,7 @@ function populateAttYearSelect(){
   document.getElementById("att_month").value = String(new Date().getMonth()+1);
 })();
 function cycleAttCell(employeeId, dateStr){
-  if(!isAdmin()){ toast("Only an Administrator can mark attendance."); return; }
+  if(!permOK("at")){ permDeny("Only an Administrator can mark attendance."); return; }
   var rec = attRecordFor(employeeId, dateStr);
   var cur = rec? rec.status : "";
   var next = ATT_STATUS_CYCLE[(ATT_STATUS_CYCLE.indexOf(cur)+1) % ATT_STATUS_CYCLE.length];
@@ -5554,6 +5630,7 @@ function renderAttendance(){
   renderAttHolidayList();
 }
 document.getElementById("att_addEmployeeBtn").addEventListener("click", function(){
+  if(!tabOK("em")) return;
   var tabBtn = document.querySelector('.tab-btn[data-tab="employees"]');
   if(tabBtn) tabBtn.click();
   resetEmployeeForm();
@@ -5568,7 +5645,7 @@ function renderAttHolidayList(){
   }).join("");
   wrap.querySelectorAll(".att-holiday-remove-btn").forEach(function(btn){
     btn.addEventListener("click", function(){
-      if(!isAdmin()){ toast("Only an Administrator can do this."); return; }
+      if(!permOK("at")){ permDeny("Only an Administrator can do this."); return; }
       var id = btn.dataset.id;
       var idx = STATE.holidays.findIndex(function(h){ return h.id===id; });
       if(idx!==-1){
@@ -5581,7 +5658,7 @@ function renderAttHolidayList(){
   });
 }
 document.getElementById("att_declareHolidayBtn").addEventListener("click", function(){
-  if(!isAdmin()){ toast("Only an Administrator can do this."); return; }
+  if(!permOK("at")){ permDeny("Only an Administrator can do this."); return; }
   var dateVal = document.getElementById("att_holidayDateInput").value;
   var labelVal = document.getElementById("att_holidayLabelInput").value.trim();
   if(!dateVal || !labelVal){ toast(t("att_holidayNeedBoth")); return; }
@@ -5597,7 +5674,7 @@ document.getElementById("att_declareHolidayBtn").addEventListener("click", funct
   document.getElementById(id).addEventListener("change", renderAttendance);
 });
 document.getElementById("att_fillLeaveBtn").addEventListener("click", function(){
-  if(!isAdmin()){ toast("Only an Administrator can do this."); return; }
+  if(!permOK("at")){ permDeny("Only an Administrator can do this."); return; }
   var year = Number(document.getElementById("att_year").value);
   var month = Number(document.getElementById("att_month").value);
   var nDays = daysInMonth(year, month);
@@ -5711,6 +5788,189 @@ function isAdmin(){ return !!(CURRENT_USER && CURRENT_USER.role==="admin"); }
    Admin, but not every Admin is a Super Admin. */
 function isSuperAdmin(){ return !!(CURRENT_USER && CURRENT_USER.role==="admin" && CURRENT_USER.isSuperAdmin===true); }
 
+/* ===== per-user ticks for this page (key "bill") =====
+   v = open the Bill Register at all.  bl = Contingent Bill tab, ca = Cash Book, st = Stock Book, em = Employees + Pay Slips,
+   lv = Leave Register, at = Attendance Register (one tick per tab = add / edit / delete in that tab),
+   cf = settings / admin work (deduction rates, ledger budget figures, header/footer, print columns, office name),
+   x = Export / Print / PDF / Excel / Backup download.
+   Super Admin sets them for each user in the portal (Users & Settings).  Super Admin, and an Admin who has no ticks of his own,
+   keep the old code path completely unchanged.  This only decides what the SCREEN allows; the Firestore rules are the real lock. */
+var BILL_ME = null;               /* users/{uid} data (role pinned at sign-in; ticks follow live changes) */
+var BILL_BOOTED = false;          /* the data (get + listeners) has been started for this sign-in */
+var BILL_UNSUB_PROFILE = null;
+var BILL_TICK_UI_TOUCHED = false;
+var BILL_DENIED_AT = 0;
+var BILL_TICK_DROPPED = null;
+/* tab tick -> top-level keys of appData_bill/shared that this tab may change (the Firestore rules use the same lists) */
+var BILL_TAB_KEYS = {
+  bl: ["bills"],
+  ca: ["cash","openingCash"],
+  st: ["stock","itemMaster","itemTypes"],
+  em: ["employees","payslipData","preparedByName","preparedByDesignation","approvedByName","approvedByDesignation","allowanceRates","allowanceRatesVersion","deductionRates"],
+  lv: ["leaveRegister"],
+  at: ["attendance","holidays"],
+  cf: ["officeName","officeAddress","officeContact","headOverrides","customHeads","hiddenDefaultHeads","contingentDeductionRates","customFieldDefs","customFieldDefsUndo","headerFooterConfig","printColumns"]
+};
+var BILL_WRITE_ACTS = ["bl","ca","st","em","lv","at","cf"];
+/* keys that the screen itself fills in while only LOOKING (a pay slip opened for viewing creates its template) — dropped silently, no message */
+var BILL_PASSIVE_KEYS = ["payslipData"];
+
+function billCampPermOK(){
+  return !!(window.CampPerm && typeof window.CampPerm.can === "function" && typeof window.CampPerm.pageInfo === "function" && window.CampPerm.pageInfo("bill"));
+}
+/* the profile as the shared table sees it: roleV2 is the one true source of the role on this page (as in the login code below) */
+function billPermUser(){ return BILL_ME ? { roleV2: BILL_ME.roleV2 || "viewer", perms: BILL_ME.perms } : null; }
+function canTab(act){
+  if(BILL_ME && billCampPermOK()){ return window.CampPerm.can(billPermUser(), "bill", act); }
+  /* no shared table (script missing / old cached copy) or profile unknown: exactly what the page did before ticks existed */
+  if(act === "v" || act === "x") return true;
+  return isAdmin();
+}
+/* a tick user = not Super Admin AND (not an Admin, OR an Admin who has ticks of his own for this page) */
+function isTickUser(){
+  if(!CURRENT_USER || isSuperAdmin()) return false;
+  if(!BILL_ME || !billCampPermOK()) return false;
+  var p = BILL_ME.perms && BILL_ME.perms.bill;
+  return CURRENT_USER.role !== "admin" || !!(p && typeof p === "object");
+}
+function tickDenied(){
+  var now = Date.now();
+  if(now - BILL_DENIED_AT < 1500) return;
+  BILL_DENIED_AT = now;
+  toast("آپ کو اس کام کی اجازت نہیں دی گئی۔ سپر ایڈمن سے رابطہ کریں۔ / You have not been given permission for this. Ask the Super Admin.");
+}
+/* guard for a handler that had NO role check before: no effect at all for legacy users */
+function tabOK(act){
+  if(!isTickUser() || canTab(act)) return true;
+  tickDenied();
+  return false;
+}
+function silentOK(act){ return !isTickUser() || canTab(act); }
+/* replaces an old `isAdmin()` check: legacy = isAdmin() exactly as before; tick user = needs the tab's tick */
+function permOK(act){ return isTickUser() ? canTab(act) : isAdmin(); }
+function permDeny(oldMsg){ if(isTickUser()){ tickDenied(); } else { toast(oldMsg); } }
+function xOK(){
+  if(canTab("x")) return true;
+  tickDenied();
+  return false;
+}
+function billAnyWrite(){ return BILL_WRITE_ACTS.some(function(a){ return canTab(a); }); }
+function billAllWrite(){ return BILL_WRITE_ACTS.every(function(a){ return canTab(a); }); }
+function billTickAllowedKeys(){
+  var out = [];
+  Object.keys(BILL_TAB_KEYS).forEach(function(a){ if(canTab(a)) out = out.concat(BILL_TAB_KEYS[a]); });
+  return out;
+}
+/* deterministic text of a value (object keys sorted, array order kept) so "changed?" ignores key order */
+function billStable(v){
+  if(v === undefined || v === null) return "null";
+  if(typeof v !== "object") return JSON.stringify(v);
+  if(Array.isArray(v)) return "[" + v.map(billStable).join(",") + "]";
+  return "{" + Object.keys(v).sort().filter(function(k){ return v[k] !== undefined; }).map(function(k){ return JSON.stringify(k) + ":" + billStable(v[k]); }).join(",") + "}";
+}
+/* the write of a tick user, inside the saveData transaction: send ONLY top-level keys that really changed AND that his ticks allow
+   (never the default keys normalizeData() fills in), as tx.update. Keys he has no tick for are dropped and reset to the server copy. */
+function billTickWrite(tx, snap, serverState, localSnapshot, merged){
+  BILL_TICK_DROPPED = [];
+  if(!snap.exists){ tx.set(SHARED_DOC_REF, merged); return merged; }   /* very first save ever: unchanged old behaviour, the rules decide */
+  var allowed = billTickAllowedKeys(), upd = {}, n = 0;
+  Object.keys(merged).forEach(function(k){
+    if(merged[k] === undefined) return;
+    if(billStable(merged[k]) === billStable(serverState[k])) return;
+    if(allowed.indexOf(k) !== -1){ upd[k] = merged[k]; n++; return; }
+    if(billStable(localSnapshot[k]) !== billStable(serverState[k]) && BILL_PASSIVE_KEYS.indexOf(k) === -1){ BILL_TICK_DROPPED.push(k); }
+    if(serverState[k] === undefined){ delete merged[k]; } else { merged[k] = serverState[k]; }
+  });
+  if(n){ tx.update(SHARED_DOC_REF, upd); }
+  return merged;
+}
+function billAfterTickSave(){
+  if(BILL_TICK_DROPPED && BILL_TICK_DROPPED.length){ tickDenied(); }
+  BILL_TICK_DROPPED = null;
+}
+/* screen part: per-tab read-only classes, dimmed buttons, read-only inputs.  Legacy users: every class is off. */
+function billApplyTickUi(){
+  var tick = isTickUser();
+  var cl = document.body.classList;
+  var map = { "ro-bill":"bl", "ro-cash":"ca", "ro-stock":"st", "ro-emp":"em", "ro-leave":"lv", "ro-att":"at", "ro-cf":"cf" };
+  Object.keys(map).forEach(function(c){ cl.toggle(c, !!(tick && !canTab(map[c]))); });
+  cl.toggle("tick-partial", !!(tick && billAnyWrite() && !billAllWrite()));
+  cl.toggle("tick-user", !!tick);
+  var anyWrite = billAnyWrite();
+  Array.prototype.forEach.call(document.querySelectorAll("[data-perm]"), function(el){
+    var act = el.getAttribute("data-perm");
+    var ok = (act === "restore") ? !(tick && anyWrite) : canTab(act);
+    el.classList.toggle("perm-off", !ok);
+    if(!ok){
+      if(!el.hasAttribute("data-orig-title")){ el.setAttribute("data-orig-title", el.getAttribute("title") || ""); }
+      el.setAttribute("aria-disabled", "true"); el.setAttribute("title", "اجازت نہیں / Not permitted");
+    } else if(el.hasAttribute("data-orig-title")){
+      var ot = el.getAttribute("data-orig-title");
+      if(ot){ el.setAttribute("title", ot); } else { el.removeAttribute("title"); }
+      el.removeAttribute("data-orig-title"); el.removeAttribute("aria-disabled");
+    }
+  });
+  if(tick || BILL_TICK_UI_TOUCHED){
+    BILL_TICK_UI_TOUCHED = true;
+    var ro = function(id, on){ var el = document.getElementById(id); if(el){ el.readOnly = !!on; } };
+    ro("officeName", tick && !canTab("cf"));
+    ro("cashOpening", tick && !canTab("ca"));
+    ["ps_preparedByName","ps_preparedByDesignation","ps_approvedByName","ps_approvedByDesignation"].forEach(function(id){ ro(id, tick && !canTab("em")); });
+  }
+}
+function billStopData(){
+  if(unsubscribeSharedDoc){ unsubscribeSharedDoc(); unsubscribeSharedDoc = null; }
+  if(unsubscribeSharedDropdowns){ unsubscribeSharedDropdowns(); unsubscribeSharedDropdowns = null; }
+  stopChat();
+  BILL_BOOTED = false;
+}
+/* View tick: no tick = full-screen "No access" and none of the data listeners are started */
+function billApplyView(){
+  var box = document.getElementById("billNoAccess");
+  var canV = canTab("v");
+  if(box){ box.classList.toggle("show", !canV); }
+  if(!CURRENT_USER) return;
+  if(canV){
+    if(!BILL_BOOTED){ BILL_BOOTED = true; billBoot(); }
+  } else {
+    billStopData();
+    var am = document.getElementById("appMain"); if(am){ am.style.display = "none"; }
+  }
+}
+/* the original start-up sequence, unchanged */
+function billBoot(){
+  fetchStateFromFirestore(function(){
+    loadSensitiveMap(function(){
+      showAppScreen();
+      startRealtimeSync();
+      startSharedDropdownsSync();
+      renderUsers();
+      startChat();
+    });
+  });
+}
+function billWatchProfile(uid){
+  if(BILL_UNSUB_PROFILE){ BILL_UNSUB_PROFILE(); BILL_UNSUB_PROFILE = null; }
+  try{
+    BILL_UNSUB_PROFILE = db.collection("users").doc(uid).onSnapshot(function(us){
+      if(!us.exists || !BILL_ME) return;
+      var nd = us.data() || {};
+      if(JSON.stringify(nd.perms || null) === JSON.stringify(BILL_ME.perms || null)) return;
+      BILL_ME = Object.assign({}, BILL_ME, { perms: nd.perms });   /* the role stays as at sign-in */
+      billApplyView();
+      if(BILL_BOOTED){
+        updateUserBar();
+        if(document.getElementById("appMain").style.display !== "none"){ renderAll(); }
+      }
+    }, function(){ /* cannot watch the profile: keep what we have */ });
+  }catch(e){ BILL_UNSUB_PROFILE = null; }
+}
+function billSignedOut(){
+  if(BILL_UNSUB_PROFILE){ BILL_UNSUB_PROFILE(); BILL_UNSUB_PROFILE = null; }
+  BILL_ME = null; BILL_BOOTED = false;
+  var box = document.getElementById("billNoAccess"); if(box){ box.classList.remove("show"); }
+}
+
 /* Sign-in and account creation now happen in ONE place only — the main Camp
    Office portal (camp-office-suite, one level up). Signing in there signs
    you in here too (same shared Firebase project/session), so this page
@@ -5727,9 +5987,10 @@ function updateUserBar(){
      instead of looking different from one system to another for the same account. */
   roleEl.textContent = CURRENT_USER? (isSuperAdmin()? "Super Admin" : (isAdmin()? "Administrator" : "Guest")) : "";
   roleEl.className = "role-badge" + (isAdmin()? " admin":"");
-  document.getElementById("hfConfigBtn").style.display = isAdmin()? "inline-flex":"none";
-  document.getElementById("colsConfigBtn").style.display = isAdmin()? "inline-flex":"none";
-  document.body.classList.toggle("guest-mode", !isAdmin());
+  document.getElementById("hfConfigBtn").style.display = permOK("cf")? "inline-flex":"none";
+  document.getElementById("colsConfigBtn").style.display = permOK("cf")? "inline-flex":"none";
+  document.body.classList.toggle("guest-mode", isTickUser()? !billAnyWrite() : !isAdmin());
+  billApplyTickUi();
   var fieldsMgrTabBtn = document.getElementById("fieldsMgrTabBtn");
   if(fieldsMgrTabBtn) fieldsMgrTabBtn.style.display = isSuperAdmin()? "flex":"none";
   /* Adding/renaming Contingent Heads is reserved for the Super Admin only —
@@ -5811,6 +6072,7 @@ auth.onAuthStateChanged(function(user){
   if(user){
     db.collection("users").doc(user.uid).get().then(function(snap){
             var d = snap.exists? snap.data() : {};
+      BILL_ME = d;
       var role = (d.roleV2==="admin" || d.roleV2==="super_admin") ? "admin" : "guest"; /* roleV2 is the one true source now -- a stale legacy "role" field on the doc must never override it */
       var theme = d.theme||null;
       var signatureURL = d.signatureURL||"";
@@ -5819,15 +6081,8 @@ auth.onAuthStateChanged(function(user){
       spinGate(user.uid, d, function(){
         CURRENT_USER = {uid:user.uid, username:user.email, role:role, signatureURL:signatureURL, isSuperAdmin:isSuperAdminFlag};
         if(theme) applyTheme(theme);
-        fetchStateFromFirestore(function(){
-          loadSensitiveMap(function(){
-            showAppScreen();
-            startRealtimeSync();
-            startSharedDropdownsSync();
-            renderUsers();
-            startChat();
-          });
-        });
+        billWatchProfile(user.uid);
+        billApplyView();   /* no View tick: "No access" and nothing is loaded; otherwise billBoot() = the original start-up */
       });
     }).catch(function(err){
       toast("Could not load your account: "+err.message);
@@ -5839,6 +6094,7 @@ auth.onAuthStateChanged(function(user){
     if(unsubscribeSharedDoc){ unsubscribeSharedDoc(); unsubscribeSharedDoc = null; }
     if(unsubscribeSharedDropdowns){ unsubscribeSharedDropdowns(); unsubscribeSharedDropdowns=null; }
     stopChat();
+    billSignedOut();
     showLoginScreen();
   }
 });
@@ -6284,6 +6540,7 @@ function buildPrintExtraFieldsHtml(){
   return rows.join("");
 }
 function printCurrentView(){
+  if(!xOK()) return;
   var payslipOpen = document.getElementById("payslipOverlay").style.display === "flex";
   if(payslipOpen){ document.body.classList.add("payslip-mode"); }
   document.getElementById("pbPrintExtraFields").innerHTML = buildPrintExtraFieldsHtml();
@@ -6366,6 +6623,7 @@ var PDF_PAPER_MM = {
   A4: {w:210, h:297}, Legal: {w:215.9, h:355.6}, Foolscap: {w:215.9, h:330.2}
 };
 function downloadCurrentViewAsPdf(paperSizeKey){
+  if(!xOK()) return;
   var btns = [document.getElementById("globalPdfBtn"), document.getElementById("ps_pdfBtn")].filter(Boolean);
   btns.forEach(function(b){ b.disabled = true; });
   var payslipOpen = document.getElementById("payslipOverlay").style.display === "flex";
@@ -6398,7 +6656,7 @@ document.getElementById("globalPdfBtn").addEventListener("click", function(){
   downloadCurrentViewAsPdf(document.getElementById("globalPaperSize").value);
 });
 document.getElementById("hfConfigBtn").addEventListener("click", function(){
-  if(!isAdmin()){ toast("Only an Administrator can change header/footer fields."); return; }
+  if(!permOK("cf")){ permDeny("Only an Administrator can change header/footer fields."); return; }
   var key = currentPanelKey();
   var cfg = (STATE.headerFooterConfig && STATE.headerFooterConfig[key]) || {};
   document.getElementById("hfModalTitle").textContent = "Header/Footer Fields — "+(PANEL_LABELS[key]||key);
@@ -6414,7 +6672,7 @@ document.getElementById("hfCancelBtn").addEventListener("click", function(){
   document.getElementById("hfModalOverlay").style.display = "none";
 });
 document.getElementById("hfSaveBtn").addEventListener("click", function(){
-  if(!isAdmin()){ toast("Only an Administrator can change header/footer fields."); return; }
+  if(!permOK("cf")){ permDeny("Only an Administrator can change header/footer fields."); return; }
   var key = currentPanelKey();
   STATE.officeAddress = document.getElementById("hfOfficeAddress").value.trim();
   STATE.officeContact = document.getElementById("hfOfficeContact").value.trim();
@@ -6482,7 +6740,7 @@ function renderColsCheckboxes(panelKey, cols){
   document.getElementById("colsCheckboxWrap").innerHTML = html || "<p>No printable columns.</p>";
 }
 document.getElementById("colsConfigBtn").addEventListener("click", function(){
-  if(!isAdmin()){ toast("Only an Administrator can change print columns."); return; }
+  if(!permOK("cf")){ permDeny("Only an Administrator can change print columns."); return; }
   var key = currentPanelKey();
   var cols = collectPanelColumns(key);
   if(!cols.length){ toast("This panel has no printable table."); return; }
@@ -6495,7 +6753,7 @@ document.getElementById("colsCancelBtn").addEventListener("click", function(){
   document.getElementById("colsModalOverlay").style.display = "none";
 });
 document.getElementById("colsSaveBtn").addEventListener("click", function(){
-  if(!isAdmin()){ toast("Only an Administrator can change print columns."); return; }
+  if(!permOK("cf")){ permDeny("Only an Administrator can change print columns."); return; }
   var key = document.getElementById("colsModalOverlay").dataset.key;
   var result = {};
   document.querySelectorAll("#colsCheckboxWrap .colsChk").forEach(function(chk){ result[chk.dataset.key] = chk.checked; });
@@ -6635,21 +6893,25 @@ function openPaySlip(employeeId){
   renderPaySlip();
 }
 document.getElementById("ps_preparedByName").addEventListener("change", function(){
+  if(!tabOK("em")){ this.value = STATE.preparedByName; return; }
   STATE.preparedByName = this.value.trim();
   saveData();
   renderPaySlip();
 });
 document.getElementById("ps_preparedByDesignation").addEventListener("change", function(){
+  if(!tabOK("em")){ this.value = STATE.preparedByDesignation; return; }
   STATE.preparedByDesignation = this.value.trim();
   saveData();
   renderPaySlip();
 });
 document.getElementById("ps_approvedByName").addEventListener("change", function(){
+  if(!tabOK("em")){ this.value = STATE.approvedByName; return; }
   STATE.approvedByName = this.value.trim();
   saveData();
   renderPaySlip();
 });
 document.getElementById("ps_approvedByDesignation").addEventListener("change", function(){
+  if(!tabOK("em")){ this.value = STATE.approvedByDesignation; return; }
   STATE.approvedByDesignation = this.value.trim();
   saveData();
   renderPaySlip();
@@ -6767,6 +7029,7 @@ function renderPaySlip(){
 document.getElementById("payslipPaper").addEventListener("input", function(ev){
   var input = ev.target;
   if(!input.classList || !input.classList.contains("cell-input")) return;
+  if(!tabOK("em")) return;
   var tr = input.closest("tr");
   if(!tr) return;
   var empId = tr.dataset.emp, monthVal = tr.dataset.month, section = tr.dataset.section, rowId = tr.dataset.row;
@@ -6791,11 +7054,12 @@ document.getElementById("payslipPaper").addEventListener("input", function(ev){
   }
 });
 document.getElementById("payslipPaper").addEventListener("change", function(ev){
-  if(ev.target.classList && ev.target.classList.contains("cell-input")) saveData();
+  if(ev.target.classList && ev.target.classList.contains("cell-input") && tabOK("em")) saveData();
 });
 document.getElementById("payslipPaper").addEventListener("click", function(ev){
   var removeBtn = ev.target.closest(".row-remove-btn");
   if(removeBtn){
+    if(!tabOK("em")) return;
     var tr = removeBtn.closest("tr");
     var empId = tr.dataset.emp, monthVal = tr.dataset.month, section = tr.dataset.section, rowId = tr.dataset.row;
     var slip = STATE.payslipData[empId] && STATE.payslipData[empId][monthVal];
@@ -6808,6 +7072,7 @@ document.getElementById("payslipPaper").addEventListener("click", function(ev){
   }
   var addBtn = ev.target.closest(".add-row-btn");
   if(addBtn){
+    if(!tabOK("em")) return;
     var empId2 = addBtn.dataset.emp, monthVal2 = addBtn.dataset.month, section2 = addBtn.dataset.section;
     var slip2 = STATE.payslipData[empId2] && STATE.payslipData[empId2][monthVal2];
     if(slip2){
@@ -6819,6 +7084,7 @@ document.getElementById("payslipPaper").addEventListener("click", function(ev){
   }
 });
 document.getElementById("ps_regenBtn").addEventListener("click", function(){
+  if(!tabOK("em")) return;
   var overlay = document.getElementById("payslipOverlay");
   var e = STATE.employees.find(function(x){ return x.id===overlay.dataset.empId; });
   if(!e) return;
@@ -6865,6 +7131,7 @@ document.getElementById("ps_closeBtn").addEventListener("click", closePaySlip);
 
 /* ================= EXPORT MASTER DATA (.xlsx) ================= */
 document.getElementById("exportMasterDataBtn").addEventListener("click", function(){
+  if(!xOK()) return;
   if(typeof XLSX === "undefined"){
     toast("Could not load the Excel export library — check your internet connection and try again.");
     return;
@@ -6978,7 +7245,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       var pad = document.getElementById("ps_approvedByDesignation"); if(pad) pad.value = stamp.right.designation;
       if(typeof renderPaySlip === "function") renderPaySlip();
       if(footEl) footEl.innerHTML = "";
-      try{ if(typeof saveData === "function") saveData(); }catch(e){}
+      try{ if(typeof saveData === "function" && silentOK("em")) saveData(); }catch(e){}
     } else if(footEl){
       var mySigUrl = (typeof CURRENT_USER !== "undefined" && CURRENT_USER && CURRENT_USER.signatureURL) || "";
       var cgdNote = "<div style=\"margin-top:4px;font-size:10.5px;color:#666;\">This is a computer generated document. / یہ ایک کمپیوٹر سے تیار کردہ دستاویز ہے۔</div>";
