@@ -8358,7 +8358,12 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
 
       function val(f){
         var c = f.querySelector("select,input,textarea");
-        return c ? String(c.value || "").trim() : "";
+        if(!c) return "";
+        if(c.type === "checkbox") return c.checked ? "1" : "";
+        var v = String(c.value || "").trim();
+        /* a drop-down left on its first choice ("All heads", "Any", or the default year) is not a filter */
+        if(c.tagName === "SELECT" && c.options.length && v === String(c.options[0].value)) return "";
+        return v;
       }
       function upd(){
         var n = 0;
@@ -8383,6 +8388,23 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       }
       bar.addEventListener("input", upd);
       bar.addEventListener("change", upd);
+      /* speed: the system re-draws the whole table on every "input" AND every "change" event (2 draws per click).
+         Here the two are merged into one short, delayed draw, so quick clicking/typing never stacks up. */
+      var prefix = (clear.id || "").replace("_clear", "");
+      var drawer = {bf:function(){ renderBills(); }, cf:function(){ renderCash(); }, sf:function(){ renderStock(); }}[prefix];
+      if(drawer){
+        var timer = null;
+        bar.addEventListener("input", intercept, true);
+        bar.addEventListener("change", intercept, true);
+        function intercept(e){
+          var t = e.target;
+          if(!t || !t.id || t.id.indexOf(prefix + "_") !== 0) return;
+          e.stopImmediatePropagation();
+          upd();
+          clearTimeout(timer);
+          timer = setTimeout(function(){ try{ drawer(); }catch(err){ console.error(err); } upd(); }, e.type === "input" && t.type !== "date" && t.tagName !== "SELECT" ? 180 : 40);
+        }
+      }
       clear.addEventListener("click", function(){ setTimeout(upd, 0); });
       toggle.addEventListener("click", function(){
         var c = bar.classList.toggle("collapsed");
