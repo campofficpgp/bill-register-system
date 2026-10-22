@@ -1421,6 +1421,7 @@ body.lang-ur .br-part{ font-size:17px; }
       <div class="search-bar">
         <h3 data-i18n="bill_searchTitle">Search &amp; filter bills</h3>
         <div class="grid cols-4">
+          <div class="field"><label><span class="en">Financial year</span><span class="ur">مالی سال</span></label><select id="bf_fy"></select></div>
           <div class="field"><label data-i18n="lbl_dateFrom">Date from</label><input type="date" id="bf_from"></div>
           <div class="field"><label data-i18n="lbl_dateTo">Date to</label><input type="date" id="bf_to"></div>
           <div class="field"><label data-i18n="lbl_billNo">Bill No</label><select id="bf_billNo"><option value="" data-i18n="opt_allBillNumbers">All bill numbers</option></select></div>
@@ -1555,6 +1556,7 @@ body.lang-ur .br-part{ font-size:17px; }
       <div class="search-bar">
         <h3 data-i18n="cash_searchTitle">Search &amp; filter cash book</h3>
         <div class="grid cols-4">
+          <div class="field"><label><span class="en">Financial year</span><span class="ur">مالی سال</span></label><select id="cf_fy"></select></div>
           <div class="field"><label data-i18n="lbl_dateFrom">Date from</label><input type="date" id="cf_from"></div>
           <div class="field"><label data-i18n="lbl_dateTo">Date to</label><input type="date" id="cf_to"></div>
           <div class="field"><label data-i18n="cash_voucherBillNo">Voucher/Bill No</label><select id="cf_voucher"><option value="" data-i18n="opt_allVoucherNumbers">All voucher/bill numbers</option></select></div>
@@ -1783,6 +1785,7 @@ body.lang-ur .br-part{ font-size:17px; }
       <div class="search-bar">
         <h3 data-i18n="rep_period">Report period</h3>
         <div class="grid cols-4">
+          <div class="field"><label><span class="en">Financial year</span><span class="ur">مالی سال</span></label><select id="r_fy"></select></div>
           <div class="field"><label data-i18n="rep_fromDate">From date</label><input type="date" id="r_from"></div>
           <div class="field"><label data-i18n="rep_toDate">To date</label><input type="date" id="r_to"></div>
           <div class="field"><label data-i18n="rep_quickRange">Quick range</label>
@@ -3867,7 +3870,9 @@ function filteredBills(){
   var vendor = document.getElementById("bf_vendor").value;
   var head = document.getElementById("bf_head").value;
   var ao = document.getElementById("bf_ao").value;
+  var fyv = selFY("bf_fy");
   return STATE.bills.filter(function(b){
+    if(fyv && fyOfDate(b.date)!==fyv) return false;
     if(from && b.date && b.date<from) return false;
     if(to && b.date && b.date>to) return false;
     if(billNo && b.billNo!==billNo) return false;
@@ -3881,6 +3886,7 @@ function filteredBills(){
 
 /* ---- Fields Manager: custom columns rendered on top of the built-in Contingent Bill table ---- */
 function renderBills(){
+  fillFYSelect("bf_fy");
   populateBillFilterSelects();
   populateBillEntryValueLists();
   renderCustomFieldInputs("bill");
@@ -3918,15 +3924,17 @@ function renderBills(){
   applyColumnPrintCss();
 
   document.getElementById("billCount").textContent = STATE.bills.length+" bill"+(STATE.bills.length===1?"":"s");
-  document.getElementById("billResultCount").textContent = "Showing "+list.length+" of "+STATE.bills.length;
+  var fyb = selFY("bf_fy"), nb = fyb ? STATE.bills.filter(function(b){ return fyOfDate(b.date)===fyb; }).length : STATE.bills.length;
+  document.getElementById("billResultCount").textContent = "Showing "+list.length+" of "+nb+" — "+(fyb ? "FY "+fyb : "All years");
 }
 
-["bf_from","bf_to","bf_billNo","bf_vendorNo","bf_vendor","bf_head","bf_ao"].forEach(function(id){
+["bf_fy","bf_from","bf_to","bf_billNo","bf_vendorNo","bf_vendor","bf_head","bf_ao"].forEach(function(id){
   document.getElementById(id).addEventListener("input", renderBills);
   document.getElementById(id).addEventListener("change", renderBills);
 });
 document.getElementById("bf_clear").addEventListener("click", function(){
   ["bf_from","bf_to","bf_billNo","bf_vendorNo","bf_vendor","bf_head","bf_ao"].forEach(function(id){ document.getElementById(id).value=""; });
+  document.getElementById("bf_fy").selectedIndex = 0;
   renderBills();
 });
 document.getElementById("b_exportBtn").addEventListener("click", function(){
@@ -4155,8 +4163,24 @@ document.getElementById("cashOpening").addEventListener("input", function(){
 });
 document.getElementById("c_date").value = todayStr();
 
-function computeCashBalances(list){
-  var bal = STATE.openingCash;
+/* ---- Financial year (July–June) pickers: Bill Register, Cash Book and Reports never mix years unless "All years" is chosen ---- */
+function fillFYSelect(id){
+  var sel = document.getElementById(id); if(!sel) return;
+  var cur = fyOfDate(todayStr());
+  var opts = [cur].concat(ledgerFYList().filter(function(f){ return f!==cur; }));
+  var keep = sel.value;
+  sel.innerHTML = opts.map(function(f){ return '<option value="'+f+'">FY '+f+'</option>'; }).join("") + '<option value="ALL">All years / تمام سال</option>';
+  sel.value = (keep && (keep==="ALL" || opts.indexOf(keep)!==-1)) ? keep : cur;
+}
+function selFY(id){
+  var sel = document.getElementById(id), v = sel ? sel.value : "";
+  return (v && v!=="ALL") ? v : "";
+}
+function cashOfFY(fy){ return fy ? STATE.cash.filter(function(c){ return fyOfDate(c.date)===fy; }) : STATE.cash; }
+/* each financial year's cash book starts from zero; "All years" keeps the old running balance from the opening cash figure */
+function cashBalancesFor(fy){ return computeCashBalances(cashOfFY(fy), fy ? 0 : undefined); }
+function computeCashBalances(list, startBal){
+  var bal = (startBal==null) ? STATE.openingCash : startBal;
   return list.map(function(c){
     bal = bal + (Number(c.receipt)||0) - (Number(c.payment)||0);
     return Object.assign({}, c, {balance: bal});
@@ -4182,18 +4206,20 @@ function resetCashForm(){
   updateCashPreview();
 }
 function updateCashPreview(){
-  var withAll = computeCashBalances(STATE.cash);
-  var runningBal = withAll.length? withAll[withAll.length-1].balance : STATE.openingCash;
+  var pfy = fyOfDate((document.getElementById("c_date")||{}).value || todayStr());
+  var withAll = cashBalancesFor(pfy);
+  var runningBal = withAll.length? withAll[withAll.length-1].balance : 0;
   if(cashEditId){
     var idx = STATE.cash.findIndex(function(x){return x.id===cashEditId;});
-    var before = STATE.cash.slice(0, idx);
-    runningBal = computeCashBalances(before).length? computeCashBalances(before)[before.length-1].balance : STATE.openingCash;
+    var before = STATE.cash.slice(0, idx).filter(function(c){ return fyOfDate(c.date)===pfy; });
+    var bb = computeCashBalances(before, 0);
+    runningBal = bb.length? bb[bb.length-1].balance : 0;
   }
   var r = Number(document.getElementById("c_receipt").value)||0;
   var p = Number(document.getElementById("c_payment").value)||0;
   document.getElementById("c_previewBal").value = fmt(runningBal + r - p);
 }
-["c_receipt","c_payment"].forEach(function(id){ document.getElementById(id).addEventListener("input", updateCashPreview); });
+["c_receipt","c_payment","c_date"].forEach(function(id){ document.getElementById(id).addEventListener("input", updateCashPreview); });
 updateCashPreview();
 
 document.getElementById("c_saveBtn").addEventListener("click", function(){
@@ -4260,7 +4286,8 @@ function populateCashFilterSelects(){
   populateDistinctSelect(document.getElementById("cf_particulars"), STATE.cash.map(function(c){ return c.particulars; }));
 }
 function filteredCashWithBalances(){
-  var all = computeCashBalances(STATE.cash);
+  var fyv = selFY("cf_fy");
+  var all = cashBalancesFor(fyv);
   var from = document.getElementById("cf_from").value;
   var to = document.getElementById("cf_to").value;
   var voucher = document.getElementById("cf_voucher").value;
@@ -4277,13 +4304,15 @@ function filteredCashWithBalances(){
 }
 
 function renderCash(){
+  fillFYSelect("cf_fy");
   populateCashFilterSelects();
   populateCashEntryValueLists();
   renderCustomFieldInputs("cash");
   syncCustomHeaders("cash");
   var customCount = customFieldDefs("cash").length;
-  var all = computeCashBalances(STATE.cash);
-  var current = all.length? all[all.length-1].balance : STATE.openingCash;
+  var fyc = selFY("cf_fy");
+  var all = cashBalancesFor(fyc);
+  var current = all.length? all[all.length-1].balance : (fyc ? 0 : STATE.openingCash);
   document.getElementById("cashCurrent").value = fmt(current);
 
   var list = filteredCashWithBalances();
@@ -4313,15 +4342,17 @@ function renderCash(){
     "<td class='num' data-col='receipt'>"+fmt(sumR)+"</td><td class='num' data-col='payment'>"+fmt(sumP)+"</td><td class='num' data-col='balance'>"+fmt(current)+"</td><td colspan='"+(1+customCount)+"'></td>";
   applyColumnPrintCss();
 
+  var nc = cashOfFY(fyc).length;
   document.getElementById("cashCount").textContent = STATE.cash.length+" entr"+(STATE.cash.length===1?"y":"ies");
-  document.getElementById("cashResultCount").textContent = "Showing "+list.length+" of "+STATE.cash.length;
+  document.getElementById("cashResultCount").textContent = "Showing "+list.length+" of "+nc+" — "+(fyc ? "FY "+fyc : "All years");
 }
-["cf_from","cf_to","cf_voucher","cf_particulars","cf_head"].forEach(function(id){
+["cf_fy","cf_from","cf_to","cf_voucher","cf_particulars","cf_head"].forEach(function(id){
   document.getElementById(id).addEventListener("input", renderCash);
   document.getElementById(id).addEventListener("change", renderCash);
 });
 document.getElementById("cf_clear").addEventListener("click", function(){
   ["cf_from","cf_to","cf_voucher","cf_particulars","cf_head"].forEach(function(id){ document.getElementById(id).value=""; });
+  document.getElementById("cf_fy").selectedIndex = 0;
   renderCash();
 });
 document.getElementById("c_exportBtn").addEventListener("click", function(){
@@ -5200,7 +5231,9 @@ function reportData(){
   var headFilter = (typeof REPORT_HEAD_FILTER!=="undefined") ? REPORT_HEAD_FILTER : null;
   function headAllowed(h){ return !headFilter || headFilter.indexOf(h)!==-1; }
 
-  var bills = STATE.bills.filter(function(b){ return inDateRange(b.date, from, to) && headAllowed(b.head || "(No head)"); });
+  var fyr = selFY("r_fy");
+  function fyOK(dt){ return !fyr || fyOfDate(dt)===fyr; }
+  var bills = STATE.bills.filter(function(b){ return fyOK(b.date) && inDateRange(b.date, from, to) && headAllowed(b.head || "(No head)"); });
   var billsByHead = {};
   bills.forEach(function(b){
     var h = b.head || "(No head)";
@@ -5210,7 +5243,7 @@ function reportData(){
     billsByHead[h].count++; billsByHead[h].gross+=g; billsByHead[h].ded+=ded; billsByHead[h].net+=(g-ded);
   });
 
-  var cashRows = STATE.cash.filter(function(c){ return inDateRange(c.date, from, to) && headAllowed(c.head || c.particulars || "(No head)"); });
+  var cashRows = STATE.cash.filter(function(c){ return fyOK(c.date) && inDateRange(c.date, from, to) && headAllowed(c.head || c.particulars || "(No head)"); });
   var cashByHead = {};
   cashRows.forEach(function(c){
     var h = c.head || c.particulars || "(No head)";
@@ -5219,14 +5252,15 @@ function reportData(){
     cashByHead[h].payment += Number(c.payment)||0;
   });
   var openingBalance = null;
+  if(fyr && !from) openingBalance = 0;               /* a single year starts from zero */
   if(from){
     openingBalance = 0;
     STATE.cash.forEach(function(c){
-      if(c.date && c.date < from){ openingBalance += (Number(c.receipt)||0) - (Number(c.payment)||0); }
+      if(c.date && c.date < from && fyOK(c.date)){ openingBalance += (Number(c.receipt)||0) - (Number(c.payment)||0); }
     });
   }
 
-  var stockRows = STATE.stock.filter(function(s){ return inDateRange(s.date, from, to); });
+  var stockRows = STATE.stock.filter(function(s){ return fyOK(s.date) && inDateRange(s.date, from, to); });
   var stockByCat = {};
   stockRows.forEach(function(s){
     var cat = s.category || "(No category)";
@@ -5247,9 +5281,11 @@ function reportData(){
 
 function renderReports(){
   if(!document.getElementById("panel-reports")) return;
+  fillFYSelect("r_fy");
   var d = reportData();
 
-  document.getElementById("reportRangeChip").textContent = (d.from||d.to) ? (t("rep_fromChip")+" "+(d.from||"—")+" "+t("rep_toChip")+" "+(d.to||"—")) : t("rep_allTime");
+  var fyChip = selFY("r_fy");
+  document.getElementById("reportRangeChip").textContent = ((d.from||d.to) ? (t("rep_fromChip")+" "+(d.from||"—")+" "+t("rep_toChip")+" "+(d.to||"—")) : (fyChip ? "" : t("rep_allTime"))) + (fyChip ? ((d.from||d.to)?"  |  ":"")+"FY "+fyChip : "  |  All years");
   var headsNoteEl = document.getElementById("reportHeadsNote");
   if(headsNoteEl){
     headsNoteEl.textContent = REPORT_HEAD_FILTER
@@ -5290,7 +5326,9 @@ function renderReports(){
     return "<tr><td>"+esc(h)+"</td><td class='num'>"+fmt(r.receipt)+"</td><td class='num'>"+fmt(r.payment)+"</td><td class='num'>"+fmt(r.receipt-r.payment)+"</td></tr>";
   }).join("") : "<tr class='empty-row'><td colspan='4'>"+esc(t("rep_noCashPeriod"))+"</td></tr>";
   document.getElementById("reportCashTotals").innerHTML = "<td><b>"+esc(t("rep_totalLabel"))+"</b></td><td class='num'><b>"+fmt(cashReceiptTotal)+"</b></td><td class='num'><b>"+fmt(cashPaymentTotal)+"</b></td><td class='num'><b>"+fmt(netCash)+"</b></td>";
-  document.getElementById("reportCashOpening").textContent = d.openingBalance===null
+  document.getElementById("reportCashOpening").textContent = (d.openingBalance!==null && !d.from)
+    ? "Opening balance (start of FY "+fyChip+"): Rs "+fmt(d.openingBalance)+"  →  Closing balance (as of "+(d.to||t("rep_today"))+"): Rs "+fmt(closingBalance)
+    : d.openingBalance===null
     ? t("rep_pickFromForBalance")
     : t("rep_openingBalanceLabel")+" ("+t("rep_before")+" "+d.from+"): Rs "+fmt(d.openingBalance)+"  →  "+t("rep_closingBalanceLabel")+" ("+t("rep_asOf")+" "+(d.to||t("rep_today"))+"): Rs "+fmt(closingBalance);
 
@@ -5314,6 +5352,7 @@ document.getElementById("r_quick").addEventListener("change", function(){
   renderReports();
 });
 document.getElementById("r_generateBtn").addEventListener("click", renderReports);
+document.getElementById("r_fy").addEventListener("change", renderReports);
 document.getElementById("r_exportBtn").addEventListener("click", function(){
   if(!xOK()) return;
   var d = reportData();
@@ -7822,6 +7861,8 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var office = clean(STATE.officeName || "") || "Camp Office, Prosecutor General Punjab";
     var sub = [];
     if(key === "ledger"){ var fy = $("lf_fy"); if(fy && fy.value) sub.push("Financial year " + fy.value); }
+    var fySel = {bill:"bf_fy", cash:"cf_fy", reports:"r_fy"}[key];
+    if(fySel && $(fySel)){ var fv = $(fySel).value; sub.push(fv && fv !== "ALL" ? "Financial year " + fv : "All financial years"); }
     var chip = panel.querySelector(".results-strip .count-chip, .panel-head .count-chip");
     if(chip && clean(chip.textContent)) sub.push(clean(chip.textContent));
     sub.push("Generated " + todayText());
@@ -8616,8 +8657,8 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     });
 
     /* ===== cash book ===== */
-    var opening = num(STATE.openingCash);
-    cashAll.forEach(function(c){ if(c.date && c.date < start) opening += num(c.receipt) - num(c.payment); });
+    var opening = 0;   /* each financial year's cash book starts from zero */
+    cashAll.forEach(function(c){ if(c.date && c.date < start && fyOfDate(c.date) === fy) opening += num(c.receipt) - num(c.payment); });
     var cashM = cashAll.map(function(c, i){ return {c:c, i:i}; }).filter(function(x){ return inM(x.c.date); })
       .sort(function(a, b){ return String(a.c.date).localeCompare(String(b.c.date)) || a.i - b.i; }).map(function(x){ return x.c; });
     var bal = opening, cashRows = cashM.map(function(c){ bal += num(c.receipt) - num(c.payment); return {c:c, bal:bal}; });
@@ -8670,7 +8711,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       ["Month", L], ["Financial year", d.fy],
       ["PART 1 — SALARY: employees paid", d.empRows.length], ["Salary gross", eT.gross], ["Salary deductions (GPF, income tax, funds, loans)", eT.ded], ["Salary net payable", eT.net],
       ["PART 2 — CONTINGENT: number of bills", billCount], ["Bills gross", gross], ["Bills deductions (IT, GST, PST, other)", ded], ["Net paid to vendors", net],
-      ["Cash book: opening balance on 1st of month", d.opening], ["Cash book: receipts in month", d.rec], ["Cash book: payments in month", d.pay], ["Cash book: closing balance", d.closing],
+      ["Cash book: opening balance on 1st of month (this financial year only)", d.opening], ["Cash book: receipts in month", d.rec], ["Cash book: payments in month", d.pay], ["Cash book: closing balance", d.closing],
       ["Salary heads: budget / spent to date", d.uptoOK ? fmt(sT.budget) + " / " + fmt(sT.total) : fmt(sT.budget) + " / —"],
       ["Contingent heads: budget / spent to date", fmt(cT.budget) + " / " + fmt(cT.total)],
       ["Contingent heads: budget remaining", cT.remain]
