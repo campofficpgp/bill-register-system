@@ -1451,7 +1451,8 @@ html,body{overflow-x:hidden;}
 
       <div class="search-bar">
         <h3 data-i18n="ledger_searchHeads">Search heads</h3>
-        <div class="grid cols-2">
+        <div class="grid cols-3">
+          <div class="field"><label data-i18n="lbl_financialYear">Financial year</label><select id="lf_fy"></select></div>
           <div class="field"><label data-i18n="lbl_contingentHead">Contingent head</label><select id="lf_head"><option value="" data-i18n="opt_allHeads">All heads</option></select></div>
           <div class="field"><label data-i18n="lbl_show">Show</label>
             <select id="lf_activity"><option value="all" data-i18n="opt_allHeads">All heads</option><option value="active" data-i18n="ledger_onlyHeadsWithBills">Only heads with bills posted</option><option value="over" data-i18n="ledger_onlyOverBudget">Only heads over/near budget</option></select>
@@ -1475,7 +1476,7 @@ html,body{overflow-x:hidden;}
           <tfoot><tr id="ledgerTotalsRow"></tr></tfoot>
         </table>
       </div>
-      <p class="field-hint" style="margin-top:8px;" data-i18n="ledger_clickToCorrect">Click a Final Budget or Prior Expenditure figure to correct it. Changes are saved automatically.</p>
+      <p class="field-hint" style="margin-top:8px;" data-i18n="ledger_clickToCorrect">Click a Final Budget or Prior Expenditure figure to correct it. Changes are saved automatically. Pick the Financial year above to see another year; Total Expenditure counts the full gross amount of every bill in that year (deductions are not subtracted).</p>
     </section>
 
     <!-- ================= REPORTS ================= -->
@@ -2196,6 +2197,9 @@ function normalizeData(data, seedDefaults){
   data.cash = data.cash || [];
   data.stock = data.stock || [];
   data.headOverrides = data.headOverrides || {};
+  /* Financial year that the top-level Final Budget / Prior Expenditure figures of every head belong to.
+     Other years live in headOverrides[head].byFY["YYYY-YY"]. */
+  data.baseFY = data.baseFY || "2026-27";
   data.openingCash = data.openingCash || 0;
   data.officeName = data.officeName || "";
   data.officeAddress = data.officeAddress || "";
@@ -2697,9 +2701,9 @@ en: {
   lbl_contingentHead:"Contingent head", lbl_date:"Date", lbl_dateFrom:"Date from", lbl_dateTo:"Date to", lbl_deductions:"Deductions",
   lbl_email:"Email", lbl_grossBillAmount:"Gross bill amount", lbl_gstDed:"GST ded.", lbl_incomeTaxDed:"Income tax ded.", lbl_language:"Language",
   lbl_name:"Name", lbl_netPayAuto:"Net payment (auto)", lbl_officeSection:"Office / Section name", lbl_otherDed:"Other ded.",
-  lbl_paperSize:"Paper size", lbl_pstDed:"PST ded.", lbl_remarks:"Remarks", lbl_show:"Show", lbl_signedInAs:"Signed in as",
+  lbl_paperSize:"Paper size", lbl_pstDed:"PST ded.", lbl_remarks:"Remarks", lbl_show:"Show", lbl_financialYear:"Financial year", lbl_signedInAs:"Signed in as",
   lbl_totalDedAuto:"Total deductions (auto)", lbl_vendorName:"Vendor name", lbl_vendorNo:"Vendor No",
-  ledger_clickToCorrect:"Click a Final Budget or Prior Expenditure figure to correct it. Changes are saved automatically.",
+  ledger_clickToCorrect:"Click a Final Budget or Prior Expenditure figure to correct it. Changes are saved automatically. Pick the Financial year above to see another year; Total Expenditure counts the full gross amount of every bill in that year (deductions are not subtracted).",
   ledger_finalBudget:"Final Budget", ledger_netExpThisSystem:"Net Expenditure (this system)", ledger_noOfBills:"No. of Bills",
   ledger_onlyHeadsWithBills:"Only heads with bills posted", ledger_onlyOverBudget:"Only heads over/near budget",
   ledger_panelDesc:"Generated automatically from the Contingent Bill entries. Final Budget and Prior Expenditure can be corrected here if the reference figures change.",
@@ -2896,9 +2900,9 @@ ur: {
   lbl_contingentHead:"کنٹینجنٹ ہیڈ", lbl_date:"تاریخ", lbl_dateFrom:"تاریخ از", lbl_dateTo:"تاریخ تا", lbl_deductions:"کٹوتیاں",
   lbl_email:"ای میل", lbl_grossBillAmount:"کل بل رقم", lbl_gstDed:"GST کٹوتی", lbl_incomeTaxDed:"انکم ٹیکس کٹوتی", lbl_language:"زبان",
   lbl_name:"نام", lbl_netPayAuto:"خالص ادائیگی (خودکار)", lbl_officeSection:"دفتر / سیکشن کا نام", lbl_otherDed:"دیگر کٹوتی",
-  lbl_paperSize:"کاغذ کا سائز", lbl_pstDed:"PST کٹوتی", lbl_remarks:"ریمارکس", lbl_show:"دکھائیں", lbl_signedInAs:"سائن اِن ہیں بطور",
+  lbl_paperSize:"کاغذ کا سائز", lbl_pstDed:"PST کٹوتی", lbl_remarks:"ریمارکس", lbl_show:"دکھائیں", lbl_financialYear:"مالی سال", lbl_signedInAs:"سائن اِن ہیں بطور",
   lbl_totalDedAuto:"کل کٹوتیاں (خودکار)", lbl_vendorName:"وینڈر کا نام", lbl_vendorNo:"وینڈر نمبر",
-  ledger_clickToCorrect:"درست کرنے کے لیے Final Budget یا Prior Expenditure کے ہندسے پر کلک کریں۔ تبدیلیاں خودکار طور پر محفوظ ہوتی ہیں۔",
+  ledger_clickToCorrect:"درست کرنے کے لیے Final Budget یا Prior Expenditure کے ہندسے پر کلک کریں۔ تبدیلیاں خودکار طور پر محفوظ ہوتی ہیں۔ دوسرا سال دیکھنے کے لیے اوپر مالی سال چنیں؛ کل خرچ میں اس سال کے ہر بل کی پوری مجموعی رقم گنی جاتی ہے (کٹوتیاں منہا نہیں ہوتیں)۔",
   ledger_finalBudget:"حتمی بجٹ", ledger_netExpThisSystem:"خالص اخراجات (اس سسٹم میں)", ledger_noOfBills:"بلز کی تعداد",
   ledger_onlyHeadsWithBills:"صرف وہ ہیڈز جن پر بل درج ہیں", ledger_onlyOverBudget:"صرف وہ ہیڈز جو بجٹ سے تجاوز کر رہے / قریب ہیں",
   ledger_panelDesc:"کنٹینجنٹ بل اندراجات سے خودکار طور پر تیار۔ اگر حوالہ اعداد و شمار تبدیل ہوں تو Final Budget اور Prior Expenditure یہاں درست کیے جا سکتے ہیں۔",
@@ -3154,18 +3158,46 @@ officeInput.addEventListener("input", function(){
   saveData();
 });
 
+/* ---------------- Financial-year helpers (July to June) ---------------- */
+function baseFY(){ return (typeof STATE!=="undefined" && STATE && STATE.baseFY) || "2026-27"; }
+function fyOfDate(d){
+  var m = /^(\d{4})-(\d{2})/.exec(d||"");
+  if(!m) return baseFY();                       /* a bill with no usable date is counted in the base year, never dropped */
+  var y = +m[1], mo = +m[2], st = mo>=7? y : y-1;
+  return st+"-"+String((st+1)%100).padStart(2,"0");
+}
+function currentLedgerFY(){
+  var el = document.getElementById("lf_fy");
+  return (el && el.value) || baseFY();
+}
+/* Every year the ledger can show: the base year, today's year, any year with a bill, any year with saved figures. */
+function ledgerFYList(){
+  var set = {};
+  set[baseFY()] = true; set[fyOfDate(todayStr())] = true;
+  (STATE.bills||[]).forEach(function(b){ set[fyOfDate(b.date)] = true; });
+  Object.keys(STATE.headOverrides||{}).forEach(function(k){
+    var by = (STATE.headOverrides[k]||{}).byFY || {};
+    Object.keys(by).forEach(function(fy){ set[fy] = true; });
+  });
+  return Object.keys(set).sort().reverse();
+}
 /* ---------------- Head list helpers ---------------- */
-function getHeads(){
+function getHeads(fy){
+  fy = fy || baseFY();
   var hidden = STATE.hiddenDefaultHeads || [];
   var base = DEFAULT_HEADS.filter(function(h){ return hidden.indexOf(h.label)===-1; });
   var custom = (STATE.customHeads||[]).map(function(label){ return {label:label, finalBudget:0, prior:0}; });
   return base.concat(custom).map(function(h){
     var ov = STATE.headOverrides[h.label] || {};
-    return {
-      label: h.label,
-      finalBudget: (ov.finalBudget!=null? ov.finalBudget : h.finalBudget),
-      prior: (ov.prior!=null? ov.prior : h.prior)
-    };
+    if(fy===baseFY()){
+      return {
+        label: h.label,
+        finalBudget: (ov.finalBudget!=null? ov.finalBudget : h.finalBudget),
+        prior: (ov.prior!=null? ov.prior : h.prior)
+      };
+    }
+    var o = (ov.byFY && ov.byFY[fy]) || {};
+    return { label: h.label, finalBudget: Number(o.finalBudget)||0, prior: Number(o.prior)||0 };
   });
 }
 /* Add a Contingent Head beyond the fixed 41 — usable immediately from Bill,
@@ -3257,18 +3289,22 @@ populateHeadSelect(document.getElementById("b_head"), false);
 populateHeadSelect(document.getElementById("bf_head"), true);
 
 document.getElementById("b_head").addEventListener("change", updateHeadHint);
+document.getElementById("b_date").addEventListener("change", updateHeadHint);
 function updateHeadHint(){
   var label = document.getElementById("b_head").value;
-  var h = getHeads().find(function(x){ return x.label===label; });
+  var fy = fyOfDate(document.getElementById("b_date").value || todayStr());
+  var h = getHeads(fy).find(function(x){ return x.label===label; });
   var hint = document.getElementById("b_headHint");
   if(!h){ hint.textContent=""; return; }
-  var spent = getHeadSpend(label) + h.prior;
+  var spent = getHeadSpend(label, fy) + h.prior;
   var remaining = h.finalBudget - spent;
-  hint.innerHTML = "Final budget: <b>"+fmt(h.finalBudget)+"</b> &nbsp;|&nbsp; Remaining: <b class=\""+(remaining<0?'neg':'pos')+"\">"+fmt(remaining)+"</b>";
+  hint.innerHTML = "FY "+fy+" &nbsp;|&nbsp; Final budget: <b>"+fmt(h.finalBudget)+"</b> &nbsp;|&nbsp; Remaining: <b class=\""+(remaining<0?'neg':'pos')+"\">"+fmt(remaining)+"</b>";
 }
-function getHeadSpend(label){
-  return STATE.bills.filter(function(b){ return b.head===label; })
-    .reduce(function(sum,b){ return sum + netPayment(b); }, 0);
+/* Expenditure against a head is the full gross amount of each bill (deductions are credited elsewhere), counted in the bill's financial year. */
+function getHeadSpend(label, fy){
+  fy = fy || baseFY();
+  return STATE.bills.filter(function(b){ return b.head===label && fyOfDate(b.date)===fy; })
+    .reduce(function(sum,b){ return sum + (Number(b.gross)||0); }, 0);
 }
 
 /* ================= CONTINGENT BILL MODULE ================= */
@@ -4549,12 +4585,13 @@ resetMultiIssueForm();
 
 /* ================= LEDGER & BUDGET MODULE ================= */
 function ledgerRows(){
-  return getHeads().map(function(h, i){
-    var bills = STATE.bills.filter(function(b){ return b.head===h.label; });
+  var fy = currentLedgerFY();
+  return getHeads(fy).map(function(h, i){
+    var bills = STATE.bills.filter(function(b){ return b.head===h.label && fyOfDate(b.date)===fy; });
     var gross = bills.reduce(function(s,b){ return s+(Number(b.gross)||0); }, 0);
     var ded = bills.reduce(function(s,b){ return s+totalDed(b); }, 0);
     var net = bills.reduce(function(s,b){ return s+netPayment(b); }, 0);
-    var totalExp = h.prior + net;
+    var totalExp = h.prior + gross;   /* full gross is charged to the head; deductions are shown separately */
     var remaining = h.finalBudget - totalExp;
     var ov = STATE.headOverrides[h.label] || {};
     return {
@@ -4636,7 +4673,16 @@ function filteredLedger(){
     return true;
   });
 }
+function populateLedgerFYSelect(){
+  var sel = document.getElementById("lf_fy");
+  var keep = sel.value;
+  var list = ledgerFYList();
+  sel.innerHTML = list.map(function(fy){ return "<option value=\""+fy+"\">"+fy+"</option>"; }).join("");
+  if(keep && list.indexOf(keep)!==-1) sel.value = keep;
+  else sel.value = (list.indexOf(fyOfDate(todayStr()))!==-1)? fyOfDate(todayStr()) : baseFY();
+}
 function renderLedger(){
+  populateLedgerFYSelect();
   populateLedgerFilterSelect();
   syncCustomHeaders("ledger");
   var customDefs = customFieldDefs("ledger");
@@ -4674,7 +4720,15 @@ function renderLedger(){
       if(isNaN(val)){ toast("Please enter a number."); return; }
       var head = td.dataset.head, field = td.dataset.field;
       STATE.headOverrides[head] = STATE.headOverrides[head] || {};
-      STATE.headOverrides[head][field] = val;
+      var editFY = currentLedgerFY();
+      if(editFY===baseFY()){
+        STATE.headOverrides[head][field] = val;
+      } else {
+        var ovh = STATE.headOverrides[head];
+        ovh.byFY = ovh.byFY || {};
+        ovh.byFY[editFY] = ovh.byFY[editFY] || {};
+        ovh.byFY[editFY][field] = val;
+      }
       saveData();
       renderLedger();
       updateHeadHint();
@@ -4690,12 +4744,12 @@ function renderLedger(){
     "<td class='num' data-col='totalExp'>"+fmt(sums.totalExp)+"</td><td class='num "+(sums.remaining<0?'neg':'')+"' data-col='remainingBudget'>"+fmt(sums.remaining)+"</td>"+
     (customCount? "<td colspan='"+customCount+"'>—</td>" : "");
 
-  document.getElementById("ledgerResultCount").textContent = "Showing "+list.length+" of "+getHeads().length;
+  document.getElementById("ledgerResultCount").textContent = "Showing "+list.length+" of "+getHeads().length+" — FY "+currentLedgerFY();
   var ledgerCountEl = document.getElementById("ledgerCount");
   if(ledgerCountEl) ledgerCountEl.textContent = getHeads().length+" heads";
   applyColumnPrintCss();
 }
-["lf_head","lf_activity"].forEach(function(id){
+["lf_fy","lf_head","lf_activity"].forEach(function(id){
   document.getElementById(id).addEventListener("input", renderLedger);
   document.getElementById(id).addEventListener("change", renderLedger);
 });
@@ -4718,7 +4772,7 @@ document.getElementById("ledgerExportBtn").addEventListener("click", function(){
   var list = filteredLedger();
   var rows = [["Sr#","Contingent Head","No. of Bills","Total Gross","Total Deductions","Net Expenditure","Final Budget","Prior Expenditure","Total Expenditure","Remaining Budget"].concat(customFieldCsvHeaders("ledger"))];
   list.forEach(function(r){ rows.push([r.sr,r.label,r.count,r.gross,r.ded,r.net,r.finalBudget,r.prior,r.totalExp,r.remaining].concat(customFieldCsvValues("ledger", r))); });
-  downloadCSV("ledger_budget.csv", rows);
+  downloadCSV("ledger_budget_"+currentLedgerFY()+".csv", rows);
 });
 
 /* ================= BACKUP / RESTORE ================= */
