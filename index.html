@@ -1323,6 +1323,7 @@ details.faq-item{ border-radius:8px !important; background:var(--surface) !impor
     <button class="tab-btn" data-tab="stock"><span class="dot"></span> <span data-i18n="nav_stock">Stock Book</span></button>
     <button class="tab-btn" data-tab="ledger"><span class="dot"></span> <span data-i18n="nav_ledger">Ledger &amp; Budget</span></button>
     <button class="tab-btn" data-tab="reports"><span class="dot"></span> <span data-i18n="rep_title">Reports</span></button>
+    <button class="tab-btn" data-tab="monthly"><span class="dot"></span> <span class="en">Monthly Report</span><span class="ur">ماہانہ رپورٹ</span></button>
     <button class="tab-btn" data-tab="employees"><span class="dot"></span> <span data-i18n="nav_employees">Employees</span></button>
     <button class="tab-btn" data-tab="leave"><span class="dot"></span> <span data-i18n="nav_leave">Leave Register</span></button>
     <button class="tab-btn" data-tab="attendance"><span class="dot"></span> <span data-i18n="nav_attendance">Attendance Register</span></button>
@@ -1844,6 +1845,29 @@ details.faq-item{ border-radius:8px !important; background:var(--surface) !impor
       <div class="btnbar">
         <button class="btn secondary" id="r_exportBtn" data-perm="x" data-i18n="rep_exportExcel">Export report (Excel)</button>
       </div>
+    </section>
+
+
+    <section class="panel" id="panel-monthly">
+      <div class="panel-head">
+        <div>
+          <h2><span class="en">Monthly Report</span><span class="ur">ماہانہ رپورٹ</span></h2>
+          <p><span class="en">Choose a month to see its Bills, Cash Book and Ledger / Budget position in one report. Use the Print / Download button for PDF or Excel.</span><span class="ur">مہینہ منتخب کریں — اس مہینے کے بل، کیش بک اور لیجر / بجٹ ایک ہی رپورٹ میں۔ پی ڈی ایف یا ایکسل کے لیے اوپر Print / Download بٹن استعمال کریں۔</span></p>
+        </div>
+        <span class="count-chip" id="monthlyChip"></span>
+      </div>
+      <div class="search-bar" style="margin-bottom:14px;">
+        <div class="grid cols-4">
+          <div class="field"><label for="m_month"><span class="en">Month</span><span class="ur">مہینہ</span></label><select id="m_month"></select></div>
+          <div class="field" style="justify-content:flex-end;"><div class="btnbar" style="margin:0;">
+            <button type="button" class="btn ghost small" id="m_prev">◀ <span class="en">Previous</span><span class="ur">پچھلا</span></button>
+            <button type="button" class="btn ghost small" id="m_next"><span class="en">Next</span><span class="ur">اگلا</span> ▶</button>
+            <button type="button" class="btn ghost small" id="m_latest"><span class="en">Latest month</span><span class="ur">تازہ ترین مہینہ</span></button>
+          </div></div>
+        </div>
+      </div>
+      <div class="grid cols-3" id="monthlyStats" style="margin-bottom:18px;"></div>
+      <div id="monthlyBody"></div>
     </section>
 
     <!-- ================= EMPLOYEES ================= -->
@@ -7657,9 +7681,9 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
 
   /* ---------- 2. exports ---------- */
   var PANEL_TITLE = {bill:"Contingent Bill Register", cash:"Cash Book", stock:"Stock Book", ledger:"Ledger & Budget",
-    reports:"Reports", employees:"Employees", leave:"Leave Register", attendance:"Attendance Register"};
+    reports:"Reports", monthly:"Monthly Report", employees:"Employees", leave:"Leave Register", attendance:"Attendance Register"};
   var TABLE_LIMIT = {employees:1};   /* the Employees tab also holds two long rate-reference tables; only the staff list is exported */
-  var EXPORT_PANELS = ["bill","cash","stock","ledger","reports","employees","leave","attendance"];
+  var EXPORT_PANELS = ["bill","cash","stock","ledger","reports","monthly","employees","leave","attendance"];
   var CSV_BTN = {bill:"b_exportBtn", cash:"c_exportBtn", stock:"s_exportBtn", ledger:"ledgerExportBtn",
     employees:"e_exportBtn", leave:"lv_exportBtn", attendance:"att_exportBtn"};
   var LIBS = {
@@ -7794,7 +7818,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(chip && clean(chip.textContent)) sub.push(clean(chip.textContent));
     sub.push("Generated " + todayText());
     var maxCols = 0; tables.forEach(function(t){ maxCols = Math.max(maxCols, t.heads.length); });
-    var base = "BillRegister_" + (PANEL_TITLE[key] || key).replace(/[^A-Za-z0-9]+/g, "") + "_" + todayIso();
+    var base = "BillRegister_" + (PANEL_TITLE[key] || key).replace(/[^A-Za-z0-9]+/g, "") + (key === "monthly" && window.__brMonthlyTag ? "_" + window.__brMonthlyTag : "") + "_" + todayIso();
     return {office:office, title:PANEL_TITLE[key] || key, sub:sub.join("   |   "), landscape:maxCols > 6, base:base, sign:signoff(), paper:paperSize()};
   }
 
@@ -8421,6 +8445,235 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
 
   /* test hooks (read-only helpers, harmless in production) */
   window.__brUI = {extractTables:extractTables, buildPdf:buildPdf, buildDocx:buildDocx, buildXlsx:buildXlsx, buildCsv:buildCsv, meta:meta, loadLib:loadLib};
+})();
+
+/* =====================================================================
+   MONTHLY REPORT (v5, 22-Oct-2026)
+   One month at a time: Bills + Cash Book + Ledger/Budget in one report.
+   Read-only: it never changes saved data. The tables are plain tables,
+   so the existing Print / PDF / Word / Excel / CSV bar exports them as they are.
+   ===================================================================== */
+(function(){
+  "use strict";
+  var MN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  function $(id){ return document.getElementById(id); }
+  function p2(n){ return (n < 10 ? "0" : "") + n; }
+  function num(v){ return Number(v) || 0; }
+  function ym(d){ var m = /^(\d{4})-(\d{2})/.exec(d || ""); return m ? m[1] + "-" + m[2] : ""; }
+  function ymLabel(k){ var a = k.split("-"); return MN[+a[1] - 1] + " " + a[0]; }
+  function shiftYm(k, by){ var a = k.split("-"), t = (+a[0]) * 12 + (+a[1] - 1) + by; return Math.floor(t / 12) + "-" + p2(t % 12 + 1); }
+  function curYm(){ var d = new Date(); return d.getFullYear() + "-" + p2(d.getMonth() + 1); }
+  function dmy(d){ var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(d || ""); return m ? m[3] + "-" + m[2] + "-" + m[1] : (d || ""); }
+  function th(txt, isNum){ return "<th" + (isNum ? " class='num'" : "") + ">" + esc(txt) + "</th>"; }
+  function td(v, isNum, strong){
+    var s = isNum && typeof v === "number" ? fmt(v) : esc(v == null ? "" : v);
+    if(strong) s = "<b>" + s + "</b>";
+    return "<td" + (isNum ? " class='num'" : "") + ">" + s + "</td>";
+  }
+  function tbl(heads, numCols, rowsHtml, footHtml){
+    return "<div class='table-wrap'><table><thead><tr>" +
+      heads.map(function(h, i){ return th(h, numCols.indexOf(i) >= 0); }).join("") +
+      "</tr></thead><tbody>" + rowsHtml + "</tbody>" + (footHtml ? "<tfoot><tr>" + footHtml + "</tr></tfoot>" : "") + "</table></div>";
+  }
+  function empty(n, msg){ return "<tr class='empty-row'><td colspan='" + n + "'>" + esc(msg) + "</td></tr>"; }
+  function card(title, hintHtml, inner){
+    return "<div class='card'><h3>" + esc(title) + "</h3>" + (hintHtml ? "<p class='field-hint' style='margin-bottom:8px;'>" + hintHtml + "</p>" : "") + inner + "</div>";
+  }
+
+  /* ---- months available in the picker ---- */
+  function dataMonths(){
+    var set = {}, st = (typeof STATE !== "undefined" && STATE) || {};
+    (st.bills || []).forEach(function(b){ var k = ym(b.date); if(k) set[k] = 1; });
+    (st.cash || []).forEach(function(c){ var k = ym(c.date); if(k) set[k] = 1; });
+    return Object.keys(set).sort();
+  }
+  function monthList(){
+    var dm = dataMonths(), first = dm.length ? dm[0] : curYm(), last = dm.length ? dm[dm.length - 1] : curYm();
+    if(curYm() > last) last = curYm();
+    if(first > "2025-07") first = "2025-07";
+    var out = [], k = first;
+    while(k <= last){ out.push(k); k = shiftYm(k, 1); }
+    return out.reverse();
+  }
+  function latestDataMonth(){
+    var dm = dataMonths().filter(function(k){ return k <= curYm(); });
+    return dm.length ? dm[dm.length - 1] : curYm();
+  }
+
+  /* ---- the numbers ---- */
+  function compute(mk){
+    var start = mk + "-01", end = mk + "-31", fy = fyOfDate(start);
+    var heads = getHeads(fy);
+    var billsAll = STATE.bills || [], cashAll = STATE.cash || [];
+    var inM = function(d){ return d && d >= start && d <= end; };
+    var billsM = billsAll.filter(function(b){ return inM(b.date); })
+      .sort(function(a, b){ return String(a.date).localeCompare(String(b.date)) || String(a.billNo).localeCompare(String(b.billNo), undefined, {numeric:true}); });
+
+    /* budget vs expenditure for the month's financial year */
+    var order = [], rowsBy = {};
+    function row(h){ if(!rowsBy[h]){ rowsBy[h] = {head:h, budget:0, prior:0, upto:0, month:0}; order.push(h); } return rowsBy[h]; }
+    heads.forEach(function(h){ var r = row(h.label); r.budget = num(h.finalBudget); r.prior = num(h.prior); });
+    billsAll.forEach(function(b){
+      if(fyOfDate(b.date) !== fy || !b.date) return;
+      var hd = b.head || "(No head)", g = num(b.gross);
+      if(b.date < start) row(hd).upto += g; else if(b.date <= end) row(hd).month += g;
+    });
+    var bud = order.map(function(h){
+      var r = rowsBy[h]; r.total = r.prior + r.upto + r.month; r.remain = r.budget - r.total;
+      r.pct = r.budget > 0 ? (r.total / r.budget * 100) : null; return r;
+    }).filter(function(r){ return r.budget || r.prior || r.upto || r.month; });
+
+    /* bills of the month by head / vendor */
+    var byHead = {}, byVendor = {};
+    billsM.forEach(function(b){
+      var hd = b.head || "(No head)", vn = (b.vendorName || "").trim() || "(No vendor)";
+      var h = byHead[hd] = byHead[hd] || {head:hd, n:0, gross:0, it:0, gst:0, pst:0, other:0, ded:0, net:0};
+      var v = byVendor[vn] = byVendor[vn] || {vendor:vn, n:0, gross:0, ded:0, net:0};
+      var oth = num(b.other) + num(b.comm), d = totalDed(b);
+      h.n++; h.gross += num(b.gross); h.it += num(b.it); h.gst += num(b.gst); h.pst += num(b.pst); h.other += oth; h.ded += d; h.net += netPayment(b);
+      v.n++; v.gross += num(b.gross); v.ded += d; v.net += netPayment(b);
+    });
+
+    /* cash book */
+    var opening = num(STATE.openingCash);
+    cashAll.forEach(function(c){ if(c.date && c.date < start) opening += num(c.receipt) - num(c.payment); });
+    var cashM = cashAll.map(function(c, i){ return {c:c, i:i}; }).filter(function(x){ return inM(x.c.date); })
+      .sort(function(a, b){ return String(a.c.date).localeCompare(String(b.c.date)) || a.i - b.i; }).map(function(x){ return x.c; });
+    var bal = opening, cashRows = cashM.map(function(c){ bal += num(c.receipt) - num(c.payment); return {c:c, bal:bal}; });
+    var cashByHead = {}, rec = 0, pay = 0;
+    cashM.forEach(function(c){
+      var h = c.head || c.particulars || "(No head)";
+      var r = cashByHead[h] = cashByHead[h] || {head:h, rec:0, pay:0};
+      r.rec += num(c.receipt); r.pay += num(c.payment); rec += num(c.receipt); pay += num(c.payment);
+    });
+    return {mk:mk, start:start, fy:fy, bud:bud, billsM:billsM, byHead:byHead, byVendor:byVendor,
+      opening:opening, closing:opening + rec - pay, rec:rec, pay:pay, cashRows:cashRows, cashByHead:cashByHead};
+  }
+
+  /* ---- drawing ---- */
+  function render(){
+    var host = $("monthlyBody"); if(!host) return;
+    var sel = $("m_month"), mk = sel && sel.value; if(!mk) return;
+    var d = compute(mk), html = "";
+    var billCount = d.billsM.length, gross = 0, ded = 0, net = 0;
+    d.billsM.forEach(function(b){ gross += num(b.gross); ded += totalDed(b); net += netPayment(b); });
+    var bT = d.bud.reduce(function(s, r){ return {budget:s.budget + r.budget, prior:s.prior + r.prior, upto:s.upto + r.upto, month:s.month + r.month, total:s.total + r.total, remain:s.remain + r.remain}; },
+      {budget:0, prior:0, upto:0, month:0, total:0, remain:0});
+
+    $("monthlyChip").textContent = ymLabel(mk) + "  |  FY " + d.fy;
+
+    /* stat cards (screen only) */
+    $("monthlyStats").innerHTML =
+      statCardHtml("Bills this month", billCount + " bills / Rs " + fmt(gross)) +
+      statCardHtml("Net paid to vendors", "Rs " + fmt(net)) +
+      statCardHtml("Cash received", "Rs " + fmt(d.rec)) +
+      statCardHtml("Cash paid", "Rs " + fmt(d.pay)) +
+      statCardHtml("Cash closing balance", "Rs " + fmt(d.closing), d.closing < 0) +
+      statCardHtml("Budget remaining (FY " + d.fy + ")", "Rs " + fmt(bT.remain), bT.remain < 0);
+
+    /* 1. summary */
+    var sum = [
+      ["Month", ymLabel(mk)], ["Financial year", d.fy],
+      ["Number of bills", billCount], ["Gross amount of bills", gross], ["Total deductions (IT, GST, PST, other)", ded], ["Net paid to vendors", net],
+      ["Cash book: opening balance on 1st of month", d.opening], ["Cash book: receipts in month", d.rec], ["Cash book: payments in month", d.pay], ["Cash book: closing balance at end of month", d.closing],
+      ["Budget: total final budget (FY " + d.fy + ")", bT.budget], ["Budget: spent up to end of month (incl. prior)", bT.total], ["Budget: remaining", bT.remain]
+    ];
+    html += card("Summary of the Month", "<span class='en'>All figures in Rs. Bills are counted by bill date.</span><span class='ur'>تمام رقوم روپوں میں۔ بل، بل کی تاریخ کے حساب سے شمار ہوتے ہیں۔</span>",
+      tbl(["Item", "Value"], [1], sum.map(function(r){ return "<tr>" + td(r[0]) + td(r[1], true) + "</tr>"; }).join("")));
+
+    /* 2. budget vs expenditure */
+    var bRows = d.bud.map(function(r){
+      return "<tr>" + td(r.head) + td(r.budget, true) + td(r.prior, true) + td(r.upto, true) + td(r.month, true) + td(r.total, true) + td(r.remain, true) + td(r.pct == null ? "—" : r.pct.toFixed(1) + "%", true) + "</tr>";
+    }).join("");
+    var bFoot = td("TOTAL (" + d.bud.length + " heads)", false, true) + td(bT.budget, true, true) + td(bT.prior, true, true) + td(bT.upto, true, true) + td(bT.month, true, true) + td(bT.total, true, true) + td(bT.remain, true, true) + td(bT.budget > 0 ? (bT.total / bT.budget * 100).toFixed(1) + "%" : "—", true, true);
+    html += card("Budget vs Expenditure by Head — up to end of " + ymLabel(mk),
+      "<span class='en'>Prior = amount entered in Ledger &amp; Budget (salaries etc.). “Up to previous month” and “This month” come from bills (gross).</span><span class='ur'>Prior وہ رقم ہے جو لیجر اینڈ بجٹ میں درج ہے۔ باقی کالم بلوں (گراس) سے آتے ہیں۔</span>",
+      tbl(["Head", "Final Budget", "Prior Exp.", "Up to prev. month", "This month", "Total to date", "Remaining", "% used"], [1, 2, 3, 4, 5, 6, 7],
+        bRows || empty(8, "No budget or expenditure for this year."), bFoot));
+
+    /* 3. bills by head */
+    var hk = Object.keys(d.byHead).sort(), hT = {n:0, gross:0, it:0, gst:0, pst:0, other:0, ded:0, net:0};
+    var hRows = hk.map(function(k){ var r = d.byHead[k]; Object.keys(hT).forEach(function(f){ hT[f] += r[f]; });
+      return "<tr>" + td(r.head) + td(r.n, true) + td(r.gross, true) + td(r.it, true) + td(r.gst, true) + td(r.pst, true) + td(r.other, true) + td(r.ded, true) + td(r.net, true) + "</tr>"; }).join("");
+    html += card("Bills of the Month — by Head", "",
+      tbl(["Head", "Bills", "Gross", "Income Tax", "GST", "PST", "Other", "Total Ded.", "Net"], [1, 2, 3, 4, 5, 6, 7, 8],
+        hRows || empty(9, "No bills in this month."),
+        hk.length ? td("TOTAL", false, true) + td(hT.n, true, true) + td(hT.gross, true, true) + td(hT.it, true, true) + td(hT.gst, true, true) + td(hT.pst, true, true) + td(hT.other, true, true) + td(hT.ded, true, true) + td(hT.net, true, true) : ""));
+
+    /* 4. bills by vendor */
+    var vk = Object.keys(d.byVendor).sort(), vT = {n:0, gross:0, ded:0, net:0};
+    var vRows = vk.map(function(k){ var r = d.byVendor[k]; Object.keys(vT).forEach(function(f){ vT[f] += r[f]; });
+      return "<tr>" + td(r.vendor) + td(r.n, true) + td(r.gross, true) + td(r.ded, true) + td(r.net, true) + "</tr>"; }).join("");
+    html += card("Bills of the Month — by Vendor", "",
+      tbl(["Vendor", "Bills", "Gross", "Total Ded.", "Net Paid"], [1, 2, 3, 4], vRows || empty(5, "No bills in this month."),
+        vk.length ? td("TOTAL", false, true) + td(vT.n, true, true) + td(vT.gross, true, true) + td(vT.ded, true, true) + td(vT.net, true, true) : ""));
+
+    /* 5. bill list */
+    var lRows = d.billsM.map(function(b){
+      return "<tr>" + td(dmy(b.date)) + td(b.billNo) + td(b.vendorName) + td(b.head) + td(num(b.gross), true) + td(totalDed(b), true) + td(netPayment(b), true) + "</tr>"; }).join("");
+    html += card("List of Bills", "",
+      tbl(["Date", "Bill No.", "Vendor", "Head", "Gross", "Total Ded.", "Net"], [4, 5, 6], lRows || empty(7, "No bills in this month."),
+        billCount ? td("TOTAL (" + billCount + " bills)", false, true) + td("") + td("") + td("") + td(gross, true, true) + td(ded, true, true) + td(net, true, true) : ""));
+
+    /* 6. cash by head */
+    var ck = Object.keys(d.cashByHead).sort();
+    var cRows = ck.map(function(k){ var r = d.cashByHead[k]; return "<tr>" + td(r.head) + td(r.rec, true) + td(r.pay, true) + td(r.rec - r.pay, true) + "</tr>"; }).join("");
+    html += card("Cash Book — by Head",
+      "<span class='en'>Opening balance: Rs " + fmt(d.opening) + "  →  Closing balance: Rs " + fmt(d.closing) + "</span><span class='ur'>ابتدائی بیلنس: Rs " + fmt(d.opening) + "  ←  اختتامی بیلنس: Rs " + fmt(d.closing) + "</span>",
+      tbl(["Head / Particulars", "Receipts", "Payments", "Net"], [1, 2, 3], cRows || empty(4, "No cash entries in this month."),
+        ck.length ? td("TOTAL", false, true) + td(d.rec, true, true) + td(d.pay, true, true) + td(d.rec - d.pay, true, true) : ""));
+
+    /* 7. cash entries */
+    var eRows = "<tr>" + td("") + td("") + td("Opening balance") + td("") + td("", true) + td("", true) + td(d.opening, true, true) + "</tr>" +
+      d.cashRows.map(function(x){ var c = x.c;
+        return "<tr>" + td(dmy(c.date)) + td(c.voucher) + td(c.particulars) + td(c.head) + td(num(c.receipt) ? num(c.receipt) : "", true) + td(num(c.payment) ? num(c.payment) : "", true) + td(x.bal, true) + "</tr>"; }).join("");
+    html += card("Cash Book Entries", "",
+      tbl(["Date", "Voucher", "Particulars", "Head", "Receipt", "Payment", "Balance"], [4, 5, 6], eRows,
+        td("CLOSING BALANCE", false, true) + td("") + td("") + td("") + td(d.rec, true, true) + td(d.pay, true, true) + td(d.closing, true, true)));
+
+    host.innerHTML = html;
+    window.__brMonthlyTag = mk;
+  }
+
+  /* ---- controls ---- */
+  function fillMonths(keep){
+    var sel = $("m_month"); if(!sel) return;
+    var list = monthList(), cur = keep || sel.value || latestDataMonth();
+    if(list.indexOf(cur) < 0) cur = list[0];
+    sel.innerHTML = list.map(function(k){ return "<option value='" + k + "'>" + ymLabel(k) + "</option>"; }).join("");
+    sel.value = cur;
+  }
+  function step(by){
+    var sel = $("m_month"), i = Array.prototype.map.call(sel.options, function(o){ return o.value; }).indexOf(sel.value);
+    var j = i - by; /* list is newest first */
+    if(j >= 0 && j < sel.options.length){ sel.selectedIndex = j; render(); }
+  }
+  function sig(){
+    var st = STATE || {}, s = 0;
+    (st.bills || []).forEach(function(b){ s += num(b.gross) + num(b.it) + num(b.gst) + num(b.pst) + num(b.other) + num(b.comm); });
+    (st.cash || []).forEach(function(c){ s += num(c.receipt) * 3 + num(c.payment) * 7; });
+    var hv = 0; try{ hv = JSON.stringify(st.headOverrides || {}).length; }catch(e){}
+    return (st.bills || []).length + "|" + (st.cash || []).length + "|" + s + "|" + hv + "|" + num(st.openingCash) + "|" + (st.baseFY || "");
+  }
+
+  var panel = $("panel-monthly"); if(!panel) return;
+  var lastSig = "";
+  function refreshIfActive(force){
+    if(!panel.classList.contains("active")) return;
+    var s = sig();
+    if(!force && s === lastSig) return;
+    lastSig = s;
+    fillMonths(); render();
+  }
+  $("m_month").addEventListener("change", function(){ render(); });
+  $("m_prev").addEventListener("click", function(){ step(-1); });
+  $("m_next").addEventListener("click", function(){ step(1); });
+  $("m_latest").addEventListener("click", function(){ fillMonths(latestDataMonth()); render(); });
+  document.querySelectorAll(".tab-btn").forEach(function(b){
+    b.addEventListener("click", function(){ if(b.getAttribute("data-tab") === "monthly") setTimeout(function(){ refreshIfActive(true); }, 0); });
+  });
+  setInterval(function(){ try{ refreshIfActive(false); }catch(e){} }, 1500);
+  window.__brMonthly = {compute:compute, render:render, monthList:monthList, latest:latestDataMonth};
 })();
 
 })();
