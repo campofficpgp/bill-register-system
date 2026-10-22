@@ -1080,6 +1080,52 @@ details.faq-item{ border-radius:8px !important; background:var(--surface) !impor
 }
 }
 
+
+/* ---------- deduction-rates box removed (the rates stay saved; "Auto-calculate" still uses them) ---------- */
+#billDedRatesCard{ display:none !important; }
+
+/* ---------- filter bars ---------- */
+.search-bar.br-filter{ padding:0 !important; overflow:hidden; background:var(--surface) !important; box-shadow:var(--br-shadow); margin-bottom:16px; }
+.br-fhead{ display:flex; align-items:center; gap:10px; padding:11px 16px; border-bottom:1px solid var(--border); background:var(--bg); flex-wrap:wrap; }
+.br-fhead h3{ margin:0 !important; padding:0 !important; border:0 !important; flex:1 1 auto; display:flex; align-items:center; gap:8px;
+  font-size:12.5px !important; letter-spacing:.07em !important; text-transform:uppercase; color:var(--br-head) !important; }
+.br-fhead h3::before{ content:""; width:4px; height:15px; border-radius:2px; background:var(--amber); flex:none; }
+.br-fbadge{ display:inline-flex; align-items:center; font-size:11.5px; font-weight:700; padding:3px 10px; border-radius:999px;
+  background:var(--navy); color:#fff; letter-spacing:.02em; }
+.br-fclear{ min-height:30px !important; padding:4px 12px !important; border-radius:999px !important; font-size:12px !important; font-weight:600;
+  background:transparent !important; border:1px solid var(--border-strong) !important; color:var(--muted) !important; cursor:pointer; }
+.br-fclear:hover:not(:disabled){ border-color:var(--navy) !important; color:var(--navy) !important; background:var(--surface) !important; }
+.br-fclear:disabled{ opacity:.45; cursor:default; }
+.br-ftoggle{ display:none; min-height:30px; padding:4px 12px; border-radius:999px; border:1px solid var(--border-strong); background:var(--surface); color:var(--text); font-size:12px; font-weight:600; cursor:pointer; }
+.br-ftoggle .caret{ display:inline-block; transition:transform .15s; }
+.search-bar.collapsed .br-ftoggle .caret{ transform:rotate(-90deg); }
+.br-fbody{ padding:14px 16px 16px; display:flex; flex-direction:column; gap:12px; }
+.br-fquick{ display:flex; gap:6px; flex-wrap:wrap; }
+.br-fquick button{ min-height:30px; padding:4px 13px; border-radius:999px; border:1px solid var(--border-strong); background:var(--surface); color:var(--text);
+  font-size:12px; font-weight:600; cursor:pointer; transition:background .12s,border-color .12s,color .12s; }
+.br-fquick button:hover{ border-color:var(--navy); color:var(--navy); }
+.br-fquick button.on{ background:var(--navy); border-color:var(--navy); color:#fff; }
+.br-fgrid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px 14px; }
+.br-fgrid .field{ min-width:0; margin:0; }
+.br-fgrid .field label{ display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.br-fgrid .field.on label{ color:var(--navy); }
+.br-fgrid .field.on input,.br-fgrid .field.on select{ border-color:var(--navy) !important; background:color-mix(in srgb,var(--navy) 6%,var(--surface)) !important; box-shadow:inset 3px 0 0 var(--amber); }
+[data-theme="night"] .br-fbadge,[data-theme="night"] .br-fquick button.on{ background:var(--amber); border-color:var(--amber); color:#1b1b1b; }
+[data-theme="night"] .br-fgrid .field.on label{ color:var(--amber); }
+[data-theme="night"] .br-fgrid .field.on input,[data-theme="night"] .br-fgrid .field.on select{ border-color:var(--amber) !important; background:color-mix(in srgb,var(--amber) 10%,var(--surface)) !important; }
+[data-theme="night"] .br-fquick button:hover{ border-color:var(--amber); color:var(--amber); }
+.search-bar.collapsed .br-fbody{ display:none; }
+@media (max-width:700px){
+  .br-ftoggle{ display:inline-flex; align-items:center; gap:6px; }
+  .br-fhead{ padding:10px 12px; }
+  .br-fhead h3{ font-size:12px !important; }
+  .br-fbody{ padding:12px; }
+  .br-fgrid{ grid-template-columns:1fr 1fr; gap:10px; }
+  .br-fquick{ flex-wrap:nowrap; overflow-x:auto; padding-bottom:2px; -webkit-overflow-scrolling:touch; }
+  .br-fquick button{ flex:none; }
+}
+@media (max-width:420px){ .br-fgrid{ grid-template-columns:1fr; } }
+
 /* ---------- print : the new on-screen pieces never reach the paper ---------- */
 @media print{
   .br-exportbar,.br-snack,.br-opt-toggle,.br-menu-list{ display:none !important; }
@@ -8238,6 +8284,118 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   deleteCash  = wrapDelete(deleteCash,  "cash",          "Entry deleted.", "اندراج حذف ہو گیا۔");
   deleteStock = wrapDelete(deleteStock, "stock",         "Movement deleted.", "اسٹاک اندراج حذف ہو گیا۔");
   deleteLeave = wrapDelete(deleteLeave, "leaveRegister", "Leave entry deleted.", "چھٹی کا اندراج حذف ہو گیا۔");
+
+
+  /* ---------- professional filter bars (all "Search & filter" boxes) ---------- */
+  (function(){
+    function p2(n){ return (n < 10 ? "0" : "") + n; }
+    function iso(d){ return d.getFullYear() + "-" + p2(d.getMonth() + 1) + "-" + p2(d.getDate()); }
+    function ranges(){
+      var n = new Date(), y = n.getFullYear(), m = n.getMonth();
+      var fy = m >= 6 ? y : y - 1;
+      return {
+        month: [iso(new Date(y, m, 1)), iso(new Date(y, m + 1, 0))],
+        last:  [iso(new Date(y, m - 1, 1)), iso(new Date(y, m, 0))],
+        fy:    [fy + "-07-01", (fy + 1) + "-06-30"],
+        pfy:   [(fy - 1) + "-07-01", fy + "-06-30"]
+      };
+    }
+    function fire(el){
+      el.dispatchEvent(new Event("input", {bubbles:true}));
+      el.dispatchEvent(new Event("change", {bubbles:true}));
+    }
+    var QUICK = [
+      ["month", "This month", "اس ماہ"],
+      ["last",  "Last month", "پچھلا ماہ"],
+      ["fy",    "This financial year", "اس مالی سال"],
+      ["pfy",   "Last financial year", "پچھلا مالی سال"],
+      ["all",   "All dates", "تمام تاریخیں"]
+    ];
+    var bars = document.querySelectorAll(".search-bar");
+    Array.prototype.forEach.call(bars, function(bar){
+      var clear = bar.querySelector('button[id$="_clear"]');
+      var h3 = bar.querySelector("h3");
+      if(!clear || !h3 || bar.classList.contains("br-filter")) return;
+      bar.classList.add("br-filter");
+      var fields = Array.prototype.slice.call(bar.querySelectorAll(".field"));
+      var from = bar.querySelector('input[type=date][id$="_from"]');
+      var to = bar.querySelector('input[type=date][id$="_to"]');
+
+      var head = document.createElement("div"); head.className = "br-fhead";
+      var ico = document.createElement("span"); ico.className = "br-fico"; ico.setAttribute("aria-hidden", "true"); ico.textContent = "⏷";
+      var badge = document.createElement("span"); badge.className = "br-fbadge"; badge.hidden = true;
+      var toggle = document.createElement("button"); toggle.type = "button"; toggle.className = "br-ftoggle";
+      toggle.setAttribute("aria-expanded", "true");
+      toggle.innerHTML = '<span class="en">Filters</span><span class="ur">فلٹرز</span> <span class="caret">▾</span>';
+      clear.className = "br-fclear"; clear.type = "button";
+      clear.innerHTML = '<span class="en">✕ Clear all</span><span class="ur">✕ سب صاف کریں</span>';
+      head.appendChild(h3); head.appendChild(badge); head.appendChild(clear); head.appendChild(toggle);
+
+      var body = document.createElement("div"); body.className = "br-fbody";
+      var quick = null;
+      if(from && to){
+        quick = document.createElement("div"); quick.className = "br-fquick";
+        QUICK.forEach(function(q){
+          var b = document.createElement("button"); b.type = "button"; b.dataset.q = q[0];
+          b.innerHTML = '<span class="en">' + q[1] + '</span><span class="ur">' + q[2] + '</span>';
+          quick.appendChild(b);
+        });
+        quick.addEventListener("click", function(e){
+          var b = e.target.closest("button[data-q]"); if(!b) return;
+          var k = b.dataset.q, r = ranges();
+          from.value = k === "all" ? "" : r[k][0];
+          to.value   = k === "all" ? "" : r[k][1];
+          fire(from); fire(to); upd();
+        });
+        body.appendChild(quick);
+      }
+      var grid = document.createElement("div"); grid.className = "br-fgrid";
+      fields.forEach(function(f){ grid.appendChild(f); });
+      body.appendChild(grid);
+
+      while(bar.firstChild) bar.removeChild(bar.firstChild);
+      bar.appendChild(head); bar.appendChild(body);
+
+      function val(f){
+        var c = f.querySelector("select,input,textarea");
+        return c ? String(c.value || "").trim() : "";
+      }
+      function upd(){
+        var n = 0;
+        fields.forEach(function(f){
+          var on = val(f) !== "";
+          f.classList.toggle("on", on);
+          if(on) n++;
+        });
+        badge.hidden = n === 0;
+        badge.innerHTML = '<span class="en">' + n + ' active</span><span class="ur">' + n + ' فعال</span>';
+        clear.disabled = n === 0;
+        bar.classList.toggle("has-filter", n > 0);
+        if(quick){
+          var r = ranges(), fv = from.value, tv = to.value;
+          Array.prototype.forEach.call(quick.children, function(b){
+            var k = b.dataset.q, on = false;
+            if(k === "all") on = !fv && !tv;
+            else on = fv === r[k][0] && tv === r[k][1];
+            b.classList.toggle("on", on);
+          });
+        }
+      }
+      bar.addEventListener("input", upd);
+      bar.addEventListener("change", upd);
+      clear.addEventListener("click", function(){ setTimeout(upd, 0); });
+      toggle.addEventListener("click", function(){
+        var c = bar.classList.toggle("collapsed");
+        toggle.setAttribute("aria-expanded", c ? "false" : "true");
+      });
+      /* phones: start folded, the badge still shows what is active */
+      if(window.matchMedia && window.matchMedia("(max-width:700px)").matches){
+        bar.classList.add("collapsed"); toggle.setAttribute("aria-expanded", "false");
+      }
+      upd();
+      setInterval(function(){ if(bar.offsetParent) upd(); }, 1200);   /* picks up values set by the system (e.g. lists refilling) */
+    });
+  })();
 
   /* test hooks (read-only helpers, harmless in production) */
   window.__brUI = {extractTables:extractTables, buildPdf:buildPdf, buildDocx:buildDocx, buildXlsx:buildXlsx, buildCsv:buildCsv, meta:meta, loadLib:loadLib};
