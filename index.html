@@ -922,6 +922,8 @@ nav.sidenav,body.nav-hidden nav.sidenav{
   overflow-x:auto; overflow-y:hidden; gap:2px; scrollbar-width:thin; -webkit-overflow-scrolling:touch;
   position:sticky; top:0; z-index:40; box-shadow:0 1px 0 var(--border);
 }
+nav.sidenav{ scrollbar-width:none; }
+nav.sidenav::-webkit-scrollbar{ display:none; }
 nav.sidenav .navnote,nav.sidenav .dot,.sidenav-collapse-btn,.sidenav-expand-btn,body.nav-hidden .sidenav-expand-btn{ display:none !important; }
 nav.sidenav button{
   flex:0 0 auto; width:auto !important; display:inline-flex; align-items:center; justify-content:center; gap:6px;
@@ -7694,6 +7696,16 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
         var p = pick(expand(tr)); if(p.cells && p.cells.some(function(c){ return c; })) foot.push(p);
       });
       if(!rows.length && !foot.length) return;
+      /* leave out columns that are empty on every row (e.g. unused custom fields) so the file stays readable */
+      var live = heads.map(function(h, i){
+        return i === 0 || rows.concat(foot).some(function(r){ return r.cells && r.cells[i] !== "" && r.cells[i] != null; });
+      });
+      if(live.some(function(x){ return !x; })){
+        heads = heads.filter(function(_, i){ return live[i]; });
+        keep = keep.filter(function(_, i){ return live[i]; });
+        rows.forEach(function(r){ if(r.cells){ r.cells = r.cells.filter(function(_, i){ return live[i]; }); r.nums = r.nums.filter(function(_, i){ return live[i]; }); } });
+        foot.forEach(function(r){ r.cells = r.cells.filter(function(_, i){ return live[i]; }); r.nums = r.nums.filter(function(_, i){ return live[i]; }); });
+      }
       var num = heads.map(function(h, i){
         var th = ths[keep[i]], hits = 0, tot = 0;
         if(th.classList.contains("num")) return true;
