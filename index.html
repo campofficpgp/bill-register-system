@@ -1126,6 +1126,14 @@ details.faq-item{ border-radius:8px !important; background:var(--surface) !impor
 }
 @media (max-width:420px){ .br-fgrid{ grid-template-columns:1fr; } }
 
+
+/* ---------- Monthly Report : part bands and sub-total rows ---------- */
+.br-part{ margin:26px 0 12px; padding:11px 16px; border-radius:var(--radius); background:var(--navy); color:#fff; font-weight:700; font-size:15px; letter-spacing:.2px; }
+.br-part:first-child{ margin-top:0; }
+body.lang-ur .br-part{ font-size:17px; }
+#monthlyBody tr.br-sub td{ background:color-mix(in srgb,var(--navy) 8%,var(--surface)); border-top:1px solid var(--border-strong); }
+[data-theme="night"] .br-part{ background:var(--navy-dark); color:var(--amber); border:1px solid var(--amber); }
+
 /* ---------- print : the new on-screen pieces never reach the paper ---------- */
 @media print{
   .br-exportbar,.br-snack,.br-opt-toggle,.br-menu-list{ display:none !important; }
@@ -8500,30 +8508,103 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     return dm.length ? dm[dm.length - 1] : curYm();
   }
 
+  /* ---- salary: pay slips -> object heads (same mapping used when the slips were loaded) ---- */
+  function headByCode(heads, code){
+    for(var i = 0; i < heads.length; i++){ if(heads[i].label.split("-")[0] === code) return heads[i].label; }
+    return null;
+  }
+  function slipCode(desc, bps){
+    var d = String(desc || "").toLowerCase();
+    if(d === "basic pay") return Number(bps) >= 16 ? "A01101" : "A01151";
+    if(d === "special pay") return "A01103";
+    if(d === "qualification pay") return "A01105";
+    if(d.indexOf("house rent allowance") === 0) return "A01202";
+    if(d.indexOf("convey") === 0) return "A01203";
+    if(d === "washing allowance") return "A01207";
+    if(d.indexOf("integrated") === 0) return "A0120D";
+    if(d.indexOf("medical") === 0) return "A01217";
+    if(d === "personal allowance") return "A0121N";
+    if(d === "entertainment allowance") return "A01224";
+    if(d === "qualification allowance") return "A01216";
+    if(d === "special allowance") return "A01239";
+    if(d.indexOf("adhoc rel al 15%") === 0) return "A0124R";
+    if(d.indexOf("adhoc relief all 2023") === 0) return "A0124X";
+    if(d.indexOf("adhoc relief all 2024") === 0) return "A0125E";
+    if(d.indexOf("adhoc relief 2025") === 0) return "A0125P";
+    if(d.indexOf("adhoc relief 2026") === 0) return "A0125X";
+    if(d === "adj honorarium") return "A01273";
+    return null;
+  }
+  function isSalaryHead(label){ return /^A01/.test(label || ""); }
+  function slipMonthsSet(){
+    var set = {}, ps = (STATE.payslipData || {});
+    Object.keys(ps).forEach(function(id){ Object.keys(ps[id] || {}).forEach(function(m){ var sl = ps[id][m]; if(sl && ((sl.earnings || []).length)) set[m] = 1; }); });
+    return set;
+  }
+  function fyStartYm(fy){ return fy.slice(0, 4) + "-07"; }
+
   /* ---- the numbers ---- */
   function compute(mk){
-    var start = mk + "-01", end = mk + "-31", fy = fyOfDate(start);
+    var start = mk + "-01", end = mk + "-31", fy = fyOfDate(start), fyStart = fyStartYm(fy), prevMk = shiftYm(mk, -1);
     var heads = getHeads(fy);
     var billsAll = STATE.bills || [], cashAll = STATE.cash || [];
     var inM = function(d){ return d && d >= start && d <= end; };
     var billsM = billsAll.filter(function(b){ return inM(b.date); })
-      .sort(function(a, b){ return String(a.date).localeCompare(String(b.date)) || String(a.billNo).localeCompare(String(b.billNo), undefined, {numeric:true}); });
+      .sort(function(a, b){ return String(a.head).localeCompare(String(b.head)) || String(a.date).localeCompare(String(b.date)) || String(a.billNo).localeCompare(String(b.billNo), undefined, {numeric:true}); });
 
-    /* budget vs expenditure for the month's financial year */
+    /* ===== PART 1: salary (pay slips) ===== */
+    var emps = STATE.employees || [], empById = {}; emps.forEach(function(e){ empById[e.id] = e; });
+    var slipSet = slipMonthsSet();
+    var uptoOK = true;
+    for(var m = fyStart; m <= prevMk; m = shiftYm(m, 1)){ if(!slipSet[m]) uptoOK = false; }
+    if(mk === fyStart) uptoOK = true;                       /* first month of the year: nothing before it */
+    var sRows = {}, sOrder = [], unmapped = {};
+    function srow(h){ if(!sRows[h]){ sRows[h] = {head:h, budget:0, upto:0, month:0}; sOrder.push(h); } return sRows[h]; }
+    heads.filter(function(h){ return isSalaryHead(h.label); }).forEach(function(h){ srow(h.label).budget = num(h.finalBudget); });
+    var empRows = [], dedBy = {}, haveMonth = !!slipSet[mk];
+    var ps = STATE.payslipData || {};
+    Object.keys(ps).forEach(function(id){
+      var e = empById[id] || {id:id, name:"(unknown employee)", bps:"", designation:"", persNo:""};
+      Object.keys(ps[id] || {}).forEach(function(ymk){
+        var sl = ps[id][ymk]; if(!sl || ymk < fyStart || ymk > mk) return;
+        (sl.earnings || []).forEach(function(x){
+          var code = slipCode(x.desc, e.bps), lab = code ? headByCode(heads, code) : null;
+          if(!lab){ lab = "(Unmapped: " + x.desc + ")"; unmapped[lab] = 1; }
+          var r = srow(lab); if(ymk === mk) r.month += num(x.amount); else r.upto += num(x.amount);
+        });
+        if(ymk === mk){
+          var gross = 0, ded = 0, gpf = 0, tax = 0;
+          (sl.earnings || []).forEach(function(x){ gross += num(x.amount); });
+          (sl.deductions || []).forEach(function(x){
+            var a = num(x.amount); ded += a;
+            if(/^gpf subscription/i.test(x.desc)) gpf += a; else if(/income tax/i.test(x.desc)) tax += a;
+            var k = x.desc || "(other)"; var q = dedBy[k] = dedBy[k] || {desc:k, n:0, amt:0}; q.n++; q.amt += a;
+          });
+          if(gross || ded) empRows.push({name:e.name, persNo:e.persNo, desig:e.designation, bps:e.bps, gross:gross, gpf:gpf, tax:tax, other:ded - gpf - tax, ded:ded, net:gross - ded});
+        }
+      });
+    });
+    empRows.sort(function(a, b){ return (Number(b.bps) || 0) - (Number(a.bps) || 0) || String(a.name).localeCompare(String(b.name)); });
+    var sal = sOrder.map(function(h){
+      var r = sRows[h]; r.upto = uptoOK ? r.upto : null;
+      r.total = uptoOK ? r.upto + r.month : null; r.remain = uptoOK ? r.budget - r.total : null; r.pct = (uptoOK && r.budget > 0) ? r.total / r.budget * 100 : null; return r;
+    }).filter(function(r){ return r.budget || r.upto || r.month; });
+
+    /* ===== PART 2: contingent (vendors' bills) ===== */
     var order = [], rowsBy = {};
-    function row(h){ if(!rowsBy[h]){ rowsBy[h] = {head:h, budget:0, prior:0, upto:0, month:0}; order.push(h); } return rowsBy[h]; }
-    heads.forEach(function(h){ var r = row(h.label); r.budget = num(h.finalBudget); r.prior = num(h.prior); });
+    function row(h){ if(!rowsBy[h]){ rowsBy[h] = {head:h, budget:0, upto:0, month:0}; order.push(h); } return rowsBy[h]; }
+    heads.filter(function(h){ return !isSalaryHead(h.label); }).forEach(function(h){ row(h.label).budget = num(h.finalBudget); });
     billsAll.forEach(function(b){
-      if(fyOfDate(b.date) !== fy || !b.date) return;
-      var hd = b.head || "(No head)", g = num(b.gross);
+      if(!b.date || fyOfDate(b.date) !== fy) return;
+      var hd = b.head || "(No head)"; if(isSalaryHead(hd)) return;
+      var g = num(b.gross);
       if(b.date < start) row(hd).upto += g; else if(b.date <= end) row(hd).month += g;
     });
     var bud = order.map(function(h){
-      var r = rowsBy[h]; r.total = r.prior + r.upto + r.month; r.remain = r.budget - r.total;
+      var r = rowsBy[h]; r.total = r.upto + r.month; r.remain = r.budget - r.total;
       r.pct = r.budget > 0 ? (r.total / r.budget * 100) : null; return r;
-    }).filter(function(r){ return r.budget || r.prior || r.upto || r.month; });
+    }).filter(function(r){ return r.budget || r.upto || r.month; });
 
-    /* bills of the month by head / vendor */
     var byHead = {}, byVendor = {};
     billsM.forEach(function(b){
       var hd = b.head || "(No head)", vn = (b.vendorName || "").trim() || "(No vendor)";
@@ -8534,7 +8615,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       v.n++; v.gross += num(b.gross); v.ded += d; v.net += netPayment(b);
     });
 
-    /* cash book */
+    /* ===== cash book ===== */
     var opening = num(STATE.openingCash);
     cashAll.forEach(function(c){ if(c.date && c.date < start) opening += num(c.receipt) - num(c.payment); });
     var cashM = cashAll.map(function(c, i){ return {c:c, i:i}; }).filter(function(x){ return inM(x.c.date); })
@@ -8546,88 +8627,113 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       var r = cashByHead[h] = cashByHead[h] || {head:h, rec:0, pay:0};
       r.rec += num(c.receipt); r.pay += num(c.payment); rec += num(c.receipt); pay += num(c.payment);
     });
-    return {mk:mk, start:start, fy:fy, bud:bud, billsM:billsM, byHead:byHead, byVendor:byVendor,
+    return {mk:mk, start:start, fy:fy, sal:sal, empRows:empRows, dedBy:dedBy, uptoOK:uptoOK, haveMonth:haveMonth, unmapped:Object.keys(unmapped),
+      bud:bud, billsM:billsM, byHead:byHead, byVendor:byVendor,
       opening:opening, closing:opening + rec - pay, rec:rec, pay:pay, cashRows:cashRows, cashByHead:cashByHead};
   }
 
   /* ---- drawing ---- */
+  function sumBud(list){
+    return list.reduce(function(s, r){ return {budget:s.budget + r.budget, upto:s.upto + (r.upto == null ? 0 : r.upto), month:s.month + r.month, total:s.total + (r.total == null ? 0 : r.total), remain:s.remain + (r.remain == null ? 0 : r.remain)}; },
+      {budget:0, upto:0, month:0, total:0, remain:0});
+  }
+  function dash(v){ return v == null ? "—" : v; }
+  function budTable(list, T, withNA, emptyMsg){
+    var rows = list.map(function(r){
+      return "<tr>" + td(r.head) + td(r.budget, true) + td(dash(r.upto), true) + td(r.month, true) + td(dash(r.total), true) + td(dash(r.remain), true) + td(r.pct == null ? "—" : r.pct.toFixed(1) + "%", true) + "</tr>";
+    }).join("");
+    var foot = td("TOTAL (" + list.length + " heads)", false, true) + td(T.budget, true, true) + td(withNA ? "—" : T.upto, true, true) + td(T.month, true, true) + td(withNA ? "—" : T.total, true, true) + td(withNA ? "—" : T.remain, true, true) + td(!withNA && T.budget > 0 ? (T.total / T.budget * 100).toFixed(1) + "%" : "—", true, true);
+    return tbl(["Head", "Final Budget", "Up to prev. month", "This month", "Total to date", "Remaining", "% used"], [1, 2, 3, 4, 5, 6], rows || empty(7, emptyMsg), foot);
+  }
+  function part(en, ur){ return "<div class='br-part'><span class='en'>" + en + "</span><span class='ur'>" + ur + "</span></div>"; }
+
   function render(){
     var host = $("monthlyBody"); if(!host) return;
     var sel = $("m_month"), mk = sel && sel.value; if(!mk) return;
-    var d = compute(mk), html = "";
+    var d = compute(mk), html = "", L = ymLabel(mk);
     var billCount = d.billsM.length, gross = 0, ded = 0, net = 0;
     d.billsM.forEach(function(b){ gross += num(b.gross); ded += totalDed(b); net += netPayment(b); });
-    var bT = d.bud.reduce(function(s, r){ return {budget:s.budget + r.budget, prior:s.prior + r.prior, upto:s.upto + r.upto, month:s.month + r.month, total:s.total + r.total, remain:s.remain + r.remain}; },
-      {budget:0, prior:0, upto:0, month:0, total:0, remain:0});
+    var sT = sumBud(d.sal), cT = sumBud(d.bud);
+    var eT = d.empRows.reduce(function(s, r){ return {gross:s.gross + r.gross, gpf:s.gpf + r.gpf, tax:s.tax + r.tax, other:s.other + r.other, ded:s.ded + r.ded, net:s.net + r.net}; }, {gross:0, gpf:0, tax:0, other:0, ded:0, net:0});
 
-    $("monthlyChip").textContent = ymLabel(mk) + "  |  FY " + d.fy;
-
-    /* stat cards (screen only) */
+    $("monthlyChip").textContent = L + "  |  FY " + d.fy;
     $("monthlyStats").innerHTML =
-      statCardHtml("Bills this month", billCount + " bills / Rs " + fmt(gross)) +
-      statCardHtml("Net paid to vendors", "Rs " + fmt(net)) +
-      statCardHtml("Cash received", "Rs " + fmt(d.rec)) +
-      statCardHtml("Cash paid", "Rs " + fmt(d.pay)) +
+      statCardHtml("Salary (gross) — " + d.empRows.length + " employees", "Rs " + fmt(eT.gross)) +
+      statCardHtml("Salary net payable", "Rs " + fmt(eT.net)) +
+      statCardHtml("Contingent bills — " + billCount + " bills", "Rs " + fmt(gross)) +
+      statCardHtml("Contingent net paid to vendors", "Rs " + fmt(net)) +
       statCardHtml("Cash closing balance", "Rs " + fmt(d.closing), d.closing < 0) +
-      statCardHtml("Budget remaining (FY " + d.fy + ")", "Rs " + fmt(bT.remain), bT.remain < 0);
+      statCardHtml("Contingent budget remaining", "Rs " + fmt(cT.remain), cT.remain < 0);
 
-    /* 1. summary */
+    /* summary */
     var sum = [
-      ["Month", ymLabel(mk)], ["Financial year", d.fy],
-      ["Number of bills", billCount], ["Gross amount of bills", gross], ["Total deductions (IT, GST, PST, other)", ded], ["Net paid to vendors", net],
-      ["Cash book: opening balance on 1st of month", d.opening], ["Cash book: receipts in month", d.rec], ["Cash book: payments in month", d.pay], ["Cash book: closing balance at end of month", d.closing],
-      ["Budget: total final budget (FY " + d.fy + ")", bT.budget], ["Budget: spent up to end of month (incl. prior)", bT.total], ["Budget: remaining", bT.remain]
+      ["Month", L], ["Financial year", d.fy],
+      ["PART 1 — SALARY: employees paid", d.empRows.length], ["Salary gross", eT.gross], ["Salary deductions (GPF, income tax, funds, loans)", eT.ded], ["Salary net payable", eT.net],
+      ["PART 2 — CONTINGENT: number of bills", billCount], ["Bills gross", gross], ["Bills deductions (IT, GST, PST, other)", ded], ["Net paid to vendors", net],
+      ["Cash book: opening balance on 1st of month", d.opening], ["Cash book: receipts in month", d.rec], ["Cash book: payments in month", d.pay], ["Cash book: closing balance", d.closing],
+      ["Salary heads: budget / spent to date", d.uptoOK ? fmt(sT.budget) + " / " + fmt(sT.total) : fmt(sT.budget) + " / —"],
+      ["Contingent heads: budget / spent to date", fmt(cT.budget) + " / " + fmt(cT.total)],
+      ["Contingent heads: budget remaining", cT.remain]
     ];
-    html += card("Summary of the Month", "<span class='en'>All figures in Rs. Bills are counted by bill date.</span><span class='ur'>تمام رقوم روپوں میں۔ بل، بل کی تاریخ کے حساب سے شمار ہوتے ہیں۔</span>",
+    html += card("Summary of the Month", "<span class='en'>All figures in Rs. Bills are counted by bill date; salary by pay-slip month.</span><span class='ur'>تمام رقوم روپوں میں۔ بل، بل کی تاریخ سے اور تنخواہ، پے سلپ کے مہینے سے شمار ہوتی ہے۔</span>",
       tbl(["Item", "Value"], [1], sum.map(function(r){ return "<tr>" + td(r[0]) + td(r[1], true) + "</tr>"; }).join("")));
 
-    /* 2. budget vs expenditure */
-    var bRows = d.bud.map(function(r){
-      return "<tr>" + td(r.head) + td(r.budget, true) + td(r.prior, true) + td(r.upto, true) + td(r.month, true) + td(r.total, true) + td(r.remain, true) + td(r.pct == null ? "—" : r.pct.toFixed(1) + "%", true) + "</tr>";
-    }).join("");
-    var bFoot = td("TOTAL (" + d.bud.length + " heads)", false, true) + td(bT.budget, true, true) + td(bT.prior, true, true) + td(bT.upto, true, true) + td(bT.month, true, true) + td(bT.total, true, true) + td(bT.remain, true, true) + td(bT.budget > 0 ? (bT.total / bT.budget * 100).toFixed(1) + "%" : "—", true, true);
-    html += card("Budget vs Expenditure by Head — up to end of " + ymLabel(mk),
-      "<span class='en'>Prior = amount entered in Ledger &amp; Budget (salaries etc.). “Up to previous month” and “This month” come from bills (gross).</span><span class='ur'>Prior وہ رقم ہے جو لیجر اینڈ بجٹ میں درج ہے۔ باقی کالم بلوں (گراس) سے آتے ہیں۔</span>",
-      tbl(["Head", "Final Budget", "Prior Exp.", "Up to prev. month", "This month", "Total to date", "Remaining", "% used"], [1, 2, 3, 4, 5, 6, 7],
-        bRows || empty(8, "No budget or expenditure for this year."), bFoot));
+    /* ================= PART 1 ================= */
+    html += part("PART 1 — SALARY (from employees' pay slips)", "حصہ 1 — تنخواہ (ملازمین کی پے سلپس سے)");
+    var sNote = d.haveMonth ? "" : "<b>No pay slips are saved for " + esc(L) + ".</b> ";
+    if(!d.uptoOK) sNote += "Pay slips for earlier months of this financial year are not all saved, so the year-to-date columns are not shown.";
+    if(d.unmapped.length) sNote += " Unmapped items: " + esc(d.unmapped.join(", ")) + ".";
+    html += card("Part 1 — Salary Heads: Budget vs Expenditure up to end of " + L,
+      sNote || "<span class='en'>Spent = what the pay slips of July to this month add up to for each object head. Ledger “Prior” figures are not used here.</span><span class='ur'>خرچ = جولائی سے اس مہینے تک کی پے سلپس کا ہر ہیڈ کا مجموعہ۔ لیجر کا Prior یہاں استعمال نہیں ہوتا۔</span>",
+      budTable(d.sal, sT, !d.uptoOK, "No salary heads."));
 
-    /* 3. bills by head */
+    var eRows2 = d.empRows.map(function(r, i){
+      return "<tr>" + td(i + 1) + td(r.name) + td(r.persNo) + td(r.desig) + td(r.bps) + td(r.gross, true) + td(r.gpf, true) + td(r.tax, true) + td(r.other, true) + td(r.ded, true) + td(r.net, true) + "</tr>"; }).join("");
+    html += card("Part 1 — Employee-wise Salary, " + L, "",
+      tbl(["Sr", "Name", "Pers No.", "Designation", "BPS", "Gross", "GPF", "Income Tax", "Other Ded.", "Total Ded.", "Net Pay"], [5, 6, 7, 8, 9, 10], eRows2 || empty(11, "No pay slips for this month."),
+        d.empRows.length ? td("TOTAL (" + d.empRows.length + ")", false, true) + td("") + td("") + td("") + td("") + td(eT.gross, true, true) + td(eT.gpf, true, true) + td(eT.tax, true, true) + td(eT.other, true, true) + td(eT.ded, true, true) + td(eT.net, true, true) : ""));
+
+    var dk = Object.keys(d.dedBy).sort(), dT = {n:0, amt:0};
+    var dRows = dk.map(function(k){ var r = d.dedBy[k]; dT.amt += r.amt; return "<tr>" + td(r.desc) + td(r.n, true) + td(r.amt, true) + "</tr>"; }).join("");
+    html += card("Part 1 — Salary Deductions Summary, " + L, "",
+      tbl(["Deduction", "Employees", "Amount"], [1, 2], dRows || empty(3, "No deductions."), dk.length ? td("TOTAL", false, true) + td("") + td(dT.amt, true, true) : ""));
+
+    /* ================= PART 2 ================= */
+    html += part("PART 2 — CONTINGENT EXPENSES (from vendors' bills, head-wise)", "حصہ 2 — کنٹنجنٹ اخراجات (وینڈرز کے بلوں سے، ہیڈ وار)");
+    html += card("Part 2 — Contingent Heads: Budget vs Expenditure up to end of " + L,
+      "<span class='en'>Spent = gross of the bills dated July to this month. Ledger “Prior” figures are not used here.</span><span class='ur'>خرچ = جولائی سے اس مہینے تک کی تاریخ والے بلوں کی گراس رقم۔ لیجر کا Prior یہاں استعمال نہیں ہوتا۔</span>",
+      budTable(d.bud, cT, false, "No contingent budget or bills for this year."));
+
+    /* bills head-wise with vendor detail and head subtotals */
     var hk = Object.keys(d.byHead).sort(), hT = {n:0, gross:0, it:0, gst:0, pst:0, other:0, ded:0, net:0};
-    var hRows = hk.map(function(k){ var r = d.byHead[k]; Object.keys(hT).forEach(function(f){ hT[f] += r[f]; });
-      return "<tr>" + td(r.head) + td(r.n, true) + td(r.gross, true) + td(r.it, true) + td(r.gst, true) + td(r.pst, true) + td(r.other, true) + td(r.ded, true) + td(r.net, true) + "</tr>"; }).join("");
-    html += card("Bills of the Month — by Head", "",
-      tbl(["Head", "Bills", "Gross", "Income Tax", "GST", "PST", "Other", "Total Ded.", "Net"], [1, 2, 3, 4, 5, 6, 7, 8],
-        hRows || empty(9, "No bills in this month."),
-        hk.length ? td("TOTAL", false, true) + td(hT.n, true, true) + td(hT.gross, true, true) + td(hT.it, true, true) + td(hT.gst, true, true) + td(hT.pst, true, true) + td(hT.other, true, true) + td(hT.ded, true, true) + td(hT.net, true, true) : ""));
+    var detail = hk.map(function(k){
+      var r = d.byHead[k]; Object.keys(hT).forEach(function(f){ hT[f] += r[f]; });
+      var lines = d.billsM.filter(function(b){ return (b.head || "(No head)") === k; }).map(function(b){
+        return "<tr>" + td(k.split("-")[0]) + td(b.vendorName) + td(b.billNo) + td(dmy(b.date)) + td(num(b.gross), true) + td(num(b.it), true) + td(num(b.gst), true) + td(num(b.pst), true) + td(num(b.other) + num(b.comm), true) + td(netPayment(b), true) + "</tr>"; }).join("");
+      return "<tr class='br-sub'><td colspan='10'><b>" + esc(k) + "</b></td></tr>" + lines + "<tr class='br-sub'>" + td("Sub-total " + k.split("-")[0] + " (" + r.n + " bills)", false, true) + td("") + td("") + td("") + td(r.gross, true, true) + td(r.it, true, true) + td(r.gst, true, true) + td(r.pst, true, true) + td(r.other, true, true) + td(r.net, true, true) + "</tr>";
+    }).join("");
+    html += card("Part 2 — Contingent Bills of " + L + ": Head-wise with Vendor Detail", "",
+      tbl(["Head", "Vendor", "Bill No.", "Date", "Gross", "Income Tax", "GST", "PST", "Other", "Net"], [4, 5, 6, 7, 8, 9], detail || empty(10, "No bills in this month."),
+        hk.length ? td("TOTAL (" + billCount + " bills)", false, true) + td("") + td("") + td("") + td(hT.gross, true, true) + td(hT.it, true, true) + td(hT.gst, true, true) + td(hT.pst, true, true) + td(hT.other, true, true) + td(hT.net, true, true) : ""));
 
-    /* 4. bills by vendor */
     var vk = Object.keys(d.byVendor).sort(), vT = {n:0, gross:0, ded:0, net:0};
     var vRows = vk.map(function(k){ var r = d.byVendor[k]; Object.keys(vT).forEach(function(f){ vT[f] += r[f]; });
       return "<tr>" + td(r.vendor) + td(r.n, true) + td(r.gross, true) + td(r.ded, true) + td(r.net, true) + "</tr>"; }).join("");
-    html += card("Bills of the Month — by Vendor", "",
+    html += card("Part 2 — Contingent Bills of " + L + ": by Vendor", "",
       tbl(["Vendor", "Bills", "Gross", "Total Ded.", "Net Paid"], [1, 2, 3, 4], vRows || empty(5, "No bills in this month."),
         vk.length ? td("TOTAL", false, true) + td(vT.n, true, true) + td(vT.gross, true, true) + td(vT.ded, true, true) + td(vT.net, true, true) : ""));
 
-    /* 5. bill list */
-    var lRows = d.billsM.map(function(b){
-      return "<tr>" + td(dmy(b.date)) + td(b.billNo) + td(b.vendorName) + td(b.head) + td(num(b.gross), true) + td(totalDed(b), true) + td(netPayment(b), true) + "</tr>"; }).join("");
-    html += card("List of Bills", "",
-      tbl(["Date", "Bill No.", "Vendor", "Head", "Gross", "Total Ded.", "Net"], [4, 5, 6], lRows || empty(7, "No bills in this month."),
-        billCount ? td("TOTAL (" + billCount + " bills)", false, true) + td("") + td("") + td("") + td(gross, true, true) + td(ded, true, true) + td(net, true, true) : ""));
-
-    /* 6. cash by head */
     var ck = Object.keys(d.cashByHead).sort();
     var cRows = ck.map(function(k){ var r = d.cashByHead[k]; return "<tr>" + td(r.head) + td(r.rec, true) + td(r.pay, true) + td(r.rec - r.pay, true) + "</tr>"; }).join("");
-    html += card("Cash Book — by Head",
+    html += card("Part 2 — Cash Book of " + L + ": by Head",
       "<span class='en'>Opening balance: Rs " + fmt(d.opening) + "  →  Closing balance: Rs " + fmt(d.closing) + "</span><span class='ur'>ابتدائی بیلنس: Rs " + fmt(d.opening) + "  ←  اختتامی بیلنس: Rs " + fmt(d.closing) + "</span>",
       tbl(["Head / Particulars", "Receipts", "Payments", "Net"], [1, 2, 3], cRows || empty(4, "No cash entries in this month."),
         ck.length ? td("TOTAL", false, true) + td(d.rec, true, true) + td(d.pay, true, true) + td(d.rec - d.pay, true, true) : ""));
 
-    /* 7. cash entries */
     var eRows = "<tr>" + td("") + td("") + td("Opening balance") + td("") + td("", true) + td("", true) + td(d.opening, true, true) + "</tr>" +
       d.cashRows.map(function(x){ var c = x.c;
         return "<tr>" + td(dmy(c.date)) + td(c.voucher) + td(c.particulars) + td(c.head) + td(num(c.receipt) ? num(c.receipt) : "", true) + td(num(c.payment) ? num(c.payment) : "", true) + td(x.bal, true) + "</tr>"; }).join("");
-    html += card("Cash Book Entries", "",
+    html += card("Part 2 — Cash Book Entries of " + L, "",
       tbl(["Date", "Voucher", "Particulars", "Head", "Receipt", "Payment", "Balance"], [4, 5, 6], eRows,
         td("CLOSING BALANCE", false, true) + td("") + td("") + td("") + td(d.rec, true, true) + td(d.pay, true, true) + td(d.closing, true, true)));
 
@@ -8652,7 +8758,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var st = STATE || {}, s = 0;
     (st.bills || []).forEach(function(b){ s += num(b.gross) + num(b.it) + num(b.gst) + num(b.pst) + num(b.other) + num(b.comm); });
     (st.cash || []).forEach(function(c){ s += num(c.receipt) * 3 + num(c.payment) * 7; });
-    var hv = 0; try{ hv = JSON.stringify(st.headOverrides || {}).length; }catch(e){}
+    var hv = 0; try{ hv = JSON.stringify(st.headOverrides || {}).length + JSON.stringify(st.payslipData || {}).length; }catch(e){}
     return (st.bills || []).length + "|" + (st.cash || []).length + "|" + s + "|" + hv + "|" + num(st.openingCash) + "|" + (st.baseFY || "");
   }
 
