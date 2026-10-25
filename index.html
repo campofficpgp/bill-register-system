@@ -7743,9 +7743,9 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   var CSV_BTN = {bill:"b_exportBtn", cash:"c_exportBtn", stock:"s_exportBtn", ledger:"ledgerExportBtn",
     employees:"e_exportBtn", leave:"lv_exportBtn", attendance:"att_exportBtn"};
   var LIBS = {
-    pdflib:["https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js","https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"],
-    jszip:["https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js","https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"],
-    docx:["https://cdn.jsdelivr.net/npm/docx@9.7.1/dist/index.iife.js","https://unpkg.com/docx@9.7.1/dist/index.iife.js"]
+    pdflib:["lib/pdf-lib.min.js","https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js","https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"],
+    jszip:["lib/jszip.min.js","https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js","https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"],
+    docx:["lib/docx.iife.js","https://cdn.jsdelivr.net/npm/docx@9.7.1/dist/index.iife.js","https://unpkg.com/docx@9.7.1/dist/index.iife.js"]
   };
   var LIBCHK = {pdflib:function(){ return window.PDFLib; }, jszip:function(){ return window.JSZip; }, docx:function(){ return window.docx; }};
   function addScript(src){
