@@ -1233,6 +1233,45 @@ body.lang-ur .br-part{ font-size:17px; }
   #panel-employees table.print-cols-table tr{ break-inside:avoid; page-break-inside:avoid; }
 }
 
+/* ---------- Monthly Balance Statement ---------- */
+#panel-statement .st-title{ text-align:center; margin:2px 0 10px; font-family:"Times New Roman",Times,"Liberation Serif",serif; }
+#panel-statement .st-title .t1{ font-size:16px; font-weight:700; }
+#panel-statement .st-title .t2{ font-size:12px; font-weight:700; margin-top:2px; }
+#panel-statement .st-title h3.t3{ font-size:12px; font-style:italic; font-weight:400; margin:2px 0 0; color:var(--muted); }
+#panel-statement .st-tbl{ font-size:12.5px !important; }
+#panel-statement .st-tbl td.c{ text-align:center; width:34px; }
+#panel-statement tr.st-sub td{ background:color-mix(in srgb,var(--navy) 7%,var(--surface)) !important; }
+#panel-statement tr.st-grand td{ background:color-mix(in srgb,var(--navy) 14%,var(--surface)) !important; font-size:13px; }
+#panel-statement .st-cert{ font-size:12.5px; margin:14px 0 6px; font-family:"Times New Roman",Times,"Liberation Serif",serif; }
+#panel-statement .st-sigrow{ display:flex; justify-content:space-between; gap:20px; margin-top:34px; font-size:12.5px; }
+#panel-statement .st-sig{ min-width:0; text-align:center; flex:1; line-height:1.4; font-family:"Times New Roman",Times,"Liberation Serif",serif; }
+#panel-statement .st-warn{ background:#fff4e0; border:1px solid #e8b04a; color:#6b4300; padding:8px 12px; border-radius:var(--radius); margin-bottom:10px; font-size:13px; }
+#panel-statement .st-ok{ background:#e6f4ea; border:1px solid #7bb98a; color:#14532d; padding:8px 12px; border-radius:var(--radius); margin-bottom:10px; font-size:13px; }
+#panel-statement .st-chips{ display:flex; flex-wrap:wrap; gap:8px; margin:0 0 10px; }
+#panel-statement .st-chip{ padding:3px 12px; border-radius:999px; border:1px solid var(--border); background:var(--surface); font-size:12px; font-weight:600; }
+#panel-statement .st-chip.ok{ background:#e6f4ea; border-color:#7bb98a; color:#14532d; }
+#panel-statement .st-chip.bad{ background:#fdecea; border-color:#e49a93; color:#8a1c12; }
+#panel-statement .st-res{ font-size:11.5px; font-weight:700; }
+#panel-statement .st-res.ok{ color:#14783a; } #panel-statement .st-res.bad{ color:#b3261e; }
+#panel-statement input.st-in{ min-height:30px; padding:4px 8px !important; font-size:13px !important; width:120px; text-align:right; background:#fffbe6 !important; }
+#panel-statement input.st-in.st-rem{ width:150px; text-align:left; background:var(--surface) !important; }
+#panel-statement input.st-in:disabled{ background:var(--bg) !important; }
+#panel-statement .st-unm{ margin:8px 0 12px; padding:10px; border:1px dashed var(--border-strong); border-radius:var(--radius); font-size:13px; }
+#panel-statement .st-card .table-wrap{ overflow-x:auto; }
+@media print{
+  #panel-statement .st-noprint, #panel-statement .search-bar, #panel-statement .st-ok, #panel-statement .st-warn{ display:none !important; }
+  #panel-statement .st-copy{ box-shadow:none !important; border:none !important; padding:0 !important; margin:0 !important; }
+  #panel-statement .st-first{ break-after:page; page-break-after:always; }
+  #panel-statement .st-tbl{ font-size:9px !important; line-height:1.15; }
+  #panel-statement .st-tbl td, #panel-statement .st-tbl th{ padding:1px 4px !important; height:auto !important; }
+  #panel-statement .st-tbl thead th{ font-size:8.5px !important; padding:3px 4px !important; }
+  #panel-statement .st-sigrow{ margin-top:16px; }
+  #panel-statement .st-cert{ margin:8px 0 2px; font-size:10.5px; }
+  #panel-statement .panel-head p{ display:none !important; }
+  #panel-statement tr.st-sub td, #panel-statement tr.st-grand td{ background:#eee !important; }
+  #panel-statement .st-title .t1{ font-size:14px; }
+}
+
 </style>
 <!-- PWA: installable app -->
 <link rel="manifest" href="/manifest.webmanifest">
@@ -1426,6 +1465,7 @@ body.lang-ur .br-part{ font-size:17px; }
     <button class="tab-btn" data-tab="ledger"><span class="dot"></span> <span data-i18n="nav_ledger">Ledger &amp; Budget</span></button>
     <button class="tab-btn" data-tab="reports"><span class="dot"></span> <span data-i18n="rep_title">Reports</span></button>
     <button class="tab-btn" data-tab="monthly"><span class="dot"></span> <span class="en">Monthly Report</span><span class="ur">ماہانہ رپورٹ</span></button>
+    <button class="tab-btn" data-tab="statement"><span class="dot"></span> <span class="en">Balance Statement</span><span class="ur">ماہانہ گوشوارہ</span></button>
     <button class="tab-btn" data-tab="employees"><span class="dot"></span> <span data-i18n="nav_employees">Employees</span></button>
     <button class="tab-btn" data-tab="leave"><span class="dot"></span> <span data-i18n="nav_leave">Leave Register</span></button>
     <button class="tab-btn" data-tab="attendance"><span class="dot"></span> <span data-i18n="nav_attendance">Attendance Register</span></button>
@@ -1973,6 +2013,39 @@ body.lang-ur .br-part{ font-size:17px; }
       </div>
       <div class="grid cols-3" id="monthlyStats" style="margin-bottom:18px;"></div>
       <div id="monthlyBody"></div>
+    </section>
+
+
+    <section class="panel" id="panel-statement">
+      <div class="panel-head">
+        <div>
+          <h2><span class="en">Monthly Balance Statement</span><span class="ur">ماہانہ بیلنس گوشوارہ</span></h2>
+          <p><span class="en">Office Record Copy and Account Office Copy for one month, built from the pay slips and bills. Enter the Account Office (SAP) figures to verify. Use Print / Download for PDF, Word or Excel.</span><span class="ur">ایک مہینے کا دفتری ریکارڈ اور اکاؤنٹس آفس کاپی — پے سلپس اور بلوں سے خود تیار۔ تصدیق کے لیے اکاؤنٹس آفس (SAP) کی رقمیں درج کریں۔</span></p>
+        </div>
+        <span class="count-chip" id="stChip"></span>
+      </div>
+      <div class="search-bar st-noprint" style="margin-bottom:14px;">
+        <div class="grid cols-4">
+          <div class="field"><label for="st_month"><span class="en">Month</span><span class="ur">مہینہ</span></label><select id="st_month"></select></div>
+          <div class="field"><label for="st_status"><span class="en">Status</span><span class="ur">حالت</span></label>
+            <select id="st_status"><option value="draft">Draft</option><option value="sent">Sent to Account Office</option><option value="verified">Verified by Account Office</option></select></div>
+          <div class="field"><label for="st_date"><span class="en">Date (sent / verified)</span><span class="ur">تاریخ</span></label><input type="date" id="st_date"></div>
+          <div class="field"><label for="st_note"><span class="en">Remarks</span><span class="ur">ریمارکس</span></label><input id="st_note" placeholder="e.g. letter no."></div>
+        </div>
+        <div class="btnbar" style="margin:10px 0 0;">
+          <button type="button" class="btn ghost small" id="st_prev">◀ <span class="en">Previous</span><span class="ur">پچھلا</span></button>
+          <button type="button" class="btn ghost small" id="st_next"><span class="en">Next</span><span class="ur">اگلا</span> ▶</button>
+          <button type="button" class="btn small" id="st_upload">⬆ <span class="en">Upload Account Office file</span><span class="ur">اکاؤنٹس آفس کی فائل اپ لوڈ</span></button>
+          <button type="button" class="btn ghost small" id="st_paste">📋 <span class="en">Paste list</span><span class="ur">فہرست پیسٹ کریں</span></button>
+          <button type="button" class="btn ghost small" id="st_clear">🗑 <span class="en">Clear Account Office figures</span><span class="ur">رقمیں صاف کریں</span></button>
+          <input type="file" id="st_file" accept=".xlsx,.csv,.txt,.tsv" style="display:none">
+        </div>
+        <div id="stPasteBox" hidden style="margin-top:10px;">
+          <textarea id="stPasteText" rows="6" placeholder="Paste the Account Office list here: head name, amount, progressive total (one head per line)"></textarea>
+          <div class="btnbar" style="margin:8px 0 0;"><button type="button" class="btn small" id="stPasteGo"><span class="en">Fill from pasted list</span><span class="ur">پیسٹ کی گئی فہرست سے بھریں</span></button></div>
+        </div>
+      </div>
+      <div id="stBody"></div>
     </section>
 
     <!-- ================= EMPLOYEES ================= -->
@@ -2617,6 +2690,7 @@ function normalizeData(data, seedDefaults){
   data.headerFooterConfig = data.headerFooterConfig || {};
   data.printColumns = data.printColumns || {};
   data.itemMaster = data.itemMaster || {};
+  data.stmtData = data.stmtData || {};
 
   /* Contingent Heads beyond the fixed 41: heads added by an Administrator at
      runtime (label only — budget figures are corrected the same way as any
@@ -6318,7 +6392,7 @@ var BILL_TAB_KEYS = {
   em: ["employees","payslipData","preparedByName","preparedByDesignation","approvedByName","approvedByDesignation","allowanceRates","allowanceRatesVersion","deductionRates"],
   lv: ["leaveRegister"],
   at: ["attendance","holidays"],
-  cf: ["officeName","officeAddress","officeContact","headOverrides","customHeads","hiddenDefaultHeads","contingentDeductionRates","customFieldDefs","customFieldDefsUndo","headerFooterConfig","printColumns"]
+  cf: ["officeName","officeAddress","officeContact","headOverrides","customHeads","hiddenDefaultHeads","contingentDeductionRates","customFieldDefs","customFieldDefsUndo","headerFooterConfig","printColumns","stmtData"]
 };
 var BILL_WRITE_ACTS = ["bl","ca","st","em","lv","at","cf"];
 /* keys that the screen itself fills in while only LOOKING (a pay slip opened for viewing creates its template) — dropped silently, no message */
@@ -7885,9 +7959,9 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
 
   /* ---------- 2. exports ---------- */
   var PANEL_TITLE = {bill:"Contingent Bill Register", cash:"Cash Book", stock:"Stock Book", ledger:"Ledger & Budget",
-    reports:"Reports", monthly:"Monthly Report", employees:"Employees", leave:"Leave Register", attendance:"Attendance Register"};
-  var TABLE_LIMIT = {employees:1};   /* the Employees tab also holds two long rate-reference tables; only the staff list is exported */
-  var EXPORT_PANELS = ["bill","cash","stock","ledger","reports","monthly","employees","leave","attendance"];
+    reports:"Reports", monthly:"Monthly Report", statement:"Monthly Balance Statement", employees:"Employees", leave:"Leave Register", attendance:"Attendance Register"};
+  var TABLE_LIMIT = {employees:1, statement:2};   /* the Employees tab also holds two long rate-reference tables; only the staff list is exported */
+  var EXPORT_PANELS = ["bill","cash","stock","ledger","reports","monthly","statement","employees","leave","attendance"];
   var CSV_BTN = {bill:"b_exportBtn", cash:"c_exportBtn", stock:"s_exportBtn", ledger:"ledgerExportBtn",
     employees:"e_exportBtn", leave:"lv_exportBtn", attendance:"att_exportBtn"};
   var LIBS = {
@@ -8024,7 +8098,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(chip && clean(chip.textContent)) sub.push(clean(chip.textContent));
     sub.push("Generated " + todayText());
     var maxCols = 0; tables.forEach(function(t){ maxCols = Math.max(maxCols, t.heads.length); });
-    var base = "BillRegister_" + (PANEL_TITLE[key] || key).replace(/[^A-Za-z0-9]+/g, "") + (key === "monthly" && window.__brMonthlyTag ? "_" + window.__brMonthlyTag : "") + "_" + todayIso();
+    var base = "BillRegister_" + (PANEL_TITLE[key] || key).replace(/[^A-Za-z0-9]+/g, "") + (key === "monthly" && window.__brMonthlyTag ? "_" + window.__brMonthlyTag : (key === "statement" && window.__brStatementTag ? "_" + window.__brStatementTag : "")) + "_" + todayIso();
     return {office:office, title:PANEL_TITLE[key] || key, sub:sub.join("   |   "), landscape:maxCols > 6, base:base, sign:signoff(), paper:paperSize()};
   }
 
@@ -9101,6 +9175,432 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   });
   setInterval(function(){ try{ refreshIfActive(false); }catch(e){} }, 1500);
   window.__brMonthly = {compute:compute, render:render, monthList:monthList, latest:latestDataMonth};
+})();
+
+/* =====================================================================
+   MONTHLY BALANCE STATEMENT  (v15, 26-Oct-2026)
+   Office Record Copy + Account Office Copy for one month, built from the
+   pay slips (salary heads) and the bills (contingent heads), with the
+   Account Office (SAP) figures typed in / uploaded / pasted for verification.
+   Figures come from monthly.js compute(); only the Account Office figures,
+   status, signatories and the SAP-name mapping are stored (STATE.stmtData).
+   ===================================================================== */
+(function(){
+  "use strict";
+  var MN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  function $(id){ return document.getElementById(id); }
+  function num(v){ return Number(v) || 0; }
+  function ymLabel(k){ var a = k.split("-"); return MN[+a[1] - 1] + " " + a[0]; }
+  function sf(n){ n = Number(n) || 0; return n === 0 ? "-" : (n < 0 ? "-" : "") + fmt(Math.abs(n)); }
+  function codeOf(label){ return String(label || "").split("-")[0]; }
+  function titleName(label){
+    var nm = String(label || "").split("-").slice(1).join("-");
+    nm = nm.toLowerCase().replace(/\b[a-z]/g, function(c){ return c.toUpperCase(); }).replace(/\b(And|Of|For)\b/g, function(w){ return w.toLowerCase(); })
+      .replace(/\bIt\b/g, "IT").replace(/\bP\.O\.L\b/gi, "P.O.L").replace(/\bR & M\b/gi, "R & M");
+    return codeOf(label) + " " + nm;
+  }
+  var DEF_SIGN = {
+    grant: "Grant No. PC21010(010) Criminal Works 045720PC-LO5283 VR.No. 31047341.Cost Center.RI-4720",
+    ddoName: "M. Junaid Aslam Khan Niazi", ddoDesig: "Personal Assistant/DDO", ddoOffice: "Camp Office Supreme Court of Pakistan, ISB",
+    daoDesig: "District Account Officer", daoPlace: "Rawalpindi"
+  };
+  /* names used in the Account Office (SAP) list  ->  head code. Edited by the clerk through the "unmatched" list; saved in STATE.stmtData.map */
+  var DEF_MAP = {
+    "basicpayofofficers":"A01101","specialpay":"A01103","qualificationpay":"A01105","basicpayofotherstaff":"A01151","houserentallowance":"A01202",
+    "conveyanceallowance":"A01203","washingallowance":"A01207","integratedallowance":"A0120D","qualificationallowance":"A01216","medicalallowance":"A01217",
+    "personalallowance":"A0121N","entertainmentallowance":"A01224","specialallowance":"A01239","adhocreliefallowance2022":"A0124R","adhocreliefallowance2023":"A0124X",
+    "adhocreliefallowance2024":"A0125E","adhocreliefallowance2025":"A0125P","adhocreliefallowance2026":"A0125X","honoraria":"A01273","medicalcharges":"A01274",
+    "postageandtelegraph":"A03201","telephoneandtrunkcalls":"A03202","electroniccommunication":"A03204","hotandcoldweathercharges":"A03304","travellingallowance":"A03805",
+    "stationery":"A03901","printingandpublication":"A03902","newspapersperiodicalsandbooks":"A03905","lawcharges":"A03917","costofotherstores":"A03942",
+    "computerstationery":"A03955","others":"A03970","transport":"A13001","rmofmachineryandequipment":"A13101","furnitureandfixtures":"A13201",
+    "hardware":"A13701","software":"A13702","itequipment":"A13703"
+  };
+  function norm(s){ return String(s || "").toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]/g, ""); }
+
+  /* ---------- stored data ---------- */
+  function SD(){
+    var s = STATE.stmtData;
+    if(!s || typeof s !== "object") s = STATE.stmtData = {};
+    s.sign = s.sign || {}; s.map = s.map || {}; s.months = s.months || {};
+    return s;
+  }
+  function sg(k){ var v = SD().sign[k]; return (v == null || v === "") ? DEF_SIGN[k] : v; }
+  function mrec(mk, create){
+    var m = SD().months;
+    if(!m[mk] && create) m[mk] = {ao:{}, status:"draft", date:"", note:""};
+    return m[mk] || {ao:{}, status:"draft", date:"", note:""};
+  }
+  var saveT = null;
+  function persist(){ clearTimeout(saveT); saveT = setTimeout(function(){ try{ saveData(); }catch(e){ console.error(e); } }, 600); }
+  function canEdit(){ return typeof tabOK === "function" ? tabOK("cf") : true; }
+
+  /* ---------- the rows of one month ---------- */
+  var lastRows = [];
+  function buildRows(mk){
+    var M = window.__brMonthly; if(!M) return {rows:[], d:null, frozen:false};
+    var rec = mrec(mk), d = M.compute(mk), fy = d.fy, rows = [];
+    function push(r, salary){
+      rows.push({code:codeOf(r.head), label:r.head, salary:salary, budget:num(r.budget), upto:r.upto == null ? null : num(r.upto), month:num(r.month), total:r.total == null ? null : num(r.total), remain:r.remain == null ? null : num(r.remain)});
+    }
+    var frozen = rec.status === "verified" && rec.snap && rec.snap.rows;
+    if(frozen){
+      rec.snap.rows.forEach(function(r){ rows.push(r); });
+    } else {
+      d.sal.forEach(function(r){ push(r, true); });
+      d.bud.forEach(function(r){ push(r, false); });
+    }
+    var have = {}; rows.forEach(function(r){ have[r.code] = 1; });
+    var heads = getHeads(fy);
+    Object.keys(rec.ao || {}).forEach(function(c){            /* a head the Account Office reports but we show nothing for — must still appear */
+      if(have[c]) return;
+      var h = heads.filter(function(x){ return codeOf(x.label) === c; })[0];
+      if(h) rows.push({code:c, label:h.label, salary:/^A01/.test(c), budget:num(h.finalBudget), upto:0, month:0, total:0, remain:num(h.finalBudget)});
+    });
+    rows.sort(function(a, b){ return (b.salary ? 1 : 0) - (a.salary ? 1 : 0) || (a.code < b.code ? -1 : a.code > b.code ? 1 : 0); });
+    return {rows:rows, d:d, frozen:!!frozen, fy:fy};
+  }
+  function sum(list){
+    var t = {budget:0, upto:0, month:0, total:0, remain:0};
+    list.forEach(function(r){ t.budget += r.budget; t.upto += num(r.upto); t.month += r.month; t.total += num(r.total); t.remain += r.budget - num(r.total); });
+    return t;
+  }
+  function aoDiff(r, rec){
+    var a = rec.ao && rec.ao[r.code] || {}, out = {m:null, p:null, res:"—"};
+    var hasM = a.month != null && a.month !== "", hasP = a.prog != null && a.prog !== "";
+    if(hasM) out.m = r.month - num(a.month);
+    if(hasP) out.p = num(r.total) - num(a.prog);
+    if(hasM || hasP){
+      var bad = (out.m != null && Math.abs(out.m) >= 0.5) || (out.p != null && Math.abs(out.p) >= 0.5);
+      out.res = bad ? "Check" : "Agreed";
+    }
+    return out;
+  }
+
+  /* ---------- drawing ---------- */
+  function tdn(v, bold){ var s = sf(v); return "<td class='num'>" + (bold ? "<b>" + s + "</b>" : s) + "</td>"; }
+  function sigBlock(both){
+    var ddo = "<div class='st-sig'><b>" + esc(sg("ddoName")) + "</b><br>" + esc(sg("ddoDesig")) + "<br>" + esc(sg("ddoOffice")) + "</div>";
+    var dao = "<div class='st-sig'><br><b>" + esc(sg("daoDesig")) + "</b><br>" + esc(sg("daoPlace")) + "</div>";
+    return "<div class='st-sigrow'>" + (both ? ddo + dao : "<div class='st-sig'></div>" + ddo) + "</div>";
+  }
+  function certText(total){
+    return "It is certified that departmental figures of final grant and actual expenditure are based on departmental record. Actual expenditure amounting to Rs." +
+      fmt(total) + "/- has been confirmed &amp; accepted by the department.";
+  }
+  function head(mk, label){
+    return "<div class='st-title'><div class='t1'>MONTHLY BALANCE STATEMENT FOR THE MONTH OF " + esc(ymLabel(mk).toUpperCase().replace(" ", ", ")) + "</div>" +
+      "<div class='t2'>" + esc(sg("grant")) + "</div><h3 class='t3'>" + esc(label) + "</h3></div>";
+  }
+  function groupRows(rows, withTotals, rowFn, cols){
+    var sal = rows.filter(function(r){ return r.salary; }), con = rows.filter(function(r){ return !r.salary; }), html = "", n = 0;
+    function block(list, label){
+      if(!list.length) return null;
+      list.forEach(function(r){ n++; html += rowFn(r, n); });
+      var t = sum(list);
+      html += withTotals(label, t, true);
+      return t;
+    }
+    var t1 = block(sal, "Total Regular Allowances (A01)"), t2 = block(con, "Total Contingent Heads (A03, A09, A13)");
+    var g = sum(rows);
+    html += withTotals("GRAND TOTAL", g, false, true);
+    return {html:html, grand:g};
+  }
+
+  function render(){
+    var host = $("stBody"); if(!host) return;
+    var sel = $("st_month"), mk = sel && sel.value; if(!mk) return;
+    var rec = mrec(mk), B = buildRows(mk), rows = B.rows, d = B.d; if(!d) return;
+    lastRows = rows;
+    var locked = rec.status === "verified", ed = canEdit() && !locked;
+    var ml = ymLabel(mk);
+    $("st_status").value = rec.status || "draft"; $("st_date").value = rec.date || ""; $("st_note").value = rec.note || "";
+    var warn = "";
+    if(!d.uptoOK && !B.frozen) warn += "<div class='st-warn'>Pay slips of earlier months of this financial year are missing, so \"Previous Expend\" of the salary heads is incomplete — add those pay slips first.</div>";
+    if(d.unmapped && d.unmapped.length && !B.frozen) warn += "<div class='st-warn'>Pay-slip items not linked to any head: " + esc(d.unmapped.join(", ")) + "</div>";
+    if(!d.haveMonth && !B.frozen) warn += "<div class='st-warn'>There are no pay slips for " + esc(ml) + " yet, so salary heads show nil for the month.</div>";
+    if(B.frozen) warn += "<div class='st-ok'>🔒 Verified" + (rec.date ? " on " + esc(rec.date) : "") + " — these figures are frozen. Change the status back to “Draft” to refresh them from current data.</div>";
+
+    /* A. Office Record Copy */
+    var A = groupRows(rows, function(label, t, sub, grand){
+      var cls = grand ? "st-grand" : "st-sub";
+      return "<tr class='" + cls + "'><td></td><td><b>" + label + "</b></td>" + tdn(t.budget, 1) + tdn(t.upto, 1) + tdn(t.month, 1) + tdn(t.total, 1) + tdn(t.remain, 1) + "</tr>";
+    }, function(r, n){
+      return "<tr><td class='c'>" + n + "</td><td>" + esc(titleName(r.label)) + "</td>" + tdn(r.budget) + tdn(r.upto) + tdn(r.month) + tdn(r.total) + tdn(r.budget - num(r.total)) + "</tr>";
+    });
+    var tableA = "<div class='table-wrap'><table class='st-tbl'><thead><tr><th>S#</th><th>Name of Heads</th><th class='num'>Budget Allocated " + esc(B.fy) + "</th><th class='num'>Previous Expend</th><th class='num'>Present Expend</th><th class='num'>Total Expend</th><th class='num'>Balance</th></tr></thead><tbody>" + A.html + "</tbody></table></div>";
+    var cardA = "<div class='card st-card st-copy st-first'>" + head(mk, "OFFICE RECORD COPY") + tableA + "<p class='st-cert'>" + certText(A.grand.month) + "</p>" + sigBlock(false) + "</div>";
+
+    /* C. Account Office Copy */
+    var C = groupRows(rows, function(label, t, sub, grand){
+      var cls = grand ? "st-grand" : "st-sub";
+      var vs = rows.filter(function(r){ return grand ? true : (label.indexOf("Regular") === 0 ? r.salary : !r.salary); }), vv = null, any = false;
+      vs.forEach(function(r){ var x = aoDiff(r, rec); if(x.m != null){ any = true; vv = num(vv) + x.m; } });
+      return "<tr class='" + cls + "'><td></td><td><b>" + label + "</b></td>" + tdn(t.budget, 1) + tdn(t.upto, 1) + tdn(t.month, 1) + tdn(t.total, 1) + "<td class='num'><b>" + (any ? sf(vv) : "") + "</b></td><td></td></tr>";
+    }, function(r, n){
+      var x = aoDiff(r, rec), a = (rec.ao && rec.ao[r.code]) || {};
+      var rem = a.rem ? esc(a.rem) : (x.res === "Check" ? "Variation" : "");
+      return "<tr><td class='c'>" + n + "</td><td>" + esc(titleName(r.label)) + "</td>" + tdn(r.budget) + tdn(r.upto) + tdn(r.month) + tdn(r.total) + "<td class='num'>" + (x.m != null ? sf(x.m) : "") + "</td><td>" + rem + "</td></tr>";
+    });
+    var tableC = "<div class='table-wrap'><table class='st-tbl'><thead><tr><th>S#</th><th>Name of Heads</th><th class='num'>Budget Allocated " + esc(B.fy) + "</th><th class='num'>Previous Expend</th><th class='num'>Exp. During the Month</th><th class='num'>Progressive</th><th class='num'>Variation</th><th>Remarks</th></tr></thead><tbody>" + C.html + "</tbody></table></div>";
+    var cardC = "<div class='card st-card st-copy'>" + head(mk, "ACCOUNT OFFICE COPY") + tableC + "<p class='st-cert'>" + certText(C.grand.month) + "</p>" + sigBlock(true) + "</div>";
+
+    /* B. verification workings (on screen only) */
+    var agreed = 0, check = 0, none = 0;
+    var bRows = rows.map(function(r, i){
+      var a = (rec.ao && rec.ao[r.code]) || {}, x = aoDiff(r, rec);
+      if(x.res === "Agreed") agreed++; else if(x.res === "Check") check++; else none++;
+      var dis = ed ? "" : " disabled";
+      return "<tr data-code='" + esc(r.code) + "'><td class='c'>" + (i + 1) + "</td><td>" + esc(titleName(r.label)) + "</td>" +
+        "<td class='num'>" + sf(r.month) + "</td>" +
+        "<td class='num'><input class='st-in' inputmode='decimal' data-f='month' value=\"" + esc(a.month == null ? "" : a.month) + "\"" + dis + "></td>" +
+        "<td class='num' data-o='dm'>" + (x.m == null ? "" : sf(x.m)) + "</td>" +
+        "<td class='num'>" + sf(r.total) + "</td>" +
+        "<td class='num'><input class='st-in' inputmode='decimal' data-f='prog' value=\"" + esc(a.prog == null ? "" : a.prog) + "\"" + dis + "></td>" +
+        "<td class='num' data-o='dp'>" + (x.p == null ? "" : sf(x.p)) + "</td>" +
+        "<td class='c' data-o='res'>" + resHtml(x.res) + "</td>" +
+        "<td><input class='st-in st-rem' data-f='rem' value=\"" + esc(a.rem || "") + "\"" + dis + "></td></tr>";
+    }).join("");
+    var tableB = "<div class='table-wrap'><table class='st-tbl st-ver'><thead><tr><th>S#</th><th>Name of Heads</th><th class='num'>Our month</th><th class='num'>Account Office month</th><th class='num'>Diff.</th><th class='num'>Our progressive</th><th class='num'>Account Office progressive</th><th class='num'>Diff.</th><th>Result</th><th>Remarks</th></tr></thead><tbody>" + bRows + "</tbody></table></div>";
+    var unm = pendingUnmatched.length ? unmatchedHtml() : "";
+    var cardB = "<div class='card st-noprint'><h3><span class='en'>Verification with the Account Office list</span><span class='ur'>اکاؤنٹس آفس کی فہرست سے تصدیق</span></h3>" +
+      "<p class='field-hint' style='margin-bottom:8px;'>Type the Account Office (SAP) amounts into the yellow boxes, or use <b>Upload file</b> / <b>Paste list</b> above. “Diff.” = our figure minus theirs; a difference of less than Rs. 1 counts as agreed.</p>" +
+      "<div class='st-chips' id='stChips'>" + chipsHtml(agreed, check, none) + "</div>" + unm + tableB + "</div>";
+
+    /* D. details */
+    var cardD = "<div class='card st-noprint'><h3><span class='en'>Statement details</span><span class='ur'>گوشوارے کی تفصیل</span></h3><div class='grid cols-3'>" +
+      [["grant","Grant / cost-centre line"],["ddoName","DDO name"],["ddoDesig","DDO designation"],["ddoOffice","DDO office"],["daoDesig","Account Office signatory"],["daoPlace","Account Office place"]].map(function(f){
+        return "<div class='field'><label>" + f[1] + "</label><input class='st-sign' data-k='" + f[0] + "' value=\"" + esc(sg(f[0])) + "\"" + (canEdit() ? "" : " disabled") + "></div>";
+      }).join("") + "</div></div>";
+
+    host.innerHTML = warn + cardA + cardC + cardB + cardD;
+    $("stChip").textContent = ml + " · " + ({draft:"Draft", sent:"Sent to Account Office", verified:"Verified"}[rec.status || "draft"]);
+    ["st_upload","st_paste","st_clear"].forEach(function(id){ var b = $(id); if(b) b.disabled = !ed; });
+    ["st_status","st_date","st_note"].forEach(function(id){ var b = $(id); if(b) b.disabled = !canEdit(); });
+    window.__brStatementTag = mk;
+  }
+  function resHtml(r){ return r === "Agreed" ? "<span class='st-res ok'>Agreed</span>" : (r === "Check" ? "<span class='st-res bad'>Check</span>" : "<span class='st-res'>—</span>"); }
+  function chipsHtml(a, c, n){
+    return "<span class='st-chip ok'>Agreed: " + a + "</span><span class='st-chip bad'>Differences: " + c + "</span><span class='st-chip'>Not entered: " + n + "</span>";
+  }
+
+  /* ---------- editing the Account Office figures ---------- */
+  function pnum(s){
+    s = String(s == null ? "" : s).trim(); if(s === "") return null;
+    var neg = /^\(.*\)$/.test(s) || /-\s*$/.test(s) || /^-/.test(s);
+    s = s.replace(/[^0-9.]/g, ""); if(s === "" || s === ".") return null;
+    var v = parseFloat(s); if(!isFinite(v)) return null;
+    return neg ? -v : v;
+  }
+  function setAo(mk, code, field, val){
+    var rec = mrec(mk, true); rec.ao = rec.ao || {};
+    var a = rec.ao[code] = rec.ao[code] || {};
+    if(field === "rem"){ if(val) a.rem = val; else delete a.rem; }
+    else { if(val == null) delete a[field]; else a[field] = val; }
+    if(!Object.keys(a).length) delete rec.ao[code];
+  }
+  function refreshRow(tr, mk){
+    var code = tr.getAttribute("data-code"), r = lastRows.filter(function(x){ return x.code === code; })[0], rec = mrec(mk); if(!r) return;
+    var x = aoDiff(r, rec);
+    tr.querySelector("[data-o=dm]").textContent = x.m == null ? "" : sf(x.m);
+    tr.querySelector("[data-o=dp]").textContent = x.p == null ? "" : sf(x.p);
+    tr.querySelector("[data-o=res]").innerHTML = resHtml(x.res);
+    var a = 0, c = 0, n = 0; lastRows.forEach(function(q){ var y = aoDiff(q, rec).res; if(y === "Agreed") a++; else if(y === "Check") c++; else n++; });
+    $("stChips").innerHTML = chipsHtml(a, c, n);
+  }
+  function onInput(ev){
+    var inp = ev.target; if(!inp.classList || !inp.classList.contains("st-in")) return;
+    if(!canEdit()){ return; }
+    var tr = inp.closest("tr"), mk = $("st_month").value, f = inp.getAttribute("data-f");
+    setAo(mk, tr.getAttribute("data-code"), f, f === "rem" ? inp.value.trim() : pnum(inp.value));
+    refreshRow(tr, mk); persist();
+  }
+  /* Enter / arrow-down moves to the same box in the next row, like a spreadsheet */
+  function onKey(ev){
+    var inp = ev.target; if(!inp.classList || !inp.classList.contains("st-in")) return;
+    if(ev.key !== "Enter" && ev.key !== "ArrowDown" && ev.key !== "ArrowUp") return;
+    ev.preventDefault();
+    var tr = inp.closest("tr"), nx = (ev.key === "ArrowUp") ? tr.previousElementSibling : tr.nextElementSibling;
+    if(nx){ var t = nx.querySelector("[data-f='" + inp.getAttribute("data-f") + "']"); if(t){ t.focus(); t.select(); } }
+  }
+
+  /* ---------- reading the Account Office list: pasted text, CSV, Excel ---------- */
+  var pendingUnmatched = [];
+  function fyHeads(mk){ return getHeads(window.__brMonthly.compute(mk).fy); }
+  function matchCode(desc, heads){
+    var n = norm(desc), m = /^(A[0-9]{4,5}[0-9A-Z])\b/i.exec(String(desc || "").trim());
+    function valid(c){ return heads.some(function(h){ return codeOf(h.label) === c; }) ? c : null; }
+    if(m && valid(m[1].toUpperCase())) return m[1].toUpperCase();
+    if(SD().map[n] && valid(SD().map[n])) return SD().map[n];
+    if(DEF_MAP[n] && valid(DEF_MAP[n])) return DEF_MAP[n];
+    for(var i = 0; i < heads.length; i++){ if(norm(heads[i].label.split("-").slice(1).join("-")) === n) return codeOf(heads[i].label); }
+    if(/^polcharges/.test(n) && valid("A03807")) return "A03807";
+    return null;
+  }
+  function parseText(text){
+    var out = [];
+    String(text || "").split(/\r?\n/).forEach(function(line){
+      line = line.replace(/ /g, " ").trim(); if(!line) return;
+      var parts = line.indexOf("\t") >= 0 ? line.split("\t") : (line.indexOf(";") >= 0 ? line.split(";") : line.split(/ {2,}/));
+      parts = parts.map(function(p){ return p.trim().replace(/^"|"$/g, ""); }).filter(function(p){ return p !== ""; });
+      if(parts.length < 2){
+        var m = /^(.*?)\s+(\(?-?[\d,]+(?:\.\d+)?\)?-?)\s*(\(?-?[\d,]+(?:\.\d+)?\)?-?)?\s*$/.exec(line);
+        if(m){ parts = [m[1], m[2]].concat(m[3] ? [m[3]] : []); } else return;
+      }
+      pushParsed(out, parts);
+    });
+    return out;
+  }
+  function pushParsed(out, cells){
+    var desc = "", nums = [];
+    cells.forEach(function(c){
+      var s = String(c == null ? "" : c).trim(); if(s === "") return;
+      var v = (typeof c === "number") ? c : (/^[\s\(\)\-\d.,]+$/.test(s) ? pnum(s) : null);
+      if(v != null && desc){ nums.push(v); }
+      else if(v == null && !desc && /[A-Za-z]/.test(s)){ desc = s; }
+    });
+    if(desc && nums.length && !/^(total|grand|g\/l|sub)/i.test(desc.trim())) out.push({desc:desc, month:nums[0], prog:nums.length > 1 ? nums[1] : null});
+  }
+  function colIdx(ref){ var m = /^([A-Z]+)/.exec(ref) || ["", "A"], n = 0; for(var i = 0; i < m[1].length; i++) n = n * 26 + (m[1].charCodeAt(i) - 64); return n - 1; }
+  async function readXlsx(file){
+    await window.__brUI.loadLib("jszip");
+    var zip = await JSZip.loadAsync(await file.arrayBuffer()), parser = new DOMParser();
+    var shared = [], ssF = zip.file("xl/sharedStrings.xml");
+    if(ssF){
+      var sx = parser.parseFromString(await ssF.async("string"), "application/xml");
+      Array.prototype.forEach.call(sx.getElementsByTagName("si"), function(si){ shared.push(Array.prototype.map.call(si.getElementsByTagName("t"), function(t){ return t.textContent; }).join("")); });
+    }
+    var best = [], bestScore = -1, heads = fyHeads($("st_month").value);
+    var names = Object.keys(zip.files).filter(function(n){ return /^xl\/worksheets\/sheet\d+\.xml$/.test(n); });
+    for(var k = 0; k < names.length; k++){
+      var xml = parser.parseFromString(await zip.file(names[k]).async("string"), "application/xml"), rows = [];
+      Array.prototype.forEach.call(xml.getElementsByTagName("row"), function(r){
+        var cells = [];
+        Array.prototype.forEach.call(r.getElementsByTagName("c"), function(c){
+          var t = c.getAttribute("t"), v = c.getElementsByTagName("v")[0], val = null;
+          if(t === "s" && v) val = shared[+v.textContent];
+          else if(t === "inlineStr") val = Array.prototype.map.call(c.getElementsByTagName("t"), function(x){ return x.textContent; }).join("");
+          else if(v && (t == null || t === "n")) val = parseFloat(v.textContent);
+          else if(v) val = v.textContent;
+          if(val != null && val !== "") cells[colIdx(c.getAttribute("r"))] = val;
+        });
+        pushParsed(rows, Array.prototype.slice.call(cells).map(function(x){ return x; }).filter(function(x){ return x != null; }));
+      });
+      var score = rows.filter(function(r){ return matchCode(r.desc, heads); }).length * 1000 + rows.length;
+      if(score > bestScore){ bestScore = score; best = rows; }
+    }
+    return best;
+  }
+  async function readFile(file){
+    var nm = (file.name || "").toLowerCase();
+    if(/\.xlsx$/.test(nm)) return readXlsx(file);
+    if(/\.(csv|txt|tsv)$/.test(nm)) return parseText(await file.text());
+    throw new Error("Please choose an Excel (.xlsx) or CSV file — or use “Paste list”.");
+  }
+  function applyParsed(list){
+    var mk = $("st_month").value, heads = fyHeads(mk), done = 0, newUn = [];
+    list.forEach(function(r){
+      var c = matchCode(r.desc, heads);
+      if(!c){ newUn.push(r); return; }
+      setAo(mk, c, "month", r.month); if(r.prog != null) setAo(mk, c, "prog", r.prog); else setAo(mk, c, "prog", null);
+      done++;
+    });
+    pendingUnmatched = newUn;
+    persist(); render();
+    toast(done + " head(s) filled from the Account Office list" + (newUn.length ? "; " + newUn.length + " name(s) could not be matched — see the list below." : "."));
+  }
+  function unmatchedHtml(){
+    var mk = $("st_month").value, heads = fyHeads(mk);
+    var opts = "<option value=''>— choose head —</option><option value='__skip'>Ignore this line</option>" + heads.map(function(h){ return "<option value='" + esc(codeOf(h.label)) + "'>" + esc(titleName(h.label)) + "</option>"; }).join("");
+    return "<div class='st-unm'><b>Names in the Account Office list that did not match a head</b> — choose the head once; it is remembered for next month.<table class='st-tbl'><tbody>" +
+      pendingUnmatched.map(function(r, i){
+        return "<tr data-i='" + i + "'><td>" + esc(r.desc) + "</td><td class='num'>" + sf(r.month) + "</td><td class='num'>" + (r.prog == null ? "" : sf(r.prog)) + "</td><td><select class='st-asg'>" + opts + "</select></td></tr>";
+      }).join("") + "</tbody></table></div>";
+  }
+  function onAssign(ev){
+    var s = ev.target; if(!s.classList || !s.classList.contains("st-asg") || !s.value) return;
+    var i = +s.closest("tr").getAttribute("data-i"), r = pendingUnmatched[i], mk = $("st_month").value;
+    if(s.value !== "__skip"){
+      SD().map[norm(r.desc)] = s.value;
+      setAo(mk, s.value, "month", r.month); if(r.prog != null) setAo(mk, s.value, "prog", r.prog);
+    }
+    pendingUnmatched.splice(i, 1); persist(); render();
+  }
+
+  /* ---------- controls ---------- */
+  function fillMonths(keep){
+    var sel = $("st_month"), M = window.__brMonthly; if(!sel || !M) return;
+    var list = M.monthList(), cur = keep || sel.value || M.latest();
+    if(list.indexOf(cur) < 0) cur = list[0];
+    sel.innerHTML = list.map(function(k){ return "<option value='" + k + "'>" + ymLabel(k) + "</option>"; }).join("");
+    sel.value = cur;
+  }
+  function step(by){
+    var sel = $("st_month"), i = Array.prototype.map.call(sel.options, function(o){ return o.value; }).indexOf(sel.value), j = i - by;
+    if(j >= 0 && j < sel.options.length){ sel.selectedIndex = j; pendingUnmatched = []; render(); }
+  }
+  function sig(){
+    var st = STATE || {}, s = 0;
+    (st.bills || []).forEach(function(b){ s += num(b.gross); });
+    var hv = 0; try{ hv = JSON.stringify(st.headOverrides || {}).length + JSON.stringify(st.payslipData || {}).length + JSON.stringify(st.stmtData || {}).length; }catch(e){}
+    return (st.bills || []).length + "|" + s + "|" + hv + "|" + (st.baseFY || "") + "|" + (st.employees || []).length;
+  }
+  var panel = $("panel-statement"); if(!panel) return;
+  var lastSig = "";
+  function refreshIfActive(force){
+    if(!panel.classList.contains("active")) return;
+    var s = sig(); if(!force && s === lastSig) return;
+    var ae = document.activeElement;
+    if(!force && ae && panel.contains(ae) && /INPUT|SELECT|TEXTAREA/.test(ae.tagName)) return;   /* never redraw under the clerk's cursor */
+    lastSig = s; fillMonths(); render();
+  }
+  $("st_month").addEventListener("change", function(){ pendingUnmatched = []; render(); });
+  $("st_prev").addEventListener("click", function(){ step(-1); });
+  $("st_next").addEventListener("click", function(){ step(1); });
+  $("st_status").addEventListener("change", function(){
+    if(!canEdit()){ render(); return; }
+    var mk = $("st_month").value, rec = mrec(mk, true), v = $("st_status").value;
+    if(v === "verified"){
+      var B = buildRows(mk);
+      if(B.d && !B.d.uptoOK && !confirm("Pay slips of earlier months are missing, so the figures are incomplete. Mark as verified anyway?")){ render(); return; }
+      rec.snap = {rows:B.rows.map(function(r){ return {code:r.code, label:r.label, salary:r.salary, budget:r.budget, upto:r.upto, month:r.month, total:r.total, remain:r.remain}; }), at:new Date().toISOString()};
+      if(!rec.date) rec.date = new Date().toISOString().slice(0, 10);
+    } else if(rec.status === "verified"){
+      if(!confirm("This month is locked as verified. Unlock it? The figures will be recalculated from current data.")){ render(); return; }
+      delete rec.snap;
+    }
+    rec.status = v; persist(); render();
+  });
+  $("st_date").addEventListener("change", function(){ if(!canEdit()) return; mrec($("st_month").value, true).date = $("st_date").value; persist(); render(); });
+  $("st_note").addEventListener("change", function(){ if(!canEdit()) return; mrec($("st_month").value, true).note = $("st_note").value.trim(); persist(); });
+  $("st_upload").addEventListener("click", function(){ $("st_file").value = ""; $("st_file").click(); });
+  $("st_file").addEventListener("change", async function(){
+    var f = $("st_file").files[0]; if(!f) return;
+    try{ var list = await readFile(f); if(!list.length) throw new Error("No head names with amounts were found in this file."); applyParsed(list); }
+    catch(e){ toast("Could not read the file: " + (e && e.message ? e.message : e)); }
+  });
+  $("st_paste").addEventListener("click", function(){ var b = $("stPasteBox"); b.hidden = !b.hidden; if(!b.hidden) $("stPasteText").focus(); });
+  $("stPasteGo").addEventListener("click", function(){
+    var list = parseText($("stPasteText").value);
+    if(!list.length){ toast("No head names with amounts were found in the pasted text."); return; }
+    $("stPasteText").value = ""; $("stPasteBox").hidden = true; applyParsed(list);
+  });
+  $("st_clear").addEventListener("click", function(){
+    if(!canEdit()) return;
+    if(!confirm("Clear all Account Office figures typed for this month?")) return;
+    var rec = mrec($("st_month").value, true); rec.ao = {}; pendingUnmatched = []; persist(); render();
+  });
+  panel.addEventListener("input", onInput);
+  panel.addEventListener("keydown", onKey);
+  panel.addEventListener("change", onAssign);
+  panel.addEventListener("change", function(ev){
+    var s = ev.target; if(!s.classList || !s.classList.contains("st-sign") || !canEdit()) return;
+    SD().sign[s.getAttribute("data-k")] = s.value.trim(); persist(); render();
+  });
+  document.querySelectorAll(".tab-btn").forEach(function(b){
+    b.addEventListener("click", function(){ if(b.getAttribute("data-tab") === "statement") setTimeout(function(){ refreshIfActive(true); }, 0); });
+  });
+  setInterval(function(){ try{ refreshIfActive(false); }catch(e){} }, 1500);
+  window.__brStatement = {rows:function(mk){ return buildRows(mk); }, parseText:parseText, matchCode:matchCode, applyParsed:applyParsed, render:render};
 })();
 
 })();
