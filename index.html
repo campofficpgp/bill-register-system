@@ -1138,6 +1138,24 @@ body.lang-ur .br-part{ font-size:17px; }
 @media print{
   .br-exportbar,.br-snack,.br-opt-toggle,.br-menu-list{ display:none !important; }
   #appMain, .shell, .main-col, .app-shell{ height:auto !important; min-height:0 !important; }
+  /* Pay slip : dark readable column headings, no empty delete-button column, compact so it fits on one page */
+  body.payslip-mode table.payslip-table th{ background:#dfe8f1 !important; color:#0f2742 !important; padding:4px 8px !important; }
+  body.payslip-mode table.payslip-table td{ padding:3px 8px !important; }
+  body.payslip-mode table.payslip-table td:has(> .row-remove-btn),
+  body.payslip-mode table.payslip-table th:empty,
+  body.payslip-mode table.payslip-table tfoot td:empty{ display:none !important; }
+  body.payslip-mode table.payslip-table{ font-size:11.5px; margin-bottom:8px; break-inside:avoid; }
+  body.payslip-mode .payslip-meta{ margin-bottom:8px; }
+  body.payslip-mode .payslip-net{ margin:8px 0; padding:6px; }
+  body.payslip-mode .payslip-sign{ margin-top:14px; }
+  body.payslip-mode .payslip-sign{ margin-top:10px; }
+  body.payslip-mode .payslip-paper .field-hint{ margin-top:6px !important; }
+  body.payslip-mode .payslip-header{ margin:4px 0 8px !important; padding-bottom:6px !important; }
+  body.payslip-mode .month-flag{ margin:0 0 4px !important; }
+  body.payslip-mode .pb-print-masthead{ margin-bottom:6px !important; }
+  .pb-print-extra-fields:empty{ display:none !important; }
+  body.payslip-mode .payslip-paper{ padding:6px 10px !important; }
+  body.payslip-mode .payslip-net{ font-size:15px; }
   /* Employees : print only the staff list — no buttons, filters, notes or the long rate tables — fitted to one page */
   #panel-employees .panel-head p,
   #panel-employees .panel-head > div:last-child,
@@ -6990,7 +7008,7 @@ function printCurrentView(){
   // whole month fits on the page width, regardless of the paper size chosen above. Other
   // panels are unaffected (orientation style is cleared for them).
   ensureAttPrintOrientationStyleEl().textContent =
-    (["attendance","employees","bill","cash","stock","ledger"].indexOf(currentPanelKey())!==-1) ? "@media print{ @page{ size: landscape; } }" : "";
+    (!payslipOpen && ["attendance","employees","bill","cash","stock","ledger"].indexOf(currentPanelKey())!==-1) ? "@media print{ @page{ size: landscape; } }" : "";
   window.print();
 }
 window.addEventListener("afterprint", function(){ document.body.classList.remove("payslip-mode"); });
@@ -7031,8 +7049,31 @@ function withPrintRulesActive(fn){
    blank page, no error, regardless of what was being captured). html2canvas itself works
    fine; jsPDF composes the final file by hand, with pagination for content taller than one
    page (sliced the same way a long document would paginate when printed). */
+/* html2canvas 1.4.1 cannot read the modern colour form "color(srgb ...)" that Chrome reports for
+   CSS color-mix() (used by the new look). Before it draws its copy of the page, turn every such
+   colour into a plain rgba() so "Download PDF" (pay slips, print view) works again. */
+function fixUnsupportedColors(doc){
+  var win = doc.defaultView || window, cv = doc.createElement("canvas"); cv.width = cv.height = 1;
+  var cx = cv.getContext("2d", {willReadFrequently:true});
+  function conv(v){
+    return v.replace(/color\(\s*[^)]*\)/g, function(m){
+      try{ cx.clearRect(0,0,1,1); cx.fillStyle = "#000"; cx.fillStyle = m; cx.fillRect(0,0,1,1);
+        var d = cx.getImageData(0,0,1,1).data; return "rgba("+d[0]+","+d[1]+","+d[2]+","+(d[3]/255).toFixed(3)+")";
+      }catch(e){ return "rgba(0,0,0,0)"; }
+    });
+  }
+  var props = ["color","background-color","background-image","border-top-color","border-right-color","border-bottom-color","border-left-color","outline-color","text-decoration-color","box-shadow","text-shadow","column-rule-color","fill","stroke"];
+  var all = doc.querySelectorAll("*");
+  for(var i = 0; i < all.length; i++){
+    var el = all[i], cs = win.getComputedStyle(el);
+    for(var j = 0; j < props.length; j++){
+      var v = cs.getPropertyValue(props[j]);
+      if(v && v.indexOf("color(") !== -1){ el.style.setProperty(props[j], conv(v), "important"); }
+    }
+  }
+}
 function buildPdfFromElement(target, filename, marginMm, jsPdfFormat, jsPdfOrientation, html2canvasOpts){
-  var opts = Object.assign({scale:2, useCORS:true, logging:false}, html2canvasOpts || {});
+  var opts = Object.assign({scale:2, useCORS:true, logging:false, onclone:function(d){ try{ fixUnsupportedColors(d); }catch(e){ console.warn("colour fix skipped:", e); } }}, html2canvasOpts || {});
   return html2canvas(target, opts).then(function(canvas){
     var JsPDFCtor = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
     var pdf = new JsPDFCtor({unit:"mm", format: jsPdfFormat, orientation: jsPdfOrientation});
