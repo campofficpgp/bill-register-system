@@ -1134,35 +1134,77 @@ body.lang-ur .br-part{ font-size:17px; }
 #monthlyBody tr.br-sub td{ background:color-mix(in srgb,var(--navy) 8%,var(--surface)); border-top:1px solid var(--border-strong); }
 [data-theme="night"] .br-part{ background:var(--navy-dark); color:var(--amber); border:1px solid var(--amber); }
 
-/* ---------- Pay slip letterhead : emblem on the left, heading centred ---------- */
-.payslip-header{ position:relative; }
-.payslip-header .ps-logo{ position:absolute; left:0; top:0; height:56px; width:auto; }
-.payslip-header .ps-letter{ font-size:11px; color:#666; margin:0 70px 6px; }
-@media (max-width:600px){ .payslip-header .ps-logo{ height:40px; } .payslip-header .ps-letter{ margin:0 46px 6px; font-size:10px; } }
+/* ---------- Pay slip : "Monthly Salary Statement" layout (after the Accounts Office statement) ---------- */
+.payslip-paper{ font-family:"Times New Roman",Times,"Liberation Serif",serif; color:#000; font-size:13px; line-height:1.35; }
+.payslip-paper.rtl{ font-family:"Jameel Noori Nastaleeq","Noto Nastaliq Urdu","Noto Naskh Arabic",Tahoma,Arial,sans-serif; font-size:14px; }
+.payslip-paper .ps-top{ position:relative; text-align:center; padding:2px 74px 8px; margin-bottom:10px; min-height:62px; }
+.payslip-paper .ps-top .ps-logo{ position:absolute; left:0; top:0; height:60px; width:auto; }
+.payslip-paper.rtl .ps-top .ps-logo{ left:auto; right:0; }
+.payslip-paper .ps-title .l1{ font-size:19px; font-weight:700; }
+.payslip-paper .ps-title .l2{ font-size:13.5px; font-weight:700; }
+.payslip-paper .ps-title .l3{ font-size:13.5px; font-weight:700; }
+.payslip-paper .ps-sec{ font-weight:700; margin:12px 0 4px; font-size:13.5px; }
+.payslip-paper .ps-row{ display:flex; flex-wrap:wrap; justify-content:space-between; gap:2px 18px; padding:0 8px; margin:2px 0; font-size:12.5px; }
+.payslip-paper .ps-row .v{ font-weight:400; }
+.payslip-paper table.payslip-table.stmt{ width:100%; border-collapse:collapse; border:1px solid #000; margin:2px 0 4px; font-size:12.5px; }
+.payslip-paper table.stmt th{ background:transparent; color:#000; border:1px solid #000; padding:3px 6px; text-align:center; font-weight:700; }
+.payslip-paper table.stmt td{ border:none; border-left:1px solid #000; border-right:1px solid #000; padding:2px 6px; vertical-align:middle; }
+.payslip-paper table.stmt td.code{ width:46px; white-space:nowrap; border-right:none; padding-right:2px; }
+.payslip-paper table.stmt td.desc{ position:relative; border-left:none; }
+.payslip-paper table.stmt td.num{ width:92px; text-align:right; white-space:nowrap; }
+.payslip-paper table.stmt tr.empty-row td{ text-align:center; font-style:italic; color:#555; border:none; }
+.payslip-paper.rtl table.stmt td.num{ text-align:left; }
+.payslip-paper table.stmt td.desc input.cell-input{ padding-right:20px; }
+.payslip-paper table.stmt td.desc .row-remove-btn{ position:absolute; right:2px; top:50%; transform:translateY(-50%); }
+.payslip-paper table.stmt input.cell-input{ font-family:inherit; font-size:inherit; padding-top:1px; padding-bottom:1px; }
+.payslip-paper table.stmt td,.payslip-paper table.stmt tr:nth-child(even) td,.payslip-paper table.stmt tr:hover td{ background:transparent !important; color:#000 !important; }
+.payslip-paper .pv{ display:none; }
+.payslip-paper .ps-totals{ display:flex; flex-wrap:wrap; justify-content:space-between; gap:4px 20px; margin:16px 0 12px; font-weight:700; padding:0 8px; }
+.payslip-paper .ps-pay{ padding:0 8px; line-height:1.5; margin-bottom:10px; }
+.payslip-paper .payslip-sign{ margin-top:34px; }
+.payslip-paper .ps-note{ margin-top:12px; font-size:11px; font-style:italic; }
+.payslip-paper .slip-tools{ margin:0 0 6px; }
+@media (max-width:600px){
+  .payslip-paper .ps-top{ padding:2px 52px 6px; }
+  .payslip-paper .ps-top .ps-logo{ height:42px; }
+  .payslip-paper .ps-title .l1{ font-size:15px; } .payslip-paper .ps-title .l2,.payslip-paper .ps-title .l3{ font-size:11.5px; }
+  .payslip-paper table.payslip-table.stmt{ display:block; overflow-x:auto; }
+}
+
+/* the statement look must win over the portal-wide table / input skin */
+#payslipPaper table.stmt thead th{ background:#fff !important; color:#000 !important; text-transform:none !important; letter-spacing:0 !important; font-size:12.5px !important; height:auto !important; padding:3px 6px !important; border:1px solid #000 !important; border-bottom:1px solid #000 !important; }
+#payslipPaper table.stmt tbody tr, #payslipPaper table.stmt tbody tr:nth-child(even), #payslipPaper table.stmt tbody tr:hover{ background:transparent !important; }
+#payslipPaper table.stmt tbody td{ height:auto !important; padding:2px 6px !important; border:none !important; border-left:1px solid #000 !important; border-right:1px solid #000 !important; font-size:12.5px; }
+#payslipPaper table.stmt tbody td.code{ padding-right:2px !important; border-right:none !important; width:46px; }
+#payslipPaper table.stmt tbody td.desc{ border-left:none !important; }
+#payslipPaper table.stmt tbody tr.empty-row td{ border:none !important; }
+#payslipPaper table.stmt input.cell-input{ min-height:0 !important; height:22px; padding:1px 4px !important; border:1px dashed transparent !important; border-radius:3px !important; background:transparent !important; font-size:12.5px !important; box-shadow:none; width:100%; }
+#payslipPaper table.stmt input.cell-input:hover{ border-color:#999 !important; }
+#payslipPaper table.stmt input.cell-input:focus{ border-color:var(--navy) !important; background:#eef3f8 !important; }
+#payslipPaper table.stmt td.desc input.cell-input{ padding-right:20px !important; }
+#payslipPaper table.stmt td.num input.cell-input{ min-width:84px; }
+#payslipPaper table.stmt td.num.neg input.cell-input{ color:#000; }
+#payslipPaper .ps-top{ z-index:0; }
+.payslip-toolbar{ z-index:5; }
 
 /* ---------- print : the new on-screen pieces never reach the paper ---------- */
 @media print{
   .br-exportbar,.br-snack,.br-opt-toggle,.br-menu-list{ display:none !important; }
   #appMain, .shell, .main-col, .app-shell{ height:auto !important; min-height:0 !important; }
   body.payslip-mode .pb-print-masthead{ display:none !important; }
-  /* Pay slip : dark readable column headings, no empty delete-button column, compact so it fits on one page */
-  body.payslip-mode table.payslip-table th{ background:#dfe8f1 !important; color:#0f2742 !important; padding:4px 8px !important; }
-  body.payslip-mode table.payslip-table td{ padding:3px 8px !important; }
-  body.payslip-mode table.payslip-table td:has(> .row-remove-btn),
-  body.payslip-mode table.payslip-table th:empty,
-  body.payslip-mode table.payslip-table tfoot td:empty{ display:none !important; }
-  body.payslip-mode table.payslip-table{ font-size:11.5px; margin-bottom:8px; break-inside:avoid; }
-  body.payslip-mode .payslip-meta{ margin-bottom:8px; }
-  body.payslip-mode .payslip-net{ margin:8px 0; padding:6px; }
-  body.payslip-mode .payslip-sign{ margin-top:14px; }
-  body.payslip-mode .payslip-sign{ margin-top:10px; }
-  body.payslip-mode .payslip-paper .field-hint{ margin-top:6px !important; }
-  body.payslip-mode .payslip-header{ margin:4px 0 8px !important; padding-bottom:6px !important; }
-  body.payslip-mode .month-flag{ margin:0 0 4px !important; }
-  body.payslip-mode .pb-print-masthead{ margin-bottom:6px !important; }
+  /* Pay slip (statement layout) : plain print values instead of boxes, fitted to one A4 page */
+  body.payslip-mode .payslip-paper{ padding:4px 8px !important; font-size:12.5px; }
+  body.payslip-mode .payslip-paper .pv{ display:inline !important; }
+  body.payslip-mode .payslip-paper table.stmt input.cell-input,
+  body.payslip-mode .payslip-paper table.stmt .row-remove-btn{ display:none !important; }
+  body.payslip-mode .payslip-paper table.stmt td.desc input.cell-input{ padding-right:0 !important; }
+  body.payslip-mode .payslip-paper table.payslip-table.stmt{ display:table !important; overflow:visible !important; font-size:12.5px; break-inside:avoid; }
+  body.payslip-mode .payslip-paper table.stmt th{ background:transparent !important; color:#000 !important; }
+  body.payslip-mode .payslip-paper .ps-top{ margin-bottom:6px; }
+  body.payslip-mode .payslip-paper .ps-totals{ margin:12px 0 8px; }
+  body.payslip-mode .payslip-paper .payslip-sign{ margin-top:22px; }
+  body.payslip-mode .payslip-paper .field-hint{ margin-top:8px !important; }
   .pb-print-extra-fields:empty{ display:none !important; }
-  body.payslip-mode .payslip-paper{ padding:6px 10px !important; }
-  body.payslip-mode .payslip-net{ font-size:15px; }
   /* Employees : print only the staff list — no buttons, filters, notes or the long rate tables — fitted to one page */
   #panel-employees .panel-head p,
   #panel-employees .panel-head > div:last-child,
@@ -7441,54 +7483,88 @@ function slipTotals(slip){
   var totalDed = slip.deductions.reduce(function(s,r){ return s+(Number(r.amount)||0); }, 0);
   return {gross:gross, totalDed:totalDed, net:gross-totalDed};
 }
-function editableRowsHtml(rows, section, empId, monthVal, t){
+function slipFmt2(n){ return (Number(n)||0).toLocaleString("en-US",{minimumFractionDigits:2, maximumFractionDigits:2}); }
+function slipDedText(n){ n = Number(n)||0; return (n>0? "-" : "")+slipFmt2(n); }
+function slipCodeFor(section, desc, bps){
+  var list = (section==="earnings"? STATE.allowanceRates : STATE.deductionRates) || [], d = String(desc||"").trim().toLowerCase(), hit = "";
+  list.forEach(function(r){ if(!hit && String(r.desc||"").trim().toLowerCase()===d && (!bps || r.bps===bps)) hit = r.code || ""; });
+  list.forEach(function(r){ if(!hit && String(r.desc||"").trim().toLowerCase()===d) hit = r.code || ""; });
+  return hit;
+}
+/* Wage-type table in the layout of the Accounts Office "Monthly Salary Statement": two wage-type/amount pairs per row.
+   Every record still has its own editable inputs (data-* on the input itself), so editing works exactly as before. */
+function editableRowsHtml(rows, section, empId, monthVal, t, bps){
   if(rows.length===0){
-    return "<tr class='empty-row'><td colspan='3'>"+(section==="earnings"? t.noEarnings : t.noDeductions)+"</td></tr>";
+    return "<tr class='empty-row'><td colspan='6'>"+(section==="earnings"? t.noEarnings : t.noDeductions)+"</td></tr>";
   }
-  return rows.map(function(r){
-    return "<tr data-emp='"+esc(empId)+"' data-month='"+esc(monthVal)+"' data-section='"+section+"' data-row='"+esc(r.id)+"'>"+
-      "<td><input type='text' class='cell-input' data-field='desc' value=\""+esc(r.desc)+"\"></td>"+
-      "<td class='num'><input type='number' step='0.01' class='cell-input num-input' data-field='amount' value=\""+esc(r.amount)+"\"></td>"+
-      "<td><button type='button' class='row-remove-btn' title='Remove row'>&times;</button></td>"+
-    "</tr>";
-  }).join("");
+  function cell(r){
+    if(!r) return "<td class='code'></td><td class='desc'></td><td class='num'></td>";
+    var da = "data-emp='"+esc(empId)+"' data-month='"+esc(monthVal)+"' data-section='"+section+"' data-row='"+esc(r.id)+"'";
+    var neg = section==="deductions";
+    return "<td class='code'>"+esc(slipCodeFor(section, r.desc, bps))+"</td>"+
+      "<td class='desc'><input type='text' class='cell-input' "+da+" data-field='desc' value=\""+esc(r.desc)+"\"><span class='pv'>"+esc(r.desc)+"</span>"+
+        "<button type='button' class='row-remove-btn' title='Remove row' "+da+">&times;</button></td>"+
+      "<td class='num"+(neg? " neg":"")+"'><input type='number' step='0.01' class='cell-input num-input' "+da+" data-field='amount' value=\""+esc(r.amount)+"\">"+
+        "<span class='pv'>"+(neg? "-" : "")+slipFmt2(r.amount)+"</span></td>";
+  }
+  var html = "";
+  for(var i=0; i<rows.length; i+=2){ html += "<tr>"+cell(rows[i])+cell(rows[i+1])+"</tr>"; }
+  return html;
+}
+var SLIP_LABELS = {
+  en:{govt:"Government of Punjab", office:"Camp Office, Prosecutor General Punjab", stmt:"Monthly Salary Statement",
+      persInfo:"Personal Information of", dws:"d/w/s of", persNo:"Personnel Number", cnic:"CNIC", dob:"Date of Birth", los:"Length of Service",
+      empCat:"Employment Category", desig:"Designation", dept:"Department", ddo:"DDO Code", gpf:"GPF A/C No", bps:"BPS",
+      payAllow:"Pay and Allowances", wage:"Wage type", dedGen:"Deductions - General",
+      gross:"Gross Pay (Rs.)", ded:"Deductions (Rs.)", net:"Net Pay (Rs.)", payee:"Payee Name", acct:"Account Number", bank:"Bank Details",
+      rupees:"* All amounts are in Pak Rupees"},
+  ur:{govt:"حکومتِ پنجاب", office:"کیمپ آفس، پراسیکیوٹر جنرل پنجاب", stmt:"ماہانہ تنخواہ گوشوارہ",
+      persInfo:"ذاتی معلومات:", dws:"ولد/زوجہ/دختر", persNo:"پرسنل نمبر", cnic:"شناختی کارڈ", dob:"تاریخ پیدائش", los:"مدتِ ملازمت",
+      empCat:"ملازمت کی نوعیت", desig:"عہدہ", dept:"محکمہ", ddo:"ڈی ڈی او کوڈ", gpf:"جی پی فنڈ اکاؤنٹ نمبر", bps:"بی پی ایس",
+      payAllow:"تنخواہ اور الاؤنسز", wage:"مد", dedGen:"کٹوتیاں",
+      gross:"مجموعی تنخواہ (روپے)", ded:"کٹوتیاں (روپے)", net:"خالص تنخواہ (روپے)", payee:"وصول کنندہ", acct:"اکاؤنٹ نمبر", bank:"بینک کی تفصیل",
+      rupees:"* تمام رقوم پاکستانی روپوں میں ہیں"}
+};
+var SLIP_DDO = "RI004720-PROSECUTOR GENERAL CAMP OFFICE ISLAMABAD";
+function stmtTable(rows, section, e, monthVal, t, L){
+  var addTxt = section==="earnings"? "+ Add earnings row" : "+ Add deduction row";
+  return "<table class='payslip-table stmt'><thead><tr><th colspan='2'>"+L.wage+"</th><th class='num'>"+t.amount+"</th><th colspan='2'>"+L.wage+"</th><th class='num'>"+t.amount+"</th></tr></thead>"+
+    "<tbody class='rows-"+section+"'>"+editableRowsHtml(rows, section, e.id, monthVal, t, e.bps)+"</tbody></table>"+
+    "<div class='slip-tools'><button type='button' class='btn ghost small add-row-btn' data-emp='"+esc(e.id)+"' data-month='"+esc(monthVal)+"' data-section='"+section+"'>"+addTxt+"</button></div>";
 }
 function buildEditableSlipHtml(e, monthVal, lang, incPercent, incFromVal){
-  var t = I18N[lang];
+  var t = I18N[lang], L = SLIP_LABELS[lang] || SLIP_LABELS.en;
   var monthLabel = formatMonthLabel(monthVal, lang);
+  var monthTitle = lang==="ur"? monthLabel : monthLabel.replace(/\s+/g, "-");
   var slip = ensureSlipData(e.id, monthVal, e.bps, incPercent, incFromVal);
   var totals = slipTotals(slip);
 
   var showSensitive = isSuperAdmin() && document.getElementById("ef_showSensitive") && document.getElementById("ef_showSensitive").checked;
   var cnicDisplay = showSensitive? empCnic(e) : maskValue(empCnic(e));
   var acctDisplay = showSensitive? empAccount(e) : maskValue(empAccount(e));
-  var officeName = STATE.officeName || (lang==="ur"? "دفتر" : "Office");
+  function v(k, x){ return "<span class='v' data-k='"+k+"'>"+esc(x==null? "" : x)+"</span>"; }
+  var eid = esc(e.id), mid = esc(monthVal);
 
-  return "<div class='month-flag'>"+esc(monthLabel)+"</div>"+
-    "<div class='payslip-header'><img class='ps-logo' src='logo-punjab-govt.png' alt='Government of the Punjab'><h2>"+esc(officeName)+"</h2><div class='ps-letter'>Camp Office, Prosecutor General Punjab &nbsp;|&nbsp; \u06A9\u06CC\u0645\u067E \u0622\u0641\u0633\u060C \u067E\u0631\u0627\u0633\u06CC\u06A9\u06CC\u0648\u0679\u0631 \u062C\u0646\u0631\u0644 \u067E\u0646\u062C\u0627\u0628</div><div>"+esc(t.paySlip)+(monthLabel? (" — "+esc(monthLabel)) : "")+"</div></div>"+
-    "<div class='payslip-meta'>"+
-      "<div><span class='label'>"+t.employeeNo+": </span>"+esc(e.persNo)+"</div>"+
-      "<div><span class='label'>"+t.name+": </span>"+esc(e.name)+"</div>"+
-      "<div><span class='label'>"+t.designation+": </span>"+esc(e.designation)+"</div>"+
-      "<div><span class='label'>"+t.department+": </span>"+esc(e.department)+"</div>"+
-      "<div><span class='label'>"+t.bps+": </span>"+esc(e.bps)+"</div>"+
-      "<div><span class='label'>"+t.cnic+": </span>"+esc(cnicDisplay)+"</div>"+
-      "<div><span class='label'>"+t.bank+": </span>"+esc(e.bank)+"</div>"+
-      "<div><span class='label'>"+t.account+": </span>"+esc(acctDisplay)+"</div>"+
-    "</div>"+
-    "<table class='payslip-table'><thead><tr><th>"+t.description+"</th><th class='num'>"+t.amount+"</th><th></th></tr></thead>"+
-    "<tbody class='rows-earnings'>"+editableRowsHtml(slip.earnings,"earnings",e.id,monthVal,t)+"</tbody>"+
-    "<tfoot><tr class='payslip-total-row'><td>"+t.grossPay+"</td><td class='num' id='gross-"+esc(e.id)+"-"+esc(monthVal)+"'>"+fmt(totals.gross)+"</td><td></td></tr></tfoot>"+
-    "</table>"+
-    "<div class='slip-tools'><button type='button' class='btn ghost small add-row-btn' data-emp='"+esc(e.id)+"' data-month='"+esc(monthVal)+"' data-section='earnings'>+ Add earnings row</button></div>"+
-    "<table class='payslip-table'><thead><tr><th>"+t.description+"</th><th class='num'>"+t.amount+"</th><th></th></tr></thead>"+
-    "<tbody class='rows-deductions'>"+editableRowsHtml(slip.deductions,"deductions",e.id,monthVal,t)+"</tbody>"+
-    "<tfoot><tr class='payslip-total-row'><td>"+t.totalDeductions+"</td><td class='num' id='ded-"+esc(e.id)+"-"+esc(monthVal)+"'>"+fmt(totals.totalDed)+"</td><td></td></tr></tfoot>"+
-    "</table>"+
-    "<div class='slip-tools'><button type='button' class='btn ghost small add-row-btn' data-emp='"+esc(e.id)+"' data-month='"+esc(monthVal)+"' data-section='deductions'>+ Add deduction row</button></div>"+
-    "<div class='payslip-net' id='net-"+esc(e.id)+"-"+esc(monthVal)+"'>"+t.netPay+": "+fmt(totals.net)+"</div>"+
+  return "<div class='ps-top'><img class='ps-logo' src='logo-punjab-govt.png' alt='Government of the Punjab'>"+
+      "<div class='ps-title'><div class='l1'>"+L.govt+"</div><div class='l2'>"+L.office+"</div><div class='l3' data-k='title'>"+L.stmt+" ("+esc(monthTitle)+")</div></div></div>"+
+    "<div class='ps-sec'>"+L.persInfo+" "+v("name", e.name)+(e.soName? (" "+L.dws+" "+esc(e.soName)) : "")+"</div>"+
+    "<div class='ps-row'><span>"+L.persNo+": "+v("persNo", e.persNo)+"</span><span>"+L.cnic+": "+esc(cnicDisplay)+"</span></div>"+
+    "<div class='ps-row'><span>"+L.dob+": "+esc(e.dob)+"</span><span>"+L.los+": "+esc(e.serviceLength)+"</span></div>"+
+    "<div class='ps-sec'>"+L.empCat+": "+esc(e.status)+"</div>"+
+    "<div class='ps-row'><span>"+L.desig+": "+v("desig", e.designation)+"</span><span>"+esc(e.department)+"</span></div>"+
+    "<div class='ps-row'><span>"+L.ddo+": "+SLIP_DDO+"</span></div>"+
+    "<div class='ps-row'><span>"+L.gpf+": "+esc(e.gpf)+"</span><span>"+L.bps+": "+v("bps", e.bps)+"</span></div>"+
+    "<div class='ps-sec'>"+L.payAllow+"</div>"+
+    stmtTable(slip.earnings, "earnings", e, monthVal, t, L)+
+    "<div class='ps-sec'>"+L.dedGen+"</div>"+
+    stmtTable(slip.deductions, "deductions", e, monthVal, t, L)+
+    "<div class='ps-totals'><span>"+L.gross+": <b id='gross-"+eid+"-"+mid+"'>"+slipFmt2(totals.gross)+"</b></span>"+
+      "<span>"+L.ded+": <b id='ded-"+eid+"-"+mid+"'>"+slipDedText(totals.totalDed)+"</b></span>"+
+      "<span>"+L.net+": <b id='net-"+eid+"-"+mid+"'>"+slipFmt2(totals.net)+"</b></span></div>"+
+    "<div class='ps-pay'><div>"+L.payee+": "+esc(e.name)+"</div><div>"+L.acct+": "+esc(acctDisplay)+"</div><div>"+L.bank+": "+esc(e.bank)+"</div></div>"+
     "<div class='payslip-sign'><div>"+t.preparedBy+(STATE.preparedByName? ("<br><b>"+esc(STATE.preparedByName)+"</b>") : "")+(STATE.preparedByDesignation? ("<br>"+esc(STATE.preparedByDesignation)) : "")+"</div><div>"+t.signature+"</div><div>"+t.approvedBy+(STATE.approvedByName? ("<br><b>"+esc(STATE.approvedByName)+"</b>") : "")+(STATE.approvedByDesignation? ("<br>"+esc(STATE.approvedByDesignation)) : "")+"</div></div>"+
-    "<div class='field-hint' style='margin-top:18px;text-align:center;font-style:italic;'>"+esc(t.certificate)+"</div>";
+    "<div class='field-hint' style='margin-top:18px;text-align:center;font-style:italic;'>"+esc(t.certificate)+"</div>"+
+    "<div class='ps-note'>"+L.rupees+"</div>";
 }
 function renderPaySlip(){
   var overlay = document.getElementById("payslipOverlay");
@@ -7520,9 +7596,8 @@ document.getElementById("payslipPaper").addEventListener("input", function(ev){
   var input = ev.target;
   if(!input.classList || !input.classList.contains("cell-input")) return;
   if(!tabOK("em")) return;
-  var tr = input.closest("tr");
-  if(!tr) return;
-  var empId = tr.dataset.emp, monthVal = tr.dataset.month, section = tr.dataset.section, rowId = tr.dataset.row;
+  var empId = input.dataset.emp, monthVal = input.dataset.month, section = input.dataset.section, rowId = input.dataset.row;
+  if(!empId) return;
   var slip = STATE.payslipData[empId] && STATE.payslipData[empId][monthVal];
   if(!slip) return;
   var row = slip[section].find(function(r){ return r.id===rowId; });
@@ -7532,16 +7607,15 @@ document.getElementById("payslipPaper").addEventListener("input", function(ev){
   } else {
     row.amount = Number(input.value)||0;
   }
+  var pvEl = input.nextElementSibling;
+  if(pvEl && pvEl.classList.contains("pv")) pvEl.textContent = (input.dataset.field==="desc")? input.value : ((section==="deductions"? "-" : "")+slipFmt2(row.amount));
   var totals = slipTotals(slip);
   var g = document.getElementById("gross-"+empId+"-"+monthVal);
   var d = document.getElementById("ded-"+empId+"-"+monthVal);
   var n = document.getElementById("net-"+empId+"-"+monthVal);
-  if(g) g.textContent = fmt(totals.gross);
-  if(d) d.textContent = fmt(totals.totalDed);
-  if(n){
-    var lang = document.getElementById("ps_lang").value;
-    n.textContent = I18N[lang].netPay+": "+fmt(totals.net);
-  }
+  if(g) g.textContent = slipFmt2(totals.gross);
+  if(d) d.textContent = slipDedText(totals.totalDed);
+  if(n) n.textContent = slipFmt2(totals.net);
 });
 document.getElementById("payslipPaper").addEventListener("change", function(ev){
   if(ev.target.classList && ev.target.classList.contains("cell-input") && tabOK("em")) saveData();
@@ -7550,8 +7624,7 @@ document.getElementById("payslipPaper").addEventListener("click", function(ev){
   var removeBtn = ev.target.closest(".row-remove-btn");
   if(removeBtn){
     if(!tabOK("em")) return;
-    var tr = removeBtn.closest("tr");
-    var empId = tr.dataset.emp, monthVal = tr.dataset.month, section = tr.dataset.section, rowId = tr.dataset.row;
+    var empId = removeBtn.dataset.emp, monthVal = removeBtn.dataset.month, section = removeBtn.dataset.section, rowId = removeBtn.dataset.row;
     var slip = STATE.payslipData[empId] && STATE.payslipData[empId][monthVal];
     if(slip){
       slip[section] = slip[section].filter(function(r){ return r.id!==rowId; });
@@ -8459,41 +8532,44 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var ov = $("payslipOverlay"), pages = ov ? ov.querySelectorAll(".payslip-page") : [];
     if(!pages.length) return null;
     var ur = ($("ps_lang") || {}).value === "ur";
-    var L = ur ? {earn:"آمدنی", amt:"رقم", ded:"کٹوتیاں", gross:"کل آمدنی", tded:"کل کٹوتیاں", net:"خالص ادائیگی"}
-               : {earn:"Earnings", amt:"Amount", ded:"Deductions", gross:"Gross Pay", tded:"Total Deductions", net:"Net Pay"};
-    var tables = [], first = pages[0], metaTxt = [];
-    first.querySelectorAll(".payslip-meta > div").forEach(function(d){ metaTxt.push(clean(d.textContent)); });
-    function val(label){ for(var i = 0; i < metaTxt.length; i++){ var k = metaTxt[i].indexOf(":"); if(k > -1 && i === label) return clean(metaTxt[i].slice(k + 1)); } return ""; }
-    /* meta order: 0 No, 1 Name, 2 Designation, 3 Department, 4 BPS, 5 CNIC, 6 Bank, 7 Account */
-    var pers = val(0), name = val(1), desig = val(2), bps = val(4);
+    var L = ur ? {code:"کوڈ", wage:"مد", amt:"رقم", pay:"تنخواہ اور الاؤنسز", ded:"کٹوتیاں", gross:"مجموعی تنخواہ (روپے)", tded:"کٹوتیاں (روپے)", net:"خالص تنخواہ (روپے)"}
+               : {code:"Code", wage:"Wage type", amt:"Amount", pay:"Pay and Allowances", ded:"Deductions - General", gross:"Gross Pay (Rs.)", tded:"Deductions (Rs.)", net:"Net Pay (Rs.)"};
+    var tables = [], first = pages[0];
+    function kv(pg, k){ var el = pg.querySelector('.v[data-k="' + k + '"]'); return el ? clean(el.textContent) : ""; }
+    var pers = kv(first, "persNo"), name = kv(first, "name"), desig = kv(first, "desig"), bps = kv(first, "bps");
+    function pairRows(tb){
+      var out = [];
+      if(!tb) return out;
+      tb.querySelectorAll("tbody tr").forEach(function(tr){
+        if(tr.classList.contains("empty-row")) return;
+        var tds = tr.querySelectorAll("td"), cells = [];
+        for(var g = 0; g < 2; g++){
+          var code = tds[g * 3], d = tds[g * 3 + 1], a = tds[g * 3 + 2];
+          var di = d ? d.querySelector('[data-field="desc"]') : null, ai = a ? a.querySelector('[data-field="amount"]') : null;
+          if(!di && !ai){ cells.push("", "", ""); continue; }
+          var n = parseFloat(ai ? ai.value : ""), neg = a && a.classList.contains("neg") && n > 0;
+          cells.push(clean(code ? code.textContent : ""), clean(di ? di.value : ""), isFinite(n) ? ((neg ? "-" : "") + n.toLocaleString("en-US", {minimumFractionDigits:2, maximumFractionDigits:2})) : "");
+        }
+        out.push({cells:cells});
+      });
+      return out;
+    }
+    var heads = [L.code, L.wage, L.amt, L.code, L.wage, L.amt], num = [false, false, true, false, false, true];
     pages.forEach(function(pg){
-      var tbs = pg.querySelectorAll("table.payslip-table"), E = [], D = [], gross = "", tded = "";
-      function rowsOf(tb){
-        var out = [];
-        tb.querySelectorAll("tbody tr[data-row]").forEach(function(tr){
-          var d = tr.querySelector('[data-field="desc"]'), a = tr.querySelector('[data-field="amount"]');
-          out.push([clean(d ? d.value : ""), slipNum(a ? a.value : "")]);
-        });
-        return out;
-      }
-      if(tbs[0]){ E = rowsOf(tbs[0]); var fc = tbs[0].querySelectorAll("tfoot td"); gross = clean(fc[1] ? fc[1].textContent : ""); }
-      if(tbs[1]){ D = rowsOf(tbs[1]); var fd = tbs[1].querySelectorAll("tfoot td"); tded = clean(fd[1] ? fd[1].textContent : ""); }
-      var netEl = pg.querySelector(".payslip-net"), net = netEl ? clean(netEl.textContent.replace(/^[^:]*:/, "")) : "";
-      var flag = pg.querySelector(".month-flag"), month = flag ? clean(flag.textContent) : "";
-      var n = Math.max(E.length, D.length), rows = [];
-      for(var i = 0; i < n; i++){
-        var e = E[i] || ["", ""], d = D[i] || ["", ""];
-        rows.push({cells:[e[0], e[1], d[0], d[1]]});
-      }
-      tables.push({title:month, heads:[L.earn, L.amt, L.ded, L.amt], num:[false, true, false, true], rows:rows,
-        foot:[{cells:[L.gross, gross, L.tded, tded]}, {cells:[L.net, net, "", ""]}]});
+      var tbs = pg.querySelectorAll("table.payslip-table.stmt");
+      var title = kv(pg, "title") || clean((pg.querySelector(".ps-title .l3") || {}).textContent || "");
+      var gross = clean((pg.querySelector('[id^="gross-"]') || {}).textContent || ""), tded = clean((pg.querySelector('[id^="ded-"]') || {}).textContent || ""),
+          net = clean((pg.querySelector('[id^="net-"]') || {}).textContent || "");
+      var mo = pages.length > 1 ? (clean(title.replace(/^.*\(|\).*$/g, "")) + "  —  ") : "";
+      tables.push({title:mo + L.pay, heads:heads, num:num, rows:pairRows(tbs[0]), foot:[{cells:["", L.gross, gross, "", "", ""]}]});
+      tables.push({title:mo + L.ded, heads:heads, num:num, rows:pairRows(tbs[1]), foot:[{cells:["", L.tded, tded, "", L.net, net]}]});
     });
     var office = clean(STATE.officeName || "") || "Camp Office, Prosecutor General Punjab";
-    var multi = pages.length > 1, month1 = (first.querySelector(".month-flag") || {}).textContent || "";
+    var multi = pages.length > 1, month1 = clean(((first.querySelector(".ps-title .l3") || {}).textContent || "").replace(/^.*\(|\).*$/g, ""));
     var sub = [name, pers ? ("Pers # " + pers) : "", desig, bps ? ("BPS " + bps) : ""].filter(Boolean).join("   |   ");
     function pv(id){ return clean(($(id) || {}).value || ""); }
-    var tag = (pers || "emp") + "_" + (multi ? "FY" : clean(month1).replace(/\s+/g, "")) ;
-    return {tables:tables, m:{office:office, title:"Pay Slip", sub:sub, landscape:false, base:"PaySlip_" + tag + "_" + todayIso(),
+    var tag = (pers || "emp") + "_" + (multi ? "FY" : month1.replace(/\s+/g, ""));
+    return {tables:tables, m:{office:office, title:multi ? (ur ? "ماہانہ تنخواہ گوشوارہ" : "Monthly Salary Statement") : (clean((first.querySelector(".ps-title .l3") || {}).textContent || "") || "Monthly Salary Statement"), sub:sub, landscape:false, base:"PaySlip_" + tag + "_" + todayIso(),
       paper:paperFrom(pv("ps_paperSize")), sign:{left:{name:pv("ps_preparedByName"), designation:pv("ps_preparedByDesignation")},
       right:{name:pv("ps_approvedByName"), designation:pv("ps_approvedByDesignation")}}}};
   }
