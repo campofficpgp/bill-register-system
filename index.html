@@ -2040,6 +2040,7 @@ body.lang-ur .br-part{ font-size:17px; }
           <button type="button" class="btn ghost small" id="st_clear">🗑 <span class="en">Clear Account Office figures</span><span class="ur">رقمیں صاف کریں</span></button>
           <input type="file" id="st_file" accept=".xlsx,.csv,.txt,.tsv" style="display:none">
         </div>
+        <p class="hint" style="margin:10px 0 0;"><span class="en"><b>Easy way:</b> 1) choose the month above; 2) click “Upload Account Office file” and pick the RI-4720 Excel file you got (the one with JUL … JUN columns) — all figures fill by themselves; 3) check the “Agreed / Check” column.</span><span class="ur"><b>آسان طریقہ:</b> ۱) اوپر مہینہ چنیں؛ ۲) “اکاؤنٹس آفس کی فائل اپ لوڈ” دبا کر اکاؤنٹس آفس کی RI-4720 ایکسل فائل (جس میں JUL سے JUN تک کالم ہوں) چنیں — تمام رقمیں خود بھر جائیں گی؛ ۳) “Agreed / Check” والا کالم دیکھ لیں۔</span></p>
         <div id="stPasteBox" hidden style="margin-top:10px;">
           <textarea id="stPasteText" rows="6" placeholder="Paste the Account Office list here: head name, amount, progressive total (one head per line)"></textarea>
           <div class="btnbar" style="margin:8px 0 0;"><button type="button" class="btn small" id="stPasteGo"><span class="en">Fill from pasted list</span><span class="ur">پیسٹ کی گئی فہرست سے بھریں</span></button></div>
@@ -9475,6 +9476,42 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(desc && nums.length && !/^(total|grand|g\/l|sub)/i.test(desc.trim())) out.push({desc:desc, month:nums[0], prog:nums.length > 1 ? nums[1] : null});
   }
   function colIdx(ref){ var m = /^([A-Z]+)/.exec(ref) || ["", "A"], n = 0; for(var i = 0; i < m[1].length; i++) n = n * 26 + (m[1].charCodeAt(i) - 64); return n - 1; }
+  /* Account Office "RI-4720" file with one column per month (Detail Object Desc … JUL_AMOUNT … JUN_AMOUNT).
+     Month amount = the chosen month's column; progressive = July of that financial year up to the chosen month. */
+  var MCOL = {JAN:1, FEB:2, MAR:3, APR:4, MAY:5, JUN:6, JUL:7, AUG:8, SEP:9, OCT:10, NOV:11, DEC:12};
+  function multiColumn(raw, heads, mk){
+    var hi = -1, descCol = -1, cols = {}, budCol = -1, i, j;
+    for(i = 0; i < raw.length && hi < 0; i++){
+      var r = raw[i] || [];
+      for(j = 0; j < r.length; j++){ if(typeof r[j] === "string" && /^detail object desc/i.test(r[j].trim())){ hi = i; descCol = j; } }
+    }
+    if(hi < 0) return null;
+    (raw[hi] || []).forEach(function(c, k){
+      if(typeof c !== "string") return;
+      var m = /^([A-Za-z]{3})_AMOUNT$/.exec(c.trim().replace(/\s+/g, "_")); if(m && MCOL[m[1].toUpperCase()]) cols[MCOL[m[1].toUpperCase()]] = k;
+      if(/^final budget$/i.test(c.trim())) budCol = k;
+    });
+    if(Object.keys(cols).length < 2) return null;
+    var cm = +mk.slice(5), order = [], x = 7;
+    for(;;){ order.push(x); if(x === cm) break; x = x === 12 ? 1 : x + 1; }
+    var out = [], bm = 0, bn = 0, lastM = 0, fyOrder = [7,8,9,10,11,12,1,2,3,4,5,6], sumCol = {};
+    for(i = hi + 1; i < raw.length; i++){
+      var row = raw[i] || [], desc = row[descCol];
+      if(typeof desc !== "string" || !desc.trim() || /^(total|tot|grand|g\/l|sub)/i.test(desc.trim())) continue;
+      var vals = {}; fyOrder.forEach(function(mn){ var v = cols[mn] != null ? row[cols[mn]] : 0; vals[mn] = typeof v === "number" ? v : 0; sumCol[mn] = (sumCol[mn] || 0) + vals[mn]; });
+      var month = vals[cm] || 0, prog = 0; order.forEach(function(mn){ prog += vals[mn]; });
+      var code = matchCode(desc, heads);
+      if(budCol >= 0 && code){
+        var fb = typeof row[budCol] === "number" ? row[budCol] : 0, h = heads.filter(function(q){ return codeOf(q.label) === code; })[0];
+        if(fb || (h && num(h.finalBudget))){ bn++; if(h && num(h.finalBudget) === fb) bm++; }
+      }
+      if(!code && !month && !prog) continue;
+      out.push({desc:desc.trim(), month:month, prog:prog});
+    }
+    fyOrder.forEach(function(mn){ if(sumCol[mn]) lastM = mn; });
+    out.meta = {multi:true, fyBad: bn >= 5 && bm / bn < 0.5, budMatch: bm, budTotal: bn, monthTotal: sumCol[cm] || 0, lastMonth: lastM};
+    return out;
+  }
   async function readXlsx(file){
     await window.__brUI.loadLib("jszip");
     var zip = await JSZip.loadAsync(await file.arrayBuffer()), parser = new DOMParser();
@@ -9486,7 +9523,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var best = [], bestScore = -1, heads = fyHeads($("st_month").value);
     var names = Object.keys(zip.files).filter(function(n){ return /^xl\/worksheets\/sheet\d+\.xml$/.test(n); });
     for(var k = 0; k < names.length; k++){
-      var xml = parser.parseFromString(await zip.file(names[k]).async("string"), "application/xml"), rows = [];
+      var xml = parser.parseFromString(await zip.file(names[k]).async("string"), "application/xml"), rows = [], raw = [];
       Array.prototype.forEach.call(xml.getElementsByTagName("row"), function(r){
         var cells = [];
         Array.prototype.forEach.call(r.getElementsByTagName("c"), function(c){
@@ -9497,8 +9534,11 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
           else if(v) val = v.textContent;
           if(val != null && val !== "") cells[colIdx(c.getAttribute("r"))] = val;
         });
+        raw.push(cells);
         pushParsed(rows, Array.prototype.slice.call(cells).map(function(x){ return x; }).filter(function(x){ return x != null; }));
       });
+      var multi = multiColumn(raw, heads, $("st_month").value);
+      if(multi) rows = multi;
       var score = rows.filter(function(r){ return matchCode(r.desc, heads); }).length * 1000 + rows.length;
       if(score > bestScore){ bestScore = score; best = rows; }
     }
@@ -9589,7 +9629,18 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   $("st_upload").addEventListener("click", function(){ $("st_file").value = ""; $("st_file").click(); });
   $("st_file").addEventListener("change", async function(){
     var f = $("st_file").files[0]; if(!f) return;
-    try{ var list = await readFile(f); if(!list.length) throw new Error("No head names with amounts were found in this file."); applyParsed(list); }
+    try{
+      var list = await readFile(f), mt = list.meta;
+      if(mt && mt.multi && !mt.monthTotal && mt.lastMonth){
+        var fy0 = window.__brMonthly.compute($("st_month").value).fy, y0 = +fy0.slice(0, 4), sug = (mt.lastMonth >= 7 ? y0 : y0 + 1) + "-" + (mt.lastMonth < 10 ? "0" : "") + mt.lastMonth;
+        if(Array.prototype.some.call($("st_month").options, function(o){ return o.value === sug; }) && confirm("This file has no figures for " + ymLabel($("st_month").value) + ". Its latest month with figures is " + ymLabel(sug) + ". Switch to " + ymLabel(sug) + " and fill it?")){
+          $("st_month").value = sug; pendingUnmatched = []; list = await readFile(f); mt = list.meta;
+        }
+      }
+      if(!list.length) throw new Error("No head names with amounts were found in this file.");
+      if(mt && mt.multi && mt.fyBad && !confirm("The budgets in this file do not match the budgets saved for " + window.__brMonthly.compute($("st_month").value).fy + " (only " + mt.budMatch + " of " + mt.budTotal + " heads match). It may be a file of another financial year. Fill " + ymLabel($("st_month").value) + " anyway?")){ toast("Nothing was filled."); return; }
+      applyParsed(list);
+    }
     catch(e){ toast("Could not read the file: " + (e && e.message ? e.message : e)); }
   });
   $("st_paste").addEventListener("click", function(){ var b = $("stPasteBox"); b.hidden = !b.hidden; if(!b.hidden) $("stPasteText").focus(); });
