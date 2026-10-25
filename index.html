@@ -1137,6 +1137,33 @@ body.lang-ur .br-part{ font-size:17px; }
 /* ---------- print : the new on-screen pieces never reach the paper ---------- */
 @media print{
   .br-exportbar,.br-snack,.br-opt-toggle,.br-menu-list{ display:none !important; }
+  #appMain, .shell, .main-col, .app-shell{ height:auto !important; min-height:0 !important; }
+  /* Employees : print only the staff list — no buttons, filters, notes or the long rate tables — fitted to one page */
+  #panel-employees .panel-head p,
+  #panel-employees .panel-head > div:last-child,
+  #panel-employees .br-head-actions,
+  #panel-employees .field-hint,
+  #panel-employees .results-strip,
+  #panel-employees #employeeFormCard,
+  #panel-employees .entry-form,
+  #panel-employees .table-wrap ~ .card,
+  #panel-employees button,
+  #panel-employees [data-col="actions"], #panel-employees .row-actions-th, #panel-employees td.row-actions, #panel-employees tr td:last-child:not([data-col]),
+  #panel-employees th:last-child:not([data-col]),
+  #panel-employees td:last-child:not([data-col]){ display:none !important; }
+  /* wide registers : fit the table inside the page instead of cutting off the right-hand columns */
+  #panel-bill .table-wrap, #panel-cash .table-wrap, #panel-stock .table-wrap, #panel-ledger .table-wrap{ overflow:visible !important; }
+  #panel-bill table, #panel-cash table, #panel-stock table, #panel-ledger table{ width:100% !important; min-width:0 !important; font-size:8.5px; }
+  #panel-bill table th, #panel-bill table td, #panel-cash table th, #panel-cash table td,
+  #panel-stock table th, #panel-stock table td, #panel-ledger table th, #panel-ledger table td{ padding:3px 4px !important; white-space:normal; word-break:normal; overflow-wrap:normal; hyphens:none; }
+  #panel-bill table tr, #panel-cash table tr, #panel-stock table tr, #panel-ledger table tr{ break-inside:avoid; page-break-inside:avoid; }
+  #panel-bill td:nth-child(-n+4), #panel-cash td:nth-child(-n+3), #panel-stock td:nth-child(-n+3), #panel-bill td.num, #panel-cash td.num, #panel-stock td.num, #panel-ledger td.num{ white-space:nowrap !important; }
+  #panel-employees .panel-head{ margin-bottom:6px; }
+  #panel-employees .table-wrap{ overflow:visible !important; border:0 !important; box-shadow:none !important; }
+  #panel-employees table.print-cols-table{ width:100% !important; min-width:0 !important; table-layout:auto; font-size:8.5px; }
+  #panel-employees table.print-cols-table th,
+  #panel-employees table.print-cols-table td{ padding:3px 4px !important; white-space:normal; word-break:normal; overflow-wrap:normal; hyphens:none; }
+  #panel-employees table.print-cols-table tr{ break-inside:avoid; page-break-inside:avoid; }
 }
 
 </style>
@@ -6963,7 +6990,7 @@ function printCurrentView(){
   // whole month fits on the page width, regardless of the paper size chosen above. Other
   // panels are unaffected (orientation style is cleared for them).
   ensureAttPrintOrientationStyleEl().textContent =
-    (currentPanelKey()==="attendance") ? "@media print{ @page{ size: landscape; } }" : "";
+    (["attendance","employees","bill","cash","stock","ledger"].indexOf(currentPanelKey())!==-1) ? "@media print{ @page{ size: landscape; } }" : "";
   window.print();
 }
 window.addEventListener("afterprint", function(){ document.body.classList.remove("payslip-mode"); });
