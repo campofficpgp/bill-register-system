@@ -7960,6 +7960,13 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       return new Uint8Array(await r.arrayBuffer());
     }catch(e){ return null; }
   }
+  /* the emblem plus its pixel size (read from the PNG header) — used by the Word and Excel letterheads */
+  async function logoInfo(){
+    var b = await logoBytes();
+    if(!b || b.length < 24 || b[1] !== 80 || b[2] !== 78 || b[3] !== 71) return null;
+    var dv = new DataView(b.buffer, b.byteOffset, b.byteLength), w = dv.getUint32(16), h = dv.getUint32(20);
+    return (w && h) ? {bytes:b, w:w, h:h} : null;
+  }
   async function buildPdf(tables, m){
     var L = PDFLib, doc = await L.PDFDocument.create();
     var F = await doc.embedFont(L.StandardFonts.Helvetica), FB = await doc.embedFont(L.StandardFonts.HelveticaBold);
@@ -8132,9 +8139,24 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     function run(t, o){ o = o || {}; return new D.TextRun({text:String(t == null ? "" : t), font:FONT, size:o.size || 17, bold:!!o.bold, color:o.color}); }
     function para(parts, o){ o = o || {}; return new D.Paragraph({children:parts, alignment:o.align, spacing:{before:o.before || 0, after:o.after || 0}, keepNext:!!o.keepNext}); }
     var bd = {style:D.BorderStyle.SINGLE, size:4, color:"BBBBBB"}, none = {style:D.BorderStyle.NONE, size:0, color:"FFFFFF"};
-    var children = [];
-    children.push(para([run(m.office, {size:30, bold:true, color:"1B3F63"})], {align:D.AlignmentType.CENTER, after:20}));
-    children.push(para([run("Camp Office Prosecutor General Punjab  |  Supreme Court of Pakistan, Islamabad", {size:16, color:"666666"})], {align:D.AlignmentType.CENTER, after:80}));
+    var children = [], lg = await logoInfo();
+    var headParas = [
+      para([run(m.office, {size:30, bold:true, color:"1B3F63"})], {align:D.AlignmentType.CENTER, after:20}),
+      para([run("Camp Office Prosecutor General Punjab  |  Supreme Court of Pakistan, Islamabad", {size:16, color:"666666"})], {align:D.AlignmentType.CENTER, after:80})
+    ];
+    if(lg){
+      /* emblem on the LEFT, heading centred — same letterhead as the Weekly Court Roster */
+      var lh = 54, lw = Math.round(lh * lg.w / lg.h), sideW = 1500, midW = usable - 2 * sideW, nob = {top:none, bottom:none, left:none, right:none};
+      children.push(new D.Table({
+        rows:[new D.TableRow({cantSplit:true, children:[
+          new D.TableCell({children:[new D.Paragraph({children:[new D.ImageRun({type:"png", data:lg.bytes, transformation:{width:lw, height:lh}})]})],
+            width:{size:sideW, type:D.WidthType.DXA}, borders:nob, verticalAlign:D.VerticalAlign.CENTER}),
+          new D.TableCell({children:headParas, width:{size:midW, type:D.WidthType.DXA}, borders:nob, verticalAlign:D.VerticalAlign.CENTER}),
+          new D.TableCell({children:[new D.Paragraph({children:[]})], width:{size:sideW, type:D.WidthType.DXA}, borders:nob})
+        ]})],
+        width:{size:usable, type:D.WidthType.DXA}, columnWidths:[sideW, midW, sideW], layout:D.TableLayoutType.FIXED,
+        borders:{top:none, bottom:none, left:none, right:none, insideHorizontal:none, insideVertical:none}}));
+    } else { headParas.forEach(function(x){ children.push(x); }); }
     children.push(new D.Paragraph({children:[run(m.title, {size:28, bold:true, color:"1B3F63"})], alignment:D.AlignmentType.CENTER, spacing:{before:80, after:40},
       border:{top:{style:D.BorderStyle.SINGLE, size:14, color:"B8860B", space:6}}}));
     children.push(para([run(m.sub, {size:16, color:"666666"})], {align:D.AlignmentType.CENTER, after:160}));
@@ -8247,6 +8269,14 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       '<xf numFmtId="0" fontId="7" fillId="0" borderId="0" xfId="0" applyFont="1"><alignment horizontal="left" vertical="center" wrapText="1"/></xf>' +
       '<xf numFmtId="0" fontId="6" fillId="0" borderId="0" xfId="0" applyFont="1"><alignment horizontal="left" vertical="center"/></xf>' +
       '</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+    var lg = await logoInfo();
+    if(lg){   /* leave room on the left of the three heading rows for the emblem */
+      ['<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"><alignment horizontal="left" vertical="center"/>',
+       '<xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"><alignment horizontal="left" vertical="center"/>',
+       '<xf numFmtId="0" fontId="6" fillId="0" borderId="0" xfId="0" applyFont="1"><alignment horizontal="left" vertical="center"/>'].forEach(function(x){
+        styles = styles.replace(x, x.replace('<alignment horizontal="left"', '<alignment horizontal="left" indent="8"'));
+      });
+    }
     function c(ref, text, s){ return '<c r="' + ref + '" s="' + s + '" t="inlineStr"><is><t xml:space="preserve">' + xe(text) + '</t></is></c>'; }
     function cn(ref, v, s){ return '<c r="' + ref + '" s="' + s + '"><v>' + v + '</v></c>'; }
     function lines(text, w){ var n = 0; String(text == null ? "" : text).split("\n").forEach(function(p){ n += Math.max(1, Math.ceil(p.length * 1.1 / Math.max(4, w - 1))); }); return n; }
@@ -8308,27 +8338,40 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
         if(lc1 > 0) merges.push("A" + row + ":" + colName(lc1) + row);
         if(n > 1 && rc1 > rc0) merges.push(colName(rc0) + row + ":" + colName(rc1) + row);
       });
-      var xml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+      var xml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
         '<sheetPr><pageSetUpPr fitToPage="1"/></sheetPr><sheetViews><sheetView workbookViewId="0" showGridLines="0"' + (ti === 0 ? ' tabSelected="1"' : '') + '><pane ySplit="4" topLeftCell="A5" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>' +
         '<sheetFormatPr defaultRowHeight="15"/><cols>' + widths.map(function(w, i){ return '<col min="' + (i + 1) + '" max="' + (i + 1) + '" width="' + w + '" customWidth="1"/>'; }).join("") + "</cols>" +
         "<sheetData>" + rows + '</sheetData><autoFilter ref="A4:' + last + (lastData < 5 ? 5 : lastData) + '"/><mergeCells count="' + merges.length + '">' + merges.map(function(x){ return '<mergeCell ref="' + x + '"/>'; }).join("") + "</mergeCells>" +
         '<printOptions horizontalCentered="1"/><pageMargins left="0.4" right="0.4" top="0.5" bottom="0.6" header="0.25" footer="0.3"/>' +
         '<pageSetup paperSize="' + m.paper.code + '" orientation="' + (m.landscape ? "landscape" : "portrait") + '" fitToWidth="1" fitToHeight="0"/>' +
-        '<headerFooter><oddFooter>&amp;L&amp;8Camp Office, Prosecutor General Punjab&amp;R&amp;8Page &amp;P of &amp;N</oddFooter></headerFooter></worksheet>';
+        '<headerFooter><oddFooter>&amp;L&amp;8Camp Office, Prosecutor General Punjab&amp;R&amp;8Page &amp;P of &amp;N</oddFooter></headerFooter>' + (lg ? '<drawing r:id="rId1"/>' : '') + '</worksheet>';
       sheets.push({name:sheetName(t, ti), xml:xml, filterRef:"A4:" + last + (lastData < 5 ? 5 : lastData)});
     });
     var wb = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>' +
       sheets.map(function(s, i){ return '<sheet name="' + xe(s.name) + '" sheetId="' + (i + 1) + '" r:id="rId' + (i + 1) + '"/>'; }).join("") + "</sheets><definedNames>" +
       sheets.map(function(s, i){ return '<definedName name="_xlnm._FilterDatabase" localSheetId="' + i + '" hidden="1">\'' + xe(s.name).replace(/'/g, "''") + "'!" + s.filterRef.replace(/([A-Z]+)(\d+)/g, "$$$1$$$2") + "</definedName>"; }).join("") + "</definedNames></workbook>";
     var zip = new JSZip();
-    zip.file("[Content_Types].xml", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>' +
-      sheets.map(function(s, i){ return '<Override PartName="/xl/worksheets/sheet' + (i + 1) + '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'; }).join("") + "</Types>");
+    zip.file("[Content_Types].xml", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/>' + (lg ? '<Default Extension="png" ContentType="image/png"/>' : '') + '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>' +
+      sheets.map(function(s, i){ return '<Override PartName="/xl/worksheets/sheet' + (i + 1) + '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' + (lg ? '<Override PartName="/xl/drawings/drawing' + (i + 1) + '.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/>' : ''); }).join("") + "</Types>");
     zip.file("_rels/.rels", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>');
     zip.file("xl/workbook.xml", wb);
     zip.file("xl/_rels/workbook.xml.rels", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
       sheets.map(function(s, i){ return '<Relationship Id="rId' + (i + 1) + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet' + (i + 1) + '.xml"/>'; }).join("") +
       '<Relationship Id="rId' + (sheets.length + 1) + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>');
     zip.file("xl/styles.xml", styles);
+    if(lg){
+      var LH = 44, LW = Math.round(LH * lg.w / lg.h);
+      zip.file("xl/media/logo.png", lg.bytes);
+      sheets.forEach(function(s, i){
+        zip.file("xl/worksheets/_rels/sheet" + (i + 1) + ".xml.rels", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="../drawings/drawing' + (i + 1) + '.xml"/></Relationships>');
+        zip.file("xl/drawings/_rels/drawing" + (i + 1) + ".xml.rels", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/logo.png"/></Relationships>');
+        zip.file("xl/drawings/drawing" + (i + 1) + ".xml", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">' +
+          '<xdr:oneCellAnchor><xdr:from><xdr:col>0</xdr:col><xdr:colOff>38100</xdr:colOff><xdr:row>0</xdr:row><xdr:rowOff>38100</xdr:rowOff></xdr:from><xdr:ext cx="' + (LW * 9525) + '" cy="' + (LH * 9525) + '"/>' +
+          '<xdr:pic><xdr:nvPicPr><xdr:cNvPr id="2" name="Government of the Punjab" descr="Government of the Punjab"/><xdr:cNvPicPr><a:picLocks noChangeAspect="1"/></xdr:cNvPicPr></xdr:nvPicPr>' +
+          '<xdr:blipFill><a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="rId1"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill>' +
+          '<xdr:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="' + (LW * 9525) + '" cy="' + (LH * 9525) + '"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr></xdr:pic><xdr:clientData/></xdr:oneCellAnchor></xdr:wsDr>');
+      });
+    }
     sheets.forEach(function(s, i){ zip.file("xl/worksheets/sheet" + (i + 1) + ".xml", s.xml); });
     return await zip.generateAsync({type:"blob", mimeType:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
   }
