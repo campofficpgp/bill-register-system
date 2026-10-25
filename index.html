@@ -2829,6 +2829,15 @@ function mergeStates(serverState, localState){
   return normalizeData(merged);
 }
 
+/* Firestore refuses any field whose value is undefined (an old record with no createdBy, for example, made every
+   Employee edit fail with \"Unsupported field value: undefined\"). Drop such fields before writing. */
+function stripUndefined(v){
+  if(Array.isArray(v)) return v.map(stripUndefined);
+  if(v && typeof v==="object" && Object.getPrototypeOf(v)===Object.prototype){
+    var o={}; Object.keys(v).forEach(function(k){ if(v[k]!==undefined) o[k]=stripUndefined(v[k]); }); return o;
+  }
+  return v;
+}
 var saveTimer = null;
 var pendingDeletedIds = {}; /* e.g. {bills:["id1","id2"], cash:[...]} — ids removed locally since the last save,
                                 so the merge (which otherwise unions with the server copy) actually drops them
@@ -2857,7 +2866,7 @@ function saveData(deletedIds){
            realtime updates, Restore from file), where there's no separately-seeded copy to
            collide with. */
         var serverState = normalizeData(snap.exists? snap.data() : {}, false);
-        var merged = mergeStates(serverState, localSnapshot);
+        var merged = stripUndefined(mergeStates(serverState, localSnapshot));
         Object.keys(toDelete).forEach(function(field){
           if(Array.isArray(merged[field])){
             merged[field] = merged[field].filter(function(item){ return toDelete[field].indexOf(item.id) === -1; });
@@ -2885,7 +2894,7 @@ function forceOverwriteData(){
   SUPPRESS_NEXT_SNAPSHOT_RENDER = true;
   clearTimeout(saveTimer);
   pendingDeletedIds = {};
-  SHARED_DOC_REF.set(STATE).then(function(){
+  SHARED_DOC_REF.set(stripUndefined(STATE)).then(function(){
     if(document.getElementById("appMain").style.display !== "none") renderAll();
   }).catch(function(err){
     SUPPRESS_NEXT_SNAPSHOT_RENDER = false;
@@ -5529,7 +5538,7 @@ document.getElementById("e_saveBtn").addEventListener("click", function(){
      Super-Admin-only "employeeSensitive" collection via saveSensitiveFields() below. */
   if(employeeEditId){
     var idx = STATE.employees.findIndex(function(x){ return x.id===employeeEditId; });
-    rec.createdBy = STATE.employees[idx].createdBy;
+    rec.createdBy = STATE.employees[idx].createdBy || rec.createdBy || "";
     STATE.employees[idx] = rec;
     toast("Employee updated.");
   } else {
