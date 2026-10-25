@@ -1134,10 +1134,17 @@ body.lang-ur .br-part{ font-size:17px; }
 #monthlyBody tr.br-sub td{ background:color-mix(in srgb,var(--navy) 8%,var(--surface)); border-top:1px solid var(--border-strong); }
 [data-theme="night"] .br-part{ background:var(--navy-dark); color:var(--amber); border:1px solid var(--amber); }
 
+/* ---------- Pay slip letterhead : emblem on the left, heading centred ---------- */
+.payslip-header{ position:relative; }
+.payslip-header .ps-logo{ position:absolute; left:0; top:0; height:56px; width:auto; }
+.payslip-header .ps-letter{ font-size:11px; color:#666; margin:0 70px 6px; }
+@media (max-width:600px){ .payslip-header .ps-logo{ height:40px; } .payslip-header .ps-letter{ margin:0 46px 6px; font-size:10px; } }
+
 /* ---------- print : the new on-screen pieces never reach the paper ---------- */
 @media print{
   .br-exportbar,.br-snack,.br-opt-toggle,.br-menu-list{ display:none !important; }
   #appMain, .shell, .main-col, .app-shell{ height:auto !important; min-height:0 !important; }
+  body.payslip-mode .pb-print-masthead{ display:none !important; }
   /* Pay slip : dark readable column headings, no empty delete-button column, compact so it fits on one page */
   body.payslip-mode table.payslip-table th{ background:#dfe8f1 !important; color:#0f2742 !important; padding:4px 8px !important; }
   body.payslip-mode table.payslip-table td{ padding:3px 8px !important; }
@@ -7458,7 +7465,7 @@ function buildEditableSlipHtml(e, monthVal, lang, incPercent, incFromVal){
   var officeName = STATE.officeName || (lang==="ur"? "دفتر" : "Office");
 
   return "<div class='month-flag'>"+esc(monthLabel)+"</div>"+
-    "<div class='payslip-header'><h2>"+esc(officeName)+"</h2><div>"+esc(t.paySlip)+(monthLabel? (" — "+esc(monthLabel)) : "")+"</div></div>"+
+    "<div class='payslip-header'><img class='ps-logo' src='logo-punjab-govt.png' alt='Government of the Punjab'><h2>"+esc(officeName)+"</h2><div class='ps-letter'>Camp Office, Prosecutor General Punjab &nbsp;|&nbsp; \u06A9\u06CC\u0645\u067E \u0622\u0641\u0633\u060C \u067E\u0631\u0627\u0633\u06CC\u06A9\u06CC\u0648\u0679\u0631 \u062C\u0646\u0631\u0644 \u067E\u0646\u062C\u0627\u0628</div><div>"+esc(t.paySlip)+(monthLabel? (" — "+esc(monthLabel)) : "")+"</div></div>"+
     "<div class='payslip-meta'>"+
       "<div><span class='label'>"+t.employeeNo+": </span>"+esc(e.persNo)+"</div>"+
       "<div><span class='label'>"+t.name+": </span>"+esc(e.name)+"</div>"+
@@ -8439,6 +8446,83 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   }
   injectBars();
 
+  /* ---------- 2b. Pay slip : Word and Excel downloads (PDF / Print already exist) ----------
+     One table per month: Earnings | Amount | Deductions | Amount side by side, Gross / Total deductions / Net pay underneath.
+     The figures are read from the slip on screen, so whatever the clerk edited is what gets exported. */
+  function paperFrom(v){
+    if(v === "Legal") return {w:612, h:1008, tw:12240, th:20160, code:5};
+    if(v === "Foolscap") return {w:612, h:936, tw:12240, th:18720, code:14};
+    return {w:595.28, h:841.89, tw:11906, th:16838, code:9};
+  }
+  function slipNum(v){ var n = parseFloat(v); return isFinite(n) ? n.toLocaleString("en-US", {maximumFractionDigits:2}) : clean(v); }
+  function slipModel(){
+    var ov = $("payslipOverlay"), pages = ov ? ov.querySelectorAll(".payslip-page") : [];
+    if(!pages.length) return null;
+    var ur = ($("ps_lang") || {}).value === "ur";
+    var L = ur ? {earn:"آمدنی", amt:"رقم", ded:"کٹوتیاں", gross:"کل آمدنی", tded:"کل کٹوتیاں", net:"خالص ادائیگی"}
+               : {earn:"Earnings", amt:"Amount", ded:"Deductions", gross:"Gross Pay", tded:"Total Deductions", net:"Net Pay"};
+    var tables = [], first = pages[0], metaTxt = [];
+    first.querySelectorAll(".payslip-meta > div").forEach(function(d){ metaTxt.push(clean(d.textContent)); });
+    function val(label){ for(var i = 0; i < metaTxt.length; i++){ var k = metaTxt[i].indexOf(":"); if(k > -1 && i === label) return clean(metaTxt[i].slice(k + 1)); } return ""; }
+    /* meta order: 0 No, 1 Name, 2 Designation, 3 Department, 4 BPS, 5 CNIC, 6 Bank, 7 Account */
+    var pers = val(0), name = val(1), desig = val(2), bps = val(4);
+    pages.forEach(function(pg){
+      var tbs = pg.querySelectorAll("table.payslip-table"), E = [], D = [], gross = "", tded = "";
+      function rowsOf(tb){
+        var out = [];
+        tb.querySelectorAll("tbody tr[data-row]").forEach(function(tr){
+          var d = tr.querySelector('[data-field="desc"]'), a = tr.querySelector('[data-field="amount"]');
+          out.push([clean(d ? d.value : ""), slipNum(a ? a.value : "")]);
+        });
+        return out;
+      }
+      if(tbs[0]){ E = rowsOf(tbs[0]); var fc = tbs[0].querySelectorAll("tfoot td"); gross = clean(fc[1] ? fc[1].textContent : ""); }
+      if(tbs[1]){ D = rowsOf(tbs[1]); var fd = tbs[1].querySelectorAll("tfoot td"); tded = clean(fd[1] ? fd[1].textContent : ""); }
+      var netEl = pg.querySelector(".payslip-net"), net = netEl ? clean(netEl.textContent.replace(/^[^:]*:/, "")) : "";
+      var flag = pg.querySelector(".month-flag"), month = flag ? clean(flag.textContent) : "";
+      var n = Math.max(E.length, D.length), rows = [];
+      for(var i = 0; i < n; i++){
+        var e = E[i] || ["", ""], d = D[i] || ["", ""];
+        rows.push({cells:[e[0], e[1], d[0], d[1]]});
+      }
+      tables.push({title:month, heads:[L.earn, L.amt, L.ded, L.amt], num:[false, true, false, true], rows:rows,
+        foot:[{cells:[L.gross, gross, L.tded, tded]}, {cells:[L.net, net, "", ""]}]});
+    });
+    var office = clean(STATE.officeName || "") || "Camp Office, Prosecutor General Punjab";
+    var multi = pages.length > 1, month1 = (first.querySelector(".month-flag") || {}).textContent || "";
+    var sub = [name, pers ? ("Pers # " + pers) : "", desig, bps ? ("BPS " + bps) : ""].filter(Boolean).join("   |   ");
+    function pv(id){ return clean(($(id) || {}).value || ""); }
+    var tag = (pers || "emp") + "_" + (multi ? "FY" : clean(month1).replace(/\s+/g, "")) ;
+    return {tables:tables, m:{office:office, title:"Pay Slip", sub:sub, landscape:false, base:"PaySlip_" + tag + "_" + todayIso(),
+      paper:paperFrom(pv("ps_paperSize")), sign:{left:{name:pv("ps_preparedByName"), designation:pv("ps_preparedByDesignation")},
+      right:{name:pv("ps_approvedByName"), designation:pv("ps_approvedByDesignation")}}}};
+  }
+  async function runSlipExport(kind, btn){
+    var mdl = slipModel();
+    if(!mdl){ say("Open a pay slip first.", "پہلے پے سلپ کھولیں۔"); return; }
+    btn.disabled = true; say("Preparing the file…", "فائل تیار ہو رہی ہے…");
+    try{
+      if(kind === "word"){ await loadLib("docx"); download(await buildDocx(mdl.tables, mdl.m), mdl.m.base + ".docx"); }
+      else { await loadLib("jszip"); download(await buildXlsx(mdl.tables, mdl.m), mdl.m.base + ".xlsx"); }
+      say("File ready — check your Downloads folder.", "فائل تیار ہو گئی — ڈاؤن لوڈ فولڈر دیکھیں۔");
+    }catch(err){
+      console.error(err);
+      say("Could not build the file: " + (err && err.message ? err.message : err), "فائل نہیں بن سکی: " + (err && err.message ? err.message : err));
+    }finally{ btn.disabled = false; }
+  }
+  (function(){
+    var pdfBtn = $("ps_pdfBtn");
+    if(!pdfBtn || $("ps_wordBtn")) return;
+    [["word", "ps_wordBtn", "📝 Download Word", "📝 ورڈ فائل"], ["excel", "ps_excelBtn", "📊 Download Excel", "📊 ایکسل فائل"]].forEach(function(d, i, arr){
+      var b = document.createElement("button"); b.type = "button"; b.id = d[1]; b.className = "btn ghost";
+      b.setAttribute("data-perm", "x");
+      b.innerHTML = '<span class="en">' + d[2] + '</span><span class="ur">' + d[3] + '</span>';
+      b.addEventListener("click", function(){ runSlipExport(d[0], b); });
+      var prev = i === 0 ? pdfBtn : $(arr[i - 1][1]);
+      prev.insertAdjacentElement("afterend", b);
+    });
+  })();
+
   /* ---------- 3. Undo after delete ---------- */
   var snack = document.createElement("div"); snack.className = "br-snack"; snack.setAttribute("role", "status");
   document.body.appendChild(snack);
@@ -8613,7 +8697,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   })();
 
   /* test hooks (read-only helpers, harmless in production) */
-  window.__brUI = {extractTables:extractTables, buildPdf:buildPdf, buildDocx:buildDocx, buildXlsx:buildXlsx, buildCsv:buildCsv, meta:meta, loadLib:loadLib};
+  window.__brUI = {extractTables:extractTables, buildPdf:buildPdf, buildDocx:buildDocx, buildXlsx:buildXlsx, buildCsv:buildCsv, meta:meta, loadLib:loadLib, slipModel:slipModel};
 })();
 
 /* =====================================================================
