@@ -8937,6 +8937,8 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     return set;
   }
   function fyStartYm(fy){ return fy.slice(0, 4) + "-07"; }
+  /* Salary figures typed in from the Account Office file for months that have no pay slips (STATE.stmtData.hist["YYYY-MM"] = {A01101: amount, ...}) */
+  function histOf(m){ var h = STATE.stmtData && STATE.stmtData.hist; return (h && h[m]) || null; }
 
   /* ---- the numbers ---- */
   function compute(mk){
@@ -8949,14 +8951,24 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
 
     /* ===== PART 1: salary (pay slips) ===== */
     var emps = STATE.employees || [], empById = {}; emps.forEach(function(e){ empById[e.id] = e; });
-    var slipSet = slipMonthsSet();
+    var slipSet = slipMonthsSet(), availSet = {}, histMonths = [];
+    Object.keys(slipSet).forEach(function(k){ availSet[k] = 1; });
+    for(var hm = fyStart; hm <= mk; hm = shiftYm(hm, 1)){ if(!slipSet[hm] && histOf(hm)){ availSet[hm] = 1; histMonths.push(hm); } }
     var uptoOK = true;
-    for(var m = fyStart; m <= prevMk; m = shiftYm(m, 1)){ if(!slipSet[m]) uptoOK = false; }
+    for(var m = fyStart; m <= prevMk; m = shiftYm(m, 1)){ if(!availSet[m]) uptoOK = false; }
     if(mk === fyStart) uptoOK = true;                       /* first month of the year: nothing before it */
     var sRows = {}, sOrder = [], unmapped = {};
     function srow(h){ if(!sRows[h]){ sRows[h] = {head:h, budget:0, upto:0, month:0}; sOrder.push(h); } return sRows[h]; }
     heads.filter(function(h){ return isSalaryHead(h.label); }).forEach(function(h){ srow(h.label).budget = num(h.finalBudget); });
-    var empRows = [], dedBy = {}, haveMonth = !!slipSet[mk];
+    var empRows = [], dedBy = {}, haveMonth = !!availSet[mk], fromHist = !slipSet[mk] && !!availSet[mk];
+    histMonths.forEach(function(hm){
+      var hv = histOf(hm);
+      Object.keys(hv).forEach(function(code){
+        var amt = num(hv[code]); if(!amt) return;
+        var lab = headByCode(heads, code); if(!lab){ lab = "(Unmapped: " + code + ")"; unmapped[lab] = 1; }
+        var r = srow(lab); if(hm === mk) r.month += amt; else r.upto += amt;
+      });
+    });
     var ps = STATE.payslipData || {};
     Object.keys(ps).forEach(function(id){
       var e = empById[id] || {id:id, name:"(unknown employee)", bps:"", designation:"", persNo:""};
@@ -9022,7 +9034,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       var r = cashByHead[h] = cashByHead[h] || {head:h, rec:0, pay:0};
       r.rec += num(c.receipt); r.pay += num(c.payment); rec += num(c.receipt); pay += num(c.payment);
     });
-    return {mk:mk, start:start, fy:fy, sal:sal, empRows:empRows, dedBy:dedBy, uptoOK:uptoOK, haveMonth:haveMonth, unmapped:Object.keys(unmapped),
+    return {mk:mk, start:start, fy:fy, sal:sal, empRows:empRows, dedBy:dedBy, uptoOK:uptoOK, haveMonth:haveMonth, fromHist:fromHist, histMonths:histMonths, unmapped:Object.keys(unmapped),
       bud:bud, billsM:billsM, byHead:byHead, byVendor:byVendor,
       opening:opening, closing:opening + rec - pay, rec:rec, pay:pay, cashRows:cashRows, cashByHead:cashByHead};
   }
@@ -9076,6 +9088,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     /* ================= PART 1 ================= */
     html += part("PART 1 — SALARY (from employees' pay slips)", "حصہ 1 — تنخواہ (ملازمین کی پے سلپس سے)");
     var sNote = d.haveMonth ? "" : "<b>No pay slips are saved for " + esc(L) + ".</b> ";
+    if(d.histMonths && d.histMonths.length) sNote += "Salary figures of " + esc(d.histMonths.map(ymLabel).join(", ")) + " come from the Account Office file (no pay slips saved for those months). ";
     if(!d.uptoOK) sNote += "Pay slips for earlier months of this financial year are not all saved, so the year-to-date columns are not shown.";
     if(d.unmapped.length) sNote += " Unmapped items: " + esc(d.unmapped.join(", ")) + ".";
     html += card("Part 1 — Salary Heads: Budget vs Expenditure up to end of " + L,
@@ -9318,6 +9331,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(!d.uptoOK && !B.frozen) warn += "<div class='st-warn'>Pay slips of earlier months of this financial year are missing, so \"Previous Expend\" of the salary heads is incomplete — add those pay slips first.</div>";
     if(d.unmapped && d.unmapped.length && !B.frozen) warn += "<div class='st-warn'>Pay-slip items not linked to any head: " + esc(d.unmapped.join(", ")) + "</div>";
     if(!d.haveMonth && !B.frozen) warn += "<div class='st-warn'>There are no pay slips for " + esc(ml) + " yet, so salary heads show nil for the month.</div>";
+    if(d.histMonths && d.histMonths.length && !B.frozen) warn += "<div class='st-ok'>Salary figures of " + esc(d.histMonths.map(ymLabel).join(", ")) + " are taken from the Account Office file (no pay slips saved for those months).</div>";
     if(B.frozen) warn += "<div class='st-ok'>🔒 Verified" + (rec.date ? " on " + esc(rec.date) : "") + " — these figures are frozen. Change the status back to “Draft” to refresh them from current data.</div>";
 
     /* A. Office Record Copy */
