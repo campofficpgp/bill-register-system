@@ -1271,6 +1271,7 @@ body.lang-ur .br-part{ font-size:17px; }
   #panel-statement tr.st-sub td, #panel-statement tr.st-grand td{ background:#eee !important; }
   #panel-statement .st-title .t1{ font-size:14px; }
 }
+@media (max-width:600px){ .payslip-paper .ps-top img.camp-pros-print{ height:42px !important; } }
 
 </style>
 <!-- PWA: installable app -->
@@ -1280,6 +1281,7 @@ body.lang-ur .br-part{ font-size:17px; }
 <script src="/pwa.js" defer></script>
 <script>window.CAMP_REQUIRE_APPROVED=true;</script>
 <script src="/auth-guard.js" defer></script>
+<script src="/logo-control.js?v=1" defer></script>
 </head>
 <body>
 <div class="pb-print-masthead" id="pbPrintMasthead">
@@ -7620,7 +7622,7 @@ function buildEditableSlipHtml(e, monthVal, lang, incPercent, incFromVal){
   function v(k, x){ return "<span class='v' data-k='"+k+"'>"+esc(x==null? "" : x)+"</span>"; }
   var eid = esc(e.id), mid = esc(monthVal);
 
-  return "<div class='ps-top'><img class='ps-logo' src='logo-punjab-govt.png' alt='Government of the Punjab'>"+
+  return "<div class='ps-top'><img class='ps-logo' data-camp-logo='govt' src='logo-punjab-govt.png' alt='Government of the Punjab'>"+
       "<div class='ps-title'><div class='l1'>"+L.govt+"</div><div class='l2'>"+L.office+"</div><div class='l3' data-k='title'>"+L.stmt+" ("+esc(monthTitle)+")</div></div></div>"+
     "<div class='ps-sec'>"+L.persInfo+" "+v("name", e.name)+(e.soName? (" "+L.dws+" "+esc(e.soName)) : "")+"</div>"+
     "<div class='ps-row'><span>"+L.persNo+": "+v("persNo", e.persNo)+"</span><span>"+L.cnic+": "+esc(cnicDisplay)+"</span></div>"+
@@ -8109,6 +8111,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       .replace(/ /g, " ").replace(/[​-‏‪-‮]/g, "").replace(/[^\x20-\x7E¡-ÿ]/g, "?");
   }
   async function logoBytes(){
+    if(window.CampLogos && !CampLogos.show("govt")) return null;   /* switched off in the Logos control */
     try{
       var img = $("brandLogo"), src = (img && img.getAttribute("src")) || "logo-punjab-govt.png";
       var r = await fetch(src); if(!r.ok) return null;
@@ -8116,12 +8119,18 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     }catch(e){ return null; }
   }
   /* the emblem plus its pixel size (read from the PNG header) — used by the Word and Excel letterheads */
-  async function logoInfo(){
-    var b = await logoBytes();
+  function pngInfo(b){
     if(!b || b.length < 24 || b[1] !== 80 || b[2] !== 78 || b[3] !== 71) return null;
     var dv = new DataView(b.buffer, b.byteOffset, b.byteLength), w = dv.getUint32(16), h = dv.getUint32(20);
     return (w && h) ? {bytes:b, w:w, h:h} : null;
   }
+  async function logoInfo(){ return pngInfo(await logoBytes()); }
+  /* Public Prosecution Punjab logo — printed (right side of the heading) only when switched on in the Logos control */
+  async function prosBytes(){
+    if(!(window.CampLogos && CampLogos.show("pros"))) return null;
+    try{ var r = await fetch("logo-public-prosecution.png"); if(!r.ok) return null; return new Uint8Array(await r.arrayBuffer()); }catch(e){ return null; }
+  }
+  async function prosInfo(){ return pngInfo(await prosBytes()); }
   async function buildPdf(tables, m){
     var L = PDFLib, doc = await L.PDFDocument.create();
     var F = await doc.embedFont(L.StandardFonts.Helvetica), FB = await doc.embedFont(L.StandardFonts.HelveticaBold);
@@ -8232,6 +8241,9 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var top = y, emb = null, eb = await logoBytes();
     if(eb){ try{ emb = await doc.embedPng(eb); }catch(e){ emb = null; } }
     if(emb){ var eh = 40, ew = eh * emb.width / emb.height; page.drawImage(emb, {x:M, y:y - eh, width:ew, height:eh}); }
+    var pbts = await prosBytes(), pemb = null;
+    if(pbts){ try{ pemb = await doc.embedPng(pbts); }catch(e){ pemb = null; } }
+    if(pemb){ var ph2 = 40, pw2 = ph2 * pemb.width / pemb.height; page.drawImage(pemb, {x:PW - M - pw2, y:y - ph2, width:pw2, height:ph2}); }
     var h1 = san(m.office), h2 = "Camp Office Prosecutor General Punjab  |  Supreme Court of Pakistan, Islamabad";
     page.drawText(h1, {x:(PW - FB.widthOfTextAtSize(h1, 15)) / 2, y:y - 15, size:15, font:FB, color:navy});
     if(h1 !== "Camp Office, Prosecutor General Punjab")
@@ -8294,20 +8306,20 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     function run(t, o){ o = o || {}; return new D.TextRun({text:String(t == null ? "" : t), font:FONT, size:o.size || 17, bold:!!o.bold, color:o.color}); }
     function para(parts, o){ o = o || {}; return new D.Paragraph({children:parts, alignment:o.align, spacing:{before:o.before || 0, after:o.after || 0}, keepNext:!!o.keepNext}); }
     var bd = {style:D.BorderStyle.SINGLE, size:4, color:"BBBBBB"}, none = {style:D.BorderStyle.NONE, size:0, color:"FFFFFF"};
-    var children = [], lg = await logoInfo();
+    var children = [], lg = await logoInfo(), pg = await prosInfo();
     var headParas = [
       para([run(m.office, {size:30, bold:true, color:"1B3F63"})], {align:D.AlignmentType.CENTER, after:20}),
       para([run("Camp Office Prosecutor General Punjab  |  Supreme Court of Pakistan, Islamabad", {size:16, color:"666666"})], {align:D.AlignmentType.CENTER, after:80})
     ];
-    if(lg){
+    if(lg || pg){
       /* emblem on the LEFT, heading centred — same letterhead as the Weekly Court Roster */
-      var lh = 54, lw = Math.round(lh * lg.w / lg.h), sideW = 1500, midW = usable - 2 * sideW, nob = {top:none, bottom:none, left:none, right:none};
+      var lh = 54, lw = lg ? Math.round(lh * lg.w / lg.h) : 0, pw3 = pg ? Math.round(lh * pg.w / pg.h) : 0, sideW = 1500, midW = usable - 2 * sideW, nob = {top:none, bottom:none, left:none, right:none};
       children.push(new D.Table({
         rows:[new D.TableRow({cantSplit:true, children:[
-          new D.TableCell({children:[new D.Paragraph({children:[new D.ImageRun({type:"png", data:lg.bytes, transformation:{width:lw, height:lh}})]})],
+          new D.TableCell({children:[new D.Paragraph({children:lg ? [new D.ImageRun({type:"png", data:lg.bytes, transformation:{width:lw, height:lh}})] : []})],
             width:{size:sideW, type:D.WidthType.DXA}, borders:nob, verticalAlign:D.VerticalAlign.CENTER}),
           new D.TableCell({children:headParas, width:{size:midW, type:D.WidthType.DXA}, borders:nob, verticalAlign:D.VerticalAlign.CENTER}),
-          new D.TableCell({children:[new D.Paragraph({children:[]})], width:{size:sideW, type:D.WidthType.DXA}, borders:nob})
+          new D.TableCell({children:[new D.Paragraph({alignment:D.AlignmentType.RIGHT, children:pg ? [new D.ImageRun({type:"png", data:pg.bytes, transformation:{width:pw3, height:lh}})] : []})], width:{size:sideW, type:D.WidthType.DXA}, borders:nob})
         ]})],
         width:{size:usable, type:D.WidthType.DXA}, columnWidths:[sideW, midW, sideW], layout:D.TableLayoutType.FIXED,
         borders:{top:none, bottom:none, left:none, right:none, insideHorizontal:none, insideVertical:none}}));
@@ -8424,7 +8436,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       '<xf numFmtId="0" fontId="7" fillId="0" borderId="0" xfId="0" applyFont="1"><alignment horizontal="left" vertical="center" wrapText="1"/></xf>' +
       '<xf numFmtId="0" fontId="6" fillId="0" borderId="0" xfId="0" applyFont="1"><alignment horizontal="left" vertical="center"/></xf>' +
       '</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
-    var lg = await logoInfo();
+    var lg = await logoInfo(), pg = await prosInfo();
     if(lg){   /* leave room on the left of the three heading rows for the emblem */
       ['<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"><alignment horizontal="left" vertical="center"/>',
        '<xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"><alignment horizontal="left" vertical="center"/>',
@@ -8499,32 +8511,40 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
         "<sheetData>" + rows + '</sheetData><autoFilter ref="A4:' + last + (lastData < 5 ? 5 : lastData) + '"/><mergeCells count="' + merges.length + '">' + merges.map(function(x){ return '<mergeCell ref="' + x + '"/>'; }).join("") + "</mergeCells>" +
         '<printOptions horizontalCentered="1"/><pageMargins left="0.4" right="0.4" top="0.5" bottom="0.6" header="0.25" footer="0.3"/>' +
         '<pageSetup paperSize="' + m.paper.code + '" orientation="' + (m.landscape ? "landscape" : "portrait") + '" fitToWidth="1" fitToHeight="0"/>' +
-        '<headerFooter><oddFooter>&amp;L&amp;8Camp Office, Prosecutor General Punjab&amp;R&amp;8Page &amp;P of &amp;N</oddFooter></headerFooter>' + (lg ? '<drawing r:id="rId1"/>' : '') + '</worksheet>';
-      sheets.push({name:sheetName(t, ti), xml:xml, filterRef:"A4:" + last + (lastData < 5 ? 5 : lastData)});
+        '<headerFooter><oddFooter>&amp;L&amp;8Camp Office, Prosecutor General Punjab&amp;R&amp;8Page &amp;P of &amp;N</oddFooter></headerFooter>' + ((lg || pg) ? '<drawing r:id="rId1"/>' : '') + '</worksheet>';
+      sheets.push({lastW:widths[n - 1], nCols:n, name:sheetName(t, ti), xml:xml, filterRef:"A4:" + last + (lastData < 5 ? 5 : lastData)});
     });
     var wb = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>' +
       sheets.map(function(s, i){ return '<sheet name="' + xe(s.name) + '" sheetId="' + (i + 1) + '" r:id="rId' + (i + 1) + '"/>'; }).join("") + "</sheets><definedNames>" +
       sheets.map(function(s, i){ return '<definedName name="_xlnm._FilterDatabase" localSheetId="' + i + '" hidden="1">\'' + xe(s.name).replace(/'/g, "''") + "'!" + s.filterRef.replace(/([A-Z]+)(\d+)/g, "$$$1$$$2") + "</definedName>"; }).join("") + "</definedNames></workbook>";
     var zip = new JSZip();
-    zip.file("[Content_Types].xml", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/>' + (lg ? '<Default Extension="png" ContentType="image/png"/>' : '') + '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>' +
-      sheets.map(function(s, i){ return '<Override PartName="/xl/worksheets/sheet' + (i + 1) + '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' + (lg ? '<Override PartName="/xl/drawings/drawing' + (i + 1) + '.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/>' : ''); }).join("") + "</Types>");
+    zip.file("[Content_Types].xml", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/>' + ((lg || pg) ? '<Default Extension="png" ContentType="image/png"/>' : '') + '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>' +
+      sheets.map(function(s, i){ return '<Override PartName="/xl/worksheets/sheet' + (i + 1) + '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' + ((lg || pg) ? '<Override PartName="/xl/drawings/drawing' + (i + 1) + '.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/>' : ''); }).join("") + "</Types>");
     zip.file("_rels/.rels", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>');
     zip.file("xl/workbook.xml", wb);
     zip.file("xl/_rels/workbook.xml.rels", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
       sheets.map(function(s, i){ return '<Relationship Id="rId' + (i + 1) + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet' + (i + 1) + '.xml"/>'; }).join("") +
       '<Relationship Id="rId' + (sheets.length + 1) + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>');
     zip.file("xl/styles.xml", styles);
-    if(lg){
-      var LH = 44, LW = Math.round(LH * lg.w / lg.h);
-      zip.file("xl/media/logo.png", lg.bytes);
+    if(lg || pg){
+      var LH = 44, LW = lg ? Math.round(LH * lg.w / lg.h) : 0, PW2 = pg ? Math.round(LH * pg.w / pg.h) : 0;
+      if(lg) zip.file("xl/media/logo.png", lg.bytes);
+      if(pg) zip.file("xl/media/pros.png", pg.bytes);
+      var RELS = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">';
+      function pic(id, name, rid, cx, cy, col, colOff){
+        return '<xdr:oneCellAnchor><xdr:from><xdr:col>' + col + '</xdr:col><xdr:colOff>' + colOff + '</xdr:colOff><xdr:row>0</xdr:row><xdr:rowOff>38100</xdr:rowOff></xdr:from><xdr:ext cx="' + cx + '" cy="' + cy + '"/>' +
+          '<xdr:pic><xdr:nvPicPr><xdr:cNvPr id="' + id + '" name="' + name + '" descr="' + name + '"/><xdr:cNvPicPr><a:picLocks noChangeAspect="1"/></xdr:cNvPicPr></xdr:nvPicPr>' +
+          '<xdr:blipFill><a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="' + rid + '"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill>' +
+          '<xdr:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="' + cx + '" cy="' + cy + '"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr></xdr:pic><xdr:clientData/></xdr:oneCellAnchor>';
+      }
       sheets.forEach(function(s, i){
-        zip.file("xl/worksheets/_rels/sheet" + (i + 1) + ".xml.rels", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="../drawings/drawing' + (i + 1) + '.xml"/></Relationships>');
-        zip.file("xl/drawings/_rels/drawing" + (i + 1) + ".xml.rels", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/logo.png"/></Relationships>');
+        zip.file("xl/worksheets/_rels/sheet" + (i + 1) + ".xml.rels", RELS + '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="../drawings/drawing' + (i + 1) + '.xml"/></Relationships>');
+        zip.file("xl/drawings/_rels/drawing" + (i + 1) + ".xml.rels", RELS + (lg ? '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/logo.png"/>' : '') +
+          (pg ? '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/pros.png"/>' : '') + '</Relationships>');
+        var colPx = Math.round((s.lastW || 10) * 7 + 5), lastCol = Math.max(0, (s.nCols || 1) - 1);
         zip.file("xl/drawings/drawing" + (i + 1) + ".xml", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">' +
-          '<xdr:oneCellAnchor><xdr:from><xdr:col>0</xdr:col><xdr:colOff>38100</xdr:colOff><xdr:row>0</xdr:row><xdr:rowOff>38100</xdr:rowOff></xdr:from><xdr:ext cx="' + (LW * 9525) + '" cy="' + (LH * 9525) + '"/>' +
-          '<xdr:pic><xdr:nvPicPr><xdr:cNvPr id="2" name="Government of the Punjab" descr="Government of the Punjab"/><xdr:cNvPicPr><a:picLocks noChangeAspect="1"/></xdr:cNvPicPr></xdr:nvPicPr>' +
-          '<xdr:blipFill><a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="rId1"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill>' +
-          '<xdr:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="' + (LW * 9525) + '" cy="' + (LH * 9525) + '"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr></xdr:pic><xdr:clientData/></xdr:oneCellAnchor></xdr:wsDr>');
+          (lg ? pic(2, "Government of the Punjab", "rId1", LW * 9525, LH * 9525, 0, 38100) : '') +
+          (pg ? pic(3, "Public Prosecution Punjab", "rId2", PW2 * 9525, LH * 9525, lastCol, Math.max(0, (colPx - PW2 - 4) * 9525)) : '') + '</xdr:wsDr>');
       });
     }
     sheets.forEach(function(s, i){ zip.file("xl/worksheets/sheet" + (i + 1) + ".xml", s.xml); });
