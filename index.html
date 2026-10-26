@@ -1298,6 +1298,27 @@ body.lang-ur .br-part{ font-size:17px; }
 #panel-payfix .pf-ok{ background:#e6f4ea; border:1px solid #7bb98a; color:#14532d; padding:8px 12px; border-radius:var(--radius); margin-bottom:10px; font-size:13px; }
 #panel-payfix .pf-h3{ margin:18px 0 8px; font-size:15px; }
 
+/* ===== Budget Demand tab (admin only, read-only) ===== */
+#panel-budget .pf-subnav{ display:flex; flex-wrap:wrap; gap:8px; margin:0 0 14px; }
+#panel-budget .pf-sub{ border:1px solid var(--border); background:var(--surface); color:inherit; padding:7px 14px; border-radius:999px; font-weight:600; font-size:13px; cursor:pointer; }
+#panel-budget .pf-sub.active{ background:var(--navy); color:#fff; border-color:var(--navy); }
+#panel-budget .pf-bar{ display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; margin:0 0 12px; }
+#panel-budget .pf-bar .field{ min-width:140px; flex:1 1 160px; max-width:260px; margin:0; }
+#panel-budget .pf-chips{ display:flex; flex-wrap:wrap; gap:8px; margin:0 0 12px; }
+#panel-budget .pf-chip{ padding:3px 12px; border-radius:999px; border:1px solid var(--border); background:var(--surface); font-size:12px; font-weight:600; }
+#panel-budget .pf-c-ok{ background:#e6f4ea; border-color:#7bb98a; color:#14532d; }
+#panel-budget .pf-c-bad{ background:#fde8e8; border-color:#e08a8a; color:#7a1414; }
+#panel-budget .pf-tbl{ font-size:12.5px !important; }
+#panel-budget .pf-tbl td.c, #panel-budget .pf-tbl th.c{ text-align:center; }
+#panel-budget .pf-tbl td.num, #panel-budget .pf-tbl th.num{ text-align:right; font-variant-numeric:tabular-nums; }
+#panel-budget tr.pf-bad td{ background:#fff1f1 !important; }
+#panel-budget tr.pf-none td{ color:var(--muted,#667); }
+#panel-budget tr.pf-sum td{ background:color-mix(in srgb,var(--navy) 10%,var(--surface)) !important; }
+#panel-budget .pf-tick{ color:#1a7f37; } #panel-budget .pf-cross{ color:#c62828; }
+#panel-budget .pf-warn{ background:#fff4e0; border:1px solid #e8b04a; color:#6b4300; padding:8px 12px; border-radius:var(--radius); margin-bottom:10px; font-size:13px; }
+#panel-budget .pf-ok{ background:#e6f4ea; border:1px solid #7bb98a; color:#14532d; padding:8px 12px; border-radius:var(--radius); margin-bottom:10px; font-size:13px; }
+#panel-budget .pf-h3{ margin:18px 0 8px; font-size:15px; }
+
 </style>
 <!-- PWA: installable app -->
 <link rel="manifest" href="/manifest.webmanifest">
@@ -1495,6 +1516,7 @@ body.lang-ur .br-part{ font-size:17px; }
     <button class="tab-btn" data-tab="monthly"><span class="dot"></span> <span class="en">Monthly Report</span><span class="ur">ماہانہ رپورٹ</span></button>
     <button class="tab-btn" data-tab="statement"><span class="dot"></span> <span class="en">Balance Statement</span><span class="ur">ماہانہ گوشوارہ</span></button>
     <button class="tab-btn" data-tab="payfix" id="payfixTabBtn" style="display:none;"><span class="dot"></span> <span class="en">Pay Fixation</span><span class="ur">پے اسکیل / پے فکسیشن</span></button>
+    <button class="tab-btn" data-tab="budget" id="bdTabBtn" style="display:none;"><span class="dot"></span> <span class="en">Budget Demand</span><span class="ur">بجٹ ڈیمانڈ</span></button>
     <button class="tab-btn" data-tab="employees"><span class="dot"></span> <span data-i18n="nav_employees">Employees</span></button>
     <button class="tab-btn" data-tab="leave"><span class="dot"></span> <span data-i18n="nav_leave">Leave Register</span></button>
     <button class="tab-btn" data-tab="attendance"><span class="dot"></span> <span data-i18n="nav_attendance">Attendance Register</span></button>
@@ -2091,6 +2113,23 @@ body.lang-ur .br-part{ font-size:17px; }
         <button type="button" class="pf-sub" data-m="chart"><span class="en">Pay-stage chart</span><span class="ur">پے اسٹیج چارٹ</span></button>
       </div>
       <div id="pfBody"></div>
+    </section>
+
+    <section class="panel" id="panel-budget">
+      <div class="panel-head">
+        <div>
+          <h2><span class="en">Budget Demand — next financial year</span><span class="ur">بجٹ ڈیمانڈ — اگلا مالی سال</span></h2>
+          <p><span class="en">Works out the annual demand of the DDO from the latest pay slips, the Employees list and the Bill Register: Form BM-III (basic pay and increment), BM-III-A (allowances), Proforma-I (vacancy position) and Proforma-II (salary and contingent heads), with an Excel download in the old form layout. Read only — nothing here changes any data. Admin / Super Admin only.</span><span class="ur">تازہ پے سلپس، ملازمین کی فہرست اور بل رجسٹر سے ڈی ڈی او کی سالانہ ڈیمانڈ خود بناتا ہے: فارم BM-III (بنیادی تنخواہ اور انکریمنٹ)، BM-III-A (الاؤنس)، پرفارما-I (خالی آسامیاں) اور پرفارما-II (تنخواہ اور غیر تنخواہی مدیں)، پرانے فارم کی ترتیب میں ایکسل ڈاؤن لوڈ کے ساتھ۔ صرف پڑھنے کے لیے — یہاں سے کوئی ڈیٹا نہیں بدلتا۔ صرف ایڈمن / سپر ایڈمن۔</span></p>
+        </div>
+      </div>
+      <div class="pf-subnav">
+        <button type="button" class="pf-sub bd-sub active" data-m="sum"><span class="en">Summary &amp; settings</span><span class="ur">خلاصہ اور ترتیبات</span></button>
+        <button type="button" class="pf-sub bd-sub" data-m="bm3"><span class="en">BM-III Basic pay</span><span class="ur">BM-III بنیادی تنخواہ</span></button>
+        <button type="button" class="pf-sub bd-sub" data-m="bm3a"><span class="en">BM-III-A Allowances</span><span class="ur">BM-III-A الاؤنس</span></button>
+        <button type="button" class="pf-sub bd-sub" data-m="p1"><span class="en">Proforma-I Posts</span><span class="ur">پرفارما-I آسامیاں</span></button>
+        <button type="button" class="pf-sub bd-sub" data-m="p2"><span class="en">Proforma-II Heads</span><span class="ur">پرفارما-II مدیں</span></button>
+      </div>
+      <div id="bdBody"></div>
     </section>
 
     <!-- ================= EMPLOYEES ================= -->
@@ -10132,8 +10171,555 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       }
     }catch(e){}
   }, 1500);
-  window.__brPayFix = {checkEmp: checkEmp, months: months, render: render, S22: S22, S26: S26};
+  window.__brPayFix = {checkEmp: checkEmp, months: months, render: render, S22: S22, S26: S26, caRate: caRate, saAmount: saAmount, ara26: ara26, stageOf: stageOf, bpsNum: bpsNum, heads: heads, promoOf: promoOf, dLabel: dLabel};
 })();
+
+/* ================= BUDGET DEMAND (next financial year) — Form BM-III, BM-III-A, Proforma-I and II (Admin / Super Admin) =================
+   Builds the annual budget demand of the DDO from data already on this page: the latest pay slips of every employee, the Employees
+   list, the Bill Register bills (contingent heads) and the Ledger budget figures. It only READS that data. The few settings it needs
+   (sanctioned posts, % increase, ...) are kept in this browser only; nothing is written to the database. */
+(function(){
+  "use strict";
+  var panel = document.getElementById("panel-budget"), body = document.getElementById("bdBody");
+  if(!panel || !body) return;
+  var SKEY = "bd_settings_v1";
+  var MN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  function PF(){ return window.__brPayFix || null; }
+  function allowed(){ try{ return isAdmin(); }catch(e){ return false; } }
+  function $(sel){ return panel.querySelector(sel); }
+  function num(v){ return Number(v) || 0; }
+  function money(n){ return fmt(Math.round(num(n))); }
+  function T(en, ur){ return "<span class='en'>" + en + "</span><span class='ur'>" + ur + "</span>"; }
+  function mLabel(k){ var a = k.split("-"); return MN[+a[1] - 1] + " " + a[0]; }
+  function pad(n){ n = Math.round(n); return (n < 10 ? "0" : "") + n; }
+  function ceil1000(v){ return v > 0 ? Math.ceil(v / 1000 - 1e-9) * 1000 : 0; }
+
+  /* ---------- sanctioned posts (from the last Proforma-I) and the old form's frozen allowances for posts nobody holds ---------- */
+  var DEF_POSTS = [
+    {key: "APG", name: "Additional Prosecutor General", bps: 20, sanc: 2},
+    {key: "DPG", name: "Deputy Prosecutor General", bps: 18, sanc: 2},
+    {key: "SUPT", name: "Superintendent", bps: 17, sanc: 1},
+    {key: "PA", name: "Personal Assistant", bps: 17, sanc: 1},
+    {key: "ASST", name: "Assistant", bps: 16, sanc: 1},
+    {key: "STENO", name: "Stenographer", bps: 15, sanc: 1},
+    {key: "SRCLK", name: "Senior Clerk", bps: 14, sanc: 2},
+    {key: "JRCLK", name: "Junior Clerk", bps: 11, sanc: 10},
+    {key: "DRV", name: "Driver", bps: 5, sanc: 1},
+    {key: "NQ", name: "Naib Qasid", bps: 2, sanc: 8}
+  ];
+  var OLD_FROZEN = {16: {A01202: 2727, A01217: 1500, A0121N: 840}, 15: {A01202: 2349, A01217: 1500, A0121N: 930}, 14: {A01202: 3321, A01217: 1500, A0121N: 570}};
+  /* allowance columns of Form BM-III-A: [object head code, description] */
+  var ACOLS = [["A01103", "Special Pay"], ["A01105", "Qualification Pay"], ["A01216", "Qualification Allowance"], ["A01202", "House Rent Allowance"], ["A01203", "Conveyance Allowance"], ["A0120D", "Integrated Allowance"], ["A01207", "Washing Allowance"], ["A01217", "Medical Allowance"], ["A01224", "Entertainment Allowance"], ["A0121N", "Personal Allowance"], ["A01239", "Special Allowance"], ["A0124X", "Adhoc Relief Allowance 2023"], ["A0125E", "Adhoc Relief Allowance 2024"], ["A0125X", "Adhoc Relief Allowance 2026 (7%)"]];
+  var COPY_CODES = ["A01103", "A01105", "A01216", "A01202", "A0120D", "A01207", "A01217", "A01224", "A0121N", "A0124X", "A0125E"];
+
+  var mode = "sum", lastModel = null, lastState = null;
+
+  function clone(o){ return JSON.parse(JSON.stringify(o)); }
+  function settings(){
+    var s = null; try{ s = JSON.parse(localStorage.getItem(SKEY) || "null"); }catch(e){}
+    if(!s || typeof s !== "object") s = {};
+    var d = {fy: "", bm: "", vac: 1, pct: 10, base: "prev", xara: 0, honor: "", inc: 1, meth: "A", dept: "", att: "", grant: "PC21010(010)", posts: clone(DEF_POSTS)};
+    Object.keys(d).forEach(function(k){ if(s[k] == null || (k === "posts" && !(s.posts && s.posts.length))) s[k] = d[k]; });
+    return s;
+  }
+  function saveSettings(s){ try{ localStorage.setItem(SKEY, JSON.stringify(s)); }catch(e){} }
+
+  /* ---------- pay slip lines -> object head code (same mapping as the Monthly Balance Statement) ---------- */
+  function slipCode(desc, bps){
+    var d = String(desc || "").toLowerCase();
+    if(d === "basic pay") return Number(bps) >= 16 ? "A01101" : "A01151";
+    if(d === "special pay") return "A01103";
+    if(d === "qualification pay") return "A01105";
+    if(d.indexOf("house rent allowance") === 0) return "A01202";
+    if(d.indexOf("convey") === 0) return "A01203";
+    if(d === "washing allowance") return "A01207";
+    if(d.indexOf("integrated") === 0) return "A0120D";
+    if(d.indexOf("medical") === 0) return "A01217";
+    if(d === "personal allowance") return "A0121N";
+    if(d === "entertainment allowance") return "A01224";
+    if(d === "qualification allowance") return "A01216";
+    if(d === "special allowance") return "A01239";
+    if(d.indexOf("adhoc rel al 15%") === 0 || d.indexOf("adhoc relief 2022") === 0) return "A0124R";
+    if(d.indexOf("adhoc relief all 2023") === 0) return "A0124X";
+    if(d.indexOf("adhoc relief all 2024") === 0) return "A0125E";
+    if(d.indexOf("adhoc relief 2025") === 0) return "A0125P";
+    if(d.indexOf("adhoc relief 2026") === 0) return "A0125X";
+    if(d === "adj honorarium") return "A01273";
+    return null;
+  }
+  function slipSums(slip, bps){
+    var o = {}, unknown = [];
+    ((slip && slip.earnings) || []).forEach(function(l){
+      var c = slipCode(l.desc, bps);
+      if(c) o[c] = (o[c] || 0) + num(l.amount); else unknown.push(l.desc);
+    });
+    o.__unknown = unknown; return o;
+  }
+
+  function slipMonthCounts(){
+    var emps = (STATE && STATE.employees) || [], ms = PF().months(), out = [];
+    ms.forEach(function(m){
+      var n = 0; emps.forEach(function(e){ var sl = STATE.payslipData && STATE.payslipData[e.id] && STATE.payslipData[e.id][m]; if(sl && (sl.earnings || []).length) n++; });
+      out.push({m: m, n: n});
+    });
+    return out;
+  }
+  function defaultBaseMonth(){
+    var c = slipMonthCounts(), best = "", bn = -1;
+    c.forEach(function(x){ if(x.n >= bn){ bn = x.n; best = x.m; } });
+    return best;
+  }
+  function defaultTargetYear(){ var d = new Date(); return (d.getMonth() >= 6 ? d.getFullYear() : d.getFullYear() - 1) + 1; }
+  function fyLabel(y){ return y + "-" + String(y + 1).slice(2); }
+  /* number of 1-December increments that fall after the base month and before 1 July of the target year */
+  function incrementsBetween(bm, Y){
+    var a = bm.split("-"), by = +a[0], bmo = +a[1], n = 0;
+    for(var y = by; y <= Y; y++){ var m = y * 12 + 11; if(m >= by * 12 + bmo && m < Y * 12 + 6) n++; }
+    return n;
+  }
+  function nextAbove(sc, v){ if(v < sc[0]) return 0; var k = Math.floor((v - sc[0]) / sc[1]) + 1; return Math.min(k, sc[2]); }
+
+  /* ---------- ledger / bills helpers for the contingent heads ---------- */
+  function codeOf(label){ return String(label || "").split("-")[0]; }
+  function billsSum(label, fy){
+    var t = 0; (STATE.bills || []).forEach(function(b){ if(b.head === label && fyOfDate(b.date) === fy) t += num(b.gross); });
+    return t;
+  }
+  function headFigures(fy){
+    var out = {}; getHeads(fy).forEach(function(h){ out[h.label] = h; }); return out;
+  }
+  function actualOf(label, fy, figs){
+    var p = figs[label] ? num(figs[label].prior) : 0;
+    return p > 0 ? p : billsSum(label, fy);
+  }
+  function lastBillMonthIndex(fy){
+    var start = +fy.slice(0, 4), mx = -1;
+    (STATE.bills || []).forEach(function(b){
+      if(fyOfDate(b.date) !== fy) return; var m = /^(\d{4})-(\d{2})/.exec(b.date || ""); if(!m) return;
+      var idx = (+m[1] - start) * 12 + (+m[2]) - 7; if(idx > mx) mx = idx;
+    });
+    return mx;
+  }
+
+  /* ---------- the model ---------- */
+  function build(){
+    var P = PF(), S = settings(), emps = (STATE && STATE.employees) || [];
+    var M = S.bm && P.months().indexOf(S.bm) >= 0 ? S.bm : defaultBaseMonth();
+    var Y = S.fy ? +S.fy : defaultTargetYear();
+    var n = M ? incrementsBetween(M, Y) : 0;
+    var model = {S: S, Y: Y, M: M, n: n, fy: fyLabel(Y), warns: [], rows: [], vac: [], posts: []};
+    if(!M){ model.empty = true; return model; }
+    var active = emps.filter(function(e){ return /^active/i.test(String(e.status || "")) || !e.status; });
+    var postsByKey = {};
+    S.posts.forEach(function(p){ postsByKey[p.key] = p; p.filled = 0; });
+    function postKeyOf(e, b){
+      var cand = S.posts.filter(function(p){ return p.bps === b; });
+      if(!cand.length) return null;
+      if(cand.length === 1) return cand[0].key;
+      var d = String(e.designation || "").toLowerCase();
+      var pick = cand.filter(function(p){ return p.key === "SUPT" ? /superintend/.test(d) : p.key === "PA" ? /personal ass|p\.a|\bpa\b/.test(d) : false; })[0];
+      return (pick || cand[0]).key;
+    }
+    var peers = {}, peersAll = {};
+    active.forEach(function(e){
+      var r = empRow(e, M, Y, n, S, P, model);
+      if(!r) return;
+      model.rows.push(r);
+      if(r.b){ var k = postKeyOf(e, r.b); r.postKey = k; if(k) postsByKey[k].filled++; else model.warns.push(T("BPS-" + r.b + " of " + esc(e.name || "") + " has no sanctioned post in the list (add it under Proforma-I).", "BPS-" + r.b + " (" + esc(e.name || "") + ") کے لیے منظور شدہ آسامی کی فہرست میں نہیں۔")); }
+      if(r.b && !r.noSlip){ (peersAll[r.b] = peersAll[r.b] || []).push(r); var cur = peers[r.b]; if(!cur || r.basic1 < cur.basic1) peers[r.b] = r; }
+    });
+    model.rows.sort(function(a, b){ return (b.b || 0) - (a.b || 0) || String(a.e.persNo).localeCompare(String(b.e.persNo)); });
+    model.rows.forEach(function(r){ if(r.noSlip) model.warns.push(T("No pay slip for " + esc(r.e.name || "") + " in " + mLabel(M) + " — left out of the demand.", esc(r.e.name || "") + " کی " + mLabel(M) + " کی پرچی نہیں — ڈیمانڈ میں شامل نہیں۔")); });
+    model.rows = model.rows.filter(function(r){ return !r.noSlip; });
+    /* vacant posts */
+    S.posts.forEach(function(p){
+      p.vacant = p.sanc - p.filled;
+      if(p.filled > p.sanc) model.warns.push(T(esc(p.name) + ": " + p.filled + " filled but only " + p.sanc + " sanctioned — update the sanctioned number in Proforma-I.", esc(p.name) + ": بھرے ہوئے " + p.filled + " مگر منظور شدہ " + p.sanc + " — Proforma-I میں منظور شدہ تعداد درست کریں۔"));
+      for(var i = 0; i < Math.max(0, p.vacant); i++) model.vac.push(vacantRow(p, peers, peersAll, Y, P, S));
+    });
+    model.posts = S.posts;
+    model.vac.sort(function(a, b){ return b.b - a.b; });
+    model.vacCost = model.vac.reduce(function(a, v){ return a + (v.basic1 * 12 + v.rate * 7) + v.tot * 12; }, 0);
+    model.vacN = model.vac.length;
+    if(!S.vac) model.vac = [];
+    var all = model.rows.concat(model.vac);
+    model.all = all;
+    if(model.vac.some(function(v){ return v.est; })) model.warns.push(T("Vacant posts with no employee of the same BPS (frozen Adhoc Relief 2023 / 2024) are an estimate — marked 'estimate'.", "جن خالی آسامیوں کے BPS میں کوئی ملازم نہیں ان کے منجمد ARA-2023 / 2024 اندازے سے ہیں — 'estimate' لکھا ہے۔"));
+    /* totals */
+    var tot = {officers: {g: 0, h: 0, i: 0, j: 0, k: 0}, officials: {g: 0, h: 0, i: 0, j: 0, k: 0}};
+    model.monthly = {};
+    model.arainc = 0; model.arainExt = 0;
+    all.forEach(function(r){
+      var t = r.b >= 16 ? tot.officers : tot.officials;
+      r.h = r.basic1 * 12; r.j = r.rate * 7; r.k = r.h + r.j;
+      t.g += r.basic1; t.h += r.h; t.i += r.rate; t.j += r.j; t.k += r.k;
+      ACOLS.forEach(function(c){ model.monthly[c[0]] = (model.monthly[c[0]] || 0) + num(r.A[c[0]]); });
+      model.monthly.EXT = (model.monthly.EXT || 0) + num(r.A.EXT);
+      if(S.inc && r.rate > 0){ model.arainc += (P.ara26(r.basic1 + r.rate) - P.ara26(r.basic1)) * 7; if(num(S.xara) > 0) model.arainExt += (Math.floor((r.basic1 + r.rate) * num(S.xara) / 100) - Math.floor(r.basic1 * num(S.xara) / 100)) * 7; }
+    });
+    model.tot = tot;
+    /* Proforma-II salary heads */
+    var f25 = headFigures(fyLabel(Y - 2)), f26 = headFigures(fyLabel(Y - 1));
+    var sal = [];
+    function salRow(code, desc, demand, extra){
+      var label = labelOf(code);
+      sal.push({code: code, desc: desc, prev: label ? actualOf(label, fyLabel(Y - 2), f25) : 0, bud: label && f26[label] ? num(f26[label].finalBudget) : 0, demand: demand, note: extra || ""});
+    }
+    var mm = model.monthly;
+    salRow("A01101", "Basic Pay of Officers", tot.officers.k);
+    salRow("A01151", "Basic Pay of Other Staff", tot.officials.k);
+    salRow("A01103", "Special Pay", mm.A01103 * 12);
+    salRow("A01105", "Qualification Pay", mm.A01105 * 12);
+    salRow("A01202", "House Rent Allowance", mm.A01202 * 12);
+    salRow("A01203", "Conveyance Allowance", mm.A01203 * 12);
+    salRow("A01207", "Washing Allowance", mm.A01207 * 12);
+    salRow("A0120D", "Integrated Allowance", mm.A0120D * 12);
+    salRow("A01216", "Qualification Allowance", mm.A01216 * 12);
+    salRow("A01217", "Medical Allowance", mm.A01217 * 12);
+    salRow("A0121N", "Personal Allowance", mm.A0121N * 12);
+    salRow("A01224", "Entertainment Allowance", mm.A01224 * 12);
+    salRow("A01239", "Special Allowance", mm.A01239 * 12);
+    salRow("A0124R", "Adhoc Relief Allowance 2022", 0, "merged into basic from 01-07-2026");
+    salRow("A0124X", "Adhoc Relief Allowance 2023", mm.A0124X * 12);
+    salRow("A0125E", "Adhoc Relief Allowance 2024", mm.A0125E * 12);
+    salRow("A0125P", "Adhoc Relief Allowance 2025", 0, "merged into basic from 01-07-2026");
+    salRow("A0125X", "Adhoc Relief Allowance 2026 (7%)", mm.A0125X * 12 + (S.inc ? model.arainc : 0), S.inc ? "includes 7% on the December increment (7 months)" : "");
+    if(num(S.xara) > 0) sal.push({code: "—", desc: "Adhoc Relief 2027 (expected " + S.xara + "% of basic)", prev: 0, bud: 0, demand: mm.EXT * 12 + (S.inc ? model.arainExt : 0), note: "new head — fill in the code when announced"});
+    var honor = S.honor === "" || S.honor == null ? actualOf(labelOf("A01273"), fyLabel(Y - 2), f25) : num(S.honor);
+    salRow("A01273", "Honoraria", honor, S.honor === "" ? "same as FY " + fyLabel(Y - 2) + " actual (change in settings)" : "");
+    sal.forEach(function(r){ r.demand = Math.round(r.demand); });
+    model.sal = sal;
+    model.salTotal = sal.reduce(function(a, r){ return a + r.demand; }, 0);
+    model.salPrev = sal.reduce(function(a, r){ return a + r.prev; }, 0);
+    model.salBud = sal.reduce(function(a, r){ return a + r.bud; }, 0);
+    /* Proforma-II contingent heads */
+    var con = [], curFY = fyLabel(Y - 1), prevFY = fyLabel(Y - 2), figCur = f26, figPrev = f25;
+    var mEl = lastBillMonthIndex(curFY) + 1; if(mEl <= 0) mEl = 0;
+    getHeads(curFY).forEach(function(h){
+      var c = codeOf(h.label); if(/^A01/.test(c)) return;
+      var a25 = actualOf(h.label, prevFY, figPrev), spent = actualOf(h.label, curFY, figCur), bud = num(figCur[h.label] && figCur[h.label].finalBudget);
+      var ann = mEl > 0 ? spent * 12 / mEl : 0, base = S.base === "cur" ? ann : S.base === "max" ? Math.max(a25, ann) : a25;
+      var d = ceil1000(base * (1 + num(S.pct) / 100));
+      con.push({code: c, label: h.label, desc: h.label.replace(/^[A-Z0-9]+-/, ""), prev: a25, bud: bud, spent: spent, ann: ann, demand: d});
+    });
+    model.con = con; model.mEl = mEl;
+    model.conTotal = con.reduce(function(a, r){ return a + r.demand; }, 0);
+    model.conPrev = con.reduce(function(a, r){ return a + r.prev; }, 0);
+    model.conBud = con.reduce(function(a, r){ return a + r.bud; }, 0);
+    model.grand = model.salTotal + model.conTotal;
+    return model;
+  }
+  function labelOf(code){
+    var hs = getHeads(), i;
+    for(i = 0; i < hs.length; i++){ if(codeOf(hs[i].label) === code) return hs[i].label; }
+    return null;
+  }
+
+  function empRow(e, M, Y, n, S, P, model){
+    var slip = STATE.payslipData && STATE.payslipData[e.id] && STATE.payslipData[e.id][M];
+    var r = {e: e, notes: [], A: {}};
+    if(!slip || !(slip.earnings || []).length){ r.noSlip = true; return r; }
+    var recB = P.bpsNum(e.bps), b = recB, sums = slipSums(slip, recB), basic = num((sums.A01101 || 0) + (sums.A01151 || 0));
+    var sc = P.S26[b];
+    if(!b || !sc){ r.noSlip = false; r.b = 0; model.warns.push(T("BPS of " + esc(e.name || "") + " is missing — not included.", "BPS (" + esc(e.name || "") + ") درج نہیں — شامل نہیں۔")); return null; }
+    var st = P.stageOf(b, basic, true);
+    if(st == null){
+      var pr = P.promoOf(e);
+      if(pr){
+        var ob = P.bpsNum(pr.from), osc = P.S26[ob];
+        if(osc && P.stageOf(ob, basic, true) != null){
+          var inc = S.meth === "B" ? basic + osc[1] : basic, k = nextAbove(sc, inc), nb = sc[0] + sc[1] * k;
+          r.notes.push("PROVISIONAL: promoted to BPS-" + b + " on " + P.dLabel(pr.date) + "; new basic fixed at stage " + k + " (Rs. " + money(nb) + ", method " + (S.meth === "B" ? "B: one increment then next stage" : "A: next stage above the pay drawn") + ") — confirm with the promotion order");
+          model.warns.push(T("PROVISIONAL: " + esc(e.name || "") + " — promoted to BPS-" + b + "; basic fixed by method " + esc(S.meth) + " at Rs. " + money(nb) + ". Confirm with the promotion order.", "عارضی: " + esc(e.name || "") + " — BPS-" + b + " میں ترقی؛ بنیادی تنخواہ طریقہ " + esc(S.meth) + " سے " + money(nb) + " فرض کی۔ ترقی کے آرڈر سے تصدیق کریں۔"));
+          basic = nb; st = k; r.prov = true;
+        }
+      }
+    }
+    if(st == null) r.notes.push("Basic Rs. " + money(basic) + " is not on a stage of BPS-" + b + " (personal pay?) — no increment assumed");
+    var rate = sc[1], basic1 = basic, s2 = st, i;
+    for(i = 0; i < n; i++){ if(s2 != null && s2 < sc[2]){ basic1 += rate; s2++; } }
+    r.b = b; r.basic0 = basic; r.basic1 = basic1; r.stage = s2; r.rate = (s2 != null && s2 < sc[2]) ? rate : 0;
+    if(sums.__unknown.length) r.notes.push("Not counted (no object head): " + sums.__unknown.join(", "));
+    COPY_CODES.forEach(function(c){ r.A[c] = num(sums[c]); });
+    r.A.A01203 = num(sums.A01203) > 0 ? P.caRate(b, true) : 0;
+    r.A.A01239 = num(sums.A01239) > 0 ? P.saAmount(b, true) : 0;
+    r.A.A0125X = P.ara26(basic1);
+    r.A.EXT = num(S.xara) > 0 ? Math.floor(basic1 * num(S.xara) / 100) : 0;
+    r.tot = ACOLS.reduce(function(a, c){ return a + num(r.A[c[0]]); }, 0) + r.A.EXT;
+    r.slipBasicNow = num((sums.A01101 || 0) + (sums.A01151 || 0));
+    return r;
+  }
+
+  function vacantRow(p, peers, peersAll, Y, P, S){
+    var b = p.bps, sc = P.S26[b], A = {}, est = false, notes = [];
+    var peer = peers[b], pb, i;
+    if(!peer){
+      var best = null; Object.keys(peers).forEach(function(k){ if(best == null || Math.abs(k - b) < Math.abs(best - b)) best = +k; });
+      peer = best != null ? peers[best] : null; pb = best; est = true;
+    }
+    var fro = OLD_FROZEN[b] || {};
+    COPY_CODES.forEach(function(c){ A[c] = 0; });
+    if(peers[b]){
+      /* personal items (special pay, qualification pay / allowance, entertainment) belong to the person, not the post — left at 0.
+         Post-based frozen items: the highest of the employees in the same BPS; frozen Adhoc Relief 2023 / 2024: the lowest (a new joiner). */
+      var pl = peersAll[b] || [peers[b]];
+      ["A01202", "A01217", "A0121N", "A0120D", "A01207"].forEach(function(c){ A[c] = Math.max.apply(null, pl.map(function(x){ return num(x.A[c]); })); });
+      ["A0124X", "A0125E"].forEach(function(c){ A[c] = Math.min.apply(null, pl.map(function(x){ return num(x.A[c]); })); });
+    }
+    else{
+      A.A01202 = fro.A01202 != null ? fro.A01202 : (peer ? num(peer.A.A01202) : 0);
+      A.A01217 = fro.A01217 != null ? fro.A01217 : (peer ? num(peer.A.A01217) : 0);
+      A.A0121N = fro.A0121N != null ? fro.A0121N : (peer ? num(peer.A.A0121N) : 0);
+      if(peer){ var f = P.S22[b][0] / P.S22[pb][0]; A.A0124X = Math.round(num(peer.A.A0124X) * f); A.A0125E = Math.round(num(peer.A.A0125E) * f); }
+      notes.push("allowances estimated (no employee in BPS-" + b + ")");
+    }
+    A.A01203 = P.caRate(b, true); A.A01239 = P.saAmount(b, true);
+    var basic1 = sc[0]; A.A0125X = P.ara26(basic1); A.EXT = num(S.xara) > 0 ? Math.floor(basic1 * num(S.xara) / 100) : 0;
+    var r = {e: {name: "Vacant Post " + p.name, persNo: "NIL", designation: p.name, bps: String(b)}, vacant: true, est: est, postKey: p.key, b: b, basic0: basic1, basic1: basic1, stage: 0, rate: sc[1], A: A, notes: notes};
+    r.tot = ACOLS.reduce(function(a, c){ return a + num(A[c[0]]); }, 0) + A.EXT;
+    return r;
+  }
+
+  /* ---------- views ---------- */
+  function opt(v, label, cur){ return "<option value='" + esc(v) + "'" + (String(v) === String(cur) ? " selected" : "") + ">" + esc(label) + "</option>"; }
+  function viewSum(m){
+    var S = m.S, P = PF();
+    var cnt = slipMonthCounts();
+    var bmOpts = cnt.map(function(x){ return opt(x.m, mLabel(x.m) + " (" + x.n + " slips)", m.M); }).join("");
+    var y0 = defaultTargetYear(), fyOpts = [y0, y0 + 1].map(function(y){ return opt(y, "FY " + fyLabel(y), m.Y); }).join("");
+    var h = "";
+    if(m.empty) return "<div class='pf-warn'>" + T("No pay slips are saved yet, so the demand cannot be calculated.", "ابھی کوئی پے سلپ محفوظ نہیں، اس لیے ڈیمانڈ نہیں بن سکتی۔") + "</div>";
+    h += "<div class='pf-chips'><span class='pf-chip pf-c-ok'>" + T("Budget demand", "بجٹ ڈیمانڈ") + " " + m.fy + ": Rs. " + money(m.grand) + "</span><span class='pf-chip'>" + T("Salary", "تنخواہ") + ": " + money(m.salTotal) + "</span><span class='pf-chip'>" + T("Contingent", "غیر تنخواہی") + ": " + money(m.conTotal) + "</span><span class='pf-chip'>" + T("Vacant posts " + (S.vac ? "included" : "left out") + ": " + m.vacN + " posts, Rs. " + money(m.vacCost), "خالی آسامیاں " + (S.vac ? "شامل" : "شامل نہیں") + ": " + m.vacN + "، " + money(m.vacCost)) + "</span></div>";
+    if(m.warns.length){ h += "<div class='pf-warn'><b>" + T("Please check", "براہ کرم دیکھ لیں") + ":</b><br>" + m.warns.join("<br>") + "</div>"; }
+    h += "<div class='table-wrap'><table class='pf-tbl'><thead><tr><th>" + T("Comparison", "موازنہ") + "</th><th class='num'>" + T("Salary", "تنخواہ") + "</th><th class='num'>" + T("Contingent", "غیر تنخواہی") + "</th><th class='num'>" + T("Total", "کل") + "</th></tr></thead><tbody>";
+    h += "<tr><td>" + T("Actual spent FY " + fyLabel(m.Y - 2), "اصل خرچ مالی سال " + fyLabel(m.Y - 2)) + "</td><td class='num'>" + money(m.salPrev) + "</td><td class='num'>" + money(m.conPrev) + "</td><td class='num'>" + money(m.salPrev + m.conPrev) + "</td></tr>";
+    h += "<tr><td>" + T("Budget FY " + fyLabel(m.Y - 1) + " (running year)", "بجٹ مالی سال " + fyLabel(m.Y - 1) + " (جاری سال)") + "</td><td class='num'>" + money(m.salBud) + "</td><td class='num'>" + money(m.conBud) + "</td><td class='num'>" + money(m.salBud + m.conBud) + "</td></tr>";
+    h += "<tr class='pf-sum'><td><b>" + T("DEMAND FY " + m.fy, "ڈیمانڈ مالی سال " + m.fy) + "</b></td><td class='num'><b>" + money(m.salTotal) + "</b></td><td class='num'><b>" + money(m.conTotal) + "</b></td><td class='num'><b>" + money(m.grand) + "</b></td></tr></tbody></table></div>";
+    h += "<h3 class='pf-h3'>" + T("Settings", "ترتیبات") + "</h3><div class='pf-bar'>" +
+      "<div class='field'><label>" + T("Demand for", "ڈیمانڈ برائے") + "</label><select id='bd_fy'>" + fyOpts + "</select></div>" +
+      "<div class='field'><label>" + T("Take pay slips of", "پرچیاں کس مہینے کی لیں") + "</label><select id='bd_bm'>" + bmOpts + "</select></div>" +
+      "<div class='field'><label>" + T("Contingent: increase %", "غیر تنخواہی: اضافہ فیصد") + "</label><input id='bd_pct' inputmode='decimal' value='" + esc(S.pct) + "'></div>" +
+      "<div class='field'><label>" + T("Contingent base", "غیر تنخواہی کی بنیاد") + "</label><select id='bd_base'>" + opt("prev", "Actual FY " + fyLabel(m.Y - 2), S.base) + opt("cur", "Running year, annualised", S.base) + opt("max", "Higher of the two", S.base) + "</select></div>" +
+      "<div class='field'><label>" + T("Expected new Adhoc Relief 2027 (% of basic)", "متوقع نیا ایڈہاک ریلیف 2027 (بنیادی کا %)") + "</label><input id='bd_xara' inputmode='decimal' value='" + esc(S.xara) + "'></div>" +
+      "<div class='field'><label>" + T("Honoraria (Rs., yearly)", "اعزازیہ (سالانہ روپے)") + "</label><input id='bd_honor' inputmode='numeric' value='" + esc(S.honor) + "' placeholder='" + money(m.sal.filter(function(r){ return r.code === "A01273"; })[0].demand) + "'></div>" +
+      "<div class='field'><label>" + T("Promotion fixation method", "ترقی پر تعین کا طریقہ") + "</label><select id='bd_meth'>" + opt("A", "A: next stage above the pay drawn", S.meth) + opt("B", "B: one increment, then next stage", S.meth) + "</select></div>" +
+      "<div class='field'><label>" + T("Include vacant posts (as in the old form)", "خالی آسامیاں شامل (پرانے فارم کی طرح)") + "</label><select id='bd_vac'>" + opt(1, "Yes", S.vac) + opt(0, "No", S.vac) + "</select></div>" +
+      "<div class='field'><label>" + T("Include 7% ARA on the December increment", "دسمبر کے انکریمنٹ پر 7% ARA شامل") + "</label><select id='bd_inc'>" + opt(1, "Yes", S.inc) + opt(0, "No", S.inc) + "</select></div>" +
+      "</div><div class='pf-bar'><div class='field'><label>Department</label><input id='bd_dept' value='" + esc(S.dept) + "'></div><div class='field'><label>Attached Department</label><input id='bd_att' value='" + esc(S.att) + "'></div><div class='field'><label>Grant No.</label><input id='bd_grant' value='" + esc(S.grant) + "'></div></div>";
+    h += "<div class='pf-bar'><button type='button' class='btn small' id='bd_xl'>⬇ " + T("Download Excel (all forms)", "ایکسل ڈاؤن لوڈ (تمام فارم)") + "</button></div>";
+    h += "<p class='hint'>" + T("How it is worked out: basic pay of each employee = the pay slip of the chosen month on the 2026 scale, plus the 1 December increment that falls before 1 July " + m.Y + " (" + m.n + " increment" + (m.n === 1 ? "" : "s") + "), then 12 months; the 1 December " + m.Y + " increment is added for 7 months (as in the old BM-III). Allowances are copied from the pay slip; Conveyance, Special Allowance and ARA-2026 (7%) are recalculated for the new basic; ARA-2022 and ARA-2025 are gone (merged into basic). Vacant posts use the minimum of the scale. The 2026 scale is assumed to stay in force. Contingent heads come from the bills in the Bill Register. Settings are kept in this browser only.", "حساب کیسے بنتا ہے: ہر ملازم کی بنیادی تنخواہ = منتخب مہینے کی پرچی (اسکیل 2026) + یکم جولائی " + m.Y + " سے پہلے آنے والا یکم دسمبر کا انکریمنٹ (" + m.n + ")، پھر 12 ماہ؛ یکم دسمبر " + m.Y + " کا انکریمنٹ 7 ماہ کے لیے الگ (پرانے BM-III کی طرح)۔ الاؤنس پرچی سے؛ کنوینس، اسپیشل الاؤنس اور ARA-2026 (7%) نئی بنیادی پر دوبارہ؛ ARA-2022 اور ARA-2025 ختم (بنیادی میں ضم)۔ خالی آسامیاں اسکیل کی کم از کم پر۔ فرض ہے کہ اسکیل 2026 جاری رہے گا۔ غیر تنخواہی مدیں بل رجسٹر کے بلوں سے آتی ہیں۔ ترتیبات صرف اسی براؤزر میں محفوظ ہیں۔") + "</p>";
+    return h;
+  }
+
+  function viewBM3(m){
+    if(m.empty) return viewSum(m);
+    var P = PF(), h = "<div class='pf-bar'><button type='button' class='btn small' id='bd_xl'>⬇ " + T("Download Excel (all forms)", "ایکسل ڈاؤن لوڈ (تمام فارم)") + "</button></div><p class='hint'>" + T("Form BM-III — Details of sanctioned posts for permanent expenditure, FY " + m.fy + ". Basic pay as on 01-07-" + m.Y + "; increment falling due on 01 December " + m.Y + " for 7 months.", "فارم BM-III — مستقل اخراجات کے لیے منظور شدہ آسامیاں، مالی سال " + m.fy + "۔ بنیادی تنخواہ یکم جولائی " + m.Y + " کے مطابق؛ یکم دسمبر " + m.Y + " کا انکریمنٹ 7 ماہ کے لیے۔") + "</p>";
+    h += "<div class='table-wrap'><table class='pf-tbl'><thead><tr><th class='c'>#</th><th>" + T("Name", "نام") + "</th><th>" + T("Designation", "عہدہ") + "</th><th>" + T("Personal No.", "پرسنل نمبر") + "</th><th class='c'>BPS</th><th class='num'>" + T("Basic pay 01-07-" + m.Y, "بنیادی یکم جولائی " + m.Y) + "</th><th class='num'>" + T("12 months", "12 ماہ") + "</th><th class='num'>" + T("Increment rate", "انکریمنٹ ریٹ") + "</th><th class='num'>" + T("7 months", "7 ماہ") + "</th><th class='num'>" + T("Total provision", "کل رقم") + "</th></tr></thead><tbody>";
+    function block(rows, label, t){
+      var i = 0;
+      rows.forEach(function(r){
+        i++; h += "<tr" + (r.vacant ? " class='pf-none'" : r.prov ? " class='pf-bad'" : "") + "><td class='c'>" + i + "</td><td>" + esc(r.e.name || "") + (r.prov ? " <i>(provisional)</i>" : "") + "</td><td>" + esc(r.e.designation || "") + "</td><td>" + esc(r.e.persNo || "") + "</td><td class='c'>" + r.b + "</td><td class='num'>" + money(r.basic1) + "</td><td class='num'>" + money(r.h) + "</td><td class='num'>" + money(r.rate) + "</td><td class='num'>" + money(r.j) + "</td><td class='num'>" + money(r.k) + "</td></tr>";
+      });
+      h += "<tr class='pf-sum'><td colspan='5'><b>" + label + "</b></td><td class='num'><b>" + money(t.g) + "</b></td><td class='num'><b>" + money(t.h) + "</b></td><td class='num'><b>" + money(t.i) + "</b></td><td class='num'><b>" + money(t.j) + "</b></td><td class='num'><b>" + money(t.k) + "</b></td></tr>";
+    }
+    block(m.all.filter(function(r){ return r.b >= 16; }), T("Total Officers", "کل افسران"), m.tot.officers);
+    block(m.all.filter(function(r){ return r.b < 16; }), T("Total Officials", "کل اہلکار"), m.tot.officials);
+    h += "</tbody></table></div>";
+    var nts = m.all.filter(function(r){ return r.notes.length; });
+    if(nts.length) h += "<p class='hint'>" + nts.map(function(r){ return "<b>" + esc(r.e.name || "") + ":</b> " + esc(r.notes.join("; ")); }).join("<br>") + "</p>";
+    return h;
+  }
+
+  function viewBM3A(m){
+    if(m.empty) return viewSum(m);
+    var cols = ACOLS.slice(); var hasExt = num(m.S.xara) > 0;
+    var h = "<div class='pf-bar'><button type='button' class='btn small' id='bd_xl'>⬇ " + T("Download Excel (all forms)", "ایکسل ڈاؤن لوڈ (تمام فارم)") + "</button></div><p class='hint'>" + T("Form BM-III-A — Details of allowances for sanctioned posts (monthly amounts as on 01-07-" + m.Y + ").", "فارم BM-III-A — منظور شدہ آسامیوں کے الاؤنس (ماہانہ رقم، یکم جولائی " + m.Y + " کے مطابق)۔") + "</p>";
+    h += "<div class='table-wrap'><table class='pf-tbl'><thead><tr><th class='c'>#</th><th>" + T("Name", "نام") + "</th><th>BPS</th>" + cols.map(function(c){ return "<th class='num' title='" + esc(c[1]) + "'>" + c[0] + "<br><small>" + esc(c[1]) + "</small></th>"; }).join("") + (hasExt ? "<th class='num'>ARA 2027<br><small>expected</small></th>" : "") + "<th class='num'>" + T("Total", "کل") + "</th></tr></thead><tbody>";
+    m.all.forEach(function(r, i){
+      h += "<tr" + (r.vacant ? " class='pf-none'" : "") + "><td class='c'>" + (i + 1) + "</td><td>" + esc(r.e.name || "") + "</td><td class='c'>" + r.b + "</td>" + cols.map(function(c){ return "<td class='num'>" + money(r.A[c[0]]) + "</td>"; }).join("") + (hasExt ? "<td class='num'>" + money(r.A.EXT) + "</td>" : "") + "<td class='num'><b>" + money(r.tot) + "</b></td></tr>";
+    });
+    var t1 = 0; cols.forEach(function(c){ t1 += num(m.monthly[c[0]]); }); t1 += num(m.monthly.EXT);
+    h += "<tr class='pf-sum'><td colspan='3'><b>" + T("Total one month", "ایک ماہ کا کل") + "</b></td>" + cols.map(function(c){ return "<td class='num'><b>" + money(m.monthly[c[0]]) + "</b></td>"; }).join("") + (hasExt ? "<td class='num'><b>" + money(m.monthly.EXT) + "</b></td>" : "") + "<td class='num'><b>" + money(t1) + "</b></td></tr>";
+    h += "<tr class='pf-sum'><td colspan='3'><b>" + T("Total 12 months", "12 ماہ کا کل") + "</b></td>" + cols.map(function(c){ return "<td class='num'><b>" + money(num(m.monthly[c[0]]) * 12) + "</b></td>"; }).join("") + (hasExt ? "<td class='num'><b>" + money(num(m.monthly.EXT) * 12) + "</b></td>" : "") + "<td class='num'><b>" + money(t1 * 12) + "</b></td></tr></tbody></table></div>";
+    return h;
+  }
+
+  function viewP1(m){
+    if(m.empty) return viewSum(m);
+    var h = "<div class='pf-bar'><button type='button' class='btn small' id='bd_xl'>⬇ " + T("Download Excel (all forms)", "ایکسل ڈاؤن لوڈ (تمام فارم)") + "</button></div><p class='hint'>" + T("Proforma-I — Vacancy position. 'Filled' is counted from the Employees list by BPS; change the sanctioned number where the sanction has changed.", "پرفارما-I — خالی آسامیوں کی صورت۔ 'بھرے ہوئے' ملازمین کی فہرست سے BPS کے مطابق گنے جاتے ہیں؛ جہاں منظوری بدلی ہو وہاں منظور شدہ تعداد بدلیں۔") + "</p>";
+    h += "<div class='table-wrap'><table class='pf-tbl'><thead><tr><th class='c'>#</th><th>" + T("Name of post", "آسامی کا نام") + "</th><th class='c'>BPS</th><th class='c'>" + T("Sanctioned", "منظور شدہ") + "</th><th class='c'>" + T("Filled", "بھری ہوئی") + "</th><th class='c'>" + T("Vacant", "خالی") + "</th><th class='c'>OSD</th></tr></thead><tbody>";
+    var ts = 0, tf = 0, tv = 0;
+    m.posts.forEach(function(p, i){
+      ts += p.sanc; tf += p.filled; tv += Math.max(0, p.vacant);
+      h += "<tr><td class='c'>" + (i + 1) + "</td><td>" + esc(p.name) + "</td><td class='c'>" + p.bps + "</td><td class='c'><input class='bd-sanc' data-k='" + esc(p.key) + "' inputmode='numeric' style='width:64px;text-align:center' value='" + p.sanc + "'></td><td class='c'>" + p.filled + "</td><td class='c'" + (p.vacant < 0 ? " style='color:#c62828'" : "") + ">" + p.vacant + "</td><td class='c'>0</td></tr>";
+    });
+    h += "<tr class='pf-sum'><td colspan='3'><b>" + T("Grand total", "کل") + "</b></td><td class='c'><b>" + ts + "</b></td><td class='c'><b>" + tf + "</b></td><td class='c'><b>" + tv + "</b></td><td class='c'><b>0</b></td></tr></tbody></table></div>";
+    return h;
+  }
+
+  function viewP2(m){
+    if(m.empty) return viewSum(m);
+    var h = "<div class='pf-bar'><button type='button' class='btn small' id='bd_xl'>⬇ " + T("Download Excel (all forms)", "ایکسل ڈاؤن لوڈ (تمام فارم)") + "</button></div><p class='hint'>" + T("Proforma-II — Annual demand FY " + m.fy + " (salary heads from BM-III / BM-III-A; contingent heads from the bills).", "پرفارما-II — سالانہ ڈیمانڈ " + m.fy + " (تنخواہ کی مدیں BM-III / BM-III-A سے؛ غیر تنخواہی مدیں بلوں سے)۔") + "</p>";
+    h += "<h3 class='pf-h3'>" + T("Salary heads", "تنخواہ کی مدیں") + "</h3><div class='table-wrap'><table class='pf-tbl'><thead><tr><th>" + T("Object head", "مد") + "</th><th>" + T("Description", "تفصیل") + "</th><th class='num'>" + T("Actual FY " + fyLabel(m.Y - 2), "اصل " + fyLabel(m.Y - 2)) + "</th><th class='num'>" + T("Budget FY " + fyLabel(m.Y - 1), "بجٹ " + fyLabel(m.Y - 1)) + "</th><th class='num'>" + T("Demand FY " + m.fy, "ڈیمانڈ " + m.fy) + "</th></tr></thead><tbody>";
+    m.sal.forEach(function(r){ h += "<tr><td>" + esc(r.code) + "</td><td>" + esc(r.desc) + (r.note ? " <i>(" + esc(r.note) + ")</i>" : "") + "</td><td class='num'>" + money(r.prev) + "</td><td class='num'>" + money(r.bud) + "</td><td class='num'>" + money(r.demand) + "</td></tr>"; });
+    h += "<tr class='pf-sum'><td colspan='2'><b>" + T("Grand total — salary", "کل — تنخواہ") + "</b></td><td class='num'><b>" + money(m.salPrev) + "</b></td><td class='num'><b>" + money(m.salBud) + "</b></td><td class='num'><b>" + money(m.salTotal) + "</b></td></tr></tbody></table></div>";
+    h += "<h3 class='pf-h3'>" + T("Contingent heads", "غیر تنخواہی مدیں") + "</h3><div class='table-wrap'><table class='pf-tbl'><thead><tr><th>" + T("Object head", "مد") + "</th><th>" + T("Description", "تفصیل") + "</th><th class='num'>" + T("Actual FY " + fyLabel(m.Y - 2), "اصل " + fyLabel(m.Y - 2)) + "</th><th class='num'>" + T("Budget FY " + fyLabel(m.Y - 1), "بجٹ " + fyLabel(m.Y - 1)) + "</th><th class='num'>" + T("Spent so far " + fyLabel(m.Y - 1), "اب تک خرچ " + fyLabel(m.Y - 1)) + "</th><th class='num'>" + T("Demand FY " + m.fy, "ڈیمانڈ " + m.fy) + "</th></tr></thead><tbody>";
+    m.con.forEach(function(r){ if(!(r.prev || r.bud || r.spent || r.demand)) return; h += "<tr><td>" + esc(r.code) + "</td><td>" + esc(r.desc) + "</td><td class='num'>" + money(r.prev) + "</td><td class='num'>" + money(r.bud) + "</td><td class='num'>" + money(r.spent) + "</td><td class='num'>" + money(r.demand) + "</td></tr>"; });
+    h += "<tr class='pf-sum'><td colspan='2'><b>" + T("Grand total — contingent", "کل — غیر تنخواہی") + "</b></td><td class='num'><b>" + money(m.conPrev) + "</b></td><td class='num'><b>" + money(m.conBud) + "</b></td><td class='num'><b>" + money(m.con.reduce(function(a, r){ return a + r.spent; }, 0)) + "</b></td><td class='num'><b>" + money(m.conTotal) + "</b></td></tr></tbody></table></div>";
+    h += "<p class='hint'>" + T("Contingent demand = base × (1 + " + esc(m.S.pct) + "%), rounded up to the next thousand. Base is chosen in the Summary settings.", "غیر تنخواہی ڈیمانڈ = بنیاد × (1 + " + esc(m.S.pct) + "%)، اگلے ہزار تک۔ بنیاد خلاصہ کی ترتیبات میں چنی جاتی ہے۔") + "</p>";
+    return h;
+  }
+
+  function render(){
+    if(!allowed()){ body.innerHTML = "<div class='pf-warn'>" + T("This section is only for Admin / Super Admin.", "یہ حصہ صرف ایڈمن / سپر ایڈمن کے لیے ہے۔") + "</div>"; return; }
+    if(!PF()){ body.innerHTML = "<div class='pf-warn'>Pay Fixation module is not loaded.</div>"; return; }
+    panel.querySelectorAll(".bd-sub").forEach(function(b){ b.classList.toggle("active", b.getAttribute("data-m") === mode); });
+    try{
+      lastModel = build();
+      body.innerHTML = mode === "sum" ? viewSum(lastModel) : mode === "bm3" ? viewBM3(lastModel) : mode === "bm3a" ? viewBM3A(lastModel) : mode === "p1" ? viewP1(lastModel) : viewP2(lastModel);
+    }catch(err){ body.innerHTML = "<div class='pf-warn'>" + esc(String(err && err.message || err)) + "</div>"; if(window.console) console.error(err); }
+    lastState = STATE;
+  }
+
+  /* ---------- Excel (old form layout) ---------- */
+  function colName(i){ var s = ""; i++; while(i > 0){ var r = (i - 1) % 26; s = String.fromCharCode(65 + r) + s; i = Math.floor((i - 1) / 26); } return s; }
+  function sheetFrom(rows, merges, widths){
+    var ws = {}, maxR = 0, maxC = 0;
+    rows.forEach(function(row, r){
+      row.forEach(function(v, c){
+        if(v == null || v === "") return;
+        var ref = colName(c) + (r + 1), cell;
+        if(typeof v === "object" && v.f != null) cell = {t: "n", f: v.f, v: v.v != null ? v.v : 0};
+        else if(typeof v === "number") cell = {t: "n", v: v};
+        else cell = {t: "s", v: String(v)};
+        ws[ref] = cell; if(r > maxR) maxR = r; if(c > maxC) maxC = c;
+      });
+    });
+    ws["!ref"] = "A1:" + colName(maxC) + (maxR + 1);
+    if(merges) ws["!merges"] = merges.map(function(a){ return {s: {r: a[0], c: a[1]}, e: {r: a[2], c: a[3]}}; });
+    if(widths) ws["!cols"] = widths.map(function(w){ return {wch: w}; });
+    return ws;
+  }
+  function F(f, v){ return {f: f, v: v}; }
+  function sign(rows, col){
+    var sg = ["Muhammad Junaid Aslam Khan Niazi", "Personal Assistant/DDO", "Camp Office PGP, Supreme Court of Pakistan", "Islamabad", "DDO Code RI-4720"];
+    rows.push([]); sg.forEach(function(t){ var r = []; r[col] = t; rows.push(r); });
+  }
+  function exportXlsx(){
+    var m = lastModel; if(!m || m.empty){ toast("Nothing to export yet"); return; }
+    var S = m.S, wb = XLSX.utils.book_new(), i;
+    /* 1. Basic Pay and Increment (BM-III) */
+    var r1 = [], mg1 = [];
+    r1.push([1, "Form BM-III Details of Sanctioned Posts for Permanent Expenditure Estimates FY. " + m.fy]);
+    r1.push([2, "Department", S.dept]); r1.push([3, "Attached Department (Where applicable)", S.att]); r1.push([4, "Grant No.", S.grant]);
+    r1.push([5, "Fund Centre Name", "Camp Office PGP, Supreme Court of Pakistan, Islamabad"]); r1.push([6, "Fund Centre Code (DDO Code)", "RI-4720"]); r1.push([7, "Sub-Detailed Function", "Public Order and Safety Affairs 036 Administration"]);
+    r1.push([]);
+    r1.push(["Sr. No", "Name", "Designation", "Personal No. (As per Pay Roll)", "BPS", "Male/ Female", "Basic Pay as on 01-07-" + m.Y, "Annualised Basic Pay 1st July " + m.Y + " to 30th June " + (m.Y + 1) + " (12 Months)", "Rate of Annual Increment due on 01 December " + m.Y, "Amount of Increment for 07 Months (Col 15*7)", "Total Provision of Basic Pay for " + m.fy]);
+    function bmBlock(rows, label){
+      var first = r1.length + 1, k = 0;
+      rows.forEach(function(r){
+        k++; var rr = r1.length + 1;
+        r1.push([k, r.e.name || "", r.e.designation || "", r.e.persNo || "", r.b, "Male", r.basic1, F("G" + rr + "*12", r.h), r.rate, F("I" + rr + "*7", r.j), F("H" + rr + "+J" + rr, r.k)]);
+      });
+      var last = r1.length, t = r1.length + 1;
+      r1.push([label, "", "", "", "", "", F("SUM(G" + first + ":G" + last + ")", rows.reduce(function(a, r){ return a + r.basic1; }, 0)), F("SUM(H" + first + ":H" + last + ")", rows.reduce(function(a, r){ return a + r.h; }, 0)), F("SUM(I" + first + ":I" + last + ")", rows.reduce(function(a, r){ return a + r.rate; }, 0)), F("SUM(J" + first + ":J" + last + ")", rows.reduce(function(a, r){ return a + r.j; }, 0)), F("SUM(K" + first + ":K" + last + ")", rows.reduce(function(a, r){ return a + r.k; }, 0))]);
+      mg1.push([t - 1, 0, t - 1, 5]);
+    }
+    bmBlock(m.all.filter(function(r){ return r.b >= 16; }), "Total Officers");
+    bmBlock(m.all.filter(function(r){ return r.b < 16; }), "Total Officials");
+    sign(r1, 8);
+    XLSX.utils.book_append_sheet(wb, sheetFrom(r1, mg1, [8, 28, 24, 14, 6, 10, 14, 16, 14, 14, 16]), "Basic Pay and Increment");
+    /* 2. Allowances (BM-III-A) */
+    var r2 = [], hasExt = num(S.xara) > 0;
+    r2.push(["BM-III-A Details of Allowances for Sanctioned Posts FY. " + m.fy]); r2.push(["OFFICE OF THE PROSECUTOR GENERAL PUNJAB"]); r2.push(["CAMP OFFICE SUPREME COURT OF PAKISTAN, ISLAMABAD"]); r2.push(["PUBLIC ORDER AND SAFETY AFFAIRS 036 ADMINISTRATION"]);
+    var hd1 = ["Sr. #", "Name", "Designation/BPS", "Personal NO."], hd2 = ["", "", "", ""];
+    ACOLS.forEach(function(c){ hd1.push(c[0]); hd2.push(c[1]); });
+    if(hasExt){ hd1.push("New"); hd2.push("Adhoc Relief 2027 (expected)"); }
+    hd1.push("Total Allowances"); hd2.push("");
+    r2.push(hd1); r2.push(hd2);
+    var f2 = r2.length + 1, nc = ACOLS.length + (hasExt ? 1 : 0);
+    m.all.forEach(function(r, k){
+      var rr = r2.length + 1, row = [k + 1, r.e.name || "", (r.e.designation || "") + " (BPS-" + r.b + ")", r.e.persNo || ""];
+      ACOLS.forEach(function(c){ row.push(num(r.A[c[0]])); });
+      if(hasExt) row.push(num(r.A.EXT));
+      row.push(F("SUM(E" + rr + ":" + colName(3 + nc) + rr + ")", r.tot)); r2.push(row);
+    });
+    var l2 = r2.length, tr1 = ["Total One Month", "", "", ""], tr12 = ["Total 12 Month", "", "", ""];
+    for(i = 0; i <= nc; i++){
+      var cn = colName(4 + i), key = i < ACOLS.length ? ACOLS[i][0] : (i === ACOLS.length && hasExt ? "EXT" : null), sum1 = 0;
+      m.all.forEach(function(r){ sum1 += i === nc ? r.tot : num(r.A[key]); });
+      tr1.push(F("SUM(" + cn + f2 + ":" + cn + l2 + ")", sum1)); tr12.push(F(cn + (l2 + 1) + "*12", sum1 * 12));
+    }
+    r2.push(tr1); r2.push(tr12); sign(r2, 8);
+    XLSX.utils.book_append_sheet(wb, sheetFrom(r2, null, [6, 26, 26, 12].concat(ACOLS.map(function(){ return 12; })).concat([12, 14])), "Allowances BM-III-A");
+    /* 3. Section Post Sheet (Proforma-I) */
+    var r3 = [["PROFORMA-I VACANCY POSITION FY. " + m.fy], ["DDO RI-4720"], ["Sr. No.", "Name of Post", "BPS", "Sanctioned", "Filled", "Vacant", "OSD Post"]];
+    m.posts.forEach(function(p, k){ var rr = r3.length + 1; r3.push([k + 1, p.name, p.bps, p.sanc, p.filled, F("D" + rr + "-E" + rr, p.sanc - p.filled), 0]); });
+    var a3 = 4, b3 = r3.length;
+    r3.push(["Grand Total Officers/Officials", "", "", F("SUM(D" + a3 + ":D" + b3 + ")", m.posts.reduce(function(a, p){ return a + p.sanc; }, 0)), F("SUM(E" + a3 + ":E" + b3 + ")", m.posts.reduce(function(a, p){ return a + p.filled; }, 0)), F("SUM(F" + a3 + ":F" + b3 + ")", m.posts.reduce(function(a, p){ return a + p.sanc - p.filled; }, 0)), 0]);
+    sign(r3, 1);
+    XLSX.utils.book_append_sheet(wb, sheetFrom(r3, null, [8, 34, 6, 12, 10, 10, 10]), "Section Post Sheet");
+    /* 4. Salary Heads (Proforma-II) */
+    var r4 = [["PROFORMA-II (Annual Demand " + m.fy + " (Salary Heads)"], ["DDO Code RI-4720"], ["S.No.", "Object Head", "Description", "Actual FY " + fyLabel(m.Y - 2), "Budget FY " + fyLabel(m.Y - 1), "Annual Demand for the Year " + m.fy]];
+    m.sal.forEach(function(r, k){ r4.push([k + 1, r.code, r.desc + (r.note ? " (" + r.note + ")" : ""), r.prev, r.bud, r.demand]); });
+    var a4 = 4, b4 = r4.length;
+    r4.push(["", "", "G. Total", F("SUM(D" + a4 + ":D" + b4 + ")", m.salPrev), F("SUM(E" + a4 + ":E" + b4 + ")", m.salBud), F("SUM(F" + a4 + ":F" + b4 + ")", m.salTotal)]);
+    sign(r4, 2);
+    XLSX.utils.book_append_sheet(wb, sheetFrom(r4, null, [7, 12, 48, 16, 16, 20]), "Salary Heads & Allwance");
+    /* 5. Contingent Heads */
+    var r5 = [["PROFORMA-II (Annual Demand " + m.fy + " (Contingent Heads)"], ["DDO Code RI-4720"], ["S.No.", "Object Head", "Description", "Actual FY " + fyLabel(m.Y - 2), "Budget FY " + fyLabel(m.Y - 1), "Spent so far FY " + fyLabel(m.Y - 1), "Annual Demand for the Year " + m.fy]];
+    var cl = m.con.filter(function(r){ return r.prev || r.bud || r.spent || r.demand; });
+    cl.forEach(function(r, k){ r5.push([k + 1, r.code, r.desc, r.prev, r.bud, r.spent, r.demand]); });
+    var a5 = 4, b5 = r5.length;
+    r5.push(["", "", "G. Total", F("SUM(D" + a5 + ":D" + b5 + ")", m.conPrev), F("SUM(E" + a5 + ":E" + b5 + ")", m.conBud), F("SUM(F" + a5 + ":F" + b5 + ")", cl.reduce(function(a, r){ return a + r.spent; }, 0)), F("SUM(G" + a5 + ":G" + b5 + ")", m.conTotal)]);
+    sign(r5, 2);
+    XLSX.utils.book_append_sheet(wb, sheetFrom(r5, null, [7, 12, 44, 16, 16, 18, 20]), "Contigent Heads Sheet");
+    /* 6. Notes */
+    var r6 = [["Notes — Budget demand " + m.fy], ["Pay slips of: " + mLabel(m.M) + "; 1-December increments counted before 1 July " + m.Y + ": " + m.n], ["Basic pay for the 12 months = pay slip basic + those increments; the December " + m.Y + " increment is added for 7 months (as in the old BM-III)."], ["2026 pay scale assumed to stay in force; ARA-2022 and ARA-2025 are merged into basic; ARA-2026 = 7% of basic."], ["Gender is not stored in the employee records — printed as Male (as in the old form); correct by hand if needed."], ["Contingent heads: base × (1 + " + S.pct + "%), rounded up to the next thousand; base = " + (S.base === "cur" ? "running year annualised" : S.base === "max" ? "higher of actual and annualised" : "actual FY " + fyLabel(m.Y - 2)) + "."], []];
+    m.warns.forEach(function(w){ var d = document.createElement("div"); d.innerHTML = w; d.querySelectorAll(".ur").forEach(function(x){ x.remove(); }); r6.push([d.textContent]); });
+    XLSX.utils.book_append_sheet(wb, sheetFrom(r6, null, [140]), "Notes");
+    try{ XLSX.writeFile(wb, "Budget_Demand_" + m.fy + "_RI-4720.xlsx"); }catch(e){ toast("Could not create the Excel file: " + (e && e.message || e)); }
+  }
+
+  /* ---------- events ---------- */
+  panel.addEventListener("click", function(ev){
+    var t = ev.target.closest ? ev.target.closest("button") : null; if(!t) return;
+    if(t.classList.contains("bd-sub")){ mode = t.getAttribute("data-m"); render(); return; }
+    if(t.id === "bd_xl"){ exportXlsx(); }
+  });
+  panel.addEventListener("change", function(ev){
+    var t = ev.target, S = settings(), id = t.id, ch = true;
+    if(id === "bd_fy") S.fy = t.value;
+    else if(id === "bd_bm") S.bm = t.value;
+    else if(id === "bd_pct") S.pct = num(t.value);
+    else if(id === "bd_base") S.base = t.value;
+    else if(id === "bd_xara") S.xara = num(t.value);
+    else if(id === "bd_honor") S.honor = String(t.value).trim() === "" ? "" : num(t.value);
+    else if(id === "bd_meth") S.meth = t.value;
+    else if(id === "bd_inc") S.inc = +t.value;
+    else if(id === "bd_vac") S.vac = +t.value;
+    else if(id === "bd_dept") S.dept = t.value;
+    else if(id === "bd_att") S.att = t.value;
+    else if(id === "bd_grant") S.grant = t.value;
+    else if(t.classList && t.classList.contains("bd-sanc")){ var k = t.getAttribute("data-k"); S.posts.forEach(function(p){ if(p.key === k) p.sanc = Math.max(0, parseInt(t.value, 10) || 0); }); }
+    else ch = false;
+    if(ch){ saveSettings(S); render(); }
+  });
+  function syncTabButton(){ var btn = document.getElementById("bdTabBtn"); if(btn) btn.style.display = allowed() ? "flex" : "none"; }
+  document.querySelectorAll(".tab-btn").forEach(function(b){
+    b.addEventListener("click", function(){ if(b.getAttribute("data-tab") === "budget") setTimeout(render, 0); });
+  });
+  setInterval(function(){
+    try{
+      syncTabButton();
+      if(panel.classList.contains("active") && STATE !== lastState && allowed()){
+        var a = document.activeElement; if(!(a && panel.contains(a) && /INPUT|SELECT/.test(a.tagName))) render();
+      }
+    }catch(e){}
+  }, 1500);
+  window.__brBudget = {build: build, render: render, model: function(){ return lastModel; }, settings: settings};
+})();
+
 
 })();
 
