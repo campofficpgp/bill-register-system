@@ -719,6 +719,9 @@ html,body{overflow-x:hidden;}
 .pb-modal label{display:block;font-size:12.5px;margin-bottom:4px;color:#333;}
 .pb-modal input{width:100%;padding:8px 10px;border:1px solid #ccc;border-radius:6px;font-size:14px;box-sizing:border-box;font-family:inherit;}
 .pb-modal .pb-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;}
+.pb-modal select.pb-pick{width:100%;padding:7px 8px;border:1px solid #ccc;border-radius:6px;font-size:13px;box-sizing:border-box;font-family:inherit;margin-bottom:10px;}
+.pb-modal .pb-inc{display:flex;align-items:center;gap:8px;font-size:13.5px;margin:2px 0 12px;cursor:pointer;}
+.pb-modal .pb-inc input{width:auto;}
 .pb-modal button{padding:8px 18px;border-radius:6px;border:none;cursor:pointer;font-size:13.5px;}
 .pb-modal .pb-cancel{background:#eee;color:#333;}
 .pb-modal .pb-confirm{background:#1F4E78;color:#fff;font-weight:600;}
@@ -1282,6 +1285,7 @@ body.lang-ur .br-part{ font-size:17px; }
 <script>window.CAMP_REQUIRE_APPROVED=true;</script>
 <script src="/auth-guard.js" defer></script>
 <script src="/logo-control.js?v=1" defer></script>
+<script src="/stamp-signers.js?v=1"></script>
 </head>
 <body>
 <div class="pb-print-masthead" id="pbPrintMasthead">
@@ -2516,17 +2520,20 @@ body.lang-ur .br-part{ font-size:17px; }
     <div class="pb-stamp-cols">
       <div class="pb-stamp-col">
         <h4>Prepared by / تیار کردہ</h4>
+        <select class="pb-pick" id="pbLeftPick" aria-label="Choose from list"></select>
         <div class="field"><label>نام / Name</label><input type="text" id="pbLeftName" placeholder="e.g. Iftikhar Ahmed"></div>
         <div class="field"><label>عہدہ / Designation</label><input type="text" id="pbLeftDesig" placeholder="e.g. Junior Clerk"></div>
         <div class="field"><label>دفتر کا پتہ / Office Address</label><textarea id="pbLeftAddress" rows="2" placeholder="Camp Office Prosecutor General Punjab, Supreme Court of Pakistan, Islamabad"></textarea></div>
       </div>
       <div class="pb-stamp-col">
         <h4>Approved by / منظور کردہ</h4>
+        <select class="pb-pick" id="pbRightPick" aria-label="Choose from list"></select>
         <div class="field"><label>نام / Name</label><input type="text" id="pbRightName" placeholder="(optional)"></div>
         <div class="field"><label>عہدہ / Designation</label><input type="text" id="pbRightDesig" placeholder="(optional)"></div>
         <div class="field"><label>دفتر کا پتہ / Office Address</label><textarea id="pbRightAddress" rows="2" placeholder="Camp Office Prosecutor General Punjab, Supreme Court of Pakistan, Islamabad"></textarea></div>
       </div>
     </div>
+    <label class="pb-inc"><input type="checkbox" id="pbIncStamp"> <span>Add Prepared by / Approved by stamp &nbsp;/&nbsp; تیار کردہ / منظور کردہ کا اسٹامپ شامل کریں</span></label>
     <div class="pb-actions">
       <button type="button" class="pb-cancel" id="pbCancelBtn">Cancel</button>
       <button type="button" class="pb-confirm" id="pbConfirmBtn">پرنٹ کریں / Print</button>
@@ -7857,6 +7864,26 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   var footEl = document.getElementById("pbPrintSignfoot");
   if(!overlay || !leftNameInput || typeof window.print !== "function") return;
   var _nativePrint = window.print.bind(window);
+  /* The sign-off stamp is OPTIONAL: it is printed only when this box is ticked (remembered; off by default). */
+  var INC_KEY = "campoffice_includeStamp_v1";
+  var incEl = document.getElementById("pbIncStamp");
+  function stampOn(){ try{ return localStorage.getItem(INC_KEY) === "1"; }catch(e){ return false; } }
+  function setStampOn(v){ try{ localStorage.setItem(INC_KEY, v ? "1" : "0"); }catch(e){} }
+  function pbIsUrdu(){ return document.body.classList.contains("lang-ur") || document.documentElement.lang === "ur"; }
+  function wirePickers(){
+    if(!window.StampSigners) return;
+    [["pbLeftPick", leftNameInput, leftDesigInput, leftAddressInput], ["pbRightPick", rightNameInput, rightDesigInput, rightAddressInput]].forEach(function(g){
+      StampSigners.mount(document.getElementById(g[0]), function(it){ g[1].value = it.name || ""; g[2].value = it.designation || ""; g[3].value = it.address || ""; }, pbIsUrdu);
+    });
+    if(!StampSigners.__pbLoaded){ StampSigners.__pbLoaded = true; try{ var d0 = (window.__campOfficeBridge && window.__campOfficeBridge.db) || (typeof db !== "undefined" ? db : null); if(d0) StampSigners.load(d0); }catch(e){} }
+  }
+  var pendingCb = null;
+  /* ask for the stamp details, then run cb (used by file downloads); returns false when the stamp is switched off */
+  window.__campAskStamp = function(cb){
+    if(!stampOn()){ return false; }
+    pendingCb = cb; openDialog(); return true;
+  };
+  window.__campStampOn = stampOn;
 
   function stampSideHtml(label, side, isRight, sigUrl){
     var lines = [side.name, side.designation, side.address].filter(function(v){ return v && v.trim(); });
@@ -7874,7 +7901,11 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       right: {name: rightNameInput.value.trim(), designation: rightDesigInput.value.trim(), address: rightAddressInput.value.trim()}
     };
     saveLast(stamp);
+    var inc = incEl ? incEl.checked : stampOn();
+    setStampOn(inc);
+    if(pendingCb){ var cbk = pendingCb; pendingCb = null; overlay.style.display = "none"; cbk(); return; }
     if(document.body.classList.contains("payslip-mode")){
+      if(inc){
       STATE.preparedByName = stamp.left.name;
       STATE.preparedByDesignation = stamp.left.designation;
       STATE.approvedByName = stamp.right.name;
@@ -7886,6 +7917,9 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       if(typeof renderPaySlip === "function") renderPaySlip();
       if(footEl) footEl.innerHTML = "";
       try{ if(typeof saveData === "function" && silentOK("em")) saveData(); }catch(e){}
+      }
+    } else if(footEl && !inc){
+      footEl.innerHTML = "<div style=\"margin-top:4px;font-size:10.5px;color:#666;\">This is a computer generated document. / یہ ایک کمپیوٹر سے تیار کردہ دستاویز ہے۔</div>";
     } else if(footEl){
       var mySigUrl = (typeof CURRENT_USER !== "undefined" && CURRENT_USER && CURRENT_USER.signatureURL) || "";
       var cgdNote = "<div style=\"margin-top:4px;font-size:10.5px;color:#666;\">This is a computer generated document. / یہ ایک کمپیوٹر سے تیار کردہ دستاویز ہے۔</div>";
@@ -7897,7 +7931,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     overlay.style.display = "none";
     _nativePrint();
   }
-  window.print = function(){
+  function openDialog(){
     var saved = loadSaved();
     leftNameInput.value = saved.left.name || "";
     leftDesigInput.value = saved.left.designation || "";
@@ -7905,12 +7939,15 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     rightNameInput.value = saved.right.name || "";
     rightDesigInput.value = saved.right.designation || "";
     rightAddressInput.value = saved.right.address || "";
+    if(incEl) incEl.checked = stampOn();
+    wirePickers();
     overlay.style.display = "flex";
     setTimeout(function(){ leftNameInput.focus(); leftNameInput.select(); }, 30);
-  };
+  }
+  window.print = function(){ pendingCb = null; openDialog(); };
   confirmBtn.addEventListener("click", doPrint);
-  cancelBtn.addEventListener("click", function(){ overlay.style.display = "none"; });
-  overlay.addEventListener("click", function(e){ if(e.target === overlay) overlay.style.display = "none"; });
+  cancelBtn.addEventListener("click", function(){ pendingCb = null; overlay.style.display = "none"; });
+  overlay.addEventListener("click", function(e){ if(e.target === overlay){ pendingCb = null; overlay.style.display = "none"; } });
   [leftNameInput, leftDesigInput, rightNameInput, rightDesigInput].forEach(function(inp){
     inp.addEventListener("keydown", function(e){ if(e.key==="Enter"){ e.preventDefault(); doPrint(); } });
   });
@@ -8102,7 +8139,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     sub.push("Generated " + todayText());
     var maxCols = 0; tables.forEach(function(t){ maxCols = Math.max(maxCols, t.heads.length); });
     var base = "BillRegister_" + (PANEL_TITLE[key] || key).replace(/[^A-Za-z0-9]+/g, "") + (key === "monthly" && window.__brMonthlyTag ? "_" + window.__brMonthlyTag : (key === "statement" && window.__brStatementTag ? "_" + window.__brStatementTag : "")) + "_" + todayIso();
-    return {office:office, title:PANEL_TITLE[key] || key, sub:sub.join("   |   "), landscape:maxCols > 6, base:base, sign:signoff(), paper:paperSize()};
+    return {office:office, title:PANEL_TITLE[key] || key, sub:sub.join("   |   "), landscape:maxCols > 6, base:base, sign:signoff(), stamp:!!(window.__campStampOn && window.__campStampOn()), paper:paperSize()};
   }
 
   /* ---- PDF (vector, pdf-lib) ---- */
@@ -8273,7 +8310,8 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       t.foot.forEach(function(r){ drawRow(t, lay, r, 0, "foot"); });
       y -= 14;
     });
-    /* prepared / approved block */
+    /* prepared / approved block (optional: only when the stamp box is ticked) */
+    if(m.stamp){
     if(y - 70 < M + FOOT) newPage();
     y -= 26;
     var colW = (usable - 40) / 2;
@@ -8286,6 +8324,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       if(nm){ page.drawText(nm, {x:x0, y:yy, size:9, font:FB, color:black}); yy -= 11; }
       ds.slice(0, 3).forEach(function(l){ page.drawText(l, {x:x0, y:yy, size:8, font:F, color:grey}); yy -= 10; });
     });
+    }
     var pages = doc.getPages();
     pages.forEach(function(p, i){
       p.drawLine({start:{x:M, y:26}, end:{x:PW - M, y:26}, thickness:.6, color:line});
@@ -8365,7 +8404,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       children.push(new D.Table({rows:trs, width:{size:usable, type:D.WidthType.DXA}, columnWidths:W, layout:D.TableLayoutType.FIXED,
         borders:{top:bd, bottom:bd, left:bd, right:bd, insideHorizontal:bd, insideVertical:bd}}));
     });
-    children.push(para([run("")], {before:300}));
+    if(m.stamp) children.push(para([run("")], {before:300}));
     function sg(label, p, w){
       var ps = [para([run("______________________________", {size:16})]), para([run(label, {size:15, bold:true, color:"1B3F63"})])];
       if(p.name) ps.push(para([run(p.name, {size:17, bold:true})]));
@@ -8373,7 +8412,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       return new D.TableCell({children:ps, width:{size:w, type:D.WidthType.DXA}, borders:{top:none, bottom:none, left:none, right:none}});
     }
     var half = Math.floor(usable / 2);
-    children.push(new D.Table({rows:[new D.TableRow({cantSplit:true, children:[sg("Prepared by", m.sign.left, half), sg("Approved by", m.sign.right, half)]})],
+    if(m.stamp) children.push(new D.Table({rows:[new D.TableRow({cantSplit:true, children:[sg("Prepared by", m.sign.left, half), sg("Approved by", m.sign.right, half)]})],
       width:{size:usable, type:D.WidthType.DXA}, columnWidths:[half, half], layout:D.TableLayoutType.FIXED,
       borders:{top:none, bottom:none, left:none, right:none, insideHorizontal:none, insideVertical:none}}));
     var doc = new D.Document({
@@ -8499,7 +8538,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       /* two sign-off blocks must not share a row element twice, so build them cell by cell */
       var sr = r + 1, lp = m.sign.left, rp = m.sign.right, lc1 = Math.max(0, half - 1), rc0 = half, rc1 = n - 1;
       var labels = [["_________________________", "_________________________", 15], ["Prepared by", "Approved by", 15], [lp.name || "", rp.name || "", 15], [lp.designation || "", rp.designation || "", 16]];
-      labels.forEach(function(L, q){
+      (m.stamp ? labels : []).forEach(function(L, q){
         var row = sr + q;
         rows += '<row r="' + row + '" ht="' + (q === 3 ? 26 : 17) + '" customHeight="1">' + c("A" + row, L[0], L[2]) + (n > 1 ? c(colName(rc0) + row, L[1], L[2]) : "") + "</row>";
         if(lc1 > 0) merges.push("A" + row + ":" + colName(lc1) + row);
@@ -8564,7 +8603,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     return new Blob(["﻿" + out.join("\r\n")], {type:"text/csv;charset=utf-8"});
   }
 
-  async function runExport(key, kind, bar){
+  async function runExport(key, kind, bar, asked){
     var panel = $("panel-" + key);
     if(!panel) return;
     if(kind === "print"){ var pb = $("globalPrintBtn"); if(pb) pb.click(); else window.print(); return; }
@@ -8573,6 +8612,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(!tables.length){
       say("There are no records to export on this tab.", "اس ٹیب میں ایکسپورٹ کے لیے کوئی ریکارڈ نہیں ہے۔"); return;
     }
+    if(kind !== "csv" && !asked && window.__campAskStamp && window.__campAskStamp(function(){ runExport(key, kind, bar, true); })){ return; }
     var m = meta(key, panel, tables);
     bar.classList.add("busy");
     say("Preparing the file…", "فائل تیار ہو رہی ہے…");
@@ -8598,7 +8638,8 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       bar.innerHTML =
         '<button type="button" class="br-menu-btn" aria-haspopup="true">⬇ ' + bi("Print / Download", "پرنٹ / ڈاؤن لوڈ") + ' <span class="caret">▾</span></button>' +
         '<div class="br-menu-list" role="menu">' +
-        '<button type="button" data-act="print"><span class="mi">🖨️</span><span>' + bi("Print", "پرنٹ") + '<span class="sub">' + bi("with Prepared by / Approved by", "تیار کنندہ / منظور کنندہ کے ساتھ") + '</span></span></button>' +
+        '<button type="button" data-act="print"><span class="mi">🖨️</span><span>' + bi("Print", "پرنٹ") + '<span class="sub">' + bi("stamp is optional", "اسٹامپ اختیاری") + '</span></span></button>' +
+        '<label class="br-stamp-row" style="display:flex;align-items:center;gap:8px;padding:8px 12px;font-size:12.5px;cursor:pointer;"><input type="checkbox" class="br-stamp-chk"> <span>' + bi("Add Prepared by / Approved by stamp", "تیار کردہ / منظور کردہ کا اسٹامپ شامل کریں") + '</span></label>' +
         '<hr>' +
         '<button type="button" data-act="pdf"><span class="mi">📄</span><span>' + bi("PDF file", "پی ڈی ایف فائل") + '</span></button>' +
         '<button type="button" data-act="word"><span class="mi">📝</span><span>' + bi("Word file (.docx)", "ورڈ فائل") + '</span></button>' +
@@ -8606,6 +8647,15 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
         '<button type="button" data-act="csv"><span class="mi">🧾</span><span>' + bi("CSV file", "سی ایس وی فائل") + '</span></button>' +
         '</div>';
       wrap.appendChild(bar); head.appendChild(wrap);
+      var stChk = bar.querySelector(".br-stamp-chk"), stRow = bar.querySelector(".br-stamp-row");
+      function stSync(){ stChk.checked = !!(window.__campStampOn && window.__campStampOn()); }
+      stSync();
+      bar.querySelector(".br-menu-btn").addEventListener("click", stSync);
+      stRow.addEventListener("click", function(e){ e.stopPropagation(); });
+      stChk.addEventListener("change", function(){
+        try{ localStorage.setItem("campoffice_includeStamp_v1", stChk.checked ? "1" : "0"); }catch(er){}
+        document.querySelectorAll(".br-stamp-chk").forEach(function(c){ c.checked = stChk.checked; });
+      });
       bar.querySelector(".br-menu-list").addEventListener("click", function(e){
         var b = e.target.closest("button[data-act]"); if(!b) return;
         runExport(key, b.getAttribute("data-act"), bar);
