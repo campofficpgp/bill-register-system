@@ -9803,6 +9803,17 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
 
   var mode = "check", chartBps = 11, lastState = null, lastRows = [], lastMonth = "";
 
+  /* ---------- BPS change (promotion) dates — kept only in this browser; nothing is written to the database ---------- */
+  var PROMO_KEY = "payfix_promo_v1";
+  function promoLoad(){
+    var o = null; try{ o = JSON.parse(localStorage.getItem(PROMO_KEY) || "null"); }catch(e){}
+    if(!o || typeof o !== "object"){ o = {"31498255": {from: "11", date: "2026-10-26"}}; promoSave(o); }   /* the user told us: BPS-11 until 26-10-2026, BPS-14 from then */
+    return o;
+  }
+  function promoSave(o){ try{ localStorage.setItem(PROMO_KEY, JSON.stringify(o)); }catch(e){} }
+  function promoOf(e){ var o = promoLoad(), x = e && o[String(e.persNo || "")]; return (x && /^\d{4}-\d{2}-\d{2}$/.test(x.date || "") && bpsNum(x.from)) ? x : null; }
+  function dLabel(d){ var a = d.split("-"); return a[2] + "-" + a[1] + "-" + a[0]; }
+
   /* ---------- head classification of pay slip lines ---------- */
   function classify(desc){
     var d = String(desc || "").toLowerCase().replace(/\s+/g, " ");
@@ -9843,7 +9854,9 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var slip = STATE.payslipData && STATE.payslipData[e.id] && STATE.payslipData[e.id][month];
     var out = {emp: e, ok: true, errs: [], notes: [], has: !!(slip && (slip.earnings || []).length)};
     if(!out.has){ out.ok = null; out.errs.push(T("No pay slip for this month", "اس مہینے کی پرچی نہیں")); return out; }
-    var h = heads(slip), recB = bpsNum(e.bps), b = recB, basic = num(h.basic);
+    var promo = promoOf(e), useOld = !!(promo && month <= promo.date.slice(0, 7));
+    var h = heads(slip), recB = useOld ? bpsNum(promo.from) : bpsNum(e.bps), b = recB, basic = num(h.basic);
+    if(useOld){ out.shownBps = String(promo.from); out.notes.push(T("BPS-" + bpsNum(promo.from) + " until the promotion on " + dLabel(promo.date) + " (BPS-" + bpsNum(e.bps) + " after that)", "ترقی (" + dLabel(promo.date) + ") تک BPS-" + bpsNum(promo.from) + "، اس کے بعد BPS-" + bpsNum(e.bps))); }
     out.basic = basic; out.recB = recB;
     function fitList(){
       var res = [];
@@ -9852,6 +9865,11 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     }
     var st = b ? stageOf(b, basic, newScale) : null;
     if(!basic){ out.ok = false; out.errs.push(T("No Basic Pay line on the slip", "پرچی میں بنیادی تنخواہ کی لائن نہیں")); return out; }
+    if(promo && !useOld && b && st == null && stageOf(bpsNum(promo.from), basic, newScale) != null){
+      out.ok = false; out.b = b; out.stage = null;
+      out.errs.push(T("Promoted to BPS-" + b + " on " + dLabel(promo.date) + " but this slip is still on the old BPS-" + bpsNum(promo.from) + " pay (Rs. " + money(basic) + "). The basic must be a stage of BPS-" + b + " (2026 scale) — see Calculator → Promotion pay fixation", "BPS-" + b + " میں ترقی " + dLabel(promo.date) + " کو ہوئی مگر یہ پرچی ابھی پرانے BPS-" + bpsNum(promo.from) + " کی تنخواہ (" + money(basic) + ") پر ہے۔ بنیادی تنخواہ BPS-" + b + " (اسکیل 2026) کے اسٹیج پر ہونی چاہیے — کیلکولیٹر ← ترقی پر تنخواہ دیکھیں"));
+      return out;
+    }
     if(b && st == null){
       var sc = scaleFor(newScale)[b];
       if(basic > sc[0] + sc[1] * sc[2]){ out.notes.push(T("Basic is above the maximum of BPS-" + b + " (personal pay) — check with the DDO", "بنیادی تنخواہ اسکیل کی حد سے اوپر ہے (پرسنل پے)")); }
@@ -9910,6 +9928,41 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   function msel(months_, cur){
     return "<select id='pf_month'>" + months_.map(function(m){ return "<option value='" + m + "'" + (m === cur ? " selected" : "") + ">" + mLabel(m) + "</option>"; }).join("") + "</select>";
   }
+  function promoBox(emps){
+    var o = promoLoad(), h = "<h3 class='pf-h3'>" + T("BPS changes (promotions)", "BPS کی تبدیلی (ترقیاں)") + "</h3><p class='hint'>" + T("Tell the checker when someone's BPS changed: slips up to and including that month are checked against the old BPS, later months against the BPS in the Employees tab. Saved in this browser only.", "چیک کو بتائیں کہ کس کا BPS کب بدلا: اس مہینے تک کی پرچیاں پرانے BPS سے اور اس کے بعد کی ملازمین ٹیب والے BPS سے چیک ہوں گی۔ صرف اسی براؤزر میں محفوظ ہوتا ہے۔") + "</p>";
+    var keys = Object.keys(o);
+    if(keys.length){
+      h += "<div class='table-wrap'><table class='pf-tbl'><thead><tr><th>" + T("Pers #", "پرسنل نمبر") + "</th><th>" + T("Name", "نام") + "</th><th class='c'>" + T("Old BPS", "پرانا BPS") + "</th><th class='c'>" + T("New BPS (record)", "نیا BPS (ریکارڈ)") + "</th><th>" + T("Changed on", "تبدیلی کی تاریخ") + "</th><th></th></tr></thead><tbody>";
+      keys.forEach(function(k){
+        var e = emps.filter(function(x){ return String(x.persNo) === k; })[0], x = o[k];
+        h += "<tr><td>" + esc(k) + "</td><td>" + esc(e ? e.name : "") + "</td><td class='c'>" + esc(x.from) + "</td><td class='c'>" + esc(e ? e.bps : "") + "</td><td>" + esc(/^\d{4}-\d{2}-\d{2}$/.test(x.date || "") ? dLabel(x.date) : "") + "</td><td><button type='button' class='btn small pf-prm' data-p='" + esc(k) + "'>" + T("Remove", "ہٹائیں") + "</button></td></tr>";
+      });
+      h += "</tbody></table></div>";
+    }
+    var eo = "<option value=''>—</option>" + emps.map(function(e){ return "<option value='" + esc(e.persNo) + "'>" + esc(e.persNo + " — " + e.name) + "</option>"; }).join("");
+    var bo = ""; for(var i = 1; i <= 22; i++) bo += "<option value='" + i + "'>BPS-" + i + "</option>";
+    h += "<div class='pf-bar'><div class='field'><label>" + T("Employee", "ملازم") + "</label><select id='pf_pe'>" + eo + "</select></div><div class='field'><label>" + T("Old BPS", "پرانا BPS") + "</label><select id='pf_pb'>" + bo + "</select></div><div class='field'><label>" + T("Changed on", "تبدیلی کی تاریخ") + "</label><input type='date' id='pf_pd'></div><button type='button' class='btn small' id='pf_padd'>" + T("Add", "شامل کریں") + "</button></div>";
+    return h;
+  }
+  function promoCalc(){
+    var xo = bpsNum($("#pf_xo") && $("#pf_xo").value) || 11, xn = bpsNum($("#pf_xn") && $("#pf_xn").value) || 14, xb = $("#pf_xb") ? num($("#pf_xb").value) : 0;
+    var bo = "", bn = ""; for(var i = 1; i <= 22; i++){ bo += "<option value='" + i + "'" + (i === xo ? " selected" : "") + ">BPS-" + i + "</option>"; bn += "<option value='" + i + "'" + (i === xn ? " selected" : "") + ">BPS-" + i + "</option>"; }
+    var h = "<h3 class='pf-h3'>" + T("Promotion pay fixation (2026 scales)", "ترقی پر تنخواہ کا تعین (اسکیل 2026)") + "</h3><p class='hint'>" + T("Enter the basic pay before promotion. Two usual ways are shown; the correct one is the way written in your promotion order / the Finance Department rule — confirm with the DDO before using the figure.", "ترقی سے پہلے کی بنیادی تنخواہ لکھیں۔ دو عام طریقے دکھائے گئے ہیں؛ صحیح وہی ہے جو آپ کے ترقی کے آرڈر / فنانس ڈیپارٹمنٹ کے قاعدے میں لکھا ہو — رقم استعمال کرنے سے پہلے DDO سے تصدیق کریں۔") + "</p>" +
+      "<div class='pf-bar'><div class='field'><label>" + T("Old BPS", "پرانا BPS") + "</label><select id='pf_xo'>" + bo + "</select></div><div class='field'><label>" + T("New BPS", "نیا BPS") + "</label><select id='pf_xn'>" + bn + "</select></div><div class='field'><label>" + T("Basic pay before promotion", "ترقی سے پہلے بنیادی تنخواہ") + "</label><input id='pf_xb' inputmode='numeric' value='" + (xb || "") + "' placeholder='e.g. 42950'></div></div>";
+    if(!xb) return h;
+    var sc = S26[xn], oldInc = S26[xo][1];
+    function nextAbove(v){ if(v < sc[0]) return 0; var k = Math.floor((v - sc[0]) / sc[1]) + 1; return Math.min(k, sc[2]); }
+    var opts = [{lbl: T("A: next stage above the pay drawn", "الف: موجودہ تنخواہ سے اگلا اسٹیج"), from: xb}, {lbl: T("B: one increment first (Rs. " + money(oldInc) + "), then next stage above", "ب: پہلے ایک انکریمنٹ (" + money(oldInc) + ")، پھر اگلا اسٹیج"), from: xb + oldInc}];
+    var curTot = xb + saAmount(xo, true) + caRate(xo, true) + ara26(xb);
+    h += "<div class='table-wrap'><table class='pf-tbl'><thead><tr><th>" + T("Method", "طریقہ") + "</th><th class='c'>" + T("Stage", "اسٹیج") + "</th><th class='num'>" + T("New basic", "نئی بنیادی") + "</th><th class='num'>" + T("Special Allow.", "اسپیشل الاؤنس") + "</th><th class='num'>" + T("Conveyance", "کنوینس") + "</th><th class='num'>ARA-2026</th><th class='num'>" + T("Total", "کل") + "</th><th class='num'>" + T("Rise vs now", "اب کے مقابلے اضافہ") + "</th></tr></thead><tbody>";
+    opts.forEach(function(op){
+      var k = nextAbove(op.from), nb = sc[0] + sc[1] * k, sa = saAmount(xn, true), ca = caRate(xn, true), a = ara26(nb), tot = nb + sa + ca + a;
+      h += "<tr><td>" + op.lbl + "</td><td class='c'>" + k + "</td><td class='num'>" + money(nb) + "</td><td class='num'>" + money(sa) + "</td><td class='num'>" + money(ca) + "</td><td class='num'>" + money(a) + "</td><td class='num'><b>" + money(tot) + "</b></td><td class='num'>" + (tot - curTot >= 0 ? "+" : "−") + money(Math.abs(tot - curTot)) + "</td></tr>";
+    });
+    h += "<tr class='pf-sum'><td>" + T("Now (before promotion)", "ابھی (ترقی سے پہلے)") + "</td><td class='c'></td><td class='num'>" + money(xb) + "</td><td class='num'>" + money(saAmount(xo, true)) + "</td><td class='num'>" + money(caRate(xo, true)) + "</td><td class='num'>" + money(ara26(xb)) + "</td><td class='num'><b>" + money(curTot) + "</b></td><td class='num'></td></tr></tbody></table></div><p class='hint'>" + T("House Rent, Medical, Personal Allowance and ARA-2023 / 2024 are not included (they are not changed by the scale).", "ہاؤس رینٹ، میڈیکل، پرسنل الاؤنس اور ARA-2023 / 2024 شامل نہیں (اسکیل سے نہیں بدلتے)۔") + "</p>";
+    return h;
+  }
+
   function viewCheck(){
     var ms = months(), emps = (STATE && STATE.employees) || [];
     if(!ms.length) return "<div class='pf-warn'>" + T("No pay slips are saved yet, so there is nothing to check.", "ابھی کوئی پے سلپ محفوظ نہیں، اس لیے چیک کرنے کو کچھ نہیں۔") + "</div>";
@@ -9932,10 +9985,11 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     rows.forEach(function(r){
       var e = r.emp, cls = r.ok === false ? "pf-bad" : (r.ok === null ? "pf-none" : "pf-good");
       var msg = r.errs.concat(r.notes.map(function(n){ return "<i>" + n + "</i>"; })).join("<br>");
-      h += "<tr class='" + cls + "'><td>" + esc(e.persNo || "") + "</td><td>" + esc(e.name || "") + "</td><td class='c'>" + esc(e.bps || "") + "</td><td class='c'>" + (r.stage != null ? r.stage : "") + "</td><td class='num'>" + (r.basic ? money(r.basic) : "") + "</td><td>" + (r.ok === true ? "<b class='pf-tick'>✔</b> " : r.ok === false ? "<b class='pf-cross'>✖</b> " : "") + msg + "</td></tr>";
+      h += "<tr class='" + cls + "'><td>" + esc(e.persNo || "") + "</td><td>" + esc(e.name || "") + "</td><td class='c'>" + esc(r.shownBps != null ? r.shownBps : (e.bps || "")) + "</td><td class='c'>" + (r.stage != null ? r.stage : "") + "</td><td class='num'>" + (r.basic ? money(r.basic) : "") + "</td><td>" + (r.ok === true ? "<b class='pf-tick'>✔</b> " : r.ok === false ? "<b class='pf-cross'>✖</b> " : "") + msg + "</td></tr>";
     });
     h += "</tbody></table></div>";
     h += "<p class='hint'>" + T("What is checked: basic pay sits on a stage of the scale; Special Allowance (75% of the scale minimum for BPS 1-17, 125% for BPS 18 and above); Conveyance rate; ARA-2026 = 7% of basic (ARA-2022 and ARA-2025 must be gone from July 2026); ARA-2023 / ARA-2024 unchanged (frozen); the 1 December increment. House Rent, Medical and Personal Allowance are not changed by the notification and are not checked.", "کیا چیک ہوتا ہے: بنیادی تنخواہ اسکیل کے کسی اسٹیج پر ہو؛ اسپیشل الاؤنس (BPS 1-17 میں اسکیل کی کم از کم کا 75%، BPS 18 اور اوپر 125%)؛ کنوینس کا ریٹ؛ ARA-2026 = بنیادی کا 7% (جولائی 2026 سے ARA-2022 اور ARA-2025 نہ ہوں)؛ ARA-2023 / ARA-2024 وہی رہیں (منجمد)؛ یکم دسمبر کا انکریمنٹ۔ ہاؤس رینٹ، میڈیکل اور پرسنل الاؤنس نوٹیفکیشن سے نہیں بدلتے، انہیں چیک نہیں کیا جاتا۔") + "</p>";
+    h += promoBox(emps);
     return h;
   }
 
@@ -9985,6 +10039,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       prev = c2;
     }
     h += "</tbody></table></div>";
+    h += promoCalc();
     return h;
   }
 
@@ -10024,6 +10079,12 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   panel.addEventListener("click", function(ev){
     var t = ev.target.closest ? ev.target.closest("button") : null; if(!t) return;
     if(t.classList.contains("pf-sub")){ mode = t.getAttribute("data-m"); render(); return; }
+    if(t.classList.contains("pf-prm")){ var o1 = promoLoad(); delete o1[t.getAttribute("data-p")]; promoSave(o1); render(); return; }
+    if(t.id === "pf_padd"){
+      var pe = $("#pf_pe").value, pb = $("#pf_pb").value, pd = $("#pf_pd").value;
+      if(!pe || !pd){ toast("Choose the employee and the date"); return; }
+      var o2 = promoLoad(); o2[pe] = {from: pb, date: pd}; promoSave(o2); render(); return;
+    }
     if(t.id === "pf_xl"){
       var aoa = [["Pay check — " + mLabel(lastMonth), "", "", "", "", ""], ["Pers #", "Name", "BPS (record)", "Stage", "Basic pay", "Result"]];
       lastRows.forEach(function(r){ aoa.push([r.emp.persNo || "", r.emp.name || "", r.emp.bps || "", r.stage != null ? r.stage : "", r.basic || "", r.ok === true ? "OK" : r.ok === null ? "No slip" : "CHECK: " + r.errs.map(plain).join("; ")]); });
@@ -10045,11 +10106,12 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var t = ev.target;
     if(t.id === "pf_month"){ lastMonth = t.value; render(); }
     else if(t.id === "pf_chb"){ chartBps = parseInt(t.value, 10) || 11; render(); }
+    else if(t.id === "pf_xo" || t.id === "pf_xn"){ render(); }
     else if(t.id === "pf_cs" || t.id === "pf_cb"){ var ci = $("#pf_bas"); if(ci) ci.value = ""; render(); }
   });
   panel.addEventListener("input", function(ev){
     var t = ev.target;
-    if(t.id === "pf_st" || t.id === "pf_bas" || t.id === "pf_oth"){
+    if(t.id === "pf_st" || t.id === "pf_bas" || t.id === "pf_oth" || t.id === "pf_xb"){
       var id = t.id, pos = t.selectionStart;
       if(id === "pf_st"){ var bs = $("#pf_bas"); if(bs) bs.value = ""; }
       render(); var again = $("#" + id); if(again){ again.focus(); try{ again.setSelectionRange(pos, pos); }catch(e){} }
