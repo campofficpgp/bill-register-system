@@ -1319,6 +1319,14 @@ body.lang-ur .br-part{ font-size:17px; }
 #panel-budget .pf-ok{ background:#e6f4ea; border:1px solid #7bb98a; color:#14532d; padding:8px 12px; border-radius:var(--radius); margin-bottom:10px; font-size:13px; }
 #panel-budget .pf-h3{ margin:18px 0 8px; font-size:15px; }
 
+
+#panel-budget .bd-tools{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:0 0 12px; }
+#panel-budget .bd-sep{ flex:0 0 12px; }
+#panel-budget .bd-in{ width:92px; text-align:right; padding:3px 6px; border:1px solid var(--border); border-radius:6px; font:inherit; font-size:12.5px; background:var(--surface); color:inherit; font-variant-numeric:tabular-nums; }
+#panel-budget .bd-in.txt{ width:150px; text-align:left; }
+#panel-budget .bd-in.txt.sm{ width:80px; }
+#panel-budget .bd-ed{ background:#fff3bf !important; color:#5c4300; font-weight:700; border-radius:4px; padding:0 4px; }
+#panel-budget button:disabled{ opacity:.45; cursor:not-allowed; }
 </style>
 <!-- PWA: installable app -->
 <link rel="manifest" href="/manifest.webmanifest">
@@ -2119,7 +2127,7 @@ body.lang-ur .br-part{ font-size:17px; }
       <div class="panel-head">
         <div>
           <h2><span class="en">Budget Demand — next financial year</span><span class="ur">بجٹ ڈیمانڈ — اگلا مالی سال</span></h2>
-          <p><span class="en">Works out the annual demand of the DDO from the latest pay slips, the Employees list and the Bill Register: Form BM-III (basic pay and increment), BM-III-A (allowances), Proforma-I (vacancy position) and Proforma-II (salary and contingent heads), with an Excel download in the old form layout. Read only — nothing here changes any data. Admin / Super Admin only.</span><span class="ur">تازہ پے سلپس، ملازمین کی فہرست اور بل رجسٹر سے ڈی ڈی او کی سالانہ ڈیمانڈ خود بناتا ہے: فارم BM-III (بنیادی تنخواہ اور انکریمنٹ)، BM-III-A (الاؤنس)، پرفارما-I (خالی آسامیاں) اور پرفارما-II (تنخواہ اور غیر تنخواہی مدیں)، پرانے فارم کی ترتیب میں ایکسل ڈاؤن لوڈ کے ساتھ۔ صرف پڑھنے کے لیے — یہاں سے کوئی ڈیٹا نہیں بدلتا۔ صرف ایڈمن / سپر ایڈمن۔</span></p>
+          <p><span class="en">Works out the annual demand of the DDO from the latest pay slips, the Employees list and the Bill Register: Form BM-III (basic pay and increment), BM-III-A (allowances), Proforma-I (vacancy position) and Proforma-II (salary and contingent heads), with Edit / Save / Undo / Redo and downloads in Excel (old form layout), PDF and Word. Figures you change are kept in this browser only; nothing here changes any shared data. Admin / Super Admin only.</span><span class="ur">تازہ پے سلپس، ملازمین کی فہرست اور بل رجسٹر سے ڈی ڈی او کی سالانہ ڈیمانڈ خود بناتا ہے: فارم BM-III (بنیادی تنخواہ اور انکریمنٹ)، BM-III-A (الاؤنس)، پرفارما-I (خالی آسامیاں) اور پرفارما-II (تنخواہ اور غیر تنخواہی مدیں)، ترمیم / محفوظ / واپس / آگے کے ساتھ، اور ایکسل (پرانے فارم کی ترتیب)، پی ڈی ایف اور ورڈ میں ڈاؤن لوڈ۔ آپ کی بدلی ہوئی رقوم صرف اسی براؤزر میں رہتی ہیں؛ کوئی مشترکہ ڈیٹا نہیں بدلتا۔ صرف ایڈمن / سپر ایڈمن۔</span></p>
         </div>
       </div>
       <div class="pf-subnav">
@@ -8741,6 +8749,24 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   }
   injectBars();
 
+  /* Budget Demand (and any other module): export a ready-made list of tables with the same PDF / Word / Excel builders */
+  window.__brExportTables = async function(kind, tables, o, asked){
+    if(!tables || !tables.length){ say("There are no records to export on this tab.", "اس ٹیب میں ایکسپورٹ کے لیے کوئی ریکارڈ نہیں ہے۔"); return; }
+    if(!asked && window.__campAskStamp && window.__campAskStamp(function(){ window.__brExportTables(kind, tables, o, true); })){ return; }
+    var maxCols = 0; tables.forEach(function(t){ maxCols = Math.max(maxCols, t.heads.length); });
+    var m = {office:clean(STATE.officeName || "") || "Camp Office, Prosecutor General Punjab", title:o.title, sub:(o.sub ? o.sub + "   |   " : "") + "Generated " + todayText(), landscape:o.landscape != null ? !!o.landscape : maxCols > 6, base:o.base + "_" + todayIso(), sign:signoff(), stamp:!!(window.__campStampOn && window.__campStampOn()), paper:paperSize()};
+    say("Preparing the file…", "فائل تیار ہو رہی ہے…");
+    try{
+      if(kind === "pdf"){ await loadLib("pdflib"); download(new Blob([await buildPdf(tables, m)], {type:"application/pdf"}), m.base + ".pdf"); }
+      else if(kind === "word"){ await loadLib("docx"); download(await buildDocx(tables, m), m.base + ".docx"); }
+      else if(kind === "excel"){ await loadLib("jszip"); download(await buildXlsx(tables, m), m.base + ".xlsx"); }
+      say("File ready — check your Downloads folder.", "فائل تیار ہو گئی — ڈاؤن لوڈ فولڈر دیکھیں۔");
+    }catch(err){
+      console.error(err);
+      say("Could not build the file: " + (err && err.message ? err.message : err), "فائل نہیں بن سکی: " + (err && err.message ? err.message : err));
+    }
+  };
+
   /* ---------- 2b. Pay slip : Word and Excel downloads (PDF / Print already exist) ----------
      One table per month: Earnings | Amount | Deductions | Amount side by side, Gross / Total deductions / Net pay underneath.
      The figures are read from the slip on screen, so whatever the clerk edited is what gets exported. */
@@ -10224,6 +10250,33 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   }
   function saveSettings(s){ try{ localStorage.setItem(SKEY, JSON.stringify(s)); }catch(e){} }
 
+  /* ---------- hand edits: kept apart from the automatic figures; saved only in this browser ---------- */
+  var EKEY = "bd_edits_v1";
+  function emptyEdits(){ return {ov: {}, del: {}, extra: [], sanc: {}, salOv: {}, salExtra: [], conOv: {}, conExtra: []}; }
+  function loadEdits(){
+    var o = null; try{ o = JSON.parse(localStorage.getItem(EKEY) || "null"); }catch(e){}
+    var e0 = emptyEdits(); if(o && typeof o === "object") Object.keys(e0).forEach(function(k){ if(o[k] != null) e0[k] = o[k]; });
+    return e0;
+  }
+  var saved = loadEdits(), work = null, editing = false, hist = [], redoS = [], dirty = false, resetArm = 0;
+  function E(){ return editing && work ? work : saved; }
+  function snap(){ hist.push(JSON.stringify(work)); if(hist.length > 100) hist.shift(); redoS = []; dirty = true; }
+  function countEdits(e){
+    var n = 0;
+    Object.keys(e.ov).forEach(function(k){ var o = e.ov[k]; Object.keys(o).forEach(function(f){ if(f === "A") n += Object.keys(o.A).length; else n++; }); });
+    return n + Object.keys(e.del).length + e.extra.length + Object.keys(e.sanc).length + Object.keys(e.salOv).length + e.salExtra.length + Object.keys(e.conOv).length + e.conExtra.length;
+  }
+  function recalcTot(r){ r.tot = ACOLS.reduce(function(a, c){ return a + num(r.A[c[0]]); }, 0) + num(r.A.EXT); }
+  function applyOv(r, o, P){
+    r.auto = {basic1: r.basic1, rate: r.rate, A: clone(r.A)}; r.ed = {A: {}};
+    if(!o) return;
+    if(o.basic1 != null){ r.basic1 = num(o.basic1); r.ed.basic1 = true; if(!(o.A && o.A.A0125X != null)) r.A.A0125X = P.ara26(r.basic1); }
+    if(o.rate != null){ r.rate = num(o.rate); r.ed.rate = true; }
+    ["name", "designation", "persNo"].forEach(function(f){ if(o[f] != null){ r.e = Object.assign({}, r.e); r.e[f] = o[f]; r.ed[f] = true; } });
+    if(o.A) Object.keys(o.A).forEach(function(c){ r.A[c] = num(o.A[c]); r.ed.A[c] = true; });
+    recalcTot(r);
+  }
+
   /* ---------- pay slip lines -> object head code (same mapping as the Monthly Balance Statement) ---------- */
   function slipCode(desc, bps){
     var d = String(desc || "").toLowerCase();
@@ -10307,8 +10360,10 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var M = S.bm && P.months().indexOf(S.bm) >= 0 ? S.bm : defaultBaseMonth();
     var Y = S.fy ? +S.fy : defaultTargetYear();
     var n = M ? incrementsBetween(M, Y) : 0;
-    var model = {S: S, Y: Y, M: M, n: n, fy: fyLabel(Y), warns: [], rows: [], vac: [], posts: []};
+    var model = {S: S, Y: Y, M: M, n: n, fy: fyLabel(Y), warns: [], rows: [], vac: [], posts: [], removed: []};
     if(!M){ model.empty = true; return model; }
+    var EDT = E();
+    S.posts.forEach(function(p){ if(EDT.sanc[p.key] != null) p.sanc = num(EDT.sanc[p.key]); });
     var active = emps.filter(function(e){ return /^active/i.test(String(e.status || "")) || !e.status; });
     var postsByKey = {};
     S.posts.forEach(function(p){ postsByKey[p.key] = p; p.filled = 0; });
@@ -10324,9 +10379,23 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     active.forEach(function(e){
       var r = empRow(e, M, Y, n, S, P, model);
       if(!r) return;
+      r.key = "E:" + (e.persNo || e.id);
+      if(!r.noSlip){
+        if(EDT.del[r.key]){ model.removed.push({key: r.key, name: e.name || ""}); return; }
+        applyOv(r, EDT.ov[r.key], P);
+      }
       model.rows.push(r);
       if(r.b){ var k = postKeyOf(e, r.b); r.postKey = k; if(k) postsByKey[k].filled++; else model.warns.push(T("BPS-" + r.b + " of " + esc(e.name || "") + " has no sanctioned post in the list (add it under Proforma-I).", "BPS-" + r.b + " (" + esc(e.name || "") + ") کے لیے منظور شدہ آسامی کی فہرست میں نہیں۔")); }
       if(r.b && !r.noSlip){ (peersAll[r.b] = peersAll[r.b] || []).push(r); var cur = peers[r.b]; if(!cur || r.basic1 < cur.basic1) peers[r.b] = r; }
+    });
+    EDT.extra.forEach(function(x){
+      var p = postsByKey[x.postKey]; if(!p) return;
+      var r = vacantRow(p, peers, peersAll, Y, P, S);
+      r.vacant = false; r.est = false; r.key = "X:" + x.id; r.extra = true;
+      r.e = {name: "New employee", persNo: "", designation: p.name, bps: String(p.bps)};
+      p.filled++;
+      applyOv(r, EDT.ov[r.key], P);
+      model.rows.push(r);
     });
     model.rows.sort(function(a, b){ return (b.b || 0) - (a.b || 0) || String(a.e.persNo).localeCompare(String(b.e.persNo)); });
     model.rows.forEach(function(r){ if(r.noSlip) model.warns.push(T("No pay slip for " + esc(r.e.name || "") + " in " + mLabel(M) + " — left out of the demand.", esc(r.e.name || "") + " کی " + mLabel(M) + " کی پرچی نہیں — ڈیمانڈ میں شامل نہیں۔")); });
@@ -10335,7 +10404,11 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     S.posts.forEach(function(p){
       p.vacant = p.sanc - p.filled;
       if(p.filled > p.sanc) model.warns.push(T(esc(p.name) + ": " + p.filled + " filled but only " + p.sanc + " sanctioned — update the sanctioned number in Proforma-I.", esc(p.name) + ": بھرے ہوئے " + p.filled + " مگر منظور شدہ " + p.sanc + " — Proforma-I میں منظور شدہ تعداد درست کریں۔"));
-      for(var i = 0; i < Math.max(0, p.vacant); i++) model.vac.push(vacantRow(p, peers, peersAll, Y, P, S));
+      for(var i = 0; i < Math.max(0, p.vacant); i++){
+        var vr = vacantRow(p, peers, peersAll, Y, P, S); vr.key = "V:" + p.key + ":" + i;
+        if(EDT.del[vr.key]){ model.removed.push({key: vr.key, name: vr.e.name}); continue; }
+        applyOv(vr, EDT.ov[vr.key], P); model.vac.push(vr);
+      }
     });
     model.posts = S.posts;
     model.vac.sort(function(a, b){ return b.b - a.b; });
@@ -10387,7 +10460,11 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(num(S.xara) > 0) sal.push({code: "—", desc: "Adhoc Relief 2027 (expected " + S.xara + "% of basic)", prev: 0, bud: 0, demand: mm.EXT * 12 + (S.inc ? model.arainExt : 0), note: "new head — fill in the code when announced"});
     var honor = S.honor === "" || S.honor == null ? actualOf(labelOf("A01273"), fyLabel(Y - 2), f25) : num(S.honor);
     salRow("A01273", "Honoraria", honor, S.honor === "" ? "same as FY " + fyLabel(Y - 2) + " actual (change in settings)" : "");
-    sal.forEach(function(r){ r.demand = Math.round(r.demand); });
+    sal.forEach(function(r){
+      r.demand = Math.round(r.demand); r.auto = r.demand; r.k = r.code === "\u2014" ? "XARA" : r.code;
+      var o = EDT.salOv[r.k]; if(o != null){ r.demand = Math.round(num(o)); r.ed = true; }
+    });
+    EDT.salExtra.forEach(function(x){ sal.push({code: x.code || "\u2014", desc: x.desc || "Other", prev: num(x.prev), bud: num(x.bud), demand: Math.round(num(x.demand)), auto: 0, note: "added by hand", extra: true, id: x.id, k: "SX:" + x.id}); });
     model.sal = sal;
     model.salTotal = sal.reduce(function(a, r){ return a + r.demand; }, 0);
     model.salPrev = sal.reduce(function(a, r){ return a + r.prev; }, 0);
@@ -10402,6 +10479,8 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       var d = ceil1000(base * (1 + num(S.pct) / 100));
       con.push({code: c, label: h.label, desc: h.label.replace(/^[A-Z0-9]+-/, ""), prev: a25, bud: bud, spent: spent, ann: ann, demand: d});
     });
+    con.forEach(function(r){ r.auto = r.demand; var o = EDT.conOv[r.label]; if(o != null){ r.demand = Math.round(num(o)); r.ed = true; } });
+    EDT.conExtra.forEach(function(x){ con.push({code: x.code || "\u2014", label: "CX:" + x.id, desc: x.desc || "Other", prev: num(x.prev), bud: num(x.bud), spent: num(x.spent), ann: 0, demand: Math.round(num(x.demand)), auto: 0, extra: true, id: x.id}); });
     model.con = con; model.mEl = mEl;
     model.conTotal = con.reduce(function(a, r){ return a + r.demand; }, 0);
     model.conPrev = con.reduce(function(a, r){ return a + r.prev; }, 0);
@@ -10482,6 +10561,40 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
 
   /* ---------- views ---------- */
   function opt(v, label, cur){ return "<option value='" + esc(v) + "'" + (String(v) === String(cur) ? " selected" : "") + ">" + esc(label) + "</option>"; }
+  function autoTip(a){ return "Automatic: " + money(a) + " — clear the box to go back to automatic"; }
+  /* an editable (or plain) money cell of an employee / post row; f = basic1 | rate | A:<code> */
+  function cn(r, f){
+    var isA = f.indexOf("A:") === 0, c = f.slice(2);
+    var val = isA ? r.A[c] : r[f], edited = isA ? !!(r.ed && r.ed.A && r.ed.A[c]) : !!(r.ed && r.ed[f]);
+    var auto = r.auto ? (isA ? r.auto.A[c] : r.auto[f]) : val;
+    if(editing) return "<input class='bd-in" + (edited ? " bd-ed" : "") + "' inputmode='numeric' data-t='row' data-k='" + esc(r.key) + "' data-f='" + esc(f) + "' data-auto='" + Math.round(num(auto)) + "' value='" + Math.round(num(val)) + "' title='" + esc(autoTip(auto)) + "'>";
+    return edited ? "<span class='bd-ed' title='Edited by hand'>" + money(val) + "</span>" : money(val);
+  }
+  function ctx(r, f){
+    if(editing && r.extra) return "<input class='bd-in txt' data-t='row' data-k='" + esc(r.key) + "' data-f='" + f + "' value='" + esc(r.e[f] || "") + "'>";
+    return esc(r.e[f] || "");
+  }
+  function toolbar(m){
+    var n = countEdits(E()), h = "<div class='bd-tools'>";
+    if(!editing){
+      h += "<button type='button' class='btn small' id='bd_edit'>✏ " + T("Edit", "ترمیم") + "</button>";
+      if(n) h += "<button type='button' class='btn small' id='bd_reset'>↺ " + T(resetArm && Date.now() - resetArm < 5000 ? "Click again to confirm" : "Back to automatic", resetArm && Date.now() - resetArm < 5000 ? "تصدیق کے لیے دوبارہ دبائیں" : "دوبارہ خودکار") + "</button><span class='pf-chip'>" + T(n + " saved edits", n + " محفوظ ترامیم") + "</span>";
+    }else{
+      h += "<button type='button' class='btn small primary' id='bd_save'>💾 " + T("Save", "محفوظ کریں") + "</button>" +
+        "<button type='button' class='btn small' id='bd_cancel'>✖ " + T("Cancel", "منسوخ") + "</button>" +
+        "<button type='button' class='btn small' id='bd_undo'" + (hist.length ? "" : " disabled") + ">↶ " + T("Undo", "واپس") + "</button>" +
+        "<button type='button' class='btn small' id='bd_redo'" + (redoS.length ? "" : " disabled") + ">↷ " + T("Redo", "آگے") + "</button>" +
+        "<button type='button' class='btn small' id='bd_reset'>↺ " + T(resetArm && Date.now() - resetArm < 5000 ? "Click again to confirm" : "Everything back to automatic", resetArm && Date.now() - resetArm < 5000 ? "تصدیق کے لیے دوبارہ دبائیں" : "سب کچھ خودکار") + "</button>" +
+        "<span class='pf-chip " + (dirty ? "pf-c-bad" : "pf-c-ok") + "'>" + T(dirty ? "Editing — not saved yet" : "Editing", dirty ? "ترمیم جاری — ابھی محفوظ نہیں" : "ترمیم جاری") + "</span>";
+    }
+    h += "<span class='bd-sep'></span><button type='button' class='btn small' id='bd_xl'>📊 " + T("Excel", "ایکسل") + "</button><button type='button' class='btn small' id='bd_pdf'>📄 PDF</button><button type='button' class='btn small' id='bd_doc'>📝 " + T("Word", "ورڈ") + "</button><button type='button' class='btn small' id='bd_prt'" + (editing ? " disabled" : "") + ">🖨 " + T("Print", "پرنٹ") + "</button></div>";
+    if(editing) h += "<p class='hint'>" + T("Type over any figure to change it (a changed figure turns yellow); clear the box to go back to the automatic figure. Nothing is kept until you press Save. Saved edits stay in this browser only.", "کسی بھی رقم پر لکھ کر بدلیں (بدلی ہوئی رقم پیلی ہو جاتی ہے)؛ خانہ خالی کر دیں تو خودکار رقم واپس آ جاتی ہے۔ محفوظ کریں دبانے تک کچھ محفوظ نہیں ہوتا۔ محفوظ ترامیم صرف اسی براؤزر میں رہتی ہیں۔") + "</p>";
+    return h;
+  }
+  function removedNote(m){
+    if(!m.removed.length) return "";
+    return "<p class='hint'><b>" + T("Left out by hand", "ہاتھ سے نکالے گئے") + ":</b> " + m.removed.map(function(x){ return esc(x.name) + (editing ? " <button type='button' class='btn small bd-restore' data-k='" + esc(x.key) + "'>" + T("Put back", "واپس لائیں") + "</button>" : ""); }).join(" · ") + "</p>";
+  }
   function viewSum(m){
     var S = m.S, P = PF();
     var cnt = slipMonthCounts();
@@ -10489,6 +10602,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var y0 = defaultTargetYear(), fyOpts = [y0, y0 + 1].map(function(y){ return opt(y, "FY " + fyLabel(y), m.Y); }).join("");
     var h = "";
     if(m.empty) return "<div class='pf-warn'>" + T("No pay slips are saved yet, so the demand cannot be calculated.", "ابھی کوئی پے سلپ محفوظ نہیں، اس لیے ڈیمانڈ نہیں بن سکتی۔") + "</div>";
+    h += toolbar(m);
     h += "<div class='pf-chips'><span class='pf-chip pf-c-ok'>" + T("Budget demand", "بجٹ ڈیمانڈ") + " " + m.fy + ": Rs. " + money(m.grand) + "</span><span class='pf-chip'>" + T("Salary", "تنخواہ") + ": " + money(m.salTotal) + "</span><span class='pf-chip'>" + T("Contingent", "غیر تنخواہی") + ": " + money(m.conTotal) + "</span><span class='pf-chip'>" + T("Vacant posts " + (S.vac ? "included" : "left out") + ": " + m.vacN + " posts, Rs. " + money(m.vacCost), "خالی آسامیاں " + (S.vac ? "شامل" : "شامل نہیں") + ": " + m.vacN + "، " + money(m.vacCost)) + "</span></div>";
     if(m.warns.length){ h += "<div class='pf-warn'><b>" + T("Please check", "براہ کرم دیکھ لیں") + ":</b><br>" + m.warns.join("<br>") + "</div>"; }
     h += "<div class='table-wrap'><table class='pf-tbl'><thead><tr><th>" + T("Comparison", "موازنہ") + "</th><th class='num'>" + T("Salary", "تنخواہ") + "</th><th class='num'>" + T("Contingent", "غیر تنخواہی") + "</th><th class='num'>" + T("Total", "کل") + "</th></tr></thead><tbody>";
@@ -10501,30 +10615,34 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       "<div class='field'><label>" + T("Contingent: increase %", "غیر تنخواہی: اضافہ فیصد") + "</label><input id='bd_pct' inputmode='decimal' value='" + esc(S.pct) + "'></div>" +
       "<div class='field'><label>" + T("Contingent base", "غیر تنخواہی کی بنیاد") + "</label><select id='bd_base'>" + opt("prev", "Actual FY " + fyLabel(m.Y - 2), S.base) + opt("cur", "Running year, annualised", S.base) + opt("max", "Higher of the two", S.base) + "</select></div>" +
       "<div class='field'><label>" + T("Expected new Adhoc Relief 2027 (% of basic)", "متوقع نیا ایڈہاک ریلیف 2027 (بنیادی کا %)") + "</label><input id='bd_xara' inputmode='decimal' value='" + esc(S.xara) + "'></div>" +
-      "<div class='field'><label>" + T("Honoraria (Rs., yearly)", "اعزازیہ (سالانہ روپے)") + "</label><input id='bd_honor' inputmode='numeric' value='" + esc(S.honor) + "' placeholder='" + money(m.sal.filter(function(r){ return r.code === "A01273"; })[0].demand) + "'></div>" +
+      "<div class='field'><label>" + T("Honoraria (Rs., yearly)", "اعزازیہ (سالانہ روپے)") + "</label><input id='bd_honor' inputmode='numeric' value='" + esc(S.honor) + "' placeholder='" + money(m.sal.filter(function(r){ return r.code === "A01273"; })[0].auto) + "'></div>" +
       "<div class='field'><label>" + T("Promotion fixation method", "ترقی پر تعین کا طریقہ") + "</label><select id='bd_meth'>" + opt("A", "A: next stage above the pay drawn", S.meth) + opt("B", "B: one increment, then next stage", S.meth) + "</select></div>" +
       "<div class='field'><label>" + T("Include vacant posts (as in the old form)", "خالی آسامیاں شامل (پرانے فارم کی طرح)") + "</label><select id='bd_vac'>" + opt(1, "Yes", S.vac) + opt(0, "No", S.vac) + "</select></div>" +
       "<div class='field'><label>" + T("Include 7% ARA on the December increment", "دسمبر کے انکریمنٹ پر 7% ARA شامل") + "</label><select id='bd_inc'>" + opt(1, "Yes", S.inc) + opt(0, "No", S.inc) + "</select></div>" +
       "</div><div class='pf-bar'><div class='field'><label>Department</label><input id='bd_dept' value='" + esc(S.dept) + "'></div><div class='field'><label>Attached Department</label><input id='bd_att' value='" + esc(S.att) + "'></div><div class='field'><label>Grant No.</label><input id='bd_grant' value='" + esc(S.grant) + "'></div></div>";
-    h += "<div class='pf-bar'><button type='button' class='btn small' id='bd_xl'>⬇ " + T("Download Excel (all forms)", "ایکسل ڈاؤن لوڈ (تمام فارم)") + "</button></div>";
-    h += "<p class='hint'>" + T("How it is worked out: basic pay of each employee = the pay slip of the chosen month on the 2026 scale, plus the 1 December increment that falls before 1 July " + m.Y + " (" + m.n + " increment" + (m.n === 1 ? "" : "s") + "), then 12 months; the 1 December " + m.Y + " increment is added for 7 months (as in the old BM-III). Allowances are copied from the pay slip; Conveyance, Special Allowance and ARA-2026 (7%) are recalculated for the new basic; ARA-2022 and ARA-2025 are gone (merged into basic). Vacant posts use the minimum of the scale. The 2026 scale is assumed to stay in force. Contingent heads come from the bills in the Bill Register. Settings are kept in this browser only.", "حساب کیسے بنتا ہے: ہر ملازم کی بنیادی تنخواہ = منتخب مہینے کی پرچی (اسکیل 2026) + یکم جولائی " + m.Y + " سے پہلے آنے والا یکم دسمبر کا انکریمنٹ (" + m.n + ")، پھر 12 ماہ؛ یکم دسمبر " + m.Y + " کا انکریمنٹ 7 ماہ کے لیے الگ (پرانے BM-III کی طرح)۔ الاؤنس پرچی سے؛ کنوینس، اسپیشل الاؤنس اور ARA-2026 (7%) نئی بنیادی پر دوبارہ؛ ARA-2022 اور ARA-2025 ختم (بنیادی میں ضم)۔ خالی آسامیاں اسکیل کی کم از کم پر۔ فرض ہے کہ اسکیل 2026 جاری رہے گا۔ غیر تنخواہی مدیں بل رجسٹر کے بلوں سے آتی ہیں۔ ترتیبات صرف اسی براؤزر میں محفوظ ہیں۔") + "</p>";
+    h += "<p class='hint'>" + T("How it is worked out: basic pay of each employee = the pay slip of the chosen month on the 2026 scale, plus the 1 December increment that falls before 1 July " + m.Y + " (" + m.n + " increment" + (m.n === 1 ? "" : "s") + "), then 12 months; the 1 December " + m.Y + " increment is added for 7 months (as in the old BM-III). Allowances are copied from the pay slip; Conveyance, Special Allowance and ARA-2026 (7%) are recalculated for the new basic; ARA-2022 and ARA-2025 are gone (merged into basic). Vacant posts use the minimum of the scale. The 2026 scale is assumed to stay in force. Contingent heads come from the bills in the Bill Register. The settings above are saved at once; figures changed with Edit are saved with Save. Everything is kept in this browser only.", "حساب کیسے بنتا ہے: ہر ملازم کی بنیادی تنخواہ = منتخب مہینے کی پرچی (اسکیل 2026) + یکم جولائی " + m.Y + " سے پہلے آنے والا یکم دسمبر کا انکریمنٹ (" + m.n + ")، پھر 12 ماہ؛ یکم دسمبر " + m.Y + " کا انکریمنٹ 7 ماہ کے لیے الگ (پرانے BM-III کی طرح)۔ الاؤنس پرچی سے؛ کنوینس، اسپیشل الاؤنس اور ARA-2026 (7%) نئی بنیادی پر دوبارہ؛ ARA-2022 اور ARA-2025 ختم (بنیادی میں ضم)۔ خالی آسامیاں اسکیل کی کم از کم پر۔ فرض ہے کہ اسکیل 2026 جاری رہے گا۔ غیر تنخواہی مدیں بل رجسٹر کے بلوں سے آتی ہیں۔ اوپر کی ترتیبات فوراً محفوظ ہو جاتی ہیں؛ ترمیم سے بدلی رقوم محفوظ کریں دبانے سے محفوظ ہوتی ہیں۔ سب کچھ صرف اسی براؤزر میں رہتا ہے۔") + "</p>";
     return h;
   }
 
   function viewBM3(m){
     if(m.empty) return viewSum(m);
-    var P = PF(), h = "<div class='pf-bar'><button type='button' class='btn small' id='bd_xl'>⬇ " + T("Download Excel (all forms)", "ایکسل ڈاؤن لوڈ (تمام فارم)") + "</button></div><p class='hint'>" + T("Form BM-III — Details of sanctioned posts for permanent expenditure, FY " + m.fy + ". Basic pay as on 01-07-" + m.Y + "; increment falling due on 01 December " + m.Y + " for 7 months.", "فارم BM-III — مستقل اخراجات کے لیے منظور شدہ آسامیاں، مالی سال " + m.fy + "۔ بنیادی تنخواہ یکم جولائی " + m.Y + " کے مطابق؛ یکم دسمبر " + m.Y + " کا انکریمنٹ 7 ماہ کے لیے۔") + "</p>";
-    h += "<div class='table-wrap'><table class='pf-tbl'><thead><tr><th class='c'>#</th><th>" + T("Name", "نام") + "</th><th>" + T("Designation", "عہدہ") + "</th><th>" + T("Personal No.", "پرسنل نمبر") + "</th><th class='c'>BPS</th><th class='num'>" + T("Basic pay 01-07-" + m.Y, "بنیادی یکم جولائی " + m.Y) + "</th><th class='num'>" + T("12 months", "12 ماہ") + "</th><th class='num'>" + T("Increment rate", "انکریمنٹ ریٹ") + "</th><th class='num'>" + T("7 months", "7 ماہ") + "</th><th class='num'>" + T("Total provision", "کل رقم") + "</th></tr></thead><tbody>";
+    var P = PF(), h = toolbar(m) + "<p class='hint'>" + T("Form BM-III — Details of sanctioned posts for permanent expenditure, FY " + m.fy + ". Basic pay as on 01-07-" + m.Y + "; increment falling due on 01 December " + m.Y + " for 7 months.", "فارم BM-III — مستقل اخراجات کے لیے منظور شدہ آسامیاں، مالی سال " + m.fy + "۔ بنیادی تنخواہ یکم جولائی " + m.Y + " کے مطابق؛ یکم دسمبر " + m.Y + " کا انکریمنٹ 7 ماہ کے لیے۔") + "</p>";
+    var ec = editing ? "<th></th>" : "";
+    h += "<div class='table-wrap'><table class='pf-tbl'><thead><tr><th class='c'>#</th><th>" + T("Name", "نام") + "</th><th>" + T("Designation", "عہدہ") + "</th><th>" + T("Personal No.", "پرسنل نمبر") + "</th><th class='c'>BPS</th><th class='num'>" + T("Basic pay 01-07-" + m.Y, "بنیادی یکم جولائی " + m.Y) + "</th><th class='num'>" + T("12 months", "12 ماہ") + "</th><th class='num'>" + T("Increment rate", "انکریمنٹ ریٹ") + "</th><th class='num'>" + T("7 months", "7 ماہ") + "</th><th class='num'>" + T("Total provision", "کل رقم") + "</th>" + ec + "</tr></thead><tbody>";
     function block(rows, label, t){
       var i = 0;
       rows.forEach(function(r){
-        i++; h += "<tr" + (r.vacant ? " class='pf-none'" : r.prov ? " class='pf-bad'" : "") + "><td class='c'>" + i + "</td><td>" + esc(r.e.name || "") + (r.prov ? " <i>(provisional)</i>" : "") + "</td><td>" + esc(r.e.designation || "") + "</td><td>" + esc(r.e.persNo || "") + "</td><td class='c'>" + r.b + "</td><td class='num'>" + money(r.basic1) + "</td><td class='num'>" + money(r.h) + "</td><td class='num'>" + money(r.rate) + "</td><td class='num'>" + money(r.j) + "</td><td class='num'>" + money(r.k) + "</td></tr>";
+        i++; h += "<tr" + (r.vacant ? " class='pf-none'" : r.prov ? " class='pf-bad'" : "") + "><td class='c'>" + i + "</td><td>" + ctx(r, "name") + (r.prov ? " <i>(provisional)</i>" : "") + "</td><td>" + ctx(r, "designation") + "</td><td>" + ctx(r, "persNo") + "</td><td class='c'>" + r.b + "</td><td class='num'>" + cn(r, "basic1") + "</td><td class='num'>" + money(r.h) + "</td><td class='num'>" + cn(r, "rate") + "</td><td class='num'>" + money(r.j) + "</td><td class='num'>" + money(r.k) + "</td>" + (editing ? "<td><button type='button' class='btn small bd-del' data-k='" + esc(r.key) + "' title='Remove this row'>✕</button></td>" : "") + "</tr>";
       });
-      h += "<tr class='pf-sum'><td colspan='5'><b>" + label + "</b></td><td class='num'><b>" + money(t.g) + "</b></td><td class='num'><b>" + money(t.h) + "</b></td><td class='num'><b>" + money(t.i) + "</b></td><td class='num'><b>" + money(t.j) + "</b></td><td class='num'><b>" + money(t.k) + "</b></td></tr>";
+      h += "<tr class='pf-sum'><td colspan='5'><b>" + label + "</b></td><td class='num'><b>" + money(t.g) + "</b></td><td class='num'><b>" + money(t.h) + "</b></td><td class='num'><b>" + money(t.i) + "</b></td><td class='num'><b>" + money(t.j) + "</b></td><td class='num'><b>" + money(t.k) + "</b></td>" + (editing ? "<td></td>" : "") + "</tr>";
     }
     block(m.all.filter(function(r){ return r.b >= 16; }), T("Total Officers", "کل افسران"), m.tot.officers);
     block(m.all.filter(function(r){ return r.b < 16; }), T("Total Officials", "کل اہلکار"), m.tot.officials);
     h += "</tbody></table></div>";
+    if(editing){
+      h += "<h3 class='pf-h3'>" + T("Add a person / post", "نیا ملازم / آسامی شامل کریں") + "</h3><div class='pf-bar'><div class='field'><label>" + T("Post", "آسامی") + "</label><select id='bd_ap_post'>" + m.posts.map(function(p){ return opt(p.key, p.name + " (BPS-" + p.bps + ")", ""); }).join("") + "</select></div><div class='field'><label>" + T("Name", "نام") + "</label><input id='bd_ap_name'></div><div class='field'><label>" + T("Personal No.", "پرسنل نمبر") + "</label><input id='bd_ap_pno'></div><button type='button' class='btn small' id='bd_ap_add'>➕ " + T("Add", "شامل کریں") + "</button></div><p class='hint'>" + T("The new row starts with the scale minimum and the usual allowances of that post; change any figure here or in BM-III-A. It also fills one vacancy of that post.", "نئی قطار اس آسامی کی اسکیل کم از کم اور معمول کے الاؤنس سے شروع ہوتی ہے؛ کوئی بھی رقم یہاں یا BM-III-A میں بدلیں۔ یہ اسی آسامی کی ایک خالی جگہ بھی پُر کرتی ہے۔") + "</p>";
+    }
+    h += removedNote(m);
     var nts = m.all.filter(function(r){ return r.notes.length; });
     if(nts.length) h += "<p class='hint'>" + nts.map(function(r){ return "<b>" + esc(r.e.name || "") + ":</b> " + esc(r.notes.join("; ")); }).join("<br>") + "</p>";
     return h;
@@ -10533,10 +10651,10 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   function viewBM3A(m){
     if(m.empty) return viewSum(m);
     var cols = ACOLS.slice(); var hasExt = num(m.S.xara) > 0;
-    var h = "<div class='pf-bar'><button type='button' class='btn small' id='bd_xl'>⬇ " + T("Download Excel (all forms)", "ایکسل ڈاؤن لوڈ (تمام فارم)") + "</button></div><p class='hint'>" + T("Form BM-III-A — Details of allowances for sanctioned posts (monthly amounts as on 01-07-" + m.Y + ").", "فارم BM-III-A — منظور شدہ آسامیوں کے الاؤنس (ماہانہ رقم، یکم جولائی " + m.Y + " کے مطابق)۔") + "</p>";
+    var h = toolbar(m) + "<p class='hint'>" + T("Form BM-III-A — Details of allowances for sanctioned posts (monthly amounts as on 01-07-" + m.Y + ").", "فارم BM-III-A — منظور شدہ آسامیوں کے الاؤنس (ماہانہ رقم، یکم جولائی " + m.Y + " کے مطابق)۔") + "</p>";
     h += "<div class='table-wrap'><table class='pf-tbl'><thead><tr><th class='c'>#</th><th>" + T("Name", "نام") + "</th><th>BPS</th>" + cols.map(function(c){ return "<th class='num' title='" + esc(c[1]) + "'>" + c[0] + "<br><small>" + esc(c[1]) + "</small></th>"; }).join("") + (hasExt ? "<th class='num'>ARA 2027<br><small>expected</small></th>" : "") + "<th class='num'>" + T("Total", "کل") + "</th></tr></thead><tbody>";
     m.all.forEach(function(r, i){
-      h += "<tr" + (r.vacant ? " class='pf-none'" : "") + "><td class='c'>" + (i + 1) + "</td><td>" + esc(r.e.name || "") + "</td><td class='c'>" + r.b + "</td>" + cols.map(function(c){ return "<td class='num'>" + money(r.A[c[0]]) + "</td>"; }).join("") + (hasExt ? "<td class='num'>" + money(r.A.EXT) + "</td>" : "") + "<td class='num'><b>" + money(r.tot) + "</b></td></tr>";
+      h += "<tr" + (r.vacant ? " class='pf-none'" : "") + "><td class='c'>" + (i + 1) + "</td><td>" + esc(r.e.name || "") + "</td><td class='c'>" + r.b + "</td>" + cols.map(function(c){ return "<td class='num'>" + cn(r, "A:" + c[0]) + "</td>"; }).join("") + (hasExt ? "<td class='num'>" + money(r.A.EXT) + "</td>" : "") + "<td class='num'><b>" + money(r.tot) + "</b></td></tr>";
     });
     var t1 = 0; cols.forEach(function(c){ t1 += num(m.monthly[c[0]]); }); t1 += num(m.monthly.EXT);
     h += "<tr class='pf-sum'><td colspan='3'><b>" + T("Total one month", "ایک ماہ کا کل") + "</b></td>" + cols.map(function(c){ return "<td class='num'><b>" + money(m.monthly[c[0]]) + "</b></td>"; }).join("") + (hasExt ? "<td class='num'><b>" + money(m.monthly.EXT) + "</b></td>" : "") + "<td class='num'><b>" + money(t1) + "</b></td></tr>";
@@ -10546,27 +10664,43 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
 
   function viewP1(m){
     if(m.empty) return viewSum(m);
-    var h = "<div class='pf-bar'><button type='button' class='btn small' id='bd_xl'>⬇ " + T("Download Excel (all forms)", "ایکسل ڈاؤن لوڈ (تمام فارم)") + "</button></div><p class='hint'>" + T("Proforma-I — Vacancy position. 'Filled' is counted from the Employees list by BPS; change the sanctioned number where the sanction has changed.", "پرفارما-I — خالی آسامیوں کی صورت۔ 'بھرے ہوئے' ملازمین کی فہرست سے BPS کے مطابق گنے جاتے ہیں؛ جہاں منظوری بدلی ہو وہاں منظور شدہ تعداد بدلیں۔") + "</p>";
+    var h = toolbar(m) + "<p class='hint'>" + T("Proforma-I — Vacancy position. 'Filled' is counted from the Employees list by BPS; change the sanctioned number where the sanction has changed (use Edit).", "پرفارما-I — خالی آسامیوں کی صورت۔ 'بھرے ہوئے' ملازمین کی فہرست سے BPS کے مطابق گنے جاتے ہیں؛ جہاں منظوری بدلی ہو وہاں منظور شدہ تعداد بدلیں (ترمیم دبا کر)۔") + "</p>";
     h += "<div class='table-wrap'><table class='pf-tbl'><thead><tr><th class='c'>#</th><th>" + T("Name of post", "آسامی کا نام") + "</th><th class='c'>BPS</th><th class='c'>" + T("Sanctioned", "منظور شدہ") + "</th><th class='c'>" + T("Filled", "بھری ہوئی") + "</th><th class='c'>" + T("Vacant", "خالی") + "</th><th class='c'>OSD</th></tr></thead><tbody>";
     var ts = 0, tf = 0, tv = 0;
     m.posts.forEach(function(p, i){
       ts += p.sanc; tf += p.filled; tv += Math.max(0, p.vacant);
-      h += "<tr><td class='c'>" + (i + 1) + "</td><td>" + esc(p.name) + "</td><td class='c'>" + p.bps + "</td><td class='c'><input class='bd-sanc' data-k='" + esc(p.key) + "' inputmode='numeric' style='width:64px;text-align:center' value='" + p.sanc + "'></td><td class='c'>" + p.filled + "</td><td class='c'" + (p.vacant < 0 ? " style='color:#c62828'" : "") + ">" + p.vacant + "</td><td class='c'>0</td></tr>";
+      var ed = m.ed.sanc[p.key] != null;
+      h += "<tr><td class='c'>" + (i + 1) + "</td><td>" + esc(p.name) + "</td><td class='c'>" + p.bps + "</td><td class='c'>" + (editing ? "<input class='bd-in" + (ed ? " bd-ed" : "") + "' inputmode='numeric' data-t='sanc' data-k='" + esc(p.key) + "' style='width:64px;text-align:center' value='" + p.sanc + "'>" : (ed ? "<span class='bd-ed'>" + p.sanc + "</span>" : p.sanc)) + "</td><td class='c'>" + p.filled + "</td><td class='c'" + (p.vacant < 0 ? " style='color:#c62828'" : "") + ">" + p.vacant + "</td><td class='c'>0</td></tr>";
     });
     h += "<tr class='pf-sum'><td colspan='3'><b>" + T("Grand total", "کل") + "</b></td><td class='c'><b>" + ts + "</b></td><td class='c'><b>" + tf + "</b></td><td class='c'><b>" + tv + "</b></td><td class='c'><b>0</b></td></tr></tbody></table></div>";
     return h;
   }
 
+  function dcell(r, ty, key){
+    if(editing) return "<input class='bd-in" + (r.ed ? " bd-ed" : "") + "' inputmode='numeric' data-t='" + ty + "' data-k='" + esc(key) + "' data-auto='" + Math.round(num(r.auto)) + "' value='" + Math.round(num(r.demand)) + "' title='" + esc(autoTip(r.auto)) + "'>";
+    return r.ed ? "<span class='bd-ed' title='Edited by hand'>" + money(r.demand) + "</span>" : money(r.demand);
+  }
+  function xin(ty, id, f, v, cls){ return "<input class='bd-in" + (cls ? " " + cls : "") + "' data-t='" + ty + "' data-id='" + esc(id) + "' data-f='" + f + "' value='" + esc(v) + "'>"; }
   function viewP2(m){
     if(m.empty) return viewSum(m);
-    var h = "<div class='pf-bar'><button type='button' class='btn small' id='bd_xl'>⬇ " + T("Download Excel (all forms)", "ایکسل ڈاؤن لوڈ (تمام فارم)") + "</button></div><p class='hint'>" + T("Proforma-II — Annual demand FY " + m.fy + " (salary heads from BM-III / BM-III-A; contingent heads from the bills).", "پرفارما-II — سالانہ ڈیمانڈ " + m.fy + " (تنخواہ کی مدیں BM-III / BM-III-A سے؛ غیر تنخواہی مدیں بلوں سے)۔") + "</p>";
-    h += "<h3 class='pf-h3'>" + T("Salary heads", "تنخواہ کی مدیں") + "</h3><div class='table-wrap'><table class='pf-tbl'><thead><tr><th>" + T("Object head", "مد") + "</th><th>" + T("Description", "تفصیل") + "</th><th class='num'>" + T("Actual FY " + fyLabel(m.Y - 2), "اصل " + fyLabel(m.Y - 2)) + "</th><th class='num'>" + T("Budget FY " + fyLabel(m.Y - 1), "بجٹ " + fyLabel(m.Y - 1)) + "</th><th class='num'>" + T("Demand FY " + m.fy, "ڈیمانڈ " + m.fy) + "</th></tr></thead><tbody>";
-    m.sal.forEach(function(r){ h += "<tr><td>" + esc(r.code) + "</td><td>" + esc(r.desc) + (r.note ? " <i>(" + esc(r.note) + ")</i>" : "") + "</td><td class='num'>" + money(r.prev) + "</td><td class='num'>" + money(r.bud) + "</td><td class='num'>" + money(r.demand) + "</td></tr>"; });
-    h += "<tr class='pf-sum'><td colspan='2'><b>" + T("Grand total — salary", "کل — تنخواہ") + "</b></td><td class='num'><b>" + money(m.salPrev) + "</b></td><td class='num'><b>" + money(m.salBud) + "</b></td><td class='num'><b>" + money(m.salTotal) + "</b></td></tr></tbody></table></div>";
-    h += "<h3 class='pf-h3'>" + T("Contingent heads", "غیر تنخواہی مدیں") + "</h3><div class='table-wrap'><table class='pf-tbl'><thead><tr><th>" + T("Object head", "مد") + "</th><th>" + T("Description", "تفصیل") + "</th><th class='num'>" + T("Actual FY " + fyLabel(m.Y - 2), "اصل " + fyLabel(m.Y - 2)) + "</th><th class='num'>" + T("Budget FY " + fyLabel(m.Y - 1), "بجٹ " + fyLabel(m.Y - 1)) + "</th><th class='num'>" + T("Spent so far " + fyLabel(m.Y - 1), "اب تک خرچ " + fyLabel(m.Y - 1)) + "</th><th class='num'>" + T("Demand FY " + m.fy, "ڈیمانڈ " + m.fy) + "</th></tr></thead><tbody>";
-    m.con.forEach(function(r){ if(!(r.prev || r.bud || r.spent || r.demand)) return; h += "<tr><td>" + esc(r.code) + "</td><td>" + esc(r.desc) + "</td><td class='num'>" + money(r.prev) + "</td><td class='num'>" + money(r.bud) + "</td><td class='num'>" + money(r.spent) + "</td><td class='num'>" + money(r.demand) + "</td></tr>"; });
-    h += "<tr class='pf-sum'><td colspan='2'><b>" + T("Grand total — contingent", "کل — غیر تنخواہی") + "</b></td><td class='num'><b>" + money(m.conPrev) + "</b></td><td class='num'><b>" + money(m.conBud) + "</b></td><td class='num'><b>" + money(m.con.reduce(function(a, r){ return a + r.spent; }, 0)) + "</b></td><td class='num'><b>" + money(m.conTotal) + "</b></td></tr></tbody></table></div>";
-    h += "<p class='hint'>" + T("Contingent demand = base × (1 + " + esc(m.S.pct) + "%), rounded up to the next thousand. Base is chosen in the Summary settings.", "غیر تنخواہی ڈیمانڈ = بنیاد × (1 + " + esc(m.S.pct) + "%)، اگلے ہزار تک۔ بنیاد خلاصہ کی ترتیبات میں چنی جاتی ہے۔") + "</p>";
+    var h = toolbar(m) + "<p class='hint'>" + T("Proforma-II — Annual demand FY " + m.fy + " (salary heads from BM-III / BM-III-A; contingent heads from the bills).", "پرفارما-II — سالانہ ڈیمانڈ " + m.fy + " (تنخواہ کی مدیں BM-III / BM-III-A سے؛ غیر تنخواہی مدیں بلوں سے)۔") + "</p>";
+    var ec = editing ? "<th></th>" : "";
+    h += "<h3 class='pf-h3'>" + T("Salary heads", "تنخواہ کی مدیں") + "</h3><div class='table-wrap'><table class='pf-tbl'><thead><tr><th>" + T("Object head", "مد") + "</th><th>" + T("Description", "تفصیل") + "</th><th class='num'>" + T("Actual FY " + fyLabel(m.Y - 2), "اصل " + fyLabel(m.Y - 2)) + "</th><th class='num'>" + T("Budget FY " + fyLabel(m.Y - 1), "بجٹ " + fyLabel(m.Y - 1)) + "</th><th class='num'>" + T("Demand FY " + m.fy, "ڈیمانڈ " + m.fy) + "</th>" + ec + "</tr></thead><tbody>";
+    m.sal.forEach(function(r){
+      var ex = r.extra && editing;
+      h += "<tr><td>" + (ex ? xin("sx", r.id, "code", r.code, "txt sm") : esc(r.code)) + "</td><td>" + (ex ? xin("sx", r.id, "desc", r.desc, "txt") : esc(r.desc)) + (r.note ? " <i>(" + esc(r.note) + ")</i>" : "") + "</td><td class='num'>" + money(r.prev) + "</td><td class='num'>" + money(r.bud) + "</td><td class='num'>" + (r.extra ? (editing ? "<input class='bd-in bd-ed' inputmode='numeric' data-t='sx' data-id='" + esc(r.id) + "' data-f='demand' value='" + Math.round(num(r.demand)) + "'>" : "<span class='bd-ed'>" + money(r.demand) + "</span>") : dcell(r, "sal", r.k)) + "</td>" + (editing ? "<td>" + (r.extra ? "<button type='button' class='btn small bd-delsx' data-id='" + esc(r.id) + "'>✕</button>" : "") + "</td>" : "") + "</tr>";
+    });
+    h += "<tr class='pf-sum'><td colspan='2'><b>" + T("Grand total — salary", "کل — تنخواہ") + "</b></td><td class='num'><b>" + money(m.salPrev) + "</b></td><td class='num'><b>" + money(m.salBud) + "</b></td><td class='num'><b>" + money(m.salTotal) + "</b></td>" + (editing ? "<td></td>" : "") + "</tr></tbody></table></div>";
+    if(editing) h += "<div class='pf-bar'><div class='field'><label>" + T("New salary head: code", "نئی تنخواہی مد: کوڈ") + "</label><input id='bd_as_code'></div><div class='field'><label>" + T("Description", "تفصیل") + "</label><input id='bd_as_desc'></div><div class='field'><label>" + T("Demand (Rs.)", "ڈیمانڈ (روپے)") + "</label><input id='bd_as_amt' inputmode='numeric'></div><button type='button' class='btn small' id='bd_as_add'>➕ " + T("Add", "شامل کریں") + "</button></div>";
+    h += "<h3 class='pf-h3'>" + T("Contingent heads", "غیر تنخواہی مدیں") + "</h3><div class='table-wrap'><table class='pf-tbl'><thead><tr><th>" + T("Object head", "مد") + "</th><th>" + T("Description", "تفصیل") + "</th><th class='num'>" + T("Actual FY " + fyLabel(m.Y - 2), "اصل " + fyLabel(m.Y - 2)) + "</th><th class='num'>" + T("Budget FY " + fyLabel(m.Y - 1), "بجٹ " + fyLabel(m.Y - 1)) + "</th><th class='num'>" + T("Spent so far " + fyLabel(m.Y - 1), "اب تک خرچ " + fyLabel(m.Y - 1)) + "</th><th class='num'>" + T("Demand FY " + m.fy, "ڈیمانڈ " + m.fy) + "</th>" + ec + "</tr></thead><tbody>";
+    m.con.forEach(function(r){
+      if(!(r.prev || r.bud || r.spent || r.demand || r.extra || r.ed || r.auto)) return;
+      var ex = r.extra && editing;
+      h += "<tr><td>" + (ex ? xin("cx", r.id, "code", r.code, "txt sm") : esc(r.code)) + "</td><td>" + (ex ? xin("cx", r.id, "desc", r.desc, "txt") : esc(r.desc)) + (r.extra ? " <i>(added by hand)</i>" : "") + "</td><td class='num'>" + money(r.prev) + "</td><td class='num'>" + money(r.bud) + "</td><td class='num'>" + money(r.spent) + "</td><td class='num'>" + (r.extra ? (editing ? "<input class='bd-in bd-ed' inputmode='numeric' data-t='cx' data-id='" + esc(r.id) + "' data-f='demand' value='" + Math.round(num(r.demand)) + "'>" : "<span class='bd-ed'>" + money(r.demand) + "</span>") : dcell(r, "con", r.label)) + "</td>" + (editing ? "<td>" + (r.extra ? "<button type='button' class='btn small bd-delcx' data-id='" + esc(r.id) + "'>✕</button>" : "") + "</td>" : "") + "</tr>";
+    });
+    h += "<tr class='pf-sum'><td colspan='2'><b>" + T("Grand total — contingent", "کل — غیر تنخواہی") + "</b></td><td class='num'><b>" + money(m.conPrev) + "</b></td><td class='num'><b>" + money(m.conBud) + "</b></td><td class='num'><b>" + money(m.con.reduce(function(a, r){ return a + r.spent; }, 0)) + "</b></td><td class='num'><b>" + money(m.conTotal) + "</b></td>" + (editing ? "<td></td>" : "") + "</tr></tbody></table></div>";
+    if(editing) h += "<div class='pf-bar'><div class='field'><label>" + T("New contingent head: code", "نئی غیر تنخواہی مد: کوڈ") + "</label><input id='bd_ac_code'></div><div class='field'><label>" + T("Description", "تفصیل") + "</label><input id='bd_ac_desc'></div><div class='field'><label>" + T("Demand (Rs.)", "ڈیمانڈ (روپے)") + "</label><input id='bd_ac_amt' inputmode='numeric'></div><button type='button' class='btn small' id='bd_ac_add'>➕ " + T("Add", "شامل کریں") + "</button></div>";
+    h += "<p class='hint'>" + T("Contingent demand = base × (1 + " + esc(m.S.pct) + "%), rounded up to the next thousand. Base is chosen in the Summary settings. Any demand figure can be typed over with Edit.", "غیر تنخواہی ڈیمانڈ = بنیاد × (1 + " + esc(m.S.pct) + "%)، اگلے ہزار تک۔ بنیاد خلاصہ کی ترتیبات میں چنی جاتی ہے۔ ڈیمانڈ کی کوئی بھی رقم ترمیم دبا کر بدلی جا سکتی ہے۔") + "</p>";
     return h;
   }
 
@@ -10576,6 +10710,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     panel.querySelectorAll(".bd-sub").forEach(function(b){ b.classList.toggle("active", b.getAttribute("data-m") === mode); });
     try{
       lastModel = build();
+      lastModel.ed = E();
       body.innerHTML = mode === "sum" ? viewSum(lastModel) : mode === "bm3" ? viewBM3(lastModel) : mode === "bm3a" ? viewBM3A(lastModel) : mode === "p1" ? viewP1(lastModel) : viewP2(lastModel);
     }catch(err){ body.innerHTML = "<div class='pf-warn'>" + esc(String(err && err.message || err)) + "</div>"; if(window.console) console.error(err); }
     lastState = STATE;
@@ -10677,18 +10812,166 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     /* 6. Notes */
     var r6 = [["Notes — Budget demand " + m.fy], ["Pay slips of: " + mLabel(m.M) + "; 1-December increments counted before 1 July " + m.Y + ": " + m.n], ["Basic pay for the 12 months = pay slip basic + those increments; the December " + m.Y + " increment is added for 7 months (as in the old BM-III)."], ["2026 pay scale assumed to stay in force; ARA-2022 and ARA-2025 are merged into basic; ARA-2026 = 7% of basic."], ["Gender is not stored in the employee records — printed as Male (as in the old form); correct by hand if needed."], ["Contingent heads: base × (1 + " + S.pct + "%), rounded up to the next thousand; base = " + (S.base === "cur" ? "running year annualised" : S.base === "max" ? "higher of actual and annualised" : "actual FY " + fyLabel(m.Y - 2)) + "."], []];
     m.warns.forEach(function(w){ var d = document.createElement("div"); d.innerHTML = w; d.querySelectorAll(".ur").forEach(function(x){ x.remove(); }); r6.push([d.textContent]); });
+    if(countEdits(E())) r6.push(["Some figures were edited by hand in the Budget Demand tab (" + countEdits(E()) + " changes)."]);
     XLSX.utils.book_append_sheet(wb, sheetFrom(r6, null, [140]), "Notes");
     try{ XLSX.writeFile(wb, "Budget_Demand_" + m.fy + "_RI-4720.xlsx"); }catch(e){ toast("Could not create the Excel file: " + (e && e.message || e)); }
   }
 
+  /* ---------- PDF / Word (same builders as the other tabs): every form as a list of tables ---------- */
+  function sN(v){ return String(Math.round(num(v))).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+  function expTables(m){
+    var Y = m.Y, tables = [], B = function(a, n){ return a.map(function(x, i){ return n.indexOf(i) >= 0; }); };
+    function bmRows(rows){ return rows.map(function(r, i){ return {cells: [String(i + 1), (r.e.name || "") + (r.prov ? " (provisional)" : ""), r.e.designation || "", r.e.persNo || "", String(r.b), sN(r.basic1), sN(r.h), sN(r.rate), sN(r.j), sN(r.k)], nums: [0, 0, 0, 0, 0, 1, 1, 1, 1, 1].map(Boolean)}; }); }
+    function tot(label, t){ return {cells: [label, "", "", "", "", sN(t.g), sN(t.h), sN(t.i), sN(t.j), sN(t.k)], nums: [0, 0, 0, 0, 0, 1, 1, 1, 1, 1].map(Boolean)}; }
+    var bh = ["Sr.", "Name", "Designation", "Personal No.", "BPS", "Basic Pay 01-07-" + Y, "12 Months", "Annual Increment 01-Dec-" + Y, "Increment x 7 Months", "Total Provision " + m.fy], bn = [0, 0, 0, 0, 0, 1, 1, 1, 1, 1].map(Boolean);
+    var of = m.all.filter(function(r){ return r.b >= 16; }), ol = m.all.filter(function(r){ return r.b < 16; });
+    var g = {g: m.tot.officers.g + m.tot.officials.g, h: m.tot.officers.h + m.tot.officials.h, i: m.tot.officers.i + m.tot.officials.i, j: m.tot.officers.j + m.tot.officials.j, k: m.tot.officers.k + m.tot.officials.k};
+    tables.push({title: "Summary — Budget Demand " + m.fy, heads: ["Description", "Actual FY " + fyLabel(Y - 2), "Budget FY " + fyLabel(Y - 1), "Demand FY " + m.fy], num: [false, true, true, true],
+      rows: [{cells: ["Salary heads", sN(m.salPrev), sN(m.salBud), sN(m.salTotal)], nums: [false, true, true, true]}, {cells: ["Contingent heads", sN(m.conPrev), sN(m.conBud), sN(m.conTotal)], nums: [false, true, true, true]}],
+      foot: [{cells: ["Grand total", sN(m.salPrev + m.conPrev), sN(m.salBud + m.conBud), sN(m.grand)], nums: [false, true, true, true]}]});
+    tables.push({title: "Form BM-III — Basic Pay and Increment, FY " + m.fy + " — Officers (BPS 16 and above)", heads: bh, num: bn, rows: bmRows(of), foot: [tot("Total Officers", m.tot.officers)]});
+    tables.push({title: "Form BM-III — Basic Pay and Increment, FY " + m.fy + " — Officials", heads: bh, num: bn, rows: bmRows(ol), foot: [tot("Total Officials", m.tot.officials), tot("Total Officers + Officials", g)]});
+    var hasExt = num(m.S.xara) > 0, short = {A01103: "Special Pay", A01105: "Qualification Pay", A01216: "Qualification Allowance", A01202: "House Rent", A01203: "Conveyance", A0120D: "Integrated", A01207: "Washing", A01217: "Medical", A01224: "Entertainment", A0121N: "Personal", A01239: "Special Allowance", A0124X: "ARA 2023", A0125E: "ARA 2024", A0125X: "ARA 2026 (7%)"};
+    function part(codes, title, withTot){
+      var heads = ["Sr.", "Name", "BPS"].concat(codes.map(function(c){ return short[c]; })), keys = codes.slice();
+      if(withTot && hasExt){ heads.push("ARA 2027 (expected)"); keys.push("EXT"); }
+      if(withTot) heads.push("Total Allowances");
+      var nums = heads.map(function(_, i){ return i >= 3; });
+      var rows = m.all.map(function(r, i){ var c = ["" + (i + 1), r.e.name || "", String(r.b)]; keys.forEach(function(k){ c.push(sN(r.A[k])); }); if(withTot) c.push(sN(r.tot)); return {cells: c, nums: nums}; });
+      function ft(label, mult){
+        var c = [label, "", ""]; keys.forEach(function(k){ c.push(sN(num(m.monthly[k]) * mult)); });
+        if(withTot){ var t1 = 0; ACOLS.forEach(function(a){ t1 += num(m.monthly[a[0]]); }); t1 += num(m.monthly.EXT); c.push(sN(t1 * mult)); }
+        return {cells: c, nums: nums};
+      }
+      return {title: title, heads: heads, num: nums, rows: rows, foot: [ft("Total one month", 1), ft("Total 12 months", 12)]};
+    }
+    tables.push(part(["A01103", "A01105", "A01216", "A01202", "A01203", "A0120D", "A01207", "A01217"], "Form BM-III-A — Allowances per month, FY " + m.fy + " (part 1)", false));
+    tables.push(part(["A01224", "A0121N", "A01239", "A0124X", "A0125E", "A0125X"], "Form BM-III-A — Allowances per month, FY " + m.fy + " (part 2)", true));
+    var pn = [false, false, true, true, true, true, true];
+    var ts = 0, tf = 0, tv = 0;
+    var p1 = m.posts.map(function(p, i){ ts += p.sanc; tf += p.filled; tv += Math.max(0, p.vacant); return {cells: ["" + (i + 1), p.name, String(p.bps), String(p.sanc), String(p.filled), String(p.vacant), "0"], nums: pn}; });
+    tables.push({title: "Proforma-I — Vacancy Position, FY " + m.fy, heads: ["Sr.", "Name of Post", "BPS", "Sanctioned", "Filled", "Vacant", "OSD"], num: pn, rows: p1, foot: [{cells: ["Grand total", "", "", String(ts), String(tf), String(tv), "0"], nums: pn}]});
+    var hn = [false, false, false, true, true, true];
+    tables.push({title: "Proforma-II — Salary Heads, Annual Demand " + m.fy, heads: ["Sr.", "Object Head", "Description", "Actual FY " + fyLabel(Y - 2), "Budget FY " + fyLabel(Y - 1), "Demand FY " + m.fy], num: hn,
+      rows: m.sal.map(function(r, i){ return {cells: ["" + (i + 1), r.code, r.desc + (r.note ? " (" + r.note + ")" : ""), sN(r.prev), sN(r.bud), sN(r.demand)], nums: hn}; }),
+      foot: [{cells: ["Grand total", "", "", sN(m.salPrev), sN(m.salBud), sN(m.salTotal)], nums: hn}]});
+    var cl = m.con.filter(function(r){ return r.prev || r.bud || r.spent || r.demand; }), cn2 = [false, false, false, true, true, true, true];
+    tables.push({title: "Proforma-II — Contingent Heads, Annual Demand " + m.fy, heads: ["Sr.", "Object Head", "Description", "Actual FY " + fyLabel(Y - 2), "Budget FY " + fyLabel(Y - 1), "Spent so far FY " + fyLabel(Y - 1), "Demand FY " + m.fy], num: cn2,
+      rows: cl.map(function(r, i){ return {cells: ["" + (i + 1), r.code, r.desc, sN(r.prev), sN(r.bud), sN(r.spent), sN(r.demand)], nums: cn2}; }),
+      foot: [{cells: ["Grand total", "", "", sN(m.conPrev), sN(m.conBud), sN(m.con.reduce(function(a, r){ return a + r.spent; }, 0)), sN(m.conTotal)], nums: cn2}]});
+    return {tables: tables, title: "Budget Demand FY " + m.fy + " — DDO RI-4720", sub: "Pay slips of " + mLabel(m.M) + "   |   1-December increments counted: " + m.n + (countEdits(E()) ? "   |   some figures edited by hand" : ""), base: "BudgetDemand_" + m.fy};
+  }
+  async function runExport(kind){
+    var m = lastModel; if(!m || m.empty){ toast("Nothing to export yet"); return; }
+    if(!window.__brExportTables){ toast("The export tools are not ready — reload the page"); return; }
+    var x = expTables(m);
+    await window.__brExportTables(kind, x.tables, {title: x.title, sub: x.sub, base: x.base, landscape: true});
+  }
+
+  /* ---------- edit actions ---------- */
+  function uid(){ return Date.now().toString(36) + Math.floor(Math.random() * 1296).toString(36); }
+  function persist(){
+    try{ localStorage.setItem(EKEY, JSON.stringify(saved)); return true; }catch(e){ return false; }
+  }
+  function startEdit(){ work = clone(saved); editing = true; hist = []; redoS = []; dirty = false; resetArm = 0; render(); }
+  function saveEdit(){
+    saved = clone(work); editing = false; var ok = persist(); hist = []; redoS = []; dirty = false; work = null; render();
+    toast(ok ? "Saved" : "Could not save in this browser (storage blocked)");
+  }
+  function cancelEdit(){ editing = false; work = null; hist = []; redoS = []; dirty = false; render(); }
+  function undo(){ if(!hist.length) return; redoS.push(JSON.stringify(work)); work = JSON.parse(hist.pop()); dirty = true; render(); }
+  function redo(){ if(!redoS.length) return; hist.push(JSON.stringify(work)); work = JSON.parse(redoS.pop()); dirty = true; render(); }
+  function resetAll(){
+    if(!(resetArm && Date.now() - resetArm < 5000)){ resetArm = Date.now(); render(); setTimeout(function(){ if(resetArm && Date.now() - resetArm >= 5000){ resetArm = 0; render(); } }, 5200); return; }
+    resetArm = 0;
+    if(editing){ snap(); work = emptyEdits(); } else { saved = emptyEdits(); persist(); }
+    render();
+  }
+  function onEdit(t){
+    var ty = t.getAttribute("data-t"), k = t.getAttribute("data-k"), f = t.getAttribute("data-f"), id = t.getAttribute("data-id"), raw = String(t.value || "").trim(), W = work;
+    if(!W) return;
+    var v = raw === "" ? null : Math.max(0, num(raw.replace(/,/g, ""))), auto = num(t.getAttribute("data-auto"));
+    snap();
+    if(ty === "row"){
+      var o = W.ov[k] || (W.ov[k] = {});
+      if(f === "name" || f === "designation" || f === "persNo") o[f] = raw;
+      else{
+        var isA = f.indexOf("A:") === 0, c = isA ? f.slice(2) : f;
+        if(v == null || v === auto){ if(isA){ if(o.A){ delete o.A[c]; if(!Object.keys(o.A).length) delete o.A; } } else delete o[c]; }
+        else if(isA){ (o.A = o.A || {})[c] = v; } else o[c] = v;
+      }
+      if(!Object.keys(o).length) delete W.ov[k];
+    }
+    else if(ty === "sal" || ty === "con"){
+      var M2 = ty === "sal" ? W.salOv : W.conOv;
+      if(v == null || v === auto) delete M2[k]; else M2[k] = v;
+    }
+    else if(ty === "sanc"){ W.sanc[k] = Math.max(0, parseInt(raw, 10) || 0); }
+    else if(ty === "sx" || ty === "cx"){
+      var L = ty === "sx" ? W.salExtra : W.conExtra;
+      L.forEach(function(x){ if(x.id === id){ x[f] = f === "demand" ? Math.max(0, num(raw.replace(/,/g, ""))) : raw; } });
+    }
+  }
+  function rerenderKeepFocus(){
+    setTimeout(function(){
+      var a = document.activeElement, sel = null;
+      if(a && a.classList && a.classList.contains("bd-in") && panel.contains(a)) sel = {t: a.getAttribute("data-t"), k: a.getAttribute("data-k"), f: a.getAttribute("data-f"), id: a.getAttribute("data-id")};
+      render();
+      if(sel){
+        var all = panel.querySelectorAll(".bd-in");
+        for(var i = 0; i < all.length; i++){
+          var x = all[i];
+          if(x.getAttribute("data-t") === sel.t && x.getAttribute("data-k") === sel.k && x.getAttribute("data-f") === sel.f && x.getAttribute("data-id") === sel.id){ x.focus(); try{ x.select(); }catch(e){} break; }
+        }
+      }
+    }, 0);
+  }
+
   /* ---------- events ---------- */
   panel.addEventListener("click", function(ev){
-    var t = ev.target.closest ? ev.target.closest("button") : null; if(!t) return;
-    if(t.classList.contains("bd-sub")){ mode = t.getAttribute("data-m"); render(); return; }
-    if(t.id === "bd_xl"){ exportXlsx(); }
+    var t = ev.target.closest ? ev.target.closest("button") : null; if(!t || t.disabled) return;
+    var id = t.id, cl = t.classList;
+    if(cl.contains("bd-sub")){ mode = t.getAttribute("data-m"); render(); return; }
+    if(id === "bd_xl"){ exportXlsx(); return; }
+    if(id === "bd_pdf"){ runExport("pdf"); return; }
+    if(id === "bd_doc"){ runExport("word"); return; }
+    if(id === "bd_prt"){ var pb = document.getElementById("globalPrintBtn"); if(pb) pb.click(); else window.print(); return; }
+    if(id === "bd_edit"){ startEdit(); return; }
+    if(id === "bd_save"){ saveEdit(); return; }
+    if(id === "bd_cancel"){ cancelEdit(); return; }
+    if(id === "bd_undo"){ undo(); return; }
+    if(id === "bd_redo"){ redo(); return; }
+    if(id === "bd_reset"){ resetAll(); return; }
+    if(!editing || !work) return;
+    if(cl.contains("bd-del")){
+      snap(); var k = t.getAttribute("data-k");
+      if(k.indexOf("X:") === 0){ var xid = k.slice(2); work.extra = work.extra.filter(function(x){ return x.id !== xid; }); delete work.ov[k]; }
+      else work.del[k] = true;
+      render(); return;
+    }
+    if(cl.contains("bd-restore")){ snap(); delete work.del[t.getAttribute("data-k")]; render(); return; }
+    if(cl.contains("bd-delsx")){ snap(); var i1 = t.getAttribute("data-id"); work.salExtra = work.salExtra.filter(function(x){ return x.id !== i1; }); render(); return; }
+    if(cl.contains("bd-delcx")){ snap(); var i2 = t.getAttribute("data-id"); work.conExtra = work.conExtra.filter(function(x){ return x.id !== i2; }); render(); return; }
+    if(id === "bd_ap_add"){
+      var pk = $("#bd_ap_post").value, nm = $("#bd_ap_name").value.trim(), pn = $("#bd_ap_pno").value.trim();
+      if(!pk){ return; }
+      if(!nm){ toast("Write the name first"); return; }
+      snap(); var nid = uid(); work.extra.push({id: nid, postKey: pk});
+      var post = (lastModel.posts.filter(function(p){ return p.key === pk; })[0]) || {name: ""};
+      work.ov["X:" + nid] = {name: nm, persNo: pn, designation: post.name};
+      render(); return;
+    }
+    if(id === "bd_as_add" || id === "bd_ac_add"){
+      var s = id === "bd_as_add" ? "as" : "ac", code = $("#bd_" + s + "_code").value.trim(), desc = $("#bd_" + s + "_desc").value.trim(), amt = Math.max(0, num($("#bd_" + s + "_amt").value.replace(/,/g, "")));
+      if(!desc){ toast("Write the description first"); return; }
+      snap(); var item = {id: uid(), code: code, desc: desc, prev: 0, bud: 0, spent: 0, demand: amt};
+      (s === "as" ? work.salExtra : work.conExtra).push(item); render(); return;
+    }
   });
   panel.addEventListener("change", function(ev){
-    var t = ev.target, S = settings(), id = t.id, ch = true;
+    var t = ev.target;
+    if(t.classList && t.classList.contains("bd-in")){ if(editing) { onEdit(t); rerenderKeepFocus(); } return; }
+    var S = settings(), id = t.id, ch = true;
     if(id === "bd_fy") S.fy = t.value;
     else if(id === "bd_bm") S.bm = t.value;
     else if(id === "bd_pct") S.pct = num(t.value);
@@ -10701,7 +10984,6 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     else if(id === "bd_dept") S.dept = t.value;
     else if(id === "bd_att") S.att = t.value;
     else if(id === "bd_grant") S.grant = t.value;
-    else if(t.classList && t.classList.contains("bd-sanc")){ var k = t.getAttribute("data-k"); S.posts.forEach(function(p){ if(p.key === k) p.sanc = Math.max(0, parseInt(t.value, 10) || 0); }); }
     else ch = false;
     if(ch){ saveSettings(S); render(); }
   });
@@ -10717,7 +10999,8 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       }
     }catch(e){}
   }, 1500);
-  window.__brBudget = {build: build, render: render, model: function(){ return lastModel; }, settings: settings};
+  window.addEventListener("beforeunload", function(ev){ if(editing && dirty){ ev.preventDefault(); ev.returnValue = ""; } });
+  window.__brBudget = {build: build, render: render, model: function(){ return lastModel; }, settings: settings, edits: function(){ return E(); }};
 })();
 
 
