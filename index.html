@@ -1276,6 +1276,28 @@ body.lang-ur .br-part{ font-size:17px; }
 }
 @media (max-width:600px){ .payslip-paper .ps-top img.camp-pros-print{ height:42px !important; } }
 
+
+/* ===== Pay Fixation tab (admin only, read-only) ===== */
+#panel-payfix .pf-subnav{ display:flex; flex-wrap:wrap; gap:8px; margin:0 0 14px; }
+#panel-payfix .pf-sub{ border:1px solid var(--border); background:var(--surface); color:inherit; padding:7px 14px; border-radius:999px; font-weight:600; font-size:13px; cursor:pointer; }
+#panel-payfix .pf-sub.active{ background:var(--navy); color:#fff; border-color:var(--navy); }
+#panel-payfix .pf-bar{ display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; margin:0 0 12px; }
+#panel-payfix .pf-bar .field{ min-width:140px; flex:1 1 160px; max-width:260px; margin:0; }
+#panel-payfix .pf-chips{ display:flex; flex-wrap:wrap; gap:8px; margin:0 0 12px; }
+#panel-payfix .pf-chip{ padding:3px 12px; border-radius:999px; border:1px solid var(--border); background:var(--surface); font-size:12px; font-weight:600; }
+#panel-payfix .pf-c-ok{ background:#e6f4ea; border-color:#7bb98a; color:#14532d; }
+#panel-payfix .pf-c-bad{ background:#fde8e8; border-color:#e08a8a; color:#7a1414; }
+#panel-payfix .pf-tbl{ font-size:12.5px !important; }
+#panel-payfix .pf-tbl td.c, #panel-payfix .pf-tbl th.c{ text-align:center; }
+#panel-payfix .pf-tbl td.num, #panel-payfix .pf-tbl th.num{ text-align:right; font-variant-numeric:tabular-nums; }
+#panel-payfix tr.pf-bad td{ background:#fff1f1 !important; }
+#panel-payfix tr.pf-none td{ color:var(--muted,#667); }
+#panel-payfix tr.pf-sum td{ background:color-mix(in srgb,var(--navy) 10%,var(--surface)) !important; }
+#panel-payfix .pf-tick{ color:#1a7f37; } #panel-payfix .pf-cross{ color:#c62828; }
+#panel-payfix .pf-warn{ background:#fff4e0; border:1px solid #e8b04a; color:#6b4300; padding:8px 12px; border-radius:var(--radius); margin-bottom:10px; font-size:13px; }
+#panel-payfix .pf-ok{ background:#e6f4ea; border:1px solid #7bb98a; color:#14532d; padding:8px 12px; border-radius:var(--radius); margin-bottom:10px; font-size:13px; }
+#panel-payfix .pf-h3{ margin:18px 0 8px; font-size:15px; }
+
 </style>
 <!-- PWA: installable app -->
 <link rel="manifest" href="/manifest.webmanifest">
@@ -1472,6 +1494,7 @@ body.lang-ur .br-part{ font-size:17px; }
     <button class="tab-btn" data-tab="reports"><span class="dot"></span> <span data-i18n="rep_title">Reports</span></button>
     <button class="tab-btn" data-tab="monthly"><span class="dot"></span> <span class="en">Monthly Report</span><span class="ur">ماہانہ رپورٹ</span></button>
     <button class="tab-btn" data-tab="statement"><span class="dot"></span> <span class="en">Balance Statement</span><span class="ur">ماہانہ گوشوارہ</span></button>
+    <button class="tab-btn" data-tab="payfix" id="payfixTabBtn" style="display:none;"><span class="dot"></span> <span class="en">Pay Fixation</span><span class="ur">پے اسکیل / پے فکسیشن</span></button>
     <button class="tab-btn" data-tab="employees"><span class="dot"></span> <span data-i18n="nav_employees">Employees</span></button>
     <button class="tab-btn" data-tab="leave"><span class="dot"></span> <span data-i18n="nav_leave">Leave Register</span></button>
     <button class="tab-btn" data-tab="attendance"><span class="dot"></span> <span data-i18n="nav_attendance">Attendance Register</span></button>
@@ -2053,6 +2076,21 @@ body.lang-ur .br-part{ font-size:17px; }
         </div>
       </div>
       <div id="stBody"></div>
+    </section>
+
+    <section class="panel" id="panel-payfix">
+      <div class="panel-head">
+        <div>
+          <h2><span class="en">Pay Fixation — Pay Scales 2026</span><span class="ur">پے فکسیشن — پے اسکیل 2026</span></h2>
+          <p><span class="en">Checks every employee's pay slip against the Punjab Finance Department notification (FD.SR-V.2-1/2026, 22-07-2026), with a calculator and the pay-stage chart of every BPS. Read only — nothing here changes any data. Admin / Super Admin only.</span><span class="ur">ہر ملازم کی پے سلپ کو پنجاب فنانس ڈیپارٹمنٹ کے نوٹیفکیشن (FD.SR-V.2-1/2026، 22-07-2026) سے ملا کر دیکھتا ہے، ساتھ کیلکولیٹر اور ہر BPS کا پے اسٹیج چارٹ۔ صرف پڑھنے کے لیے — یہاں سے کوئی ڈیٹا نہیں بدلتا۔ صرف ایڈمن / سپر ایڈمن۔</span></p>
+        </div>
+      </div>
+      <div class="pf-subnav">
+        <button type="button" class="pf-sub active" data-m="check"><span class="en">Employee check</span><span class="ur">ملازمین کا چیک</span></button>
+        <button type="button" class="pf-sub" data-m="calc"><span class="en">Calculator</span><span class="ur">کیلکولیٹر</span></button>
+        <button type="button" class="pf-sub" data-m="chart"><span class="en">Pay-stage chart</span><span class="ur">پے اسٹیج چارٹ</span></button>
+      </div>
+      <div id="pfBody"></div>
     </section>
 
     <!-- ================= EMPLOYEES ================= -->
@@ -9736,6 +9774,303 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   });
   setInterval(function(){ try{ refreshIfActive(false); }catch(e){} }, 1500);
   window.__brStatement = {rows:function(mk){ return buildRows(mk); }, parseText:parseText, matchCode:matchCode, applyParsed:applyParsed, render:render};
+})();
+
+/* ================= PAY FIXATION (Pay Scales 2026) — read-only checker, calculator and chart (Admin / Super Admin) =================
+   Rules come from Finance Department, Government of the Punjab, Notification No. FD.SR-V.2-1/2026 dated 22-07-2026
+   (Basic Pay Scales 2026, effective 01-07-2026).  This tab only READS the pay slips and employees already loaded on the page;
+   it never saves or changes anything. */
+(function(){
+  "use strict";
+  var panel = document.getElementById("panel-payfix"), body = document.getElementById("pfBody");
+  if(!panel || !body) return;
+  var MN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  /* [minimum, annual increment, stages] — Annexure-I of the notification (scale 2022 on the left, 2026 on the right) */
+  var S22 = {1:[13550,430,30],2:[13820,490,30],3:[14260,580,30],4:[14690,660,30],5:[15230,750,30],6:[15760,840,30],7:[16310,910,30],8:[16890,1000,30],9:[17470,1090,30],10:[18050,1190,30],11:[18650,1310,30],12:[19770,1430,30],13:[21160,1560,30],14:[22530,1740,30],15:[23920,1980,30],16:[28070,2260,30],17:[45070,3420,20],18:[56880,4260,20],19:[87840,4530,20],20:[102470,6690,14],21:[113790,7420,14],22:[122190,8710,14]};
+  var S26 = {1:[16280,520,30],2:[16600,590,30],3:[17130,700,30],4:[17650,800,30],5:[18300,910,30],6:[18930,1010,30],7:[19590,1100,30],8:[20290,1210,30],9:[20990,1310,30],10:[21680,1430,30],11:[22410,1580,30],12:[23750,1720,30],13:[25420,1880,30],14:[27060,2090,30],15:[28730,2380,30],16:[33720,2720,30],17:[54140,4110,20],18:[68330,5120,20],19:[105510,5450,20],20:[123090,8040,14],21:[136680,8920,14],22:[146770,10470,14]};
+  function scaleFor(newScale){ return newScale ? S26 : S22; }
+  function caRate(b, newScale){ var o = b <= 4 ? [1785,2678] : b <= 10 ? [1932,2898] : b <= 15 ? [2856,4284] : [5000,7500]; return newScale ? o[1] : o[0]; }
+  function saRate(b){ return b <= 17 ? 0.75 : 1.25; }              /* Special Allowance = this share of the scale minimum (seen on the real pay slips) */
+  function saAmount(b, newScale){ return Math.round(saRate(b) * scaleFor(newScale)[b][0]); }
+  function ara26(basic){ return Math.floor(basic * 0.07 + 1e-9); }
+  function ara25(basic){ return Math.round(basic * 0.10); }
+  function $(sel, root){ return (root || panel).querySelector(sel); }
+  function num(v){ return Number(v) || 0; }
+  function money(n){ return fmt(Math.round(num(n))); }
+  function T(en, ur){ return "<span class='en'>" + en + "</span><span class='ur'>" + ur + "</span>"; }
+  function mLabel(k){ var a = k.split("-"); return MN[+a[1] - 1] + " " + a[0]; }
+  function allowed(){ try{ return isAdmin(); }catch(e){ return false; } }
+
+  var mode = "check", chartBps = 11, lastState = null, lastRows = [], lastMonth = "";
+
+  /* ---------- head classification of pay slip lines ---------- */
+  function classify(desc){
+    var d = String(desc || "").toLowerCase().replace(/\s+/g, " ");
+    if(/^basic pay/.test(d)) return "basic";
+    if(/special allowance/.test(d) && !/conve/.test(d)) return "sa";
+    if(/conve/.test(d)) return "ca";
+    if(/adhoc|ad-hoc|ara/.test(d)){
+      if(/2026/.test(d)) return "ara26";
+      if(/2025/.test(d)) return "ara25";
+      if(/2024/.test(d)) return "ara24";
+      if(/2023/.test(d)) return "ara23";
+      if(/2022|15%\s*22/.test(d)) return "ara22";
+    }
+    return "other";
+  }
+  function heads(slip){
+    var h = {}; ((slip && slip.earnings) || []).forEach(function(l){ var k = classify(l.desc); h[k] = (h[k] || 0) + num(l.amount); });
+    return h;
+  }
+  function months(){
+    var set = {}, ps = (STATE && STATE.payslipData) || {};
+    Object.keys(ps).forEach(function(id){ Object.keys(ps[id] || {}).forEach(function(m){ if(/^\d{4}-\d{2}$/.test(m) && ps[id][m] && (ps[id][m].earnings || []).length) set[m] = 1; }); });
+    return Object.keys(set).sort();
+  }
+  function prevMonth(m){ var a = m.split("-"), y = +a[0], mo = +a[1] - 1; if(mo < 1){ mo = 12; y--; } return y + "-" + (mo < 10 ? "0" : "") + mo; }
+  function bpsNum(s){ var n = parseInt(String(s || "").replace(/\D/g, ""), 10); return n >= 1 && n <= 22 ? n : 0; }
+
+  /* the stage (0 = minimum) a basic pay sits on in a BPS, or null */
+  function stageOf(b, basic, newScale){
+    var sc = scaleFor(newScale)[b]; if(!sc) return null;
+    var k = (basic - sc[0]) / sc[1];
+    return (k >= 0 && k <= sc[2] && Math.abs(k - Math.round(k)) < 1e-9) ? Math.round(k) : null;
+  }
+
+  /* ---------- the check of one employee for one month ---------- */
+  function checkEmp(e, month, prevSlipsOf){
+    var newScale = month >= "2026-07";
+    var slip = STATE.payslipData && STATE.payslipData[e.id] && STATE.payslipData[e.id][month];
+    var out = {emp: e, ok: true, errs: [], notes: [], has: !!(slip && (slip.earnings || []).length)};
+    if(!out.has){ out.ok = null; out.errs.push(T("No pay slip for this month", "اس مہینے کی پرچی نہیں")); return out; }
+    var h = heads(slip), recB = bpsNum(e.bps), b = recB, basic = num(h.basic);
+    out.basic = basic; out.recB = recB;
+    function fitList(){
+      var res = [];
+      for(var x = 1; x <= 22; x++){ if(stageOf(x, basic, newScale) == null) continue; if(h.sa != null && Math.abs(h.sa - saAmount(x, newScale)) > 1) continue; res.push(x); }
+      return res;
+    }
+    var st = b ? stageOf(b, basic, newScale) : null;
+    if(!basic){ out.ok = false; out.errs.push(T("No Basic Pay line on the slip", "پرچی میں بنیادی تنخواہ کی لائن نہیں")); return out; }
+    if(b && st == null){
+      var sc = scaleFor(newScale)[b];
+      if(basic > sc[0] + sc[1] * sc[2]){ out.notes.push(T("Basic is above the maximum of BPS-" + b + " (personal pay) — check with the DDO", "بنیادی تنخواہ اسکیل کی حد سے اوپر ہے (پرسنل پے)")); }
+      else{
+        var fit = fitList();
+        if(fit.length){
+          var fb = fit[0], fs = stageOf(fb, basic, newScale);
+          out.errs.push(T("Record says BPS-" + (recB || "?") + " but the slip fits BPS-" + fb + " stage " + fs + " — check the BPS in the Employees tab", "ریکارڈ میں BPS-" + (recB || "?") + " ہے مگر پرچی BPS-" + fb + " اسٹیج " + fs + " سے ملتی ہے — ملازمین ٹیب میں BPS درست کریں"));
+          b = fb; st = fs; out.fitB = fb;
+        }else{
+          out.errs.push(T("Basic Rs. " + money(basic) + " is not on any stage of BPS-" + (recB || "?") + " (" + (newScale ? "2026" : "2022") + " scale)", "بنیادی تنخواہ " + money(basic) + " اس BPS کے کسی اسٹیج پر نہیں"));
+        }
+      }
+    }else if(!b){
+      var f2 = fitList();
+      if(f2.length){ b = f2[0]; st = stageOf(b, basic, newScale); out.notes.push(T("BPS not set in the record; slip fits BPS-" + b + " stage " + st, "ریکارڈ میں BPS نہیں؛ پرچی BPS-" + b + " اسٹیج " + st + " سے ملتی ہے")); }
+      else out.errs.push(T("BPS not set and the basic fits no stage", "BPS درج نہیں اور تنخواہ کسی اسٹیج پر نہیں"));
+    }
+    out.b = b; out.stage = st;
+    if(!b){ out.ok = false; return out; }
+    var expect = {};
+    if(st != null) expect.basic = basic;
+    expect.sa = saAmount(b, newScale);
+    if(h.sa == null) out.notes.push(T("No Special Allowance line", "اسپیشل الاؤنس کی لائن نہیں"));
+    else if(Math.abs(h.sa - expect.sa) > 1) out.errs.push(T("Special Allowance Rs. " + money(h.sa) + " — expected Rs. " + money(expect.sa), "اسپیشل الاؤنس " + money(h.sa) + " — درست " + money(expect.sa)));
+    if(h.ca != null){
+      var ec = caRate(b, newScale); expect.ca = ec;
+      if(Math.abs(h.ca - ec) > 1) out.errs.push(T("Conveyance Rs. " + money(h.ca) + " — expected Rs. " + money(ec), "کنوینس " + money(h.ca) + " — درست " + money(ec)));
+    }else if(b <= 16) out.notes.push(T("No Conveyance line (fine if not entitled)", "کنوینس کی لائن نہیں (حق نہ ہو تو ٹھیک)"));
+    if(newScale){
+      expect.ara26 = ara26(basic);
+      if(h.ara26 == null) out.errs.push(T("ARA-2026 (7%) line missing — expected Rs. " + money(expect.ara26), "ARA-2026 (7%) کی لائن نہیں — درست " + money(expect.ara26)));
+      else if(Math.abs(h.ara26 - expect.ara26) > 1) out.errs.push(T("ARA-2026 Rs. " + money(h.ara26) + " — expected Rs. " + money(expect.ara26), "ARA-2026 " + money(h.ara26) + " — درست " + money(expect.ara26)));
+      if(h.ara22 != null || h.ara25 != null) out.errs.push(T("ARA-2022 / ARA-2025 are abolished from 01-07-2026 (merged into basic) but still on the slip", "ARA-2022 / ARA-2025 یکم جولائی 2026 سے ختم ہیں مگر پرچی میں موجود ہیں"));
+    }else if(h.ara25 != null || month >= "2025-07"){
+      if(month >= "2025-07"){
+        if(h.ara25 == null) out.notes.push(T("No ARA-2025 line", "ARA-2025 کی لائن نہیں"));
+        else if(Math.abs(h.ara25 - ara25(basic)) > 1) out.errs.push(T("ARA-2025 Rs. " + money(h.ara25) + " — expected Rs. " + money(ara25(basic)) + " (10% of basic)", "ARA-2025 " + money(h.ara25) + " — درست " + money(ara25(basic))));
+      }
+    }
+    /* frozen ARAs and the 1 December increment, compared with the previous month's slip */
+    var pm = prevMonth(month), pslip = STATE.payslipData[e.id] && STATE.payslipData[e.id][pm];
+    if(pslip && (pslip.earnings || []).length){
+      var ph = heads(pslip);
+      ["ara23","ara24"].forEach(function(k){ if(h[k] != null && ph[k] != null && Math.abs(h[k] - ph[k]) > 0){ out.errs.push(T(k.toUpperCase().replace("ARA","ARA-20") + " changed from Rs. " + money(ph[k]) + " to Rs. " + money(h[k]) + " — it is frozen", k.toUpperCase().replace("ARA","ARA-20") + " بدل گیا — یہ منجمد ہے")); } });
+      if(newScale && month.slice(5) === "12" && pm >= "2026-07" && st != null){
+        var sc2 = S26[b], pst = stageOf(b, num(ph.basic), true);
+        if(pst != null && pst < sc2[2] && basic - num(ph.basic) !== sc2[1]) out.errs.push(T("1 December increment: basic rose by Rs. " + money(basic - num(ph.basic)) + " — expected Rs. " + money(sc2[1]), "یکم دسمبر انکریمنٹ: بنیادی تنخواہ " + money(basic - num(ph.basic)) + " بڑھی — درست " + money(sc2[1])));
+      }
+    }
+    out.ok = out.errs.length === 0;
+    return out;
+  }
+
+  /* ---------- views ---------- */
+  function msel(months_, cur){
+    return "<select id='pf_month'>" + months_.map(function(m){ return "<option value='" + m + "'" + (m === cur ? " selected" : "") + ">" + mLabel(m) + "</option>"; }).join("") + "</select>";
+  }
+  function viewCheck(){
+    var ms = months(), emps = (STATE && STATE.employees) || [];
+    if(!ms.length) return "<div class='pf-warn'>" + T("No pay slips are saved yet, so there is nothing to check.", "ابھی کوئی پے سلپ محفوظ نہیں، اس لیے چیک کرنے کو کچھ نہیں۔") + "</div>";
+    if(!lastMonth || ms.indexOf(lastMonth) < 0){
+      var best = ms[ms.length - 1], bestN = -1;
+      ms.forEach(function(m){ var n = 0; emps.forEach(function(e){ var sl = STATE.payslipData && STATE.payslipData[e.id] && STATE.payslipData[e.id][m]; if(sl && (sl.earnings || []).length) n++; }); if(n >= bestN){ bestN = n; best = m; } });
+      lastMonth = best;
+    }
+    var month = lastMonth, rows = emps.map(function(e){ return checkEmp(e, month); });
+    lastRows = rows;
+    var bad = rows.filter(function(r){ return r.ok === false; }).length, good = rows.filter(function(r){ return r.ok === true; }).length, none = rows.filter(function(r){ return r.ok === null; }).length;
+    var scaleTxt = month >= "2026-07" ? "Basic Pay Scales 2026" : "Basic Pay Scales 2022";
+    var h = "<div class='pf-bar'><div class='field'><label>" + T("Month", "مہینہ") + "</label>" + msel(ms, month) + "</div>" +
+      "<button type='button' class='btn small' id='pf_xl'>⬇ " + T("Download Excel", "ایکسل ڈاؤن لوڈ") + "</button></div>" +
+      "<div class='pf-chips'><span class='pf-chip pf-c-ok'>✔ " + good + " " + T("agree with the rules", "قاعدے کے مطابق") + "</span>" +
+      "<span class='pf-chip " + (bad ? "pf-c-bad" : "pf-c-ok") + "'>✖ " + bad + " " + T("need checking", "چیک کریں") + "</span>" +
+      (none ? "<span class='pf-chip'>" + none + " " + T("no slip", "پرچی نہیں") + "</span>" : "") +
+      "<span class='pf-chip'>" + scaleTxt + "</span></div>";
+    h += "<div class='table-wrap'><table class='pf-tbl'><thead><tr><th>" + T("Pers #", "پرسنل نمبر") + "</th><th>" + T("Name", "نام") + "</th><th>" + T("BPS (record)", "BPS (ریکارڈ)") + "</th><th>" + T("Stage", "اسٹیج") + "</th><th class='num'>" + T("Basic pay", "بنیادی تنخواہ") + "</th><th>" + T("Result", "نتیجہ") + "</th></tr></thead><tbody>";
+    rows.forEach(function(r){
+      var e = r.emp, cls = r.ok === false ? "pf-bad" : (r.ok === null ? "pf-none" : "pf-good");
+      var msg = r.errs.concat(r.notes.map(function(n){ return "<i>" + n + "</i>"; })).join("<br>");
+      h += "<tr class='" + cls + "'><td>" + esc(e.persNo || "") + "</td><td>" + esc(e.name || "") + "</td><td class='c'>" + esc(e.bps || "") + "</td><td class='c'>" + (r.stage != null ? r.stage : "") + "</td><td class='num'>" + (r.basic ? money(r.basic) : "") + "</td><td>" + (r.ok === true ? "<b class='pf-tick'>✔</b> " : r.ok === false ? "<b class='pf-cross'>✖</b> " : "") + msg + "</td></tr>";
+    });
+    h += "</tbody></table></div>";
+    h += "<p class='hint'>" + T("What is checked: basic pay sits on a stage of the scale; Special Allowance (75% of the scale minimum for BPS 1-17, 125% for BPS 18 and above); Conveyance rate; ARA-2026 = 7% of basic (ARA-2022 and ARA-2025 must be gone from July 2026); ARA-2023 / ARA-2024 unchanged (frozen); the 1 December increment. House Rent, Medical and Personal Allowance are not changed by the notification and are not checked.", "کیا چیک ہوتا ہے: بنیادی تنخواہ اسکیل کے کسی اسٹیج پر ہو؛ اسپیشل الاؤنس (BPS 1-17 میں اسکیل کی کم از کم کا 75%، BPS 18 اور اوپر 125%)؛ کنوینس کا ریٹ؛ ARA-2026 = بنیادی کا 7% (جولائی 2026 سے ARA-2022 اور ARA-2025 نہ ہوں)؛ ARA-2023 / ARA-2024 وہی رہیں (منجمد)؛ یکم دسمبر کا انکریمنٹ۔ ہاؤس رینٹ، میڈیکل اور پرسنل الاؤنس نوٹیفکیشن سے نہیں بدلتے، انہیں چیک نہیں کیا جاتا۔") + "</p>";
+    return h;
+  }
+
+  function calcOut(newScale, b, st){
+    var sc = scaleFor(newScale)[b], basic = sc[0] + sc[1] * st;
+    var o = {basic: basic, sa: saAmount(b, newScale), ca: caRate(b, newScale), a26: newScale ? ara26(basic) : 0, a25: newScale ? 0 : ara25(basic)};
+    o.sum = o.basic + o.sa + o.ca + o.a26 + o.a25;
+    return o;
+  }
+  function viewCalc(){
+    var b = bpsNum($("#pf_cb") && $("#pf_cb").value) || 11, ns = !($("#pf_cs") && $("#pf_cs").value === "22");
+    var sc = scaleFor(ns)[b], stIn = $("#pf_st") ? $("#pf_st").value : "13", basicIn = $("#pf_bas") ? $("#pf_bas").value : "", other = $("#pf_oth") ? num($("#pf_oth").value) : 0;
+    var st = Math.max(0, Math.min(sc[2], parseInt(stIn, 10) || 0));
+    var bOpt = ""; for(var i = 1; i <= 22; i++) bOpt += "<option value='" + i + "'" + (i === b ? " selected" : "") + ">BPS-" + i + "</option>";
+    var found = "";
+    if(basicIn !== ""){
+      var bn = num(basicIn), a = stageOf(b, bn, ns);
+      found = a != null ? "<div class='pf-ok'>" + T("Rs. " + money(bn) + " is stage " + a + " of BPS-" + b + " (" + (ns ? "2026" : "2022") + " scale).", "روپے " + money(bn) + " BPS-" + b + " کا اسٹیج " + a + " ہے۔") + "</div>" : "<div class='pf-warn'>" + T("Rs. " + money(bn) + " is not on any stage of BPS-" + b + " in the " + (ns ? "2026" : "2022") + " scale.", "روپے " + money(bn) + " اس BPS کے کسی اسٹیج پر نہیں۔") + "</div>";
+      if(a != null){ st = a; }
+    }
+    var n = calcOut(true, b, st), o = calcOut(false, b, st);
+    var h = "<div class='pf-bar pf-bar-wrap'>" +
+      "<div class='field'><label>" + T("Scale", "اسکیل") + "</label><select id='pf_cs'><option value='26'" + (ns ? " selected" : "") + ">2026</option><option value='22'" + (!ns ? " selected" : "") + ">2022</option></select></div>" +
+      "<div class='field'><label>BPS</label><select id='pf_cb'>" + bOpt + "</select></div>" +
+      "<div class='field'><label>" + T("Stage (increments earned, 0-" + sc[2] + ")", "اسٹیج (لگ چکے انکریمنٹ، 0-" + sc[2] + ")") + "</label><input id='pf_st' inputmode='numeric' value='" + st + "'></div>" +
+      "<div class='field'><label>" + T("or: my basic pay today", "یا: میری آج کی بنیادی تنخواہ") + "</label><input id='pf_bas' inputmode='numeric' value='" + esc(basicIn) + "' placeholder='e.g. 42950'></div>" +
+      "<div class='field'><label>" + T("Other fixed heads (House Rent, Medical, Personal, ARA-2023, ARA-2024)", "دوسرے مقررہ الاؤنس (ہاؤس رینٹ، میڈیکل، پرسنل، ARA-2023، 2024)") + "</label><input id='pf_oth' inputmode='numeric' value='" + (other || "") + "' placeholder='0'></div>" +
+      "</div>" + found;
+    h += "<div class='table-wrap'><table class='pf-tbl'><thead><tr><th>" + T("Head", "مد") + "</th><th class='num'>" + T("Old scale 2022", "پرانا اسکیل 2022") + "</th><th class='num'>" + T("New scale 2026", "نیا اسکیل 2026") + "</th><th class='num'>" + T("Change", "فرق") + "</th></tr></thead><tbody>";
+    function row(lbl, a, c, strong){ return "<tr" + (strong ? " class='pf-sum'" : "") + "><td>" + lbl + "</td><td class='num'>" + money(a) + "</td><td class='num'>" + money(c) + "</td><td class='num'>" + (c - a >= 0 ? "+" : "−") + money(Math.abs(c - a)) + "</td></tr>"; }
+    h += row(T("Basic pay (stage " + st + ")", "بنیادی تنخواہ (اسٹیج " + st + ")"), o.basic, n.basic);
+    h += row(T("Special Allowance", "اسپیشل الاؤنس"), o.sa, n.sa);
+    h += row(T("Conveyance Allowance", "کنوینس الاؤنس"), o.ca, n.ca);
+    h += row("ARA-2025 (10%) — " + T("merged into basic", "بنیادی میں ضم"), o.a25, 0);
+    h += row("ARA-2026 (7%)", 0, n.a26);
+    h += row(T("Other fixed heads", "دوسرے مقررہ الاؤنس"), other, other);
+    h += "<tr class='pf-sum'><td><b>" + T("Total (before ARA-2022)", "کل (ARA-2022 سے پہلے)") + "</b></td><td class='num'><b>" + money(o.sum + other) + "</b></td><td class='num'><b>" + money(n.sum + other) + "</b></td><td class='num'><b>" + (n.sum - o.sum >= 0 ? "+" : "−") + money(Math.abs(n.sum - o.sum)) + "</b></td></tr>";
+    h += "</tbody></table></div><p class='hint'>" + T("ARA-2022 (15% of the old BPS-2017 pay) was also merged into basic; take your own ARA-2022 line from your June 2026 slip and subtract it from the change above to get the exact monthly rise.", "ARA-2022 (پرانے BPS-2017 کی تنخواہ کا 15%) بھی بنیادی میں ضم ہوا؛ اپنی جون 2026 کی پرچی سے ARA-2022 کی رقم اوپر کے فرق سے گھٹا دیں تو ٹھیک ماہانہ اضافہ نکل آئے گا۔") + "</p>";
+    /* the next five 1 December increments on the 2026 scale */
+    h += "<h3 class='pf-h3'>" + T("Next annual increments (every 1 December, 2026 scale)", "اگلے سالانہ انکریمنٹ (ہر یکم دسمبر، 2026 اسکیل)") + "</h3><div class='table-wrap'><table class='pf-tbl'><thead><tr><th>" + T("From", "تاریخ") + "</th><th class='c'>" + T("Stage", "اسٹیج") + "</th><th class='num'>" + T("Basic pay", "بنیادی تنخواہ") + "</th><th class='num'>ARA-2026 (7%)</th><th class='num'>" + T("Rise per month", "ماہانہ اضافہ") + "</th></tr></thead><tbody>";
+    var prev = calcOut(true, b, st), nowD = new Date(), firstDec = Math.max(2026, nowD.getFullYear() + (nowD.getMonth() >= 11 ? 1 : 0));
+    h += "<tr><td>" + T("Now", "ابھی") + "</td><td class='c'>" + st + "</td><td class='num'>" + money(prev.basic) + "</td><td class='num'>" + money(prev.a26) + "</td><td class='num'>—</td></tr>";
+    for(var k = 1; k <= 5; k++){
+      if(st + k > sc[2]) break;
+      var c2 = calcOut(true, b, st + k);
+      h += "<tr><td>1 " + T("Dec", "دسمبر") + " " + (firstDec + k - 1) + "</td><td class='c'>" + (st + k) + "</td><td class='num'>" + money(c2.basic) + "</td><td class='num'>" + money(c2.a26) + "</td><td class='num'>+" + money((c2.basic + c2.a26) - (prev.basic + prev.a26)) + "</td></tr>";
+      prev = c2;
+    }
+    h += "</tbody></table></div>";
+    return h;
+  }
+
+  function chartRows(b){
+    var a = S22[b], n = S26[b], rows = [];
+    for(var s = 0; s <= n[2]; s++){
+      var o = a[0] + a[1] * s, c = n[0] + n[1] * s;
+      var net = (c - o) - ara25(o) + ara26(c) + (saAmount(b, true) - saAmount(b, false)) + (caRate(b, true) - caRate(b, false));
+      rows.push({s: s, o: o, n: c, gain: c - o, net: net});
+    }
+    return rows;
+  }
+  function viewChart(){
+    var b = chartBps, bOpt = ""; for(var i = 1; i <= 22; i++) bOpt += "<option value='" + i + "'" + (i === b ? " selected" : "") + ">BPS-" + i + "</option>";
+    var rows = chartRows(b), a = S22[b], n = S26[b];
+    var h = "<div class='pf-bar'><div class='field'><label>BPS</label><select id='pf_chb'>" + bOpt + "</select></div><button type='button' class='btn small' id='pf_cxl'>⬇ " + T("Download Excel (all 22 BPS)", "ایکسل (تمام 22 BPS)") + "</button></div>" +
+      "<div class='pf-chips'><span class='pf-chip'>2022: " + money(a[0]) + " + " + money(a[1]) + " / " + T("stage", "اسٹیج") + "</span><span class='pf-chip'>2026: " + money(n[0]) + " + " + money(n[1]) + " / " + T("stage", "اسٹیج") + "</span><span class='pf-chip'>" + T("Conveyance", "کنوینس") + ": " + money(caRate(b, false)) + " → " + money(caRate(b, true)) + "</span><span class='pf-chip'>" + T("Special Allowance", "اسپیشل الاؤنس") + ": " + money(saAmount(b, false)) + " → " + money(saAmount(b, true)) + "</span></div>";
+    h += "<div class='table-wrap'><table class='pf-tbl'><thead><tr><th class='c'>" + T("Stage", "اسٹیج") + "</th><th class='num'>" + T("Basic 2022", "بنیادی 2022") + "</th><th class='num'>" + T("Basic 2026", "بنیادی 2026") + "</th><th class='num'>" + T("Gain in basic", "بنیادی میں اضافہ") + "</th><th class='num'>" + T("Net change per month (before ARA-2022)", "ماہانہ خالص فرق (ARA-2022 سے پہلے)") + "</th></tr></thead><tbody>";
+    rows.forEach(function(r){ h += "<tr><td class='c'>" + r.s + "</td><td class='num'>" + money(r.o) + "</td><td class='num'>" + money(r.n) + "</td><td class='num'>" + money(r.gain) + "</td><td class='num'>" + money(r.net) + "</td></tr>"; });
+    h += "</tbody></table></div><p class='hint'>" + T("Stage = number of annual increments earned (0 = minimum of the scale). Net change = gain in basic − ARA-2025 (merged) + ARA-2026 + change in Special Allowance + change in Conveyance.", "اسٹیج = لگ چکے سالانہ انکریمنٹ کی تعداد (0 = اسکیل کی کم از کم)۔ خالص فرق = بنیادی میں اضافہ − ARA-2025 (ضم) + ARA-2026 + اسپیشل الاؤنس کا فرق + کنوینس کا فرق۔") + "</p>";
+    return h;
+  }
+
+  function render(){
+    if(!allowed()){
+      body.innerHTML = "<div class='pf-warn'>" + T("This section is only for Admin / Super Admin.", "یہ حصہ صرف ایڈمن / سپر ایڈمن کے لیے ہے۔") + "</div>"; return;
+    }
+    panel.querySelectorAll(".pf-sub").forEach(function(b){ b.classList.toggle("active", b.getAttribute("data-m") === mode); });
+    try{
+      body.innerHTML = mode === "check" ? viewCheck() : mode === "calc" ? viewCalc() : viewChart();
+    }catch(err){ body.innerHTML = "<div class='pf-warn'>" + esc(String(err && err.message || err)) + "</div>"; }
+    lastState = STATE;
+  }
+
+  function saveXlsx(wb, name){ try{ XLSX.writeFile(wb, name); }catch(e){ toast("Could not create the Excel file: " + (e && e.message || e)); } }
+  function plain(html){ var d = document.createElement("div"); d.innerHTML = html; d.querySelectorAll(".ur").forEach(function(x){ x.remove(); }); return d.textContent || ""; }
+  panel.addEventListener("click", function(ev){
+    var t = ev.target.closest ? ev.target.closest("button") : null; if(!t) return;
+    if(t.classList.contains("pf-sub")){ mode = t.getAttribute("data-m"); render(); return; }
+    if(t.id === "pf_xl"){
+      var aoa = [["Pay check — " + mLabel(lastMonth), "", "", "", "", ""], ["Pers #", "Name", "BPS (record)", "Stage", "Basic pay", "Result"]];
+      lastRows.forEach(function(r){ aoa.push([r.emp.persNo || "", r.emp.name || "", r.emp.bps || "", r.stage != null ? r.stage : "", r.basic || "", r.ok === true ? "OK" : r.ok === null ? "No slip" : "CHECK: " + r.errs.map(plain).join("; ")]); });
+      var wb = XLSX.utils.book_new(), ws = XLSX.utils.aoa_to_sheet(aoa); ws["!cols"] = [{wch: 10}, {wch: 28}, {wch: 8}, {wch: 7}, {wch: 12}, {wch: 90}];
+      XLSX.utils.book_append_sheet(wb, ws, "Pay check"); saveXlsx(wb, "PayCheck_" + lastMonth + ".xlsx"); return;
+    }
+    if(t.id === "pf_cxl"){
+      var wb2 = XLSX.utils.book_new();
+      for(var b = 1; b <= 22; b++){
+        var a = [["BPS-" + b + " — Basic Pay Scales 2022 vs 2026 (Govt. of the Punjab Finance Dept. notification FD.SR-V.2-1/2026)"], ["Stage", "Basic 2022", "Basic 2026", "Gain in basic", "Net change per month (before ARA-2022)"]];
+        chartRows(b).forEach(function(r){ a.push([r.s, r.o, r.n, r.gain, r.net]); });
+        var w = XLSX.utils.aoa_to_sheet(a); w["!cols"] = [{wch: 8}, {wch: 12}, {wch: 12}, {wch: 14}, {wch: 34}];
+        XLSX.utils.book_append_sheet(wb2, w, "BPS-" + (b < 10 ? "0" : "") + b);
+      }
+      saveXlsx(wb2, "Pay_Stage_Chart_BPS_2022_vs_2026.xlsx");
+    }
+  });
+  panel.addEventListener("change", function(ev){
+    var t = ev.target;
+    if(t.id === "pf_month"){ lastMonth = t.value; render(); }
+    else if(t.id === "pf_chb"){ chartBps = parseInt(t.value, 10) || 11; render(); }
+    else if(t.id === "pf_cs" || t.id === "pf_cb"){ var ci = $("#pf_bas"); if(ci) ci.value = ""; render(); }
+  });
+  panel.addEventListener("input", function(ev){
+    var t = ev.target;
+    if(t.id === "pf_st" || t.id === "pf_bas" || t.id === "pf_oth"){
+      var id = t.id, pos = t.selectionStart;
+      if(id === "pf_st"){ var bs = $("#pf_bas"); if(bs) bs.value = ""; }
+      render(); var again = $("#" + id); if(again){ again.focus(); try{ again.setSelectionRange(pos, pos); }catch(e){} }
+    }
+  });
+  function syncTabButton(){
+    var btn = document.getElementById("payfixTabBtn"); if(!btn) return;
+    btn.style.display = allowed() ? "flex" : "none";
+  }
+  document.querySelectorAll(".tab-btn").forEach(function(b){
+    b.addEventListener("click", function(){ if(b.getAttribute("data-tab") === "payfix") setTimeout(render, 0); });
+  });
+  setInterval(function(){
+    try{
+      syncTabButton();
+      if(panel.classList.contains("active") && mode === "check" && STATE !== lastState && allowed()){
+        var sel = $("#pf_month"); if(!(sel && document.activeElement === sel)) render();
+      }
+    }catch(e){}
+  }, 1500);
+  window.__brPayFix = {checkEmp: checkEmp, months: months, render: render, S22: S22, S26: S26};
 })();
 
 })();
