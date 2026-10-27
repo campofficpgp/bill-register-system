@@ -4033,6 +4033,25 @@ document.getElementById("b_autoCalcBtn").addEventListener("click", function(){
 });
 wireSelectOrAdd("b_vendorNo","b_vendorNo_new");
 wireSelectOrAdd("b_vendorName","b_vendorName_new");
+/* Vendor No <-> Vendor name: choosing one fills in the other, taken from the vendor's earlier bills (the newest bill decides) */
+function vendorPairMaps(){
+  var byNo = {}, byName = {};
+  (STATE.bills || []).slice().sort(function(x, y){ return String(x.date || "").localeCompare(String(y.date || "")); }).forEach(function(b){
+    var n = b.vendorNo, nm = b.vendorName;
+    if(n && nm && String(n).trim() && String(nm).trim()){ byNo[n] = nm; byName[nm] = n; }
+  });
+  return { byNo: byNo, byName: byName };
+}
+function autoFillVendor(fromId, toId, toNewId, fromIsNo){
+  var from = document.getElementById(fromId).value;
+  if(!from || from === "__new__") return;
+  var m = vendorPairMaps();
+  var other = (fromIsNo ? m.byNo : m.byName)[from];
+  if(!other){ resetSelectOrAdd(toId, toNewId); return; }   /* nothing known for this one: clear the other box so an old vendor's value can never stay behind */
+  setSelectOrAddValue(toId, toNewId, other);
+}
+document.getElementById("b_vendorNo").addEventListener("change", function(){ autoFillVendor("b_vendorNo", "b_vendorName", "b_vendorName_new", true); });
+document.getElementById("b_vendorName").addEventListener("change", function(){ autoFillVendor("b_vendorName", "b_vendorNo", "b_vendorNo_new", false); });
 function populateBillEntryValueLists(){
   populateSelectOrAdd("b_vendorNo", STATE.bills.map(function(b){ return b.vendorNo; }), t("opt_selectVendorNo"));
   populateSelectOrAdd("b_vendorName", STATE.bills.map(function(b){ return b.vendorName; }), t("opt_selectVendorName"));
