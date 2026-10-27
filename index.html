@@ -1384,7 +1384,12 @@ body.lang-ur .br-part{ font-size:17px; }
 #panel-bm26 .bm-add input, #panel-bm26 .bm-add select{ padding:5px 8px; border:1px solid var(--border); border-radius:6px; font:inherit; background:var(--surface); color:inherit; }
 #panel-bm26 .bm-sw{ display:flex; gap:6px; align-items:center; font-weight:400; }
 #panel-bm26 .bm-frozen{ margin:0 0 10px; }
-@media print{ #panel-bm26 .table-wrap{ overflow:visible; } #panel-bm26 .bm-tbl{ font-size:7px; } #panel-bm26 .bm-name{ position:static; } #panel-bm26 .bm-tools, #panel-bm26 .bm-card .field input{ border:none; } }
+#panel-bm26 .bm-trow td.bm-name{ background:linear-gradient(rgba(127,127,127,.12),rgba(127,127,127,.12)), var(--surface); }
+.bm-printonly{ display:none; }
+@media print{ #panel-bm26 .bm-printonly{ display:block; } #panel-bm26 .bm-printonly .bpt{ text-align:center; font-weight:700; font-size:18px; margin:4px 0 2px; } #panel-bm26 .bm-printonly .bps{ text-align:center; font-size:11px; margin:0 0 8px; } #panel-bm26 .bm-sg{ display:flex; gap:24px; margin-top:34px; font-size:12px; } #panel-bm26 .bm-sg div{ flex:1; text-align:center; border-top:1px solid #333; padding-top:4px; }
+  #panel-bm26.bm-printing .panel-head, #panel-bm26.bm-printing .pf-bar, #panel-bm26.bm-printing .bm-card, #panel-bm26.bm-printing .pf-chips, #panel-bm26.bm-printing .pf-warn, #panel-bm26.bm-printing .pf-ok, #panel-bm26.bm-printing .hint, #panel-bm26.bm-printing .bm-frozen, #panel-bm26.bm-printing p.bm-muted{ display:none !important; }
+  #panel-bm26.bm-printing .bm-tbl th{ min-width:0 !important; padding:2px 3px !important; } #panel-bm26.bm-printing .bm-tbl thead th{ background:#1b3f63 !important; color:#fff !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; } #panel-bm26.bm-printing .bm-tbl td{ padding:2px 3px !important; } }
+@media print{ #panel-bm26 .table-wrap{ overflow:visible !important; max-height:none !important; } #panel-bm26 .bm-tbl{ font-size:12px; } #panel-bm26 .bm-name{ position:static; } #panel-bm26 .bm-tools, #panel-bm26 .bm-sw, #panel-bm26 .bm-add, #panel-bm26 .bm-x, #panel-bm26 .pf-subnav{ display:none !important; } #panel-bm26 .bm-tbl, #panel-bm26 .bm-tbl th, #panel-bm26 .bm-tbl td{ border-color:#999; } #panel-bm26 .bm-tbl tr{ page-break-inside:avoid; } }
 </style>
 <!-- PWA: installable app -->
 <link rel="manifest" href="/manifest.webmanifest">
@@ -10782,7 +10787,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(id === "bm_xl"){ exportXlsx(); return; }
     if(id === "bm_pdf"){ runExport("pdf"); return; }
     if(id === "bm_doc"){ runExport("word"); return; }
-    if(id === "bm_prt"){ var pb = document.getElementById("globalPrintBtn"); if(pb) pb.click(); else window.print(); return; }
+    if(id === "bm_prt"){ printSheet(); return; }
     if(id === "bm_edit"){ startEdit(); return; }
     if(id === "bm_save"){ saveEdit(); return; }
     if(id === "bm_cancel"){ cancelEdit(); return; }
@@ -10833,6 +10838,32 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       var r = recOf(month); r.note = t.value; root().months[month] = r; persistShared();
     }
   });
+  var PRINT_PAGE = {A4: ["A4 landscape", 1123], Legal: ["14in 8.5in", 1344], Foolscap: ["13in 8.5in", 1248], A3: ["A3 landscape", 1587]};
+  function printSheet(){ var pb = document.getElementById("globalPrintBtn"); if(pb) pb.click(); else window.print(); }
+  function onBeforePrint(){
+    if(!panel.classList.contains("active")) return;
+    var tbl = panel.querySelector(".bm-tbl"), m = lastModel; if(!tbl || !m) return;
+    onAfterPrint();
+    var s = signDef(m), wrap = tbl.closest(".table-wrap") || tbl, par = wrap.parentNode;
+    var head = document.createElement("div"); head.id = "bmPrintHead"; head.className = "bm-printonly";
+    head.innerHTML = "<div class='bpt'>BM-26 STATEMENT FOR THE MONTH OF " + esc(mUpper(m.mk)) + "</div><div class='bps'>Office of the Prosecutor General Punjab, Camp Office Supreme Court of Pakistan, Islamabad &nbsp;|&nbsp; DDO Code RI-4720 &nbsp;|&nbsp; Financial year " + esc(m.fy) + "</div>";
+    var foot = document.createElement("div"); foot.id = "bmPrintFoot"; foot.className = "bm-printonly";
+    foot.innerHTML = "<div class='bm-sg'><div>Prepared by<br><b>" + esc(s.prep || "") + "</b><br>" + esc(s.prepD || "") + "</div><div>Checked by<br><b>" + esc(s.chk || "") + "</b><br>" + esc(s.chkD || "") + "</div><div>Drawing &amp; Disbursing Officer<br><b>" + esc(s.ddo || "") + "</b><br>" + esc(s.ddoD || "") + "</div></div>";
+    par.insertBefore(head, wrap); par.insertBefore(foot, wrap.nextSibling);
+    panel.classList.add("bm-printing");
+    var pg = PRINT_PAGE[paperSel] || PRINT_PAGE.Legal, z = Math.min(1, (pg[1] - 64) / Math.max(tbl.scrollWidth, 1));
+    var st = document.getElementById("bmPrintStyle");
+    if(!st){ st = document.createElement("style"); st.id = "bmPrintStyle"; }
+    st.textContent = "@media print{ @page{ size:" + pg[0] + "; margin:8mm; } #panel-bm26 .bm-tbl{ zoom:" + z.toFixed(3) + "; } }";
+    document.head.appendChild(st);
+  }
+  function onAfterPrint(){
+    ["bmPrintHead", "bmPrintFoot"].forEach(function(id){ var e = document.getElementById(id); if(e) e.remove(); });
+    panel.classList.remove("bm-printing");
+    var st = document.getElementById("bmPrintStyle"); if(st) st.textContent = "";
+  }
+  window.addEventListener("beforeprint", onBeforePrint);
+  window.addEventListener("afterprint", onAfterPrint);
   function syncTabButton(){ var btn = document.getElementById("bmTabBtn"); if(btn) btn.style.display = allowed() ? "flex" : "none"; }
   document.querySelectorAll(".tab-btn").forEach(function(b){
     b.addEventListener("click", function(){ if(b.getAttribute("data-tab") === "bm26") setTimeout(render, 0); });
