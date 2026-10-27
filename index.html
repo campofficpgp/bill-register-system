@@ -3934,6 +3934,21 @@ function refreshHeadDependentUI(){
   populateCategorySelect(document.getElementById("mi_category"), false);
   populateLedgerFilterSelect();
 }
+/* Pay & allowance heads (A011..., A012...) come every month from the Account Office and never get a hand-made bill, so they are
+   left out of the Bill, Cash Book and Stock Book head lists. Irregular items (Other, Overtime, Honoraria, Medical Charges,
+   Contingent paid staff, Leave salary) stay available. Ledger & Budget and the reports still use every head. */
+var BILL_HEAD_KEEP = ["A01270","A01271","A01273","A01274","A01277","A01278"];
+function isSalaryHead(label){
+  var c = String(label || "").split("-")[0].trim().toUpperCase();
+  return /^A01[12]/.test(c) && BILL_HEAD_KEEP.indexOf(c) === -1;
+}
+/* an old record that already carries a left-out head can still be opened and edited */
+function ensureHeadOption(selId, label){
+  var sel = document.getElementById(selId);
+  if(!sel || !label) return;
+  var has = Array.prototype.some.call(sel.options, function(o){ return o.value === label; });
+  if(!has){ var o = document.createElement("option"); o.value = label; o.textContent = label; sel.appendChild(o); }
+}
 function populateHeadSelect(sel, includeAll){
   sel.innerHTML = "";
   if(includeAll){
@@ -3941,7 +3956,7 @@ function populateHeadSelect(sel, includeAll){
     opt.value=""; opt.textContent=t("opt_allHeads");
     sel.appendChild(opt);
   }
-  getHeads().forEach(function(h){
+  getHeads().filter(function(h){ return !isSalaryHead(h.label); }).forEach(function(h){
     var o = document.createElement("option");
     o.value = h.label; o.textContent = h.label;
     sel.appendChild(o);
@@ -4135,6 +4150,7 @@ function editBill(id){
   populateBillEntryValueLists();
   setSelectOrAddValue("b_vendorNo","b_vendorNo_new", b.vendorNo);
   setSelectOrAddValue("b_vendorName","b_vendorName_new", b.vendorName);
+  ensureHeadOption("b_head", b.head);
   document.getElementById("b_head").value = b.head;
   document.getElementById("b_gross").value = b.gross;
   document.getElementById("b_ao").value = b.ao;
@@ -4631,6 +4647,7 @@ function editCash(id){
   setSelectOrAddValue("c_particulars","c_particulars_new", c.particulars);
   document.getElementById("c_receipt").value = c.receipt;
   document.getElementById("c_payment").value = c.payment;
+  ensureHeadOption("c_head", c.head);
   document.getElementById("c_head").value = c.head || "";
   renderCustomFieldInputs("cash");
   populateCustomFieldInputs("cash", c);
@@ -4735,7 +4752,7 @@ var stockEditId = null;
 document.getElementById("s_date").value = todayStr();
 
 /* ---- Head/category & item master ---- */
-function getCategoryNames(){ return Object.keys(STATE.itemMaster); }
+function getCategoryNames(){ return Object.keys(STATE.itemMaster).filter(function(c){ return !isSalaryHead(c); }); }
 function populateCategorySelect(sel, includeAll){
   var keepValue = sel.value;
   sel.innerHTML = "";
