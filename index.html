@@ -1327,6 +1327,64 @@ body.lang-ur .br-part{ font-size:17px; }
 #panel-budget .bd-in.txt.sm{ width:80px; }
 #panel-budget .bd-ed{ background:#fff3bf !important; color:#5c4300; font-weight:700; border-radius:4px; padding:0 4px; }
 #panel-budget button:disabled{ opacity:.45; cursor:not-allowed; }
+/* ===== BM-26 Salary Statement tab (admin only, read-only) ===== */
+#panel-bm26 .pf-subnav{ display:flex; flex-wrap:wrap; gap:8px; margin:0 0 14px; }
+#panel-bm26 .pf-sub{ border:1px solid var(--border); background:var(--surface); color:inherit; padding:7px 14px; border-radius:999px; font-weight:600; font-size:13px; cursor:pointer; }
+#panel-bm26 .pf-sub.active{ background:var(--navy); color:#fff; border-color:var(--navy); }
+#panel-bm26 .pf-bar{ display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; margin:0 0 12px; }
+#panel-bm26 .pf-bar .field{ min-width:140px; flex:1 1 160px; max-width:260px; margin:0; }
+#panel-bm26 .pf-chips{ display:flex; flex-wrap:wrap; gap:8px; margin:0 0 12px; }
+#panel-bm26 .pf-chip{ padding:3px 12px; border-radius:999px; border:1px solid var(--border); background:var(--surface); font-size:12px; font-weight:600; }
+#panel-bm26 .pf-c-ok{ background:#e6f4ea; border-color:#7bb98a; color:#14532d; }
+#panel-bm26 .pf-c-bad{ background:#fde8e8; border-color:#e08a8a; color:#7a1414; }
+#panel-bm26 .pf-tbl{ font-size:12.5px !important; }
+#panel-bm26 .pf-tbl td.c, #panel-bm26 .pf-tbl th.c{ text-align:center; }
+#panel-bm26 .pf-tbl td.num, #panel-bm26 .pf-tbl th.num{ text-align:right; font-variant-numeric:tabular-nums; }
+#panel-bm26 tr.pf-bad td{ background:#fff1f1 !important; }
+#panel-bm26 tr.pf-none td{ color:var(--muted,#667); }
+#panel-bm26 tr.pf-sum td{ background:color-mix(in srgb,var(--navy) 10%,var(--surface)) !important; }
+#panel-bm26 .pf-tick{ color:#1a7f37; } #panel-bm26 .pf-cross{ color:#c62828; }
+#panel-bm26 .pf-warn{ background:#fff4e0; border:1px solid #e8b04a; color:#6b4300; padding:8px 12px; border-radius:var(--radius); margin-bottom:10px; font-size:13px; }
+#panel-bm26 .pf-ok{ background:#e6f4ea; border:1px solid #7bb98a; color:#14532d; padding:8px 12px; border-radius:var(--radius); margin-bottom:10px; font-size:13px; }
+#panel-bm26 .pf-h3{ margin:18px 0 8px; font-size:15px; }
+
+
+#panel-bm26 .bd-tools{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:0 0 12px; }
+#panel-bm26 .bd-sep{ flex:0 0 12px; }
+#panel-bm26 .bd-in{ width:92px; text-align:right; padding:3px 6px; border:1px solid var(--border); border-radius:6px; font:inherit; font-size:12.5px; background:var(--surface); color:inherit; font-variant-numeric:tabular-nums; }
+#panel-bm26 .bd-in.txt{ width:150px; text-align:left; }
+#panel-bm26 .bd-in.txt.sm{ width:80px; }
+#panel-bm26 .bd-ed{ background:#fff3bf !important; color:#5c4300; font-weight:700; border-radius:4px; padding:0 4px; }
+#panel-bm26 button:disabled{ opacity:.45; cursor:not-allowed; }
+
+#panel-bm26 .bm-tools{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:0 0 12px; }
+#panel-bm26 .bm-sep{ flex:0 0 12px; }
+#panel-bm26 .bm-in{ width:78px; text-align:right; padding:3px 5px; border:1px solid var(--border); border-radius:6px; font:inherit; font-size:12px; background:var(--surface); color:inherit; font-variant-numeric:tabular-nums; }
+#panel-bm26 .bm-in.txt{ width:150px; text-align:left; }
+#panel-bm26 .bm-in.txt.sm{ width:90px; }
+#panel-bm26 .bm-ed{ background:#fff3bf !important; color:#5c4300; font-weight:700; border-radius:4px; padding:0 4px; }
+#panel-bm26 button:disabled{ opacity:.45; cursor:not-allowed; }
+#panel-bm26 .bm-tbl{ font-size:12px; }
+#panel-bm26 .bm-tbl th{ vertical-align:bottom; white-space:normal; min-width:74px; }
+#panel-bm26 .bm-tbl th.c, #panel-bm26 .bm-tbl td.c{ min-width:0; }
+#panel-bm26 .bm-code{ font-size:10px; font-weight:600; opacity:.7; letter-spacing:.3px; }
+#panel-bm26 .bm-name{ position:sticky; left:0; background:var(--surface); z-index:1; min-width:150px; text-align:left; }
+#panel-bm26 .bm-tbl thead .bm-name{ z-index:2; }
+#panel-bm26 .bm-tot{ background:rgba(127,127,127,.08); font-weight:600; }
+#panel-bm26 .bm-band td{ background:rgba(127,127,127,.14); font-weight:700; font-size:12px; text-align:left; }
+#panel-bm26 .bm-trow td{ font-weight:700; border-top:2px solid var(--border); background:rgba(127,127,127,.08); }
+#panel-bm26 .bm-zero{ opacity:.35; }
+#panel-bm26 .bm-x{ border:0; background:transparent; cursor:pointer; color:#b3261e; font-size:14px; padding:2px 6px; }
+#panel-bm26 .bm-card{ border:1px solid var(--border); border-radius:10px; padding:10px 12px; margin:0 0 12px; display:flex; flex-direction:column; gap:10px; }
+#panel-bm26 .bm-stat{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+#panel-bm26 .bm-muted{ opacity:.65; font-size:12px; }
+#panel-bm26 .bm-signs{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:10px; }
+#panel-bm26 .bm-signs .field{ display:flex; flex-direction:column; gap:4px; }
+#panel-bm26 .bm-add{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:6px 0 10px; }
+#panel-bm26 .bm-add input, #panel-bm26 .bm-add select{ padding:5px 8px; border:1px solid var(--border); border-radius:6px; font:inherit; background:var(--surface); color:inherit; }
+#panel-bm26 .bm-sw{ display:flex; gap:6px; align-items:center; font-weight:400; }
+#panel-bm26 .bm-frozen{ margin:0 0 10px; }
+@media print{ #panel-bm26 .table-wrap{ overflow:visible; } #panel-bm26 .bm-tbl{ font-size:7px; } #panel-bm26 .bm-name{ position:static; } #panel-bm26 .bm-tools, #panel-bm26 .bm-card .field input{ border:none; } }
 </style>
 <!-- PWA: installable app -->
 <link rel="manifest" href="/manifest.webmanifest">
@@ -1525,6 +1583,7 @@ body.lang-ur .br-part{ font-size:17px; }
     <button class="tab-btn" data-tab="statement"><span class="dot"></span> <span class="en">Balance Statement</span><span class="ur">ماہانہ گوشوارہ</span></button>
     <button class="tab-btn" data-tab="payfix" id="payfixTabBtn" style="display:none;"><span class="dot"></span> <span class="en">Pay Fixation</span><span class="ur">پے اسکیل / پے فکسیشن</span></button>
     <button class="tab-btn" data-tab="budget" id="bdTabBtn" style="display:none;"><span class="dot"></span> <span class="en">Budget Demand</span><span class="ur">بجٹ ڈیمانڈ</span></button>
+    <button class="tab-btn" data-tab="bm26" id="bmTabBtn" style="display:none;"><span class="dot"></span> <span class="en">BM-26 Salary</span><span class="ur">BM-26 تنخواہ گوشوارہ</span></button>
     <button class="tab-btn" data-tab="employees"><span class="dot"></span> <span data-i18n="nav_employees">Employees</span></button>
     <button class="tab-btn" data-tab="leave"><span class="dot"></span> <span data-i18n="nav_leave">Leave Register</span></button>
     <button class="tab-btn" data-tab="attendance"><span class="dot"></span> <span data-i18n="nav_attendance">Attendance Register</span></button>
@@ -2138,6 +2197,16 @@ body.lang-ur .br-part{ font-size:17px; }
         <button type="button" class="pf-sub bd-sub" data-m="p2"><span class="en">Proforma-II Heads</span><span class="ur">پرفارما-II مدیں</span></button>
       </div>
       <div id="bdBody"></div>
+    </section>
+
+    <section class="panel" id="panel-bm26">
+      <div class="panel-head">
+        <div>
+          <h2><span class="en">BM-26 Monthly Salary Statement</span><span class="ur">BM-26 ماہانہ تنخواہ گوشوارہ</span></h2>
+          <p><span class="en">The monthly statement of pay and allowances of every employee (allowances head-wise, deductions, net pay), made from the pay slips. Pick the month, Edit / Save / Undo / Redo, mark it Checked, Sent to Account Office and Verified, and download Excel, PDF or Word. Figures and status are saved with the Bill Register data. Admin / Super Admin only.</span><span class="ur">ہر ملازم کی تنخواہ اور الاؤنس کا ماہانہ گوشوارہ (ہیڈ وار الاؤنس، کٹوتیاں، نیٹ پے) جو پے سلپس سے خود بنتا ہے۔ مہینہ چنیں، ترمیم / محفوظ / واپس / آگے، جانچ شدہ، اکاؤنٹ آفس کو بھیجا اور تصدیق شدہ کی حالت لگائیں، اور ایکسل، پی ڈی ایف یا ورڈ ڈاؤن لوڈ کریں۔ رقوم اور حالت بل رجسٹر کے ڈیٹا کے ساتھ محفوظ ہوتی ہیں۔ صرف ایڈمن / سپر ایڈمن۔</span></p>
+        </div>
+      </div>
+      <div id="bmBody"></div>
     </section>
 
     <!-- ================= EMPLOYEES ================= -->
@@ -10199,6 +10268,589 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   }, 1500);
   window.__brPayFix = {checkEmp: checkEmp, months: months, render: render, S22: S22, S26: S26, caRate: caRate, saAmount: saAmount, ara26: ara26, stageOf: stageOf, bpsNum: bpsNum, heads: heads, promoOf: promoOf, dLabel: dLabel};
 })();
+
+/* ================= BM-26 MONTHLY SALARY STATEMENT (Admin / Super Admin) =================
+   The monthly statement of pay and allowances of every employee (allowances head-wise, deductions, net pay), made from the pay slips
+   already in the system. Hand edits, the Draft / Checked / Sent / Verified status and the signatories are saved with the Bill Register
+   data (STATE.stmtData.bm26). CNIC / date of birth / bank columns are optional, Super Admin only, and off until switched on. */
+(function(){
+  "use strict";
+  var panel = document.getElementById("panel-bm26"), body = document.getElementById("bmBody");
+  if(!panel || !body) return;
+  var MN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  var MKEY = "bm26_month_v1";
+  function allowed(){ try{ return isAdmin(); }catch(e){ return false; } }
+  function $(sel){ return panel.querySelector(sel); }
+  function num(v){ return Number(v) || 0; }
+  function money(n){ return fmt(Math.round(num(n))); }
+  function T(en, ur){ return "<span class='en'>" + en + "</span><span class='ur'>" + ur + "</span>"; }
+  function clone(o){ return JSON.parse(JSON.stringify(o)); }
+  function uid(){ return Date.now().toString(36) + Math.floor(Math.random() * 1296).toString(36); }
+  function mLabel(k){ var a = k.split("-"); return MN[+a[1] - 1] + " " + a[0]; }
+  function mUpper(k){ var a = k.split("-"); return MN[+a[1] - 1].toUpperCase() + "-" + a[0]; }
+  function fyOf(k){ var a = k.split("-"), y = +a[0], mo = +a[1]; var s = mo >= 7 ? y : y - 1; return s + "-" + String(s + 1).slice(2); }
+  function sN(v){ return String(Math.round(num(v))).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+  function bpsNum(s){ var n = parseInt(String(s || "").replace(/\D/g, ""), 10); return n >= 1 && n <= 22 ? n : 0; }
+  var POST_BY_BPS = {20: "Additional Prosecutor General", 19: "Additional Prosecutor General", 18: "Deputy Prosecutor General", 17: "Superintendent", 16: "Assistant", 15: "Stenographer", 14: "Senior Clerk", 11: "Junior Clerk", 5: "Driver", 2: "Naib Qasid"};
+
+  /* ---------- the columns ---------- */
+  var ACOLS = [["A01101", "Pay of Officer"], ["A01151", "Pay of Staff"], ["A01103", "Special Pay to Post"], ["A01105", "Qualification Pay"], ["A01216", "Qualification / Education Allowance"],
+    ["A01202", "House Rent"], ["A01203", "Conveyance Allowance"], ["A0120D", "Integrated Allowance"], ["A01207", "Washing Allowance"], ["A01217", "Medical Allowance"],
+    ["A01224", "Entertainment Allowance"], ["A0121N", "Personal Allowance"], ["A0124R", "Adhoc Relief 2022 (15%)"], ["A0124X", "Adhoc Relief 2023"], ["A0125E", "Adhoc Relief 2024"],
+    ["A0125P", "Adhoc Relief 2025 (10%)"], ["A0125X", "Adhoc Relief 2026 (7%)"], ["A01239", "Special Allowance"], ["A01273", "Adj Honorarium"], ["OTH", "Other allowances"]];
+  var DCOLS = [["A03011", "GPF Subscription"], ["A03600", "Group Insurance (Punjab)"], ["A03510", "Benevolent Fund Punjab"], ["ITAX", "Income Tax"],
+    ["A03660", "House Rent Charges 5%"], ["GPFL", "GPF Loan Instalment"], ["ODED", "Other deductions"]];
+  function codeShow(c){ var k = c && c.code; if(!k) return "—"; if(c.extra) return k; return /^A[0-9A-Z]{5}$/.test(k) ? k : "—"; }
+  function earnCode(desc, bps){
+    var d = String(desc || "").toLowerCase();
+    if(d === "basic pay") return bps >= 16 ? "A01101" : "A01151";
+    if(d === "special pay") return "A01103";
+    if(d === "qualification pay") return "A01105";
+    if(d.indexOf("house rent allowance") === 0) return "A01202";
+    if(d.indexOf("convey") === 0) return "A01203";
+    if(d === "washing allowance") return "A01207";
+    if(d.indexOf("integrated") === 0) return "A0120D";
+    if(d.indexOf("medical") === 0) return "A01217";
+    if(d === "personal allowance") return "A0121N";
+    if(d === "entertainment allowance") return "A01224";
+    if(d === "qualification allowance") return "A01216";
+    if(d === "special allowance") return "A01239";
+    if(d.indexOf("adhoc rel al 15%") === 0 || d.indexOf("adhoc relief 2022") === 0) return "A0124R";
+    if(d.indexOf("adhoc relief all 2023") === 0 || d.indexOf("adhoc relief 2023") === 0) return "A0124X";
+    if(d.indexOf("adhoc relief all 2024") === 0 || d.indexOf("adhoc relief 2024") === 0) return "A0125E";
+    if(d.indexOf("adhoc relief 2025") === 0) return "A0125P";
+    if(d.indexOf("adhoc relief 2026") === 0) return "A0125X";
+    if(d === "adj honorarium") return "A01273";
+    return "OTH";
+  }
+  function dedCode(desc){
+    var d = String(desc || "").toLowerCase();
+    if(d.indexOf("gpf subscription") === 0) return "A03011";
+    if(d.indexOf("group insurance") === 0) return "A03600";
+    if(d.indexOf("benevolent") === 0) return "A03510";
+    if(d.indexOf("income tax") === 0) return "ITAX";
+    if(d.indexOf("house rent") === 0) return "A03660";
+    if(d.indexOf("gpf loan") === 0) return "GPFL";
+    return "ODED";
+  }
+
+  /* ---------- stored data: STATE.stmtData.bm26.months[YYYY-MM] ---------- */
+  function root(){
+    var s = STATE.stmtData; if(!s || typeof s !== "object") s = STATE.stmtData = {};
+    if(!s.bm26 || typeof s.bm26 !== "object") s.bm26 = {};
+    if(!s.bm26.months) s.bm26.months = {};
+    return s.bm26;
+  }
+  function blank(){ return {ov: {}, del: {}, extra: [], xcols: [], status: "draft", date: "", note: "", sign: {}}; }
+  function recOf(mk){
+    var r = root().months[mk], b = blank();
+    if(r && typeof r === "object") Object.keys(b).forEach(function(k){ if(r[k] != null) b[k] = r[k]; });
+    if(r && r.snap) b.snap = r.snap;
+    return b;
+  }
+  var saveT = null;
+  function persistShared(){
+    if(typeof tabOK === "function" && !tabOK("cf")) return false;
+    clearTimeout(saveT); saveT = setTimeout(function(){ try{ saveData(); }catch(e){ if(window.console) console.error(e); } }, 500);
+    return true;
+  }
+  function countEdits(r){
+    var n = 0;
+    Object.keys(r.ov).forEach(function(k){ var o = r.ov[k]; if(o.A) n += Object.keys(o.A).length; if(o.D) n += Object.keys(o.D).length; ["name", "designation", "persNo"].forEach(function(f){ if(o[f] != null) n++; }); });
+    return n + Object.keys(r.del).length + r.extra.length + r.xcols.length;
+  }
+
+  /* ---------- state of the screen ---------- */
+  var month = "", editing = false, work = null, hist = [], redoS = [], dirty = false, resetArm = 0, showSens = false, lastModel = null, lastState = null;
+  function slipOf(e, mk){ var p = STATE.payslipData && STATE.payslipData[e.id]; return p && p[mk]; }
+  function months(){
+    var set = {}, ps = STATE.payslipData || {};
+    Object.keys(ps).forEach(function(id){ Object.keys(ps[id] || {}).forEach(function(m){ if(/^\d{4}-\d{2}$/.test(m) && ps[id][m] && (ps[id][m].earnings || []).length) set[m] = (set[m] || 0) + 1; }); });
+    return set;
+  }
+  function pickMonth(){
+    var set = months(), keys = Object.keys(set).sort(); if(!keys.length) return "";
+    var mx = 0; keys.forEach(function(k){ if(set[k] > mx) mx = set[k]; });
+    var saved = ""; try{ saved = localStorage.getItem(MKEY) || ""; }catch(e){}
+    if(saved && set[saved]) return saved;
+    var good = keys.filter(function(k){ return set[k] >= mx * 0.7; });
+    return good[good.length - 1] || keys[keys.length - 1];
+  }
+  function snap(){ hist.push(JSON.stringify(work)); if(hist.length > 100) hist.shift(); redoS = []; dirty = true; }
+  function CUR(){ return editing && work ? work : recOf(month); }
+
+  /* ---------- the model of one month (plain data, so it can be frozen when Verified) ---------- */
+  function build(mk){
+    var R = CUR(), PF = window.__brPayFix, list = [], emps = STATE.employees || [];
+    emps.forEach(function(e, idx){
+      var slip = slipOf(e, mk); if(!slip || !(slip.earnings || []).length) return;
+      var bps = bpsNum(e.bps), desig = e.designation || "";
+      try{
+        var ck = PF && PF.checkEmp ? PF.checkEmp(e, mk) : null;
+        if(ck && ck.shownBps && bpsNum(ck.shownBps) && bpsNum(ck.shownBps) !== bps){ bps = bpsNum(ck.shownBps); desig = POST_BY_BPS[bps] || desig; }
+      }catch(err){}
+      var A = {}, D = {};
+      (slip.earnings || []).forEach(function(l){ var c = earnCode(l.desc, bps); A[c] = (A[c] || 0) + num(l.amount); });
+      (slip.deductions || []).forEach(function(l){ var c = dedCode(l.desc); D[c] = (D[c] || 0) + num(l.amount); });
+      list.push({key: "E:" + (e.persNo || e.id), eid: e.id, grp: bps >= 16 ? "O" : "S", idx: idx, bps: bps, name: e.name || "", designation: (desig || "") + (bps ? " (BPS-" + bps + ")" : ""), persNo: e.persNo || "", A: A, D: D, dob: e.dob || "", bank: e.bank || ""});
+    });
+    R.extra.forEach(function(x){
+      list.push({key: "X:" + x.id, grp: x.grp === "O" ? "O" : "S", idx: 99999, bps: x.grp === "O" ? 16 : 1, name: "New employee", designation: "", persNo: "", A: {}, D: {}, extra: true, dob: "", bank: ""});
+    });
+    var removed = [], rows = [];
+    list.forEach(function(r){
+      r.auto = {A: clone(r.A), D: clone(r.D)}; r.ed = {A: {}, D: {}};
+      if(R.del[r.key]){ removed.push({key: r.key, name: r.name}); return; }
+      var o = R.ov[r.key];
+      if(o){
+        ["name", "designation", "persNo"].forEach(function(f){ if(o[f] != null){ r[f] = o[f]; r.ed[f] = true; } });
+        if(o.A) Object.keys(o.A).forEach(function(c){ r.A[c] = num(o.A[c]); r.ed.A[c] = true; });
+        if(o.D) Object.keys(o.D).forEach(function(c){ r.D[c] = num(o.D[c]); r.ed.D[c] = true; });
+      }
+      rows.push(r);
+    });
+    rows.sort(function(a, b){ return a.grp !== b.grp ? (a.grp === "O" ? -1 : 1) : (b.bps - a.bps) || (a.idx - b.idx); });
+    /* columns: standard heads with a figure in this month (all of them while editing) + the heads added by hand */
+    function used(defs, kind){
+      var out = [];
+      defs.forEach(function(d){
+        var has = rows.some(function(r){ return num((kind === "A" ? r.A : r.D)[d[0]]) !== 0; });
+        var always = editing && d[0] !== "OTH" && d[0] !== "ODED";
+        if(has || always) out.push({k: d[0], code: d[0], title: d[1]});
+      });
+      R.xcols.filter(function(x){ return x.kind === kind; }).forEach(function(x){ out.push({k: "X:" + x.id, code: x.code || "", title: x.title || "Other", extra: true, id: x.id}); });
+      return out;
+    }
+    var aCols = used(ACOLS, "A"), dCols = used(DCOLS, "D");
+    rows.forEach(function(r){
+      r.gross = aCols.reduce(function(s, c){ return s + num(r.A[c.k]); }, 0);
+      r.ded = dCols.reduce(function(s, c){ return s + num(r.D[c.k]); }, 0);
+      r.net = r.gross - r.ded;
+    });
+    function tot(rs){
+      var t = {n: rs.length, A: {}, D: {}, gross: 0, ded: 0, net: 0};
+      rs.forEach(function(r){
+        aCols.forEach(function(c){ t.A[c.k] = (t.A[c.k] || 0) + num(r.A[c.k]); });
+        dCols.forEach(function(c){ t.D[c.k] = (t.D[c.k] || 0) + num(r.D[c.k]); });
+        t.gross += r.gross; t.ded += r.ded; t.net += r.net;
+      });
+      return t;
+    }
+    var off = rows.filter(function(r){ return r.grp === "O"; }), sta = rows.filter(function(r){ return r.grp === "S"; });
+    return {mk: mk, fy: fyOf(mk), rows: rows, aCols: aCols, dCols: dCols, removed: removed, tOff: tot(off), tSta: tot(sta), tAll: tot(rows), status: R.status, date: R.date, note: R.note, sign: R.sign || {}};
+  }
+  function modelFor(mk){
+    var rec = recOf(mk);
+    if(!editing && rec.status === "verified" && rec.snap && rec.snap.rows){ var m = clone(rec.snap); m.frozen = true; m.status = rec.status; m.date = rec.date; m.note = rec.note; m.sign = rec.sign || {}; return m; }
+    return build(mk);
+  }
+  function sg(m, k, def){ var v = m.sign && m.sign[k]; return (v == null || v === "") ? def : v; }
+  var DDO = {name: "Muhammad Junaid Aslam Khan Niazi", desig: "Personal Assistant/DDO"};
+  function signDef(m){
+    return {prep: sg(m, "prep", STATE.preparedByName || ""), prepD: sg(m, "prepD", STATE.preparedByDesignation || ""), chk: sg(m, "chk", ""), chkD: sg(m, "chkD", ""), ddo: sg(m, "ddo", DDO.name), ddoD: sg(m, "ddoD", DDO.desig)};
+  }
+
+  /* ---------- sensitive columns ---------- */
+  function canSens(){ try{ return isSuperAdmin(); }catch(e){ return false; } }
+  function sensOn(){ return showSens && canSens(); }
+  function sensOf(r){
+    var e = null; (STATE.employees || []).forEach(function(x){ if(x.id === r.eid) e = x; });
+    if(!e) return {cnic: "", dob: r.dob || "", bank: r.bank || "", account: ""};
+    var cn = "", ac = ""; try{ cn = empCnic(e); ac = empAccount(e); }catch(err){}
+    return {cnic: cn, dob: e.dob || "", bank: e.bank || "", account: ac};
+  }
+
+  /* ---------- screen ---------- */
+  var STAT = [["draft", "Draft", "مسودہ"], ["checked", "Checked", "جانچ شدہ"], ["sent", "Sent to Account Office", "اکاؤنٹ آفس کو بھیجا"], ["verified", "Verified", "تصدیق شدہ"]];
+  function statLabel(s){ var x = STAT.filter(function(a){ return a[0] === s; })[0] || STAT[0]; return T(x[1], x[2]); }
+  function autoTip(a){ return "Automatic: " + money(a) + " — clear the box to go back to automatic"; }
+  function cellIn(r, side, c){
+    var v = num(r[side][c.k]), edited = !!(r.ed[side] && r.ed[side][c.k]), auto = num(r.auto[side][c.k]);
+    if(editing) return "<input class='bm-in" + (edited ? " bm-ed" : "") + "' inputmode='numeric' data-t='cell' data-k='" + esc(r.key) + "' data-f='" + side + ":" + esc(c.k) + "' data-auto='" + Math.round(auto) + "' value='" + (v ? Math.round(v) : "") + "' placeholder='0' title='" + esc(autoTip(auto)) + "'>";
+    var s = v ? money(v) : "<span class='bm-zero'>–</span>";
+    return edited ? "<span class='bm-ed' title='Edited by hand'>" + s + "</span>" : s;
+  }
+  function txtIn(r, f, cls){
+    var v = r[f] || "";
+    if(editing && (r.extra || f === "persNo" || f === "designation" || f === "name")) return "<input class='bm-in txt " + (cls || "") + (r.ed[f] ? " bm-ed" : "") + "' data-t='txt' data-k='" + esc(r.key) + "' data-f='" + f + "' value='" + esc(v) + "'>";
+    return esc(v);
+  }
+  function toolbar(m){
+    var R = CUR(), n = countEdits(R), locked = !editing && m.frozen, h = "<div class='bm-tools'>";
+    if(!editing){
+      h += "<button type='button' class='btn small' id='bm_edit'" + (locked ? " disabled title='Verified — set it back to Draft first'" : "") + ">✏ " + T("Edit", "ترمیم") + "</button>";
+      if(n && !locked) h += "<button type='button' class='btn small' id='bm_reset'>↺ " + T(resetArm && Date.now() - resetArm < 5000 ? "Click again to confirm" : "Back to automatic", resetArm && Date.now() - resetArm < 5000 ? "تصدیق کے لیے دوبارہ دبائیں" : "دوبارہ خودکار") + "</button>";
+      if(n) h += "<span class='pf-chip'>" + T(n + " saved edits", n + " محفوظ ترامیم") + "</span>";
+    } else {
+      h += "<button type='button' class='btn small primary' id='bm_save'>💾 " + T("Save", "محفوظ کریں") + "</button>" +
+        "<button type='button' class='btn small' id='bm_cancel'>✖ " + T("Cancel", "منسوخ") + "</button>" +
+        "<button type='button' class='btn small' id='bm_undo'" + (hist.length ? "" : " disabled") + ">↶ " + T("Undo", "واپس") + "</button>" +
+        "<button type='button' class='btn small' id='bm_redo'" + (redoS.length ? "" : " disabled") + ">↷ " + T("Redo", "آگے") + "</button>" +
+        "<button type='button' class='btn small' id='bm_reset'>↺ " + T(resetArm && Date.now() - resetArm < 5000 ? "Click again to confirm" : "Everything back to automatic", resetArm && Date.now() - resetArm < 5000 ? "تصدیق کے لیے دوبارہ دبائیں" : "سب کچھ خودکار") + "</button>" +
+        "<span class='pf-chip " + (dirty ? "pf-c-bad" : "pf-c-ok") + "'>" + T(dirty ? "Editing — not saved yet" : "Editing", dirty ? "ترمیم جاری — ابھی محفوظ نہیں" : "ترمیم جاری") + "</span>";
+    }
+    h += "<span class='bm-sep'></span><button type='button' class='btn small' id='bm_xl'>📊 " + T("Excel", "ایکسل") + "</button><button type='button' class='btn small' id='bm_pdf'>📄 PDF</button><button type='button' class='btn small' id='bm_doc'>📝 " + T("Word", "ورڈ") + "</button><button type='button' class='btn small' id='bm_prt'" + (editing ? " disabled" : "") + ">🖨 " + T("Print", "پرنٹ") + "</button></div>";
+    if(editing) h += "<p class='hint'>" + T("Type over any figure to change it (a changed figure turns yellow); clear the box to go back to the automatic figure. Nothing is kept until you press Save.", "کسی بھی رقم پر لکھ کر بدلیں (بدلی ہوئی رقم پیلی ہو جاتی ہے)؛ خانہ خالی کر دیں تو خودکار رقم واپس آ جاتی ہے۔ محفوظ کریں دبانے تک کچھ محفوظ نہیں ہوتا۔") + "</p>";
+    return h;
+  }
+  function monthBar(){
+    var set = months(), keys = Object.keys(set).sort(), h = "<div class='pf-bar'><div class='field'><label>" + T("Month", "مہینہ") + "</label><select id='bm_month'" + (editing ? " disabled" : "") + ">";
+    keys.forEach(function(k){ h += "<option value='" + k + "'" + (k === month ? " selected" : "") + ">" + esc(mLabel(k)) + " (" + set[k] + " " + (set[k] === 1 ? "slip" : "slips") + ")</option>"; });
+    h += "</select></div>";
+    if(canSens()) h += "<div class='field'><label>" + T("Personal details", "ذاتی تفصیلات") + "</label><label class='bm-sw'><input type='checkbox' id='bm_sens'" + (showSens ? " checked" : "") + "> " + T("Show CNIC, date of birth, bank (Super Admin only; also goes into the files)", "شناختی کارڈ، تاریخ پیدائش، بینک دکھائیں (صرف سپر ایڈمن؛ فائلوں میں بھی آئیں گے)") + "</label></div>";
+    return h + "</div>";
+  }
+  function statusCard(m){
+    var R = CUR(), st = m.status || "draft", s = signDef(m), dis = editing ? " disabled" : "", h = "<div class='bm-card'><div class='bm-stat'><b>" + T("Status", "حالت") + ":</b> <span class='pf-chip " + (st === "verified" ? "pf-c-ok" : "") + "'>" + statLabel(st) + "</span>";
+    if(R.date) h += " <span class='bm-muted'>" + esc(R.date) + "</span>";
+    if(!editing){
+      if(st === "draft") h += " <button type='button' class='btn small' data-st='checked'>✔ " + T("Mark as Checked", "جانچ شدہ کریں") + "</button>";
+      if(st === "checked") h += " <button type='button' class='btn small' data-st='sent'>➡ " + T("Sent to Account Office", "اکاؤنٹ آفس کو بھیجا") + "</button>";
+      if(st === "sent") h += " <button type='button' class='btn small primary' data-st='verified'>✅ " + T("Verified (freeze figures)", "تصدیق شدہ (رقوم منجمد)") + "</button>";
+      if(st !== "draft") h += " <button type='button' class='btn small' data-st='draft'>↩ " + T("Back to Draft", "مسودہ پر واپس") + "</button>";
+    }
+    h += "</div><div class='bm-signs'>" +
+      "<div class='field'><label>" + T("Prepared by", "تیار کنندہ") + "</label><input id='bm_s_prep' value='" + esc(s.prep) + "'" + dis + "><input id='bm_s_prepD' value='" + esc(s.prepD) + "' placeholder='Designation'" + dis + "></div>" +
+      "<div class='field'><label>" + T("Checked by", "جانچ کنندہ") + "</label><input id='bm_s_chk' value='" + esc(s.chk) + "'" + dis + "><input id='bm_s_chkD' value='" + esc(s.chkD) + "' placeholder='Designation'" + dis + "></div>" +
+      "<div class='field'><label>" + T("Drawing &amp; Disbursing Officer", "ڈرائنگ اینڈ ڈسبرسنگ آفیسر") + "</label><input id='bm_s_ddo' value='" + esc(s.ddo) + "'" + dis + "><input id='bm_s_ddoD' value='" + esc(s.ddoD) + "'" + dis + "></div>" +
+      "<div class='field'><label>" + T("Remarks", "ریمارکس") + "</label><input id='bm_note' value='" + esc(R.note || "") + "'" + dis + "></div></div></div>";
+    return h;
+  }
+  function render(){
+    if(!allowed()){ body.innerHTML = "<div class='pf-warn'>" + T("This section is only for Admin / Super Admin.", "یہ حصہ صرف ایڈمن / سپر ایڈمن کے لیے ہے۔") + "</div>"; return; }
+    try{
+      if(!month || !months()[month]) month = pickMonth();
+      if(!month){ body.innerHTML = "<div class='pf-warn'>" + T("No pay slips are saved yet, so the statement cannot be made.", "ابھی کوئی پے سلپ محفوظ نہیں، اس لیے گوشوارہ نہیں بن سکتا۔") + "</div>"; lastModel = null; return; }
+      var m = lastModel = modelFor(month), h = toolbar(m) + monthBar();
+      if(m.frozen) h += "<div class='pf-warn bm-frozen'>" + T("This month is Verified — the figures are frozen as they were when it was verified. Set it back to Draft to change them.", "یہ مہینہ تصدیق شدہ ہے — رقوم اسی حالت میں منجمد ہیں۔ بدلنے کے لیے پہلے مسودہ پر واپس لائیں۔") + "</div>";
+      if(month === "2026-10") h += "<p class='hint'>" + T("Note: the October 2026 slips are still a provisional copy of September until the real October pay file is loaded.", "نوٹ: اکتوبر 2026 کی پرچیاں ابھی ستمبر کی عارضی نقل ہیں، جب تک اصل اکتوبر فائل لوڈ نہ ہو۔") + "</p>";
+      h += statusCard(m);
+      h += "<div class='pf-chips'><span class='pf-chip pf-c-ok'>" + T("Employees", "ملازمین") + ": " + m.tAll.n + "</span><span class='pf-chip'>" + T("Allowances (gross)", "کل الاؤنس") + ": " + money(m.tAll.gross) + "</span><span class='pf-chip'>" + T("Deductions", "کٹوتیاں") + ": " + money(m.tAll.ded) + "</span><span class='pf-chip pf-c-ok'>" + T("Net pay", "نیٹ تنخواہ") + ": " + money(m.tAll.net) + "</span></div>";
+      h += table(m);
+      if(m.removed.length) h += "<p class='hint'><b>" + T("Left out by hand", "ہاتھ سے نکالے گئے") + ":</b> " + m.removed.map(function(x){ return esc(x.name) + (editing ? " <button type='button' class='btn small bm-restore' data-k='" + esc(x.key) + "'>" + T("Put back", "واپس لائیں") + "</button>" : ""); }).join(" · ") + "</p>";
+      if(editing) h += addForms();
+      body.innerHTML = h;
+    }catch(err){ body.innerHTML = "<div class='pf-warn'>" + esc(String(err && err.message || err)) + "</div>"; if(window.console) console.error(err); }
+    lastState = STATE;
+  }
+  function table(m){
+    var sens = sensOn(), ec = editing ? "<th></th>" : "", h = "<div class='table-wrap'><table class='pf-tbl bm-tbl'><thead><tr><th class='c'>#</th><th class='bm-name'>" + T("Name", "نام") + "</th><th>" + T("Designation / BPS", "عہدہ / BPS") + "</th><th>" + T("Personal No.", "پرسنل نمبر") + "</th>";
+    function head(c, side){ return "<th class='num bm-" + side + "'><div class='bm-code'>" + esc(codeShow(c)) + "</div>" + esc(c.title) + (editing && c.extra ? " <button type='button' class='bm-x bm-delcol' data-id='" + esc(c.id) + "' title='Remove this column'>✕</button>" : "") + "</th>"; }
+    m.aCols.forEach(function(c){ h += head(c, "a"); });
+    h += "<th class='num bm-tot'>" + T("Total Allowances", "کل الاؤنس") + "</th>";
+    m.dCols.forEach(function(c){ h += head(c, "d"); });
+    h += "<th class='num bm-tot'>" + T("Total Deductions", "کل کٹوتی") + "</th><th class='num bm-tot'>" + T("Net Pay", "نیٹ تنخواہ") + "</th>";
+    if(sens) h += "<th>CNIC</th><th>" + T("Date of birth", "تاریخ پیدائش") + "</th><th>" + T("Bank", "بینک") + "</th><th>" + T("Account No.", "اکاؤنٹ نمبر") + "</th>";
+    h += ec + "</tr></thead><tbody>";
+    var colN = 4 + m.aCols.length + 1 + m.dCols.length + 2 + (sens ? 4 : 0) + (editing ? 1 : 0);
+    function totRow(label, t){
+      var r = "<tr class='bm-trow'><td></td><td class='bm-name' colspan='3'>" + label + " (" + t.n + ")</td>";
+      m.aCols.forEach(function(c){ r += "<td class='num'>" + (t.A[c.k] ? money(t.A[c.k]) : "<span class='bm-zero'>\u2013</span>") + "</td>"; });
+      r += "<td class='num'>" + money(t.gross) + "</td>";
+      m.dCols.forEach(function(c){ r += "<td class='num'>" + (t.D[c.k] ? money(t.D[c.k]) : "<span class='bm-zero'>\u2013</span>") + "</td>"; });
+      r += "<td class='num'>" + money(t.ded) + "</td><td class='num'>" + money(t.net) + "</td>";
+      for(var i = 0; i < (sens ? 4 : 0) + (editing ? 1 : 0); i++) r += "<td></td>";
+      return r + "</tr>";
+    }
+    function group(rows, label, t){
+      if(!rows.length) return;
+      h += "<tr class='bm-band'><td colspan='" + colN + "'>" + label + "</td></tr>";
+      rows.forEach(function(r, i){
+        h += "<tr><td class='c'>" + (i + 1) + "</td><td class='bm-name'>" + txtIn(r, "name") + "</td><td>" + txtIn(r, "designation") + "</td><td>" + txtIn(r, "persNo", "sm") + "</td>";
+        m.aCols.forEach(function(c){ h += "<td class='num'>" + cellIn(r, "A", c) + "</td>"; });
+        h += "<td class='num bm-tot'>" + money(r.gross) + "</td>";
+        m.dCols.forEach(function(c){ h += "<td class='num'>" + cellIn(r, "D", c) + "</td>"; });
+        h += "<td class='num bm-tot'>" + money(r.ded) + "</td><td class='num bm-tot'><b>" + money(r.net) + "</b></td>";
+        if(sens){ var s = sensOf(r); h += "<td>" + esc(s.cnic) + "</td><td>" + esc(s.dob) + "</td><td>" + esc(s.bank) + "</td><td>" + esc(s.account) + "</td>"; }
+        if(editing) h += "<td><button type='button' class='bm-x bm-del' data-k='" + esc(r.key) + "' title='Leave this person out'>✕</button></td>";
+        h += "</tr>";
+      });
+      h += totRow(T("Total", "میزان") + " " + label, t);
+    }
+    var off = m.rows.filter(function(r){ return r.grp === "O"; }), sta = m.rows.filter(function(r){ return r.grp === "S"; });
+    group(off, T("Officers (BPS 16 and above)", "افسران (BPS 16 اور اوپر)"), m.tOff);
+    group(sta, T("Officials", "اہلکار"), m.tSta);
+    h += totRow(T("GRAND TOTAL", "کل میزان"), m.tAll);
+    return h + "</tbody></table></div>";
+  }
+  function addForms(){
+    var h = "<div class='bm-card'><b>" + T("Add a person", "نیا ملازم شامل کریں") + "</b><div class='bm-add'><input id='bm_ap_name' placeholder='Name'><input id='bm_ap_des' placeholder='Designation (BPS-..)'><input id='bm_ap_pno' placeholder='Personal No.'><select id='bm_ap_grp'><option value='S'>Official</option><option value='O'>Officer (BPS 16+)</option></select><button type='button' class='btn small' id='bm_ap_add'>+ " + T("Add", "شامل") + "</button></div>";
+    h += "<b>" + T("Add a column (allowance or deduction)", "نیا کالم (الاؤنس یا کٹوتی) شامل کریں") + "</b><div class='bm-add'><select id='bm_ac_kind'><option value='A'>Allowance</option><option value='D'>Deduction</option></select><input id='bm_ac_code' placeholder='Head code (optional)'><input id='bm_ac_title' placeholder='Title'><button type='button' class='btn small' id='bm_ac_add'>+ " + T("Add", "شامل") + "</button></div></div>";
+    return h;
+  }
+
+  /* ---------- exports ---------- */
+  function sheetFrom(rows, merges, widths){
+    var ws = {}, maxR = 0, maxC = 0;
+    rows.forEach(function(row, r){
+      row.forEach(function(v, c){
+        if(v == null || v === "") return;
+        var ref = colName(c) + (r + 1), cell;
+        if(typeof v === "object" && v.f != null) cell = {t: "n", f: v.f, v: v.v != null ? v.v : 0};
+        else if(typeof v === "number") cell = {t: "n", v: v};
+        else cell = {t: "s", v: String(v)};
+        ws[ref] = cell; if(r > maxR) maxR = r; if(c > maxC) maxC = c;
+      });
+    });
+    ws["!ref"] = "A1:" + colName(maxC) + (maxR + 1);
+    if(merges) ws["!merges"] = merges.map(function(a){ return {s: {r: a[0], c: a[1]}, e: {r: a[2], c: a[3]}}; });
+    if(widths) ws["!cols"] = widths.map(function(w){ return {wch: w}; });
+    return ws;
+  }
+  function colName(i){ var s = ""; i++; while(i > 0){ var r = (i - 1) % 26; s = String.fromCharCode(65 + r) + s; i = Math.floor((i - 1) / 26); } return s; }
+  function F(f, v){ return {f: f, v: v}; }
+  function titleLines(m){
+    return ["BM-26 STATEMENT FOR THE MONTH OF " + mUpper(m.mk), "OFFICE OF THE PROSECUTOR GENERAL PUNJAB", "CAMP OFFICE SUPREME COURT OF PAKISTAN, ISLAMABAD",
+      "PUBLIC ORDER AND SAFETY AFFAIRS 036 ADMINISTRATION OF PUBLIC ORDER 0361 ADMINISTRATION   |   DDO Code RI-4720   |   Financial year " + m.fy];
+  }
+  function exportXlsx(){
+    var m = lastModel; if(!m){ toast("Nothing to export yet"); return; }
+    if(typeof XLSX === "undefined"){ toast("The Excel library is not loaded — reload the page"); return; }
+    var sens = sensOn(), s = signDef(m), rows = [], mg = [];
+    titleLines(m).forEach(function(t, i){ var r = []; r[0] = t; rows.push(r); mg.push([i, 0, i, 12]); });
+    rows.push([]);
+    var nA = m.aCols.length, nD = m.dCols.length;
+    var cA0 = 4, cTA = cA0 + nA, cGap = cTA + 1, cN2 = cGap + 1, cD0 = cN2 + 2, cTD = cD0 + nD, cNet = cTD + 1, cS0 = cNet + 1;
+    var h1 = [], h2 = [];
+    h1[0] = "Sr. #"; h1[1] = "Name"; h1[2] = "Designation/BPS"; h1[3] = "Personal NO.";
+    m.aCols.forEach(function(c, i){ h1[cA0 + i] = codeShow(c); h2[cA0 + i] = c.title; });
+    h1[cTA] = "Total Allowances";
+    h1[cN2] = "Name"; h1[cN2 + 1] = "Personal NO.";
+    m.dCols.forEach(function(c, i){ h1[cD0 + i] = codeShow(c); h2[cD0 + i] = c.title; });
+    h1[cTD] = "Total Deduction"; h1[cNet] = "Net Pay";
+    if(sens){ h1[cS0] = "C.N.I.C NO#"; h1[cS0 + 1] = "Date of Birth"; h1[cS0 + 2] = "Bank"; h1[cS0 + 3] = "Bank Account No."; }
+    rows.push(h1); rows.push(h2);
+    var hr = rows.length - 2;
+    [0, 1, 2, 3, cTA, cN2, cN2 + 1, cTD, cNet].concat(sens ? [cS0, cS0 + 1, cS0 + 2, cS0 + 3] : []).forEach(function(c){ mg.push([hr, c, hr + 1, c]); });
+    var first = rows.length + 1, k = 0, lastGrp = "";
+    m.rows.forEach(function(r){
+      if(r.grp !== lastGrp){ lastGrp = r.grp; k = 0; }
+      k++; var rr = rows.length + 1, row = [];
+      row[0] = k; row[1] = r.name; row[2] = r.designation; row[3] = r.persNo;
+      m.aCols.forEach(function(c, i){ row[cA0 + i] = num(r.A[c.k]); });
+      row[cTA] = F("SUM(" + colName(cA0) + rr + ":" + colName(cTA - 1) + rr + ")", r.gross);
+      row[cN2] = r.name; row[cN2 + 1] = r.persNo;
+      m.dCols.forEach(function(c, i){ row[cD0 + i] = num(r.D[c.k]); });
+      row[cTD] = F("SUM(" + colName(cD0) + rr + ":" + colName(cTD - 1) + rr + ")", r.ded);
+      row[cNet] = F(colName(cTA) + rr + "-" + colName(cTD) + rr, r.net);
+      if(sens){ var x = sensOf(r); row[cS0] = x.cnic; row[cS0 + 1] = x.dob; row[cS0 + 2] = x.bank; row[cS0 + 3] = x.account; }
+      rows.push(row);
+    });
+    var last = rows.length, tr = [];
+    tr[1] = "TOTAL (" + m.tAll.n + " employees)";
+    m.aCols.forEach(function(c, i){ tr[cA0 + i] = F("SUM(" + colName(cA0 + i) + first + ":" + colName(cA0 + i) + last + ")", m.tAll.A[c.k] || 0); });
+    tr[cTA] = F("SUM(" + colName(cTA) + first + ":" + colName(cTA) + last + ")", m.tAll.gross);
+    m.dCols.forEach(function(c, i){ tr[cD0 + i] = F("SUM(" + colName(cD0 + i) + first + ":" + colName(cD0 + i) + last + ")", m.tAll.D[c.k] || 0); });
+    tr[cTD] = F("SUM(" + colName(cTD) + first + ":" + colName(cTD) + last + ")", m.tAll.ded);
+    tr[cNet] = F("SUM(" + colName(cNet) + first + ":" + colName(cNet) + last + ")", m.tAll.net);
+    rows.push(tr);
+    rows.push([]);
+    var sc = cA0 + Math.max(0, nA - 2);
+    [[s.ddo], [s.ddoD], ["Camp Office PGP, Supreme Court of Pakistan,"], ["Islamabad"]].forEach(function(a){ var r = []; r[sc] = a[0]; rows.push(r); });
+    rows.push([]);
+    var pr = []; pr[1] = "Prepared by: " + s.prep + (s.prepD ? " (" + s.prepD + ")" : ""); pr[sc] = "Checked by: " + s.chk + (s.chkD ? " (" + s.chkD + ")" : ""); rows.push(pr);
+    var widths = [6, 26, 24, 12]; m.aCols.forEach(function(){ widths.push(13); }); widths.push(14, 3, 26, 12); m.dCols.forEach(function(){ widths.push(13); }); widths.push(14, 14);
+    if(sens) widths.push(18, 12, 22, 22);
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, sheetFrom(rows, mg, widths), "BM-26 " + mLabel(m.mk).slice(0, 3) + "-" + m.mk.slice(0, 4));
+    XLSX.writeFile(wb, "BM26_Salary_Statement_" + m.mk + ".xlsx");
+  }
+  function expTables(m){
+    var sens = sensOn(), s = signDef(m), tables = [], MAXA = 8;
+    var offR = m.rows.filter(function(r){ return r.grp === "O"; }), staR = m.rows.filter(function(r){ return r.grp === "S"; });
+    tables.push({title: "Summary — BM-26 for " + mLabel(m.mk), heads: ["Group", "Employees", "Total allowances", "Total deductions", "Net pay"], num: [false, true, true, true, true],
+      rows: [{cells: ["Officers (BPS 16 and above)", String(m.tOff.n), sN(m.tOff.gross), sN(m.tOff.ded), sN(m.tOff.net)], nums: [false, true, true, true, true]}, {cells: ["Officials", String(m.tSta.n), sN(m.tSta.gross), sN(m.tSta.ded), sN(m.tSta.net)], nums: [false, true, true, true, true]}],
+      foot: [{cells: ["Grand total", String(m.tAll.n), sN(m.tAll.gross), sN(m.tAll.ded), sN(m.tAll.net)], nums: [false, true, true, true, true]}]});
+    function mk(title, head, idCells, idNum, cols, side, withTot, extraCells){
+      var heads = head.concat(cols.map(function(c){ return (codeShow(c) === "—" ? "" : codeShow(c) + " ") + c.title; }));
+      var nm = idNum.concat(cols.map(function(){ return true; }));
+      if(withTot){ heads = heads.concat(withTot.heads); nm = nm.concat(withTot.heads.map(function(){ return true; })); }
+      var rows = [];
+      function block(rs, label, t){
+        if(!rs.length) return;
+        rows.push({banner: label});
+        rs.forEach(function(r, i){
+          var cells = idCells(r, i).concat(cols.map(function(c){ var v = num((side === "A" ? r.A : r.D)[c.k]); return v ? sN(v) : "-"; }));
+          if(withTot) cells = cells.concat(withTot.cells(r));
+          rows.push({cells: cells, nums: nm});
+        });
+      }
+      block(offR, "Officers (BPS 16 and above)"); block(staR, "Officials");
+      function totLine(label, t){
+        var cells = [""].concat([label]).concat(new Array(head.length - 2).fill("")).concat(cols.map(function(c){ var v = (side === "A" ? t.A : t.D)[c.k] || 0; return v ? sN(v) : "-"; }));
+        if(withTot) cells = cells.concat(withTot.tot(t));
+        return {cells: cells, nums: nm};
+      }
+      var foot = [];
+      if(offR.length && staR.length){ foot.push(totLine("Total Officers", m.tOff)); foot.push(totLine("Total Officials", m.tSta)); }
+      foot.push(totLine("Grand total", m.tAll));
+      return {title: title, heads: heads, rows: rows, foot: foot, num: nm};
+    }
+    /* allowances in parts of MAXA heads */
+    var parts = []; for(var i = 0; i < m.aCols.length; i += MAXA) parts.push(m.aCols.slice(i, i + MAXA));
+    if(!parts.length) parts.push([]);
+    parts.forEach(function(cols, pi){
+      var isFirst = pi === 0, isLast = pi === parts.length - 1;
+      var idHead = isFirst ? ["Sr.", "Name", "Designation / BPS", "Personal No."] : ["Sr.", "Name"];
+      var idCells = function(r, i){ return isFirst ? [String(i + 1), r.name, r.designation, r.persNo] : [String(i + 1), r.name]; };
+      var idNum = idHead.map(function(){ return false; });
+      var tot = isLast ? {heads: ["Total Allowances"], cells: function(r){ return [sN(r.gross)]; }, tot: function(t){ return [sN(t.gross)]; }} : null;
+      tables.push(mk("BM-26 — Pay and allowances, " + mLabel(m.mk) + (parts.length > 1 ? " (part " + (pi + 1) + " of " + parts.length + ")" : ""), idHead, idCells, idNum, cols, "A", tot));
+    });
+    var dTot = {heads: ["Total Deductions", "Net Pay"], cells: function(r){ return [sN(r.ded), sN(r.net)]; }, tot: function(t){ return [sN(t.ded), sN(t.net)]; }};
+    tables.push(mk("BM-26 — Deductions and net pay, " + mLabel(m.mk), ["Sr.", "Name", "Personal No."], function(r, i){ return [String(i + 1), r.name, r.persNo]; }, [false, false, false], m.dCols, "D", dTot));
+    if(sens){
+      var prow = [];
+      var all = offR.concat(staR);
+      all.forEach(function(r, i){ var x = sensOf(r); prow.push({cells: [String(i + 1), r.name, x.cnic, x.dob, x.bank, x.account], nums: [false, false, false, false, false, false]}); });
+      tables.push({title: "BM-26 — Personal and bank details, " + mLabel(m.mk), heads: ["Sr.", "Name", "C.N.I.C No.", "Date of birth", "Bank / Branch", "Account No."], num: [false, false, false, false, false, false], rows: prow, foot: []});
+    }
+    tables.push({title: "Certificate and signatures", heads: ["Prepared by", "Checked by", "Drawing & Disbursing Officer"], num: [false, false, false],
+      rows: [{cells: [s.prep || " ", s.chk || " ", s.ddo], nums: [false, false, false]}, {cells: [s.prepD || " ", s.chkD || " ", s.ddoD + ", Camp Office PGP, Supreme Court of Pakistan, Islamabad"], nums: [false, false, false]}], foot: []});
+    return {tables: tables, title: "BM-26 Statement for the month of " + mUpper(m.mk), sub: "Office of the Prosecutor General Punjab, Camp Office Supreme Court of Pakistan, Islamabad   |   DDO Code RI-4720   |   FY " + m.fy + "   |   Status: " + (STAT.filter(function(a){ return a[0] === (m.status || "draft"); })[0] || STAT[0])[1], base: "BM26_Salary_Statement_" + m.mk};
+  }
+  async function runExport(kind){
+    var m = lastModel; if(!m){ toast("Nothing to export yet"); return; }
+    if(!window.__brExportTables){ toast("The export tools are not ready — reload the page"); return; }
+    var x = expTables(m);
+    await window.__brExportTables(kind, x.tables, {title: x.title, sub: x.sub, base: x.base, landscape: true});
+  }
+
+  /* ---------- edit actions ---------- */
+  function startEdit(){ work = clone(recOf(month)); delete work.snap; editing = true; hist = []; redoS = []; dirty = false; resetArm = 0; render(); }
+  function saveEdit(){
+    var cur = recOf(month), keep = {status: cur.status, date: cur.date, note: work.note != null ? work.note : cur.note, sign: cur.sign};
+    var r = Object.assign({}, work, keep); delete r.snap;
+    if(typeof tabOK === "function" && !tabOK("cf")){ return; }
+    root().months[month] = r;
+    editing = false; work = null; hist = []; redoS = []; dirty = false;
+    var ok = persistShared(); render();
+    toast(ok ? "Saved" : "Could not save");
+  }
+  function cancelEdit(){ editing = false; work = null; hist = []; redoS = []; dirty = false; render(); }
+  function undo(){ if(!hist.length) return; redoS.push(JSON.stringify(work)); work = JSON.parse(hist.pop()); dirty = true; render(); }
+  function redo(){ if(!redoS.length) return; hist.push(JSON.stringify(work)); work = JSON.parse(redoS.pop()); dirty = true; render(); }
+  function resetAll(){
+    if(!(resetArm && Date.now() - resetArm < 5000)){ resetArm = Date.now(); render(); setTimeout(function(){ if(resetArm && Date.now() - resetArm >= 5000){ resetArm = 0; render(); } }, 5200); return; }
+    resetArm = 0;
+    if(editing){ snap(); var b = blank(); work.ov = b.ov; work.del = b.del; work.extra = b.extra; work.xcols = b.xcols; }
+    else { var cur = recOf(month), b2 = blank(); cur.ov = b2.ov; cur.del = b2.del; cur.extra = b2.extra; cur.xcols = b2.xcols; delete cur.snap; root().months[month] = cur; persistShared(); }
+    render();
+  }
+  function setStatus(st){
+    var r = recOf(month);
+    if(st === "verified"){
+      var m = build(month); r.snap = clone(m);
+    } else delete r.snap;
+    r.status = st;
+    var d = new Date(); r.date = st === "draft" ? "" : (d.getDate() < 10 ? "0" : "") + d.getDate() + "-" + (d.getMonth() < 9 ? "0" : "") + (d.getMonth() + 1) + "-" + d.getFullYear();
+    root().months[month] = r; persistShared(); render();
+  }
+  function saveSignField(id, v){
+    var r = recOf(month), key = id.replace("bm_s_", "");
+    r.sign = r.sign || {}; r.sign[key] = v; root().months[month] = r; persistShared();
+  }
+  function onEdit(t){
+    var ty = t.getAttribute("data-t"), k = t.getAttribute("data-k"), f = t.getAttribute("data-f"), raw = String(t.value || "").trim(), W = work;
+    if(!W) return;
+    snap();
+    var o = W.ov[k] || (W.ov[k] = {});
+    if(ty === "txt"){ if(raw === "") delete o[f]; else o[f] = raw; }
+    else{
+      var side = f.charAt(0), c = f.slice(2), auto = num(t.getAttribute("data-auto")), v = raw === "" ? null : num(raw.replace(/,/g, ""));
+      var bag = o[side] || (o[side] = {});
+      if(v == null || v === auto){ delete bag[c]; if(!Object.keys(bag).length) delete o[side]; } else bag[c] = v;
+    }
+    if(!Object.keys(o).length) delete W.ov[k];
+  }
+  function rerenderKeepFocus(){
+    setTimeout(function(){
+      var a = document.activeElement, sel = null;
+      if(a && a.classList && a.classList.contains("bm-in") && panel.contains(a)) sel = {t: a.getAttribute("data-t"), k: a.getAttribute("data-k"), f: a.getAttribute("data-f")};
+      render();
+      if(sel){
+        var all = panel.querySelectorAll(".bm-in");
+        for(var i = 0; i < all.length; i++){
+          var x = all[i];
+          if(x.getAttribute("data-t") === sel.t && x.getAttribute("data-k") === sel.k && x.getAttribute("data-f") === sel.f){ x.focus(); try{ x.select(); }catch(e){} break; }
+        }
+      }
+    }, 0);
+  }
+
+  /* ---------- events ---------- */
+  panel.addEventListener("click", function(ev){
+    var t = ev.target.closest ? ev.target.closest("button") : null; if(!t || t.disabled) return;
+    var id = t.id, cl = t.classList;
+    if(id === "bm_xl"){ exportXlsx(); return; }
+    if(id === "bm_pdf"){ runExport("pdf"); return; }
+    if(id === "bm_doc"){ runExport("word"); return; }
+    if(id === "bm_prt"){ var pb = document.getElementById("globalPrintBtn"); if(pb) pb.click(); else window.print(); return; }
+    if(id === "bm_edit"){ startEdit(); return; }
+    if(id === "bm_save"){ saveEdit(); return; }
+    if(id === "bm_cancel"){ cancelEdit(); return; }
+    if(id === "bm_undo"){ undo(); return; }
+    if(id === "bm_redo"){ redo(); return; }
+    if(id === "bm_reset"){ resetAll(); return; }
+    if(t.hasAttribute("data-st") && !editing){ setStatus(t.getAttribute("data-st")); return; }
+    if(!editing || !work) return;
+    if(cl.contains("bm-del")){
+      snap(); var k = t.getAttribute("data-k");
+      if(k.indexOf("X:") === 0){ var xid = k.slice(2); work.extra = work.extra.filter(function(x){ return x.id !== xid; }); delete work.ov[k]; }
+      else work.del[k] = true;
+      render(); return;
+    }
+    if(cl.contains("bm-restore")){ snap(); delete work.del[t.getAttribute("data-k")]; render(); return; }
+    if(cl.contains("bm-delcol")){
+      snap(); var cid = t.getAttribute("data-id"); work.xcols = work.xcols.filter(function(x){ return x.id !== cid; });
+      Object.keys(work.ov).forEach(function(kk){ var o = work.ov[kk]; ["A", "D"].forEach(function(s){ if(o[s]) delete o[s]["X:" + cid]; }); });
+      render(); return;
+    }
+    if(id === "bm_ap_add"){
+      var nm = $("#bm_ap_name").value.trim(); if(!nm){ toast("Write the name first"); return; }
+      snap(); var nid = uid(); work.extra.push({id: nid, grp: $("#bm_ap_grp").value});
+      work.ov["X:" + nid] = {name: nm, designation: $("#bm_ap_des").value.trim(), persNo: $("#bm_ap_pno").value.trim()};
+      render(); return;
+    }
+    if(id === "bm_ac_add"){
+      var title = $("#bm_ac_title").value.trim(); if(!title){ toast("Write the column title first"); return; }
+      snap(); work.xcols.push({id: uid(), kind: $("#bm_ac_kind").value, code: $("#bm_ac_code").value.trim(), title: title}); render(); return;
+    }
+  });
+  panel.addEventListener("change", function(ev){
+    var t = ev.target, id = t.id || "";
+    if(t.classList && t.classList.contains("bm-in")){ if(editing){ onEdit(t); rerenderKeepFocus(); } return; }
+    if(id === "bm_month"){ month = t.value; try{ localStorage.setItem(MKEY, month); }catch(e){} render(); return; }
+    if(id === "bm_sens"){
+      showSens = !!t.checked;
+      if(showSens && canSens()){
+        var empty = true; try{ empty = !Object.keys(SENSITIVE_MAP).length; }catch(e){}
+        if(empty && typeof loadSensitiveMap === "function"){ loadSensitiveMap(render); return; }
+      }
+      render(); return;
+    }
+    if(id.indexOf("bm_s_") === 0){ saveSignField(id, t.value); return; }
+    if(id === "bm_note"){
+      if(editing && work){ work.note = t.value; return; }
+      var r = recOf(month); r.note = t.value; root().months[month] = r; persistShared();
+    }
+  });
+  function syncTabButton(){ var btn = document.getElementById("bmTabBtn"); if(btn) btn.style.display = allowed() ? "flex" : "none"; }
+  document.querySelectorAll(".tab-btn").forEach(function(b){
+    b.addEventListener("click", function(){ if(b.getAttribute("data-tab") === "bm26") setTimeout(render, 0); });
+  });
+  setInterval(function(){
+    try{
+      syncTabButton();
+      if(panel.classList.contains("active") && STATE !== lastState && allowed()){
+        var a = document.activeElement; if(!(a && panel.contains(a) && /INPUT|SELECT/.test(a.tagName))) render();
+      }
+    }catch(e){}
+  }, 1500);
+  window.addEventListener("beforeunload", function(ev){ if(editing && dirty){ ev.preventDefault(); ev.returnValue = ""; } });
+  window.__brBm26 = {root: root, build: build, render: render, model: function(){ return lastModel; }, expTables: expTables};
+})();
+
 
 /* ================= BUDGET DEMAND (next financial year) — Form BM-III, BM-III-A, Proforma-I and II (Admin / Super Admin) =================
    Builds the annual budget demand of the DDO from data already on this page: the latest pay slips of every employee, the Employees
