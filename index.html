@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="lib/xlsx.full.min.js" onerror="var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';document.head.appendChild(s)"></script>
 <!-- html2pdf.js 0.10.1 has a bug in this app's environment: its internal wrapper around
      html2canvas comes back with a 0-height canvas, so every PDF it builds is a blank page
      (confirmed by direct testing on cmpofficepgp.org — see case-entry.html / downloadCurrentViewAsPdf
@@ -8262,6 +8262,14 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   }
 
   /* a totals row such as "TOTAL (14 bills)" in column 1 with empty cells after it: let the label run across those empty cells */
+  window.__brEnsureXlsx = async function(){
+    if(window.XLSX && window.XLSX.utils) return true;
+    var src = ["lib/xlsx.full.min.js", "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js", "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"];
+    for(var i = 0; i < src.length; i++){
+      try{ await addScript(src[i]); if(window.XLSX && window.XLSX.utils) return true; }catch(e){}
+    }
+    return false;
+  };
   function footSpan(cells){
     var k = 1; while(k < cells.length && !cells[k]) k++;
     return (cells[0] && k > 1 && k < cells.length) ? k : 1;
@@ -8354,13 +8362,13 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       return h;
     }
     function layout(t){
-      var n = t.heads.length, fs = n > 12 ? 8 : (n > 8 ? 8.5 : 9), w;
+      var n = t.heads.length, fs = t.dense ? 7 : (n > 12 ? 8 : (n > 8 ? 8.5 : 9)), w, FLOOR = t.dense ? 4.4 : 6.2;
       for(;;){
-        var nat = [], mn = [], padd = 8;
+        var nat = [], mn = [], padd = t.dense ? 3.5 : 8;
         for(var i = 0; i < n; i++){
           var hd = heading(t, i), maxw = FB.widthOfTextAtSize(hd, fs) + padd, lw = 0;
           hd.split(/\s+/).forEach(function(x){ lw = Math.max(lw, FB.widthOfTextAtSize(x, fs)); });
-          var minw = lw + padd;
+          var minw = (t.dense ? Math.min(lw, 29) : lw) + padd;
           var rowsAll = t.rows.concat(t.foot);
           for(var r = 0; r < rowsAll.length; r++){
             var c = rowsAll[r].cells; if(!c) continue;
@@ -8375,13 +8383,13 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
         if(sumN <= usable){ var k = usable / sumN; w = nat.map(function(x){ return x * k; }); break; }
         var flex = nat.map(function(x, i){ return x - mn[i]; }), sumF = flex.reduce(function(a, b){ return a + b; }, 0), need = sumN - usable;
         if(sumF >= need){ w = nat.map(function(x, i){ return x - flex[i] * need / sumF; }); break; }
-        if(fs > 6.2){ fs -= .5; continue; }
+        if(fs > FLOOR){ fs -= .4; continue; }
         var k2 = usable / mn.reduce(function(a, b){ return a + b; }, 0); w = mn.map(function(x){ return x * k2; }); break;
       }
       return {w:w, fs:fs};
     }
     function drawHeader(t, lay){
-      var hl = 1, x = M, hs = t.heads.map(function(_, i){ var ls = wrap(heading(t, i), FB, lay.fs, lay.w[i] - 6).slice(0, 2); hl = Math.max(hl, ls.length); return ls; });
+      var hl = 1, x = M, hs = t.heads.map(function(_, i){ var ls = wrap(heading(t, i), FB, lay.fs, lay.w[i] - (t.dense ? 3 : 6)).slice(0, t.dense ? 6 : 2); hl = Math.max(hl, ls.length); return ls; });
       var h = hl * (lay.fs + 1.5) + 9;
       if(y - h - 30 < M + FOOT){ newPage(); }
       page.drawRectangle({x:M, y:y - h, width:usable, height:h, color:navy});
@@ -8402,9 +8410,9 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       for(var q = 0; q < sp; q++) spW += lay.w[q];
       for(var i = 0; i < n; i++){
         if(i > 0 && i < sp){ cols.push([]); continue; }
-        var ls = wrap(r.cells[i], font, fs, (i === 0 ? spW : lay.w[i]) - 6); cols.push(ls); hh = Math.max(hh, ls.length * lh);
+        var ls = wrap(r.cells[i], font, fs, (i === 0 ? spW : lay.w[i]) - (t.dense ? 3 : 6)); cols.push(ls); hh = Math.max(hh, ls.length * lh);
       }
-      var rh = Math.max(hh + 6, fs + 10);
+      var rh = t.dense ? Math.max(hh + 4, fs + 6) : Math.max(hh + 6, fs + 10);
       if(y - rh < M + FOOT){ newPage(); drawHeader(t, lay); }
       if(kind === "foot") page.drawRectangle({x:M, y:y - rh, width:usable, height:rh, color:tot});
       else if(idx % 2) page.drawRectangle({x:M, y:y - rh, width:usable, height:rh, color:zebra});
@@ -8522,17 +8530,17 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     children.push(para([run(m.sub, {size:16, color:"666666"})], {align:D.AlignmentType.CENTER, after:160}));
     tables.forEach(function(t){
       var n = t.heads.length, wt = t.heads.map(function(h, i){
-        var mx = Math.max(h.length * 1.05, 5);
-        t.rows.concat(t.foot).forEach(function(r){ if(r.cells) mx = Math.max(mx, Math.min(String(r.cells[i] || "").length, 36)); });
-        return Math.max(mx, t.num[i] ? 8 : 5);
+        var mx = t.dense ? Math.min(Math.max.apply(null, String(h).split(/\s+/).map(function(x){ return x.length; })), 11) : Math.max(h.length * 1.05, 5);
+        t.rows.concat(t.foot).forEach(function(r){ if(r.cells) mx = Math.max(mx, Math.min(String(r.cells[i] || "").length, t.dense ? (i < 3 ? 16 : 11) : 36)); });
+        return t.dense ? Math.max(mx + 1.5, 8.5) : Math.max(mx, t.num[i] ? 8 : 5);
       }), sum = wt.reduce(function(a, b){ return a + b; }, 0);
       var W = wt.map(function(x){ return Math.floor(usable * x / sum); });
-      var fs = n > 12 ? 13 : n > 9 ? 14 : n > 6 ? 16 : 18;
+      var fs = t.dense ? 9 : n > 12 ? 13 : n > 9 ? 14 : n > 6 ? 16 : 18, cm = t.dense ? 25 : 70;
       function cell(text, i, o){
         o = o || {};
         return new D.TableCell({children:[para([run(text, {size:fs, bold:!!o.bold, color:o.color})], {align:(t.num[i] && !o.left) ? D.AlignmentType.RIGHT : undefined})],
           width:{size:W[i], type:D.WidthType.DXA}, verticalAlign:D.VerticalAlign.CENTER,
-          shading:o.fill ? {type:D.ShadingType.CLEAR, color:"auto", fill:o.fill} : undefined, margins:{top:45, bottom:45, left:70, right:70}});
+          shading:o.fill ? {type:D.ShadingType.CLEAR, color:"auto", fill:o.fill} : undefined, margins:{top:t.dense ? 25 : 45, bottom:t.dense ? 25 : 45, left:cm, right:cm}});
       }
       if(t.title) children.push(new D.Paragraph({children:[run(t.title, {size:20, bold:true, color:"1B3F63"})], shading:{type:D.ShadingType.CLEAR, color:"auto", fill:"F8EBC4"}, spacing:{before:160, after:60}, keepNext:true}));
       var trs = [new D.TableRow({tableHeader:true, cantSplit:true, children:t.heads.map(function(h, i){ return cell(h, i, {bold:true, color:"FFFFFF", fill:"1B3F63"}); })})], k = 0;
@@ -8823,7 +8831,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(!tables || !tables.length){ say("There are no records to export on this tab.", "اس ٹیب میں ایکسپورٹ کے لیے کوئی ریکارڈ نہیں ہے۔"); return; }
     if(!asked && window.__campAskStamp && window.__campAskStamp(function(){ window.__brExportTables(kind, tables, o, true); })){ return; }
     var maxCols = 0; tables.forEach(function(t){ maxCols = Math.max(maxCols, t.heads.length); });
-    var m = {office:clean(STATE.officeName || "") || "Camp Office, Prosecutor General Punjab", title:o.title, sub:(o.sub ? o.sub + "   |   " : "") + "Generated " + todayText(), landscape:o.landscape != null ? !!o.landscape : maxCols > 6, base:o.base + "_" + todayIso(), sign:signoff(), stamp:!!(window.__campStampOn && window.__campStampOn()), paper:paperSize()};
+    var m = {office:o.office || clean(STATE.officeName || "") || "Camp Office, Prosecutor General Punjab", title:o.title, sub:(o.sub ? o.sub + "   |   " : "") + "Generated " + todayText(), landscape:o.landscape != null ? !!o.landscape : maxCols > 6, base:o.base + "_" + todayIso(), sign:signoff(), stamp:!!(window.__campStampOn && window.__campStampOn()), paper:o.paper ? paperFrom(o.paper) : paperSize()};
     say("Preparing the file…", "فائل تیار ہو رہی ہے…");
     try{
       if(kind === "pdf"){ await loadLib("pdflib"); download(new Blob([await buildPdf(tables, m)], {type:"application/pdf"}), m.base + ".pdf"); }
@@ -8840,6 +8848,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
      One table per month: Earnings | Amount | Deductions | Amount side by side, Gross / Total deductions / Net pay underneath.
      The figures are read from the slip on screen, so whatever the clerk edited is what gets exported. */
   function paperFrom(v){
+    if(v === "A3") return {w:841.89, h:1190.55, tw:16838, th:23811, code:8};
     if(v === "Legal") return {w:612, h:1008, tw:12240, th:20160, code:5};
     if(v === "Foolscap") return {w:612, h:936, tw:12240, th:18720, code:14};
     return {w:595.28, h:841.89, tw:11906, th:16838, code:9};
@@ -10489,7 +10498,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
         "<button type='button' class='btn small' id='bm_reset'>↺ " + T(resetArm && Date.now() - resetArm < 5000 ? "Click again to confirm" : "Everything back to automatic", resetArm && Date.now() - resetArm < 5000 ? "تصدیق کے لیے دوبارہ دبائیں" : "سب کچھ خودکار") + "</button>" +
         "<span class='pf-chip " + (dirty ? "pf-c-bad" : "pf-c-ok") + "'>" + T(dirty ? "Editing — not saved yet" : "Editing", dirty ? "ترمیم جاری — ابھی محفوظ نہیں" : "ترمیم جاری") + "</span>";
     }
-    h += "<span class='bm-sep'></span><button type='button' class='btn small' id='bm_xl'>📊 " + T("Excel", "ایکسل") + "</button><button type='button' class='btn small' id='bm_pdf'>📄 PDF</button><button type='button' class='btn small' id='bm_doc'>📝 " + T("Word", "ورڈ") + "</button><button type='button' class='btn small' id='bm_prt'" + (editing ? " disabled" : "") + ">🖨 " + T("Print", "پرنٹ") + "</button></div>";
+    h += "<span class='bm-sep'></span><label class='hint' style='margin:0 4px 0 0'>" + T("Paper", "کاغذ") + " <select id='bm_paper'>" + ["A4", "Legal", "Foolscap", "A3"].map(function(p){ return "<option value='" + p + "'" + (p === paperSel ? " selected" : "") + ">" + p + "</option>"; }).join("") + "</select></label><button type='button' class='btn small' id='bm_xl'>📊 " + T("Excel", "ایکسل") + "</button><button type='button' class='btn small' id='bm_pdf'>📄 PDF</button><button type='button' class='btn small' id='bm_doc'>📝 " + T("Word", "ورڈ") + "</button><button type='button' class='btn small' id='bm_prt'" + (editing ? " disabled" : "") + ">🖨 " + T("Print", "پرنٹ") + "</button></div>";
     if(editing) h += "<p class='hint'>" + T("Type over any figure to change it (a changed figure turns yellow); clear the box to go back to the automatic figure. Nothing is kept until you press Save.", "کسی بھی رقم پر لکھ کر بدلیں (بدلی ہوئی رقم پیلی ہو جاتی ہے)؛ خانہ خالی کر دیں تو خودکار رقم واپس آ جاتی ہے۔ محفوظ کریں دبانے تک کچھ محفوظ نہیں ہوتا۔") + "</p>";
     return h;
   }
@@ -10599,13 +10608,15 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   }
   function colName(i){ var s = ""; i++; while(i > 0){ var r = (i - 1) % 26; s = String.fromCharCode(65 + r) + s; i = Math.floor((i - 1) / 26); } return s; }
   function F(f, v){ return {f: f, v: v}; }
+  var paperSel = "Legal"; try{ paperSel = localStorage.getItem("bm26_paper") || "Legal"; }catch(e){}
   function titleLines(m){
     return ["BM-26 STATEMENT FOR THE MONTH OF " + mUpper(m.mk), "OFFICE OF THE PROSECUTOR GENERAL PUNJAB", "CAMP OFFICE SUPREME COURT OF PAKISTAN, ISLAMABAD",
       "PUBLIC ORDER AND SAFETY AFFAIRS 036 ADMINISTRATION OF PUBLIC ORDER 0361 ADMINISTRATION   |   DDO Code RI-4720   |   Financial year " + m.fy];
   }
-  function exportXlsx(){
+  async function exportXlsx(){
     var m = lastModel; if(!m){ toast("Nothing to export yet"); return; }
-    if(typeof XLSX === "undefined"){ toast("The Excel library is not loaded — reload the page"); return; }
+    var okx = await (window.__brEnsureXlsx ? window.__brEnsureXlsx() : Promise.resolve(typeof XLSX !== "undefined"));
+    if(!okx){ toast("The Excel library could not load — building the Excel file another way"); runExport("excel"); return; }
     var sens = sensOn(), s = signDef(m), rows = [], mg = [];
     titleLines(m).forEach(function(t, i){ var r = []; r[0] = t; rows.push(r); mg.push([i, 0, i, 12]); });
     rows.push([]);
@@ -10653,58 +10664,44 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(sens) widths.push(18, 12, 22, 22);
     var wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, sheetFrom(rows, mg, widths), "BM-26 " + mLabel(m.mk).slice(0, 3) + "-" + m.mk.slice(0, 4));
-    XLSX.writeFile(wb, "BM26_Salary_Statement_" + m.mk + ".xlsx");
+    try{ XLSX.writeFile(wb, "BM26_Salary_Statement_" + m.mk + ".xlsx"); toast("Excel file ready — check your Downloads folder"); }
+    catch(e){ toast("Excel (SheetJS) failed — building the Excel file another way"); runExport("excel"); }
   }
   function expTables(m){
-    var sens = sensOn(), s = signDef(m), tables = [], MAXA = 8;
+    var sens = sensOn(), s = signDef(m), tables = [];
     var offR = m.rows.filter(function(r){ return r.grp === "O"; }), staR = m.rows.filter(function(r){ return r.grp === "S"; });
-    tables.push({title: "Summary — BM-26 for " + mLabel(m.mk), heads: ["Group", "Employees", "Total allowances", "Total deductions", "Net pay"], num: [false, true, true, true, true],
+    function hd(c){ return (codeShow(c) === "—" ? "" : codeShow(c) + " ") + c.title; }
+    var heads = ["Sr. #", "Name", "Designation / BPS", "Personal No."].concat(m.aCols.map(hd), ["Total Allowances"], m.dCols.map(hd), ["Total Deduction", "Net Pay"]);
+    if(sens) heads = heads.concat(["C.N.I.C No.", "Date of Birth", "Bank", "Bank Account No."]);
+    var nm = heads.map(function(h, i){ return !(i < 3 || (sens && i >= heads.length - 4)); });
+    function line(r, k){
+      var c = [String(k), r.name, r.designation, r.persNo];
+      m.aCols.forEach(function(x){ var v = num(r.A[x.k]); c.push(v ? sN(v) : "-"); });
+      c.push(sN(r.gross));
+      m.dCols.forEach(function(x){ var v = num(r.D[x.k]); c.push(v ? sN(v) : "-"); });
+      c.push(sN(r.ded), sN(r.net));
+      if(sens){ var q = sensOf(r); c.push(q.cnic || "", q.dob || "", q.bank || "", q.account || ""); }
+      return {cells: c, nums: nm};
+    }
+    function tline(label, t){
+      var c = ["", label, "", ""];
+      m.aCols.forEach(function(x){ var v = t.A[x.k] || 0; c.push(v ? sN(v) : "-"); });
+      c.push(sN(t.gross));
+      m.dCols.forEach(function(x){ var v = t.D[x.k] || 0; c.push(v ? sN(v) : "-"); });
+      c.push(sN(t.ded), sN(t.net));
+      if(sens) c.push("", "", "", "");
+      return {cells: c, nums: nm};
+    }
+    var rows = [];
+    function block(rs, label){ if(!rs.length) return; rows.push({banner: label}); rs.forEach(function(r, i){ rows.push(line(r, i + 1)); }); }
+    block(offR, "Officers (BPS 16 and above)"); block(staR, "Officials");
+    var foot = [];
+    if(offR.length && staR.length){ foot.push(tline("Total Officers", m.tOff)); foot.push(tline("Total Officials", m.tSta)); }
+    foot.push(tline("GRAND TOTAL (" + m.tAll.n + ")", m.tAll));
+    tables.push({title: "BM-26 — Salary statement, " + mLabel(m.mk), heads: heads, rows: rows, foot: foot, num: nm, dense: true});
+    tables.push({title: "Summary", heads: ["Group", "Employees", "Total allowances", "Total deductions", "Net pay"], num: [false, true, true, true, true],
       rows: [{cells: ["Officers (BPS 16 and above)", String(m.tOff.n), sN(m.tOff.gross), sN(m.tOff.ded), sN(m.tOff.net)], nums: [false, true, true, true, true]}, {cells: ["Officials", String(m.tSta.n), sN(m.tSta.gross), sN(m.tSta.ded), sN(m.tSta.net)], nums: [false, true, true, true, true]}],
       foot: [{cells: ["Grand total", String(m.tAll.n), sN(m.tAll.gross), sN(m.tAll.ded), sN(m.tAll.net)], nums: [false, true, true, true, true]}]});
-    function mk(title, head, idCells, idNum, cols, side, withTot, extraCells){
-      var heads = head.concat(cols.map(function(c){ return (codeShow(c) === "—" ? "" : codeShow(c) + " ") + c.title; }));
-      var nm = idNum.concat(cols.map(function(){ return true; }));
-      if(withTot){ heads = heads.concat(withTot.heads); nm = nm.concat(withTot.heads.map(function(){ return true; })); }
-      var rows = [];
-      function block(rs, label, t){
-        if(!rs.length) return;
-        rows.push({banner: label});
-        rs.forEach(function(r, i){
-          var cells = idCells(r, i).concat(cols.map(function(c){ var v = num((side === "A" ? r.A : r.D)[c.k]); return v ? sN(v) : "-"; }));
-          if(withTot) cells = cells.concat(withTot.cells(r));
-          rows.push({cells: cells, nums: nm});
-        });
-      }
-      block(offR, "Officers (BPS 16 and above)"); block(staR, "Officials");
-      function totLine(label, t){
-        var cells = [""].concat([label]).concat(new Array(head.length - 2).fill("")).concat(cols.map(function(c){ var v = (side === "A" ? t.A : t.D)[c.k] || 0; return v ? sN(v) : "-"; }));
-        if(withTot) cells = cells.concat(withTot.tot(t));
-        return {cells: cells, nums: nm};
-      }
-      var foot = [];
-      if(offR.length && staR.length){ foot.push(totLine("Total Officers", m.tOff)); foot.push(totLine("Total Officials", m.tSta)); }
-      foot.push(totLine("Grand total", m.tAll));
-      return {title: title, heads: heads, rows: rows, foot: foot, num: nm};
-    }
-    /* allowances in parts of MAXA heads */
-    var parts = []; for(var i = 0; i < m.aCols.length; i += MAXA) parts.push(m.aCols.slice(i, i + MAXA));
-    if(!parts.length) parts.push([]);
-    parts.forEach(function(cols, pi){
-      var isFirst = pi === 0, isLast = pi === parts.length - 1;
-      var idHead = isFirst ? ["Sr.", "Name", "Designation / BPS", "Personal No."] : ["Sr.", "Name"];
-      var idCells = function(r, i){ return isFirst ? [String(i + 1), r.name, r.designation, r.persNo] : [String(i + 1), r.name]; };
-      var idNum = idHead.map(function(){ return false; });
-      var tot = isLast ? {heads: ["Total Allowances"], cells: function(r){ return [sN(r.gross)]; }, tot: function(t){ return [sN(t.gross)]; }} : null;
-      tables.push(mk("BM-26 — Pay and allowances, " + mLabel(m.mk) + (parts.length > 1 ? " (part " + (pi + 1) + " of " + parts.length + ")" : ""), idHead, idCells, idNum, cols, "A", tot));
-    });
-    var dTot = {heads: ["Total Deductions", "Net Pay"], cells: function(r){ return [sN(r.ded), sN(r.net)]; }, tot: function(t){ return [sN(t.ded), sN(t.net)]; }};
-    tables.push(mk("BM-26 — Deductions and net pay, " + mLabel(m.mk), ["Sr.", "Name", "Personal No."], function(r, i){ return [String(i + 1), r.name, r.persNo]; }, [false, false, false], m.dCols, "D", dTot));
-    if(sens){
-      var prow = [];
-      var all = offR.concat(staR);
-      all.forEach(function(r, i){ var x = sensOf(r); prow.push({cells: [String(i + 1), r.name, x.cnic, x.dob, x.bank, x.account], nums: [false, false, false, false, false, false]}); });
-      tables.push({title: "BM-26 — Personal and bank details, " + mLabel(m.mk), heads: ["Sr.", "Name", "C.N.I.C No.", "Date of birth", "Bank / Branch", "Account No."], num: [false, false, false, false, false, false], rows: prow, foot: []});
-    }
     tables.push({title: "Certificate and signatures", heads: ["Prepared by", "Checked by", "Drawing & Disbursing Officer"], num: [false, false, false],
       rows: [{cells: [s.prep || " ", s.chk || " ", s.ddo], nums: [false, false, false]}, {cells: [s.prepD || " ", s.chkD || " ", s.ddoD + ", Camp Office PGP, Supreme Court of Pakistan, Islamabad"], nums: [false, false, false]}], foot: []});
     return {tables: tables, title: "BM-26 Statement for the month of " + mUpper(m.mk), sub: "Office of the Prosecutor General Punjab, Camp Office Supreme Court of Pakistan, Islamabad   |   DDO Code RI-4720   |   FY " + m.fy + "   |   Status: " + (STAT.filter(function(a){ return a[0] === (m.status || "draft"); })[0] || STAT[0])[1], base: "BM26_Salary_Statement_" + m.mk};
@@ -10713,7 +10710,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var m = lastModel; if(!m){ toast("Nothing to export yet"); return; }
     if(!window.__brExportTables){ toast("The export tools are not ready — reload the page"); return; }
     var x = expTables(m);
-    await window.__brExportTables(kind, x.tables, {title: x.title, sub: x.sub, base: x.base, landscape: true});
+    await window.__brExportTables(kind, x.tables, {title: x.title, sub: x.sub, base: x.base, landscape: true, office: "Office of the Prosecutor General Punjab", paper: paperSel});
   }
 
   /* ---------- edit actions ---------- */
@@ -10820,6 +10817,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   panel.addEventListener("change", function(ev){
     var t = ev.target, id = t.id || "";
     if(t.classList && t.classList.contains("bm-in")){ if(editing){ onEdit(t); rerenderKeepFocus(); } return; }
+    if(id === "bm_paper"){ paperSel = t.value; try{ localStorage.setItem("bm26_paper", paperSel); }catch(e){} return; }
     if(id === "bm_month"){ month = t.value; try{ localStorage.setItem(MKEY, month); }catch(e){} render(); return; }
     if(id === "bm_sens"){
       showSens = !!t.checked;
@@ -11392,8 +11390,10 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var sg = ["Muhammad Junaid Aslam Khan Niazi", "Personal Assistant/DDO", "Camp Office PGP, Supreme Court of Pakistan", "Islamabad", "DDO Code RI-4720"];
     rows.push([]); sg.forEach(function(t){ var r = []; r[col] = t; rows.push(r); });
   }
-  function exportXlsx(){
+  async function exportXlsx(){
     var m = lastModel; if(!m || m.empty){ toast("Nothing to export yet"); return; }
+    var okx = await (window.__brEnsureXlsx ? window.__brEnsureXlsx() : Promise.resolve(typeof XLSX !== "undefined"));
+    if(!okx){ toast("The Excel library could not load — building the Excel file another way"); runExport("excel"); return; }
     var S = m.S, wb = XLSX.utils.book_new(), i;
     /* 1. Basic Pay and Increment (BM-III) */
     var r1 = [], mg1 = [];
@@ -11466,7 +11466,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     m.warns.forEach(function(w){ var d = document.createElement("div"); d.innerHTML = w; d.querySelectorAll(".ur").forEach(function(x){ x.remove(); }); r6.push([d.textContent]); });
     if(countEdits(E())) r6.push(["Some figures were edited by hand in the Budget Demand tab (" + countEdits(E()) + " changes)."]);
     XLSX.utils.book_append_sheet(wb, sheetFrom(r6, null, [140]), "Notes");
-    try{ XLSX.writeFile(wb, "Budget_Demand_" + m.fy + "_RI-4720.xlsx"); }catch(e){ toast("Could not create the Excel file: " + (e && e.message || e)); }
+    try{ XLSX.writeFile(wb, "Budget_Demand_" + m.fy + "_RI-4720.xlsx"); toast("Excel file ready — check your Downloads folder"); }catch(e){ toast("Excel (SheetJS) failed — building the Excel file another way"); runExport("excel"); }
   }
 
   /* ---------- PDF / Word (same builders as the other tabs): every form as a list of tables ---------- */
@@ -11517,7 +11517,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var m = lastModel; if(!m || m.empty){ toast("Nothing to export yet"); return; }
     if(!window.__brExportTables){ toast("The export tools are not ready — reload the page"); return; }
     var x = expTables(m);
-    await window.__brExportTables(kind, x.tables, {title: x.title, sub: x.sub, base: x.base, landscape: true});
+    await window.__brExportTables(kind, x.tables, {title: x.title, sub: x.sub, base: x.base, landscape: true, office: "Office of the Prosecutor General Punjab", paper: ((document.getElementById("globalPaperSize") || {}).value === "A4" ? "Legal" : (document.getElementById("globalPaperSize") || {}).value) || "Legal"});
   }
 
   /* ---------- edit actions ---------- */
