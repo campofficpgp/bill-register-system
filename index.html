@@ -1419,8 +1419,8 @@ body.lang-ur .br-part{ font-size:17px; }
 <div class="pb-print-masthead" id="pbPrintMasthead">
   <img src="logo-punjab-govt.png" alt="Government of the Punjab">
   <div class="pb-mh-text">
-    <div class="pb-mh-t1">Camp Office, Prosecutor General Punjab &nbsp;|&nbsp; کیمپ آفس، پراسیکیوٹر جنرل پنجاب</div>
-    <div class="pb-mh-t2">Supreme Court of Pakistan, Islamabad</div>
+    <div class="pb-mh-t1"></div>
+    <div class="pb-mh-t2"></div>
   </div>
 </div>
 <div class="pb-print-extra-fields" id="pbPrintExtraFields"></div>
@@ -1505,7 +1505,7 @@ body.lang-ur .br-part{ font-size:17px; }
     <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-head">
-        <div class="sidebar-brand"><img src="logo-punjab-govt.png" alt="" style="height:24px;width:auto;"> <span>Camp Office</span></div>
+        <div class="sidebar-brand"><img src="logo-punjab-govt.png" alt="" style="height:24px;width:auto;"> <span></span></div>
         <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" title="Collapse">◧</button>
       </div>
       <nav class="sidebar-nav">
@@ -2654,7 +2654,7 @@ body.lang-ur .br-part{ font-size:17px; }
 </div>
 
 <footer class="appfoot">Bill, Cash Book, Stock &amp; Ledger Register — all data stays saved in this browser on this computer. Use "Backup" regularly and before switching computers.</footer>
-<div class="appfoot-copyright" style="text-align:center;font-size:11px;color:#8aa0b3;padding:6px 10px 14px;">© Iftikhar Ahmed — Camp Office, Prosecutor General Punjab, Supreme Court of Pakistan, Islamabad &nbsp;|&nbsp; © افتخار احمد — کیمپ آفس، پراسیکیوٹر جنرل پنجاب، سپریم کورٹ آف پاکستان، اسلام آباد</div>
+<div class="appfoot-copyright" style="text-align:center;font-size:11px;color:#8aa0b3;padding:6px 10px 14px;">© Iftikhar Ahmed &nbsp;|&nbsp; © افتخار احمد</div>
 
 <button id="chatToggleBtn" title="Team Chat">💬<span class="chat-badge" id="chatBadge" style="display:none;">0</span></button>
 <button id="chatMinBtn" type="button" title="Minimize chat button / چیٹ کا بٹن چھوٹا کریں" aria-label="Minimize chat button / چیٹ کا بٹن چھوٹا کریں">–</button>
@@ -2698,14 +2698,14 @@ body.lang-ur .br-part{ font-size:17px; }
         <select class="pb-pick" id="pbLeftPick" aria-label="Choose from list"></select>
         <div class="field"><label>نام / Name</label><input type="text" id="pbLeftName" placeholder="e.g. Iftikhar Ahmed"></div>
         <div class="field"><label>عہدہ / Designation</label><input type="text" id="pbLeftDesig" placeholder="e.g. Junior Clerk"></div>
-        <div class="field"><label>دفتر کا پتہ / Office Address</label><textarea id="pbLeftAddress" rows="2" placeholder="Camp Office Prosecutor General Punjab, Supreme Court of Pakistan, Islamabad"></textarea></div>
+        <div class="field"><label>دفتر کا پتہ / Office Address</label><textarea id="pbLeftAddress" rows="2" placeholder=""></textarea></div>
       </div>
       <div class="pb-stamp-col">
         <h4>Approved by / منظور کردہ</h4>
         <select class="pb-pick" id="pbRightPick" aria-label="Choose from list"></select>
         <div class="field"><label>نام / Name</label><input type="text" id="pbRightName" placeholder="(optional)"></div>
         <div class="field"><label>عہدہ / Designation</label><input type="text" id="pbRightDesig" placeholder="(optional)"></div>
-        <div class="field"><label>دفتر کا پتہ / Office Address</label><textarea id="pbRightAddress" rows="2" placeholder="Camp Office Prosecutor General Punjab, Supreme Court of Pakistan, Islamabad"></textarea></div>
+        <div class="field"><label>دفتر کا پتہ / Office Address</label><textarea id="pbRightAddress" rows="2" placeholder=""></textarea></div>
       </div>
     </div>
     <label class="pb-inc"><input type="checkbox" id="pbIncStamp"> <span>Add Prepared by / Approved by stamp &nbsp;/&nbsp; تیار کردہ / منظور کردہ کا اسٹامپ شامل کریں</span></label>
@@ -2720,7 +2720,7 @@ body.lang-ur .br-part{ font-size:17px; }
   <div class="hf-modal">
     <h3 id="hfModalTitle">Header/Footer Fields</h3>
     <div class="pb-sub">اس رپورٹ کے پرنٹ پر یہ اختیاری فیلڈز دکھانے ہیں یا نہیں، منتخب کریں (صرف Administrator کو نظر آتا ہے)۔<br>Choose which optional fields should appear when this report is printed (Administrator only).</div>
-    <div class="field"><label>دفتر کا پتہ / Office Address</label><input type="text" id="hfOfficeAddress" placeholder="e.g. Camp Office, Prosecutor General Punjab, Supreme Court of Pakistan, Islamabad"></div>
+    <div class="field"><label>دفتر کا پتہ / Office Address</label><input type="text" id="hfOfficeAddress" placeholder=""></div>
     <div class="field"><label>رابطہ نمبر / Contact Number</label><input type="text" id="hfOfficeContact" placeholder="e.g. 051-1234567"></div>
     <div class="hf-check-row">
       <input type="checkbox" id="hfChkDateDiary">
@@ -2951,7 +2951,7 @@ function normalizeData(data, seedDefaults){
   data.itemTypes = data.itemTypes || {};
   data.contingentDeductionRates = data.contingentDeductionRates || Object.assign({}, DEFAULT_CONTINGENT_DEDUCTION_RATES);
   data.preparedByName = data.preparedByName || "Iftikhar Ahmed";
-  data.preparedByDesignation = data.preparedByDesignation || "Junior Clerk, Camp Office Prosecutor General Punjab, Supreme Court of Pakistan, Islamabad";
+  data.preparedByDesignation = data.preparedByDesignation || "Junior Clerk";
   data.approvedByName = data.approvedByName || "";
   data.approvedByDesignation = data.approvedByDesignation || "";
   return data;
@@ -7807,20 +7807,20 @@ function editableRowsHtml(rows, section, empId, monthVal, t, bps){
   return html;
 }
 var SLIP_LABELS = {
-  en:{govt:"Government of Punjab", office:"Camp Office, Prosecutor General Punjab", stmt:"Monthly Salary Statement",
+  en:{govt:"Government of Punjab", office:"", stmt:"Monthly Salary Statement",
       persInfo:"Personal Information of", dws:"d/w/s of", persNo:"Personnel Number", cnic:"CNIC", dob:"Date of Birth", los:"Length of Service",
       empCat:"Employment Category", desig:"Designation", dept:"Department", ddo:"DDO Code", gpf:"GPF A/C No", bps:"BPS",
       payAllow:"Pay and Allowances", wage:"Wage type", dedGen:"Deductions - General",
       gross:"Gross Pay (Rs.)", ded:"Deductions (Rs.)", net:"Net Pay (Rs.)", payee:"Payee Name", acct:"Account Number", bank:"Bank Details",
       rupees:"* All amounts are in Pak Rupees"},
-  ur:{govt:"حکومتِ پنجاب", office:"کیمپ آفس، پراسیکیوٹر جنرل پنجاب", stmt:"ماہانہ تنخواہ گوشوارہ",
+  ur:{govt:"حکومتِ پنجاب", office:"", stmt:"ماہانہ تنخواہ گوشوارہ",
       persInfo:"ذاتی معلومات:", dws:"ولد/زوجہ/دختر", persNo:"پرسنل نمبر", cnic:"شناختی کارڈ", dob:"تاریخ پیدائش", los:"مدتِ ملازمت",
       empCat:"ملازمت کی نوعیت", desig:"عہدہ", dept:"محکمہ", ddo:"ڈی ڈی او کوڈ", gpf:"جی پی فنڈ اکاؤنٹ نمبر", bps:"بی پی ایس",
       payAllow:"تنخواہ اور الاؤنسز", wage:"مد", dedGen:"کٹوتیاں",
       gross:"مجموعی تنخواہ (روپے)", ded:"کٹوتیاں (روپے)", net:"خالص تنخواہ (روپے)", payee:"وصول کنندہ", acct:"اکاؤنٹ نمبر", bank:"بینک کی تفصیل",
       rupees:"* تمام رقوم پاکستانی روپوں میں ہیں"}
 };
-var SLIP_DDO = "RI004720-PROSECUTOR GENERAL CAMP OFFICE ISLAMABAD";
+var SLIP_DDO = "RI004720";
 function stmtTable(rows, section, e, monthVal, t, L){
   var addTxt = section==="earnings"? "+ Add earnings row" : "+ Add deduction row";
   return "<table class='payslip-table stmt'><thead><tr><th colspan='2'>"+L.wage+"</th><th class='num'>"+t.amount+"</th><th colspan='2'>"+L.wage+"</th><th class='num'>"+t.amount+"</th></tr></thead>"+
@@ -8043,15 +8043,15 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   function defaultLeft(){
     return {
       name: STATE.preparedByName || "Iftikhar Ahmed",
-      designation: STATE.preparedByDesignation || "Junior Clerk, Camp Office Prosecutor General Punjab, Supreme Court of Pakistan, Islamabad",
-      address: "Camp Office Prosecutor General Punjab\nSupreme Court Of Pakistan\nIslamabad"
+      designation: STATE.preparedByDesignation || "Junior Clerk",
+      address: ""
     };
   }
   function defaultRight(){
     return {
       name: STATE.approvedByName || "",
       designation: STATE.approvedByDesignation || "",
-      address: "Camp Office Prosecutor General Punjab\nSupreme Court Of Pakistan\nIslamabad"
+      address: ""
     };
   }
   function loadSaved(){
@@ -8348,7 +8348,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     return {w:595.28, h:841.89, tw:11906, th:16838, code:9};
   }
   function meta(key, panel, tables){
-    var office = clean(STATE.officeName || "") || "Camp Office, Prosecutor General Punjab";
+    var office = clean(STATE.officeName || "") || "";
     var sub = [];
     if(key === "ledger"){ var fy = $("lf_fy"); if(fy && fy.value) sub.push("Financial year " + fy.value); }
     var fySel = {bill:"bf_fy", cash:"cf_fy", reports:"r_fy"}[key];
@@ -8500,9 +8500,9 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var pbts = await prosBytes(), pemb = null;
     if(pbts){ try{ pemb = await doc.embedPng(pbts); }catch(e){ pemb = null; } }
     if(pemb){ var ph2 = 40, pw2 = ph2 * pemb.width / pemb.height; page.drawImage(pemb, {x:PW - M - pw2, y:y - ph2, width:pw2, height:ph2}); }
-    var h1 = san(m.office), h2 = "Camp Office Prosecutor General Punjab  |  Supreme Court of Pakistan, Islamabad";
+    var h1 = san(m.office), h2 = "";
     page.drawText(h1, {x:(PW - FB.widthOfTextAtSize(h1, 15)) / 2, y:y - 15, size:15, font:FB, color:navy});
-    if(h1 !== "Camp Office, Prosecutor General Punjab")
+    if(h1 !== "")
       page.drawText(san(h2), {x:(PW - F.widthOfTextAtSize(san(h2), 8.5)) / 2, y:y - 29, size:8.5, font:F, color:grey});
     y = top - 46;
     page.drawLine({start:{x:M, y:y}, end:{x:PW - M, y:y}, thickness:2.2, color:goldL});
@@ -8547,13 +8547,13 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var pages = doc.getPages();
     pages.forEach(function(p, i){
       p.drawLine({start:{x:M, y:26}, end:{x:PW - M, y:26}, thickness:.6, color:line});
-      p.drawText("Camp Office Prosecutor General Punjab", {x:M, y:15, size:7, font:F, color:grey});
+      p.drawText("", {x:M, y:15, size:7, font:F, color:grey});
       var mid = "Generated " + todayText();
       p.drawText(mid, {x:(PW - F.widthOfTextAtSize(mid, 7)) / 2, y:15, size:7, font:F, color:grey});
       var s = "Page " + (i + 1) + " of " + pages.length;
       p.drawText(s, {x:PW - M - FB.widthOfTextAtSize(s, 7.4), y:15, size:7.4, font:FB, color:navy});
     });
-    doc.setTitle(san(m.title)); doc.setCreator("Camp Office, Prosecutor General Punjab");
+    doc.setTitle(san(m.title)); doc.setCreator("");
     return await doc.save();
   }
 
@@ -8567,7 +8567,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var children = [], lg = await logoInfo(), pg = await prosInfo();
     var headParas = [
       para([run(m.office, {size:30, bold:true, color:"1B3F63"})], {align:D.AlignmentType.CENTER, after:20}),
-      para([run("Camp Office Prosecutor General Punjab  |  Supreme Court of Pakistan, Islamabad", {size:16, color:"666666"})], {align:D.AlignmentType.CENTER, after:80})
+      para([run("", {size:16, color:"666666"})], {align:D.AlignmentType.CENTER, after:80})
     ];
     if(lg || pg){
       /* emblem on the LEFT, heading centred — same letterhead as the Weekly Court Roster */
@@ -8635,11 +8635,11 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       width:{size:usable, type:D.WidthType.DXA}, columnWidths:[half, half], layout:D.TableLayoutType.FIXED,
       borders:{top:none, bottom:none, left:none, right:none, insideHorizontal:none, insideVertical:none}}));
     var doc = new D.Document({
-      creator:"Camp Office, Prosecutor General Punjab", title:m.title,
+      creator:"", title:m.title,
       sections:[{
         properties:{page:{size:{width:m.paper.tw, height:m.paper.th, orientation:m.landscape ? D.PageOrientation.LANDSCAPE : D.PageOrientation.PORTRAIT}, margin:{top:567, bottom:680, left:MG, right:MG, footer:300}}},
         footers:{default:new D.Footer({children:[new D.Paragraph({alignment:D.AlignmentType.CENTER, children:[
-          new D.TextRun({children:["Camp Office Prosecutor General Punjab   |   Page ", D.PageNumber.CURRENT, " of ", D.PageNumber.TOTAL_PAGES], font:FONT, size:15, color:"777777"})]})]})},
+          new D.TextRun({children:["Page ", D.PageNumber.CURRENT, " of ", D.PageNumber.TOTAL_PAGES], font:FONT, size:15, color:"777777"})]})]})},
         children:children
       }]
     });
@@ -8769,7 +8769,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
         "<sheetData>" + rows + '</sheetData><autoFilter ref="A4:' + last + (lastData < 5 ? 5 : lastData) + '"/><mergeCells count="' + merges.length + '">' + merges.map(function(x){ return '<mergeCell ref="' + x + '"/>'; }).join("") + "</mergeCells>" +
         '<printOptions horizontalCentered="1"/><pageMargins left="0.4" right="0.4" top="0.5" bottom="0.6" header="0.25" footer="0.3"/>' +
         '<pageSetup paperSize="' + m.paper.code + '" orientation="' + (m.landscape ? "landscape" : "portrait") + '" fitToWidth="1" fitToHeight="0"/>' +
-        '<headerFooter><oddFooter>&amp;L&amp;8Camp Office, Prosecutor General Punjab&amp;R&amp;8Page &amp;P of &amp;N</oddFooter></headerFooter>' + ((lg || pg) ? '<drawing r:id="rId1"/>' : '') + '</worksheet>';
+        '<headerFooter><oddFooter>&amp;R&amp;8Page &amp;P of &amp;N</oddFooter></headerFooter>' + ((lg || pg) ? '<drawing r:id="rId1"/>' : '') + '</worksheet>';
       sheets.push({lastW:widths[n - 1], nCols:n, name:sheetName(t, ti), xml:xml, filterRef:"A4:" + last + (lastData < 5 ? 5 : lastData)});
     });
     var wb = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>' +
@@ -8888,7 +8888,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(!tables || !tables.length){ say("There are no records to export on this tab.", "اس ٹیب میں ایکسپورٹ کے لیے کوئی ریکارڈ نہیں ہے۔"); return; }
     if(!asked && window.__campAskStamp && window.__campAskStamp(function(){ window.__brExportTables(kind, tables, o, true); })){ return; }
     var maxCols = 0; tables.forEach(function(t){ maxCols = Math.max(maxCols, t.heads.length); });
-    var m = {office:o.office || clean(STATE.officeName || "") || "Camp Office, Prosecutor General Punjab", title:o.title, sub:(o.sub ? o.sub + "   |   " : "") + "Generated " + todayText(), landscape:o.landscape != null ? !!o.landscape : maxCols > 6, base:o.base + "_" + todayIso(), sign:signoff(), stamp:!!(window.__campStampOn && window.__campStampOn()), paper:o.paper ? paperFrom(o.paper) : paperSize()};
+    var m = {office:o.office || clean(STATE.officeName || "") || "", title:o.title, sub:(o.sub ? o.sub + "   |   " : "") + "Generated " + todayText(), landscape:o.landscape != null ? !!o.landscape : maxCols > 6, base:o.base + "_" + todayIso(), sign:signoff(), stamp:!!(window.__campStampOn && window.__campStampOn()), paper:o.paper ? paperFrom(o.paper) : paperSize()};
     say("Preparing the file…", "فائل تیار ہو رہی ہے…");
     try{
       if(kind === "pdf"){ await loadLib("pdflib"); download(new Blob([await buildPdf(tables, m)], {type:"application/pdf"}), m.base + ".pdf"); }
@@ -8947,7 +8947,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       tables.push({title:mo + L.pay, heads:heads, num:num, rows:pairRows(tbs[0]), foot:[{cells:["", L.gross, gross, "", "", ""]}]});
       tables.push({title:mo + L.ded, heads:heads, num:num, rows:pairRows(tbs[1]), foot:[{cells:["", L.tded, tded, "", L.net, net]}]});
     });
-    var office = clean(STATE.officeName || "") || "Camp Office, Prosecutor General Punjab";
+    var office = clean(STATE.officeName || "") || "";
     var multi = pages.length > 1, month1 = clean(((first.querySelector(".ps-title .l3") || {}).textContent || "").replace(/^.*\(|\).*$/g, ""));
     var sub = [name, pers ? ("Pers # " + pers) : "", desig, bps ? ("BPS " + bps) : ""].filter(Boolean).join("   |   ");
     function pv(id){ return clean(($(id) || {}).value || ""); }
@@ -9523,7 +9523,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   }
   var DEF_SIGN = {
     grant: "Grant No. PC21010(010) Criminal Works 045720PC-LO5283 VR.No. 31047341.Cost Center.RI-4720",
-    ddoName: "M. Junaid Aslam Khan Niazi", ddoDesig: "Personal Assistant/DDO", ddoOffice: "Camp Office Supreme Court of Pakistan, ISB",
+    ddoName: "M. Junaid Aslam Khan Niazi", ddoDesig: "Personal Assistant/DDO", ddoOffice: "",
     daoDesig: "District Account Officer", daoPlace: "Rawalpindi"
   };
   /* names used in the Account Office (SAP) list  ->  head code. Edited by the clerk through the "unmatched" list; saved in STATE.stmtData.map */
@@ -10667,7 +10667,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   function F(f, v){ return {f: f, v: v}; }
   var paperSel = "Legal"; try{ paperSel = localStorage.getItem("bm26_paper") || "Legal"; }catch(e){}
   function titleLines(m){
-    return ["BM-26 STATEMENT FOR THE MONTH OF " + mUpper(m.mk), "OFFICE OF THE PROSECUTOR GENERAL PUNJAB", "CAMP OFFICE SUPREME COURT OF PAKISTAN, ISLAMABAD",
+    return ["BM-26 STATEMENT FOR THE MONTH OF " + mUpper(m.mk), "", "",
       "PUBLIC ORDER AND SAFETY AFFAIRS 036 ADMINISTRATION OF PUBLIC ORDER 0361 ADMINISTRATION   |   DDO Code RI-4720   |   Financial year " + m.fy];
   }
   async function exportXlsx(){
@@ -10714,7 +10714,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     rows.push(tr);
     rows.push([]);
     var sc = cA0 + Math.max(0, nA - 2);
-    [[s.ddo], [s.ddoD], ["Camp Office PGP, Supreme Court of Pakistan,"], ["Islamabad"]].forEach(function(a){ var r = []; r[sc] = a[0]; rows.push(r); });
+    [[s.ddo], [s.ddoD], [""], [""]].forEach(function(a){ var r = []; r[sc] = a[0]; rows.push(r); });
     rows.push([]);
     var pr = []; pr[1] = "Prepared by: " + s.prep + (s.prepD ? " (" + s.prepD + ")" : ""); pr[sc] = "Checked by: " + s.chk + (s.chkD ? " (" + s.chkD + ")" : ""); rows.push(pr);
     var widths = [5, 24, 22, 11]; m.aCols.forEach(function(){ widths.push(11); }); widths.push(12, 2, 24, 11); m.dCols.forEach(function(){ widths.push(11); }); widths.push(12, 12);
@@ -10734,7 +10734,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
         var zz = await JSZip.loadAsync(out), px = "xl/worksheets/sheet1.xml", sx = await zz.file(px).async("string");
         sx = sx.replace('<sheetView workbookViewId="0"/>', '<sheetView workbookViewId="0"><pane xSplit="3" ySplit="' + (hr + 2) + '" topLeftCell="D' + (hr + 3) + '" activePane="bottomRight" state="frozen"/></sheetView>');
         var ps = '<pageMargins left="0.4" right="0.4" top="0.5" bottom="0.5" header="0.3" footer="0.3"/><pageSetup paperSize="' + PW[0] + '" scale="' + scale + '" orientation="landscape"/>' +
-          '<headerFooter><oddFooter>&amp;LBM-26 ' + mLabel(m.mk) + ' - DDO RI-4720&amp;CPage &amp;P of &amp;N&amp;RCamp Office PGP</oddFooter></headerFooter>' +
+          '<headerFooter><oddFooter>&amp;LBM-26 ' + mLabel(m.mk) + ' - DDO RI-4720&amp;CPage &amp;P of &amp;N&amp;R</oddFooter></headerFooter>' +
           '<colBreaks count="1" manualBreakCount="1"><brk id="' + cN2 + '" max="1048575" man="1"/></colBreaks>';
         sx = sx.indexOf("<ignoredErrors>") > -1 ? sx.replace("<ignoredErrors>", ps + "<ignoredErrors>") : sx.replace("</worksheet>", ps + "</worksheet>");
         zz.file(px, sx); out = await zz.generateAsync({type: "uint8array"});
@@ -10781,14 +10781,14 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       rows: [{cells: ["Officers (BPS 16 and above)", String(m.tOff.n), sN(m.tOff.gross), sN(m.tOff.ded), sN(m.tOff.net)], nums: [false, true, true, true, true]}, {cells: ["Officials", String(m.tSta.n), sN(m.tSta.gross), sN(m.tSta.ded), sN(m.tSta.net)], nums: [false, true, true, true, true]}],
       foot: [{cells: ["Grand total", String(m.tAll.n), sN(m.tAll.gross), sN(m.tAll.ded), sN(m.tAll.net)], nums: [false, true, true, true, true]}]});
     tables.push({title: "Certificate and signatures", heads: ["Prepared by", "Checked by", "Drawing & Disbursing Officer"], num: [false, false, false],
-      rows: [{cells: [s.prep || " ", s.chk || " ", s.ddo], nums: [false, false, false]}, {cells: [s.prepD || " ", s.chkD || " ", s.ddoD + ", Camp Office PGP, Supreme Court of Pakistan, Islamabad"], nums: [false, false, false]}], foot: []});
-    return {tables: tables, title: "BM-26 Statement for the month of " + mUpper(m.mk), sub: "Office of the Prosecutor General Punjab, Camp Office Supreme Court of Pakistan, Islamabad   |   DDO Code RI-4720   |   FY " + m.fy + "   |   Status: " + (STAT.filter(function(a){ return a[0] === (m.status || "draft"); })[0] || STAT[0])[1], base: "BM26_Salary_Statement_" + m.mk};
+      rows: [{cells: [s.prep || " ", s.chk || " ", s.ddo], nums: [false, false, false]}, {cells: [s.prepD || " ", s.chkD || " ", s.ddoD], nums: [false, false, false]}], foot: []});
+    return {tables: tables, title: "BM-26 Statement for the month of " + mUpper(m.mk), sub: "DDO Code RI-4720   |   FY " + m.fy + "   |   Status: " + (STAT.filter(function(a){ return a[0] === (m.status || "draft"); })[0] || STAT[0])[1], base: "BM26_Salary_Statement_" + m.mk};
   }
   async function runExport(kind){
     var m = lastModel; if(!m){ toast("Nothing to export yet"); return; }
     if(!window.__brExportTables){ toast("The export tools are not ready — reload the page"); return; }
     var x = expTables(m);
-    await window.__brExportTables(kind, x.tables, {title: x.title, sub: x.sub, base: x.base, landscape: true, office: "Office of the Prosecutor General Punjab", paper: paperSel});
+    await window.__brExportTables(kind, x.tables, {title: x.title, sub: x.sub, base: x.base, landscape: true, office: "", paper: paperSel});
   }
 
   /* ---------- edit actions ---------- */
@@ -10919,7 +10919,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     onAfterPrint();
     var s = signDef(m), wrap = tbl.closest(".table-wrap") || tbl, par = wrap.parentNode;
     var head = document.createElement("div"); head.id = "bmPrintHead"; head.className = "bm-printonly";
-    head.innerHTML = "<div class='bpt'>BM-26 STATEMENT FOR THE MONTH OF " + esc(mUpper(m.mk)) + "</div><div class='bps'>Office of the Prosecutor General Punjab, Camp Office Supreme Court of Pakistan, Islamabad &nbsp;|&nbsp; DDO Code RI-4720 &nbsp;|&nbsp; Financial year " + esc(m.fy) + "</div>";
+    head.innerHTML = "<div class='bpt'>BM-26 STATEMENT FOR THE MONTH OF " + esc(mUpper(m.mk)) + "</div><div class='bps'>DDO Code RI-4720 &nbsp;|&nbsp; Financial year " + esc(m.fy) + "</div>";
     var foot = document.createElement("div"); foot.id = "bmPrintFoot"; foot.className = "bm-printonly";
     foot.innerHTML = "<div class='bm-sg'><div>Prepared by<br><b>" + esc(s.prep || "") + "</b><br>" + esc(s.prepD || "") + "</div><div>Checked by<br><b>" + esc(s.chk || "") + "</b><br>" + esc(s.chkD || "") + "</div><div>Drawing &amp; Disbursing Officer<br><b>" + esc(s.ddo || "") + "</b><br>" + esc(s.ddoD || "") + "</div></div>";
     par.insertBefore(head, wrap); par.insertBefore(foot, wrap.nextSibling);
@@ -11491,7 +11491,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   }
   function F(f, v){ return {f: f, v: v}; }
   function sign(rows, col){
-    var sg = ["Muhammad Junaid Aslam Khan Niazi", "Personal Assistant/DDO", "Camp Office PGP, Supreme Court of Pakistan", "Islamabad", "DDO Code RI-4720"];
+    var sg = ["Muhammad Junaid Aslam Khan Niazi", "Personal Assistant/DDO", "", "", "DDO Code RI-4720"];
     rows.push([]); sg.forEach(function(t){ var r = []; r[col] = t; rows.push(r); });
   }
   async function exportXlsx(){
@@ -11503,7 +11503,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var r1 = [], mg1 = [];
     r1.push([1, "Form BM-III Details of Sanctioned Posts for Permanent Expenditure Estimates FY. " + m.fy]);
     r1.push([2, "Department", S.dept]); r1.push([3, "Attached Department (Where applicable)", S.att]); r1.push([4, "Grant No.", S.grant]);
-    r1.push([5, "Fund Centre Name", "Camp Office PGP, Supreme Court of Pakistan, Islamabad"]); r1.push([6, "Fund Centre Code (DDO Code)", "RI-4720"]); r1.push([7, "Sub-Detailed Function", "Public Order and Safety Affairs 036 Administration"]);
+    r1.push([5, "Fund Centre Name", ""]); r1.push([6, "Fund Centre Code (DDO Code)", "RI-4720"]); r1.push([7, "Sub-Detailed Function", "Public Order and Safety Affairs 036 Administration"]);
     r1.push([]);
     r1.push(["Sr. No", "Name", "Designation", "Personal No. (As per Pay Roll)", "BPS", "Male/ Female", "Basic Pay as on 01-07-" + m.Y, "Annualised Basic Pay 1st July " + m.Y + " to 30th June " + (m.Y + 1) + " (12 Months)", "Rate of Annual Increment due on 01 December " + m.Y, "Amount of Increment for 07 Months (Col 15*7)", "Total Provision of Basic Pay for " + m.fy]);
     function bmBlock(rows, label){
@@ -11522,7 +11522,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     XLSX.utils.book_append_sheet(wb, sheetFrom(r1, mg1, [8, 28, 24, 14, 6, 10, 14, 16, 14, 14, 16]), "Basic Pay and Increment");
     /* 2. Allowances (BM-III-A) */
     var r2 = [], hasExt = num(S.xara) > 0;
-    r2.push(["BM-III-A Details of Allowances for Sanctioned Posts FY. " + m.fy]); r2.push(["OFFICE OF THE PROSECUTOR GENERAL PUNJAB"]); r2.push(["CAMP OFFICE SUPREME COURT OF PAKISTAN, ISLAMABAD"]); r2.push(["PUBLIC ORDER AND SAFETY AFFAIRS 036 ADMINISTRATION"]);
+    r2.push(["BM-III-A Details of Allowances for Sanctioned Posts FY. " + m.fy]); r2.push([""]); r2.push([""]); r2.push(["PUBLIC ORDER AND SAFETY AFFAIRS 036 ADMINISTRATION"]);
     var hd1 = ["Sr. #", "Name", "Designation/BPS", "Personal NO."], hd2 = ["", "", "", ""];
     ACOLS.forEach(function(c){ hd1.push(c[0]); hd2.push(c[1]); });
     if(hasExt){ hd1.push("New"); hd2.push("Adhoc Relief 2027 (expected)"); }
@@ -11621,7 +11621,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var m = lastModel; if(!m || m.empty){ toast("Nothing to export yet"); return; }
     if(!window.__brExportTables){ toast("The export tools are not ready — reload the page"); return; }
     var x = expTables(m);
-    await window.__brExportTables(kind, x.tables, {title: x.title, sub: x.sub, base: x.base, landscape: true, office: "Office of the Prosecutor General Punjab", paper: ((document.getElementById("globalPaperSize") || {}).value === "A4" ? "Legal" : (document.getElementById("globalPaperSize") || {}).value) || "Legal"});
+    await window.__brExportTables(kind, x.tables, {title: x.title, sub: x.sub, base: x.base, landscape: true, office: "", paper: ((document.getElementById("globalPaperSize") || {}).value === "A4" ? "Legal" : (document.getElementById("globalPaperSize") || {}).value) || "Legal"});
   }
 
   /* ---------- edit actions ---------- */
