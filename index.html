@@ -1295,6 +1295,11 @@ body.lang-ur .br-part{ font-size:17px; }
 #panel-payfix .pf-subnav{ display:flex; flex-wrap:wrap; gap:8px; margin:0 0 14px; }
 #panel-payfix .pf-sub{ border:1px solid var(--border); background:var(--surface); color:inherit; padding:7px 14px; border-radius:999px; font-weight:600; font-size:13px; cursor:pointer; }
 #panel-payfix .pf-sub.active{ background:var(--navy); color:#fff; border-color:var(--navy); }
+#panel-payfix .ar-tbl input.ar-in{ width:92px !important; min-width:0; box-sizing:border-box; padding:3px 5px !important; height:28px !important; font-size:13px; text-align:right; margin:0; border:1px solid var(--border); border-radius:4px; background:var(--surface); color:inherit; }
+#panel-payfix .ar-tbl input.ar-in.ar-ed{ background:#fff3b0; color:#000; }
+#panel-payfix .ar-tbl td, #panel-payfix .ar-tbl th{ white-space:nowrap; }
+#panel-payfix .ar-emps{ display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:6px 14px; margin:6px 0; max-height:320px; overflow:auto; border:1px solid var(--border); border-radius:8px; padding:8px; }
+#panel-payfix .ar-emp{ display:flex; gap:6px; align-items:baseline; font-size:13px; cursor:pointer; }
 #panel-payfix .pf-bar{ display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; margin:0 0 12px; }
 #panel-payfix .pf-bar .field{ min-width:140px; flex:1 1 160px; max-width:260px; margin:0; }
 #panel-payfix .pf-chips{ display:flex; flex-wrap:wrap; gap:8px; margin:0 0 12px; }
@@ -2192,13 +2197,14 @@ body.lang-ur .br-part{ font-size:17px; }
       <div class="panel-head">
         <div>
           <h2><span class="en">Pay Fixation — Pay Scales 2026</span><span class="ur">پے فکسیشن — پے اسکیل 2026</span></h2>
-          <p><span class="en">Checks every employee's pay slip against the Punjab Finance Department notification (FD.SR-V.2-1/2026, 22-07-2026), with a calculator and the pay-stage chart of every BPS. Read only — nothing here changes any data. Admin / Super Admin only.</span><span class="ur">ہر ملازم کی پے سلپ کو پنجاب فنانس ڈیپارٹمنٹ کے نوٹیفکیشن (FD.SR-V.2-1/2026، 22-07-2026) سے ملا کر دیکھتا ہے، ساتھ کیلکولیٹر اور ہر BPS کا پے اسٹیج چارٹ۔ صرف پڑھنے کے لیے — یہاں سے کوئی ڈیٹا نہیں بدلتا۔ صرف ایڈمن / سپر ایڈمن۔</span></p>
+          <p><span class="en">Checks every employee's pay slip against the Punjab Finance Department notification (FD.SR-V.2-1/2026, 22-07-2026), with a calculator and the pay-stage chart of every BPS. Read only — nothing here changes any data (only the bills you save in the Arrears bill tab are kept). Admin / Super Admin only.</span><span class="ur">ہر ملازم کی پے سلپ کو پنجاب فنانس ڈیپارٹمنٹ کے نوٹیفکیشن (FD.SR-V.2-1/2026، 22-07-2026) سے ملا کر دیکھتا ہے، ساتھ کیلکولیٹر اور ہر BPS کا پے اسٹیج چارٹ۔ صرف پڑھنے کے لیے — یہاں سے کوئی ڈیٹا نہیں بدلتا (صرف ”بقایا جات بل“ میں محفوظ کیے گئے بل رہتے ہیں)۔ صرف ایڈمن / سپر ایڈمن۔</span></p>
         </div>
       </div>
       <div class="pf-subnav">
         <button type="button" class="pf-sub active" data-m="check"><span class="en">Employee check</span><span class="ur">ملازمین کا چیک</span></button>
         <button type="button" class="pf-sub" data-m="calc"><span class="en">Calculator</span><span class="ur">کیلکولیٹر</span></button>
         <button type="button" class="pf-sub" data-m="chart"><span class="en">Pay-stage chart</span><span class="ur">پے اسٹیج چارٹ</span></button>
+        <button type="button" class="pf-sub" data-m="arrears"><span class="en">Arrears bill</span><span class="ur">بقایا جات بل</span></button>
       </div>
       <div id="pfBody"></div>
     </section>
@@ -10019,6 +10025,13 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(!drvSeeded){
       if(!o["31495236"]) o["31495236"] = {from: "5", date: "2026-09-30", kind: "up"};
       promoSave(o); try{ localStorage.setItem(PROMO_KEY + "_drv", "1"); }catch(e){}
+    }
+    /* the notification says the Drivers' time-scale promotion is w.e.f. 14-10-2025 (16 years from 14-10-2009): effective date corrected */
+    var drv2 = false; try{ drv2 = localStorage.getItem(PROMO_KEY + "_drv2") === "1"; }catch(e){}
+    if(!drv2){
+      var dv = o["31495236"];
+      if(!dv || (dv.date === "2026-09-30" && (dv.kind || "up") === "up")) o["31495236"] = {from: "5", date: "2025-10-14", kind: "up"};
+      promoSave(o); try{ localStorage.setItem(PROMO_KEY + "_drv2", "1"); }catch(e){}
     }   /* the user told us: BPS-11 until 26-10-2026, BPS-14 from then */
     return o;
   }
@@ -10283,7 +10296,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     }
     panel.querySelectorAll(".pf-sub").forEach(function(b){ b.classList.toggle("active", b.getAttribute("data-m") === mode); });
     try{
-      body.innerHTML = mode === "check" ? viewCheck() : mode === "calc" ? viewCalc() : viewChart();
+      body.innerHTML = mode === "arrears" ? (window.__brArrears ? window.__brArrears.view() : "") : mode === "check" ? viewCheck() : mode === "calc" ? viewCalc() : viewChart();
     }catch(err){ body.innerHTML = "<div class='pf-warn'>" + esc(String(err && err.message || err)) + "</div>"; }
     lastState = STATE;
   }
@@ -10347,6 +10360,568 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     }catch(e){}
   }, 1500);
   window.__brPayFix = {checkEmp: checkEmp, months: months, render: render, S22: S22, S26: S26, caRate: caRate, saAmount: saAmount, ara26: ara26, stageOf: stageOf, bpsNum: bpsNum, heads: heads, promoOf: promoOf, dLabel: dLabel};
+})();
+
+/* ================= ARREARS BILL — due / drawn / difference (inside the Pay Fixation tab, Admin / Super Admin) =================
+   For any employee whose BPS changed (upgradation, promotion) the Account Office asks for a separate bill / change form of the
+   difference between the pay and allowances DUE and the pay and allowances DRAWN, month by month.  The drawn amounts come from the pay
+   slips in the system (months without a slip are filled by the rule and marked "estimate" — type the real slip over them).  Every
+   figure can be edited by hand.  Bills are saved with the Bill Register data (STATE.stmtData.arrears) and exported to Excel / Word / PDF,
+   plus a covering letter (Word / PDF) for the Account Office. */
+(function(){
+  "use strict";
+  var PF = window.__brPayFix, panel = document.getElementById("panel-payfix"), body = document.getElementById("pfBody");
+  if(!PF || !panel || !body) return;
+  var MN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  var S22 = PF.S22, S26 = PF.S26;
+  /* [key, English, Urdu] — the heads of a pay slip, in slip order */
+  var HK = [["basic","Basic pay","بنیادی تنخواہ"],["hra","House rent","مکان کرایہ"],["ca","Conveyance","کنوینس"],["med","Medical","میڈیکل"],["pa","Personal","پرسنل"],["sa","Special Allowance","اسپیشل الاؤنس"],["wash","Washing","دھلائی"],["ara22","ARA 2022","ARA 2022"],["ara23","ARA 2023","ARA 2023"],["ara24","ARA 2024","ARA 2024"],["ara25","ARA 2025","ARA 2025"],["ara26","ARA 2026","ARA 2026"],["oth","Other","دیگر"]];
+  /* house rent of a BPS when no other employee of that BPS is in the system (seen on real pay slips) */
+  var HRA_FALLBACK = {5: 2255, 6: 2316, 11: 2778, 14: 3321};
+  var KEEP_DEFAULT_NOTE = "Medical, personal and washing allowance, Adhoc Relief 2022 / 2023 / 2024 and any other head are shown as drawn: the Account Office re-fixes them when the BPS changes, and any difference will be added then.";
+
+  function $(sel, root){ return (root || panel).querySelector(sel); }
+  function num(v){ var n = Number(v); return isFinite(n) ? n : 0; }
+  function pad(n){ return (n < 10 ? "0" : "") + n; }
+  function money(n){ return fmt(Math.round(num(n))); }
+  function T(en, ur){ return "<span class='en'>" + en + "</span><span class='ur'>" + ur + "</span>"; }
+  function plain(html){ var d = document.createElement("div"); d.innerHTML = html; d.querySelectorAll(".ur").forEach(function(x){ x.remove(); }); return d.textContent || ""; }
+  function allowed(){ try{ return isAdmin(); }catch(e){ return false; } }
+  function mLabel(k){ var a = k.split("-"); return MN[+a[1] - 1].slice(0, 3) + " " + a[0]; }
+  function mFull(k){ var a = k.split("-"); return MN[+a[1] - 1] + " " + a[0]; }
+  function dLabel(d){ var a = String(d || "").split("-"); return a.length === 3 ? a[2] + "-" + a[1] + "-" + a[0] : String(d || ""); }
+  function mAdd(k, n){ var a = k.split("-"), t = (+a[0]) * 12 + (+a[1] - 1) + n; return Math.floor(t / 12) + "-" + pad(t % 12 + 1); }
+  function mRange(a, b){ var r = [], k = a; while(k <= b && r.length < 400){ r.push(k); k = mAdd(k, 1); } return r; }
+  /* number of 1-December increments after month a up to and including month b (negative when b is before a) */
+  function decs(a, b){
+    if(a === b) return 0; var sign = 1, t;
+    if(a > b){ t = a; a = b; b = t; sign = -1; }
+    var c = 0, k = mAdd(a, 1); while(k <= b){ if(k.slice(5) === "12") c++; k = mAdd(k, 1); } return sign * c;
+  }
+  function reg(m){ return m >= "2026-07" ? 1 : 0; }                 /* 1 = Pay Scales 2026 (from 1 July 2026) */
+  function scaleOf(b, m){ return (reg(m) ? S26 : S22)[b]; }
+  function nextAbove(sc, v){ if(v < sc[0]) return 0; var k = Math.floor((v - sc[0]) / sc[1]) + 1; return Math.min(k, sc[2]); }
+  function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+  function uid(){ return "ar" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+
+  /* ---------- pay slip lines -> heads ---------- */
+  function cls(desc){
+    var d = String(desc || "").toLowerCase().replace(/\s+/g, " ");
+    if(/^basic pay/.test(d)) return "basic";
+    if(/house rent/.test(d)) return "hra";
+    if(/medical/.test(d)) return "med";
+    if(/personal allow/.test(d)) return "pa";
+    if(/conve/.test(d)) return "ca";
+    if(/special allowance/.test(d)) return "sa";
+    if(/washing/.test(d)) return "wash";
+    if(/adhoc|ad-hoc/.test(d)){
+      if(/2026/.test(d)) return "ara26"; if(/2025/.test(d)) return "ara25"; if(/2024/.test(d)) return "ara24"; if(/2023/.test(d)) return "ara23";
+      return "ara22";
+    }
+    return "oth";
+  }
+  function zero(){ var h = {}; HK.forEach(function(k){ h[k[0]] = 0; }); return h; }
+  function headsOf(slip){ var h = zero(); ((slip && slip.earnings) || []).forEach(function(l){ h[cls(l.desc)] += num(l.amount); }); return h; }
+  function slipsOf(e){
+    var p = (STATE.payslipData && STATE.payslipData[e.id]) || {}, out = {};
+    Object.keys(p).forEach(function(m){ if(/^\d{4}-\d{2}$/.test(m) && p[m] && (p[m].earnings || []).length) out[m] = p[m]; });
+    return out;
+  }
+  function latestSlipMonth(){
+    var best = ""; (STATE.employees || []).forEach(function(e){ Object.keys(slipsOf(e)).forEach(function(m){ if(m > best) best = m; }); });
+    return best;
+  }
+
+  /* ---------- the calculation of one bill ---------- */
+  function build(e, p, monthList){
+    var warns = [], effM = p.eff.slice(0, 7), sl = slipsOf(e), slipM = Object.keys(sl).sort(), hs = {};
+    slipM.forEach(function(m){ hs[m] = headsOf(sl[m]); });
+    var known = null;
+    for(var i = 0; i < slipM.length && !known; i++){ var st = PF.stageOf(p.oldB, hs[slipM[i]].basic, reg(slipM[i]) === 1); if(st != null) known = {m: slipM[i], stage: st}; }
+    var anySA = slipM.some(function(m){ return hs[m].sa > 0; });
+    function oldBasicEst(m){
+      if(!known) return 0; var sc = scaleOf(p.oldB, m); if(!sc) return 0;
+      var s = clamp(known.stage + decs(known.m, m), 0, sc[2]); return sc[0] + sc[1] * s;
+    }
+    function refFor(m){
+      for(var j = 0; j < slipM.length; j++){ var x = slipM[j]; if(reg(x) === reg(m) && PF.stageOf(p.oldB, hs[x].basic, reg(x) === 1) != null) return hs[x]; }
+      return null;
+    }
+    function drawnOf(m){
+      if(sl[m]) return {h: hs[m], src: "slip"};
+      var h = zero(), r = reg(m), b = oldBasicEst(m), ref = refFor(m);
+      h.basic = b;
+      if(ref){ ["hra","med","pa","wash","ara22","ara23","ara24"].forEach(function(k){ h[k] = ref[k]; }); }
+      else if(known){ warns.push("No pay slip on BPS-" + p.oldB + " in " + (r ? "the 2026 scale period" : "the earlier period") + " to copy the fixed allowances from — type the drawn amounts of " + mFull(m) + "."); }
+      h.ca = PF.caRate(p.oldB, r === 1);
+      h.sa = anySA ? PF.saAmount(p.oldB, r === 1) : 0;
+      h.ara25 = (r === 0 && m >= "2025-07") ? Math.round(b * 0.10) : 0;
+      h.ara26 = r === 1 ? PF.ara26(b) : 0;
+      return {h: h, src: "est"};
+    }
+    /* pay drawn on the effective date and the new basic fixed from it */
+    var p0 = num(p.p0);
+    if(!(p0 > 0)){
+      if(sl[effM] && PF.stageOf(p.oldB, hs[effM].basic, reg(effM) === 1) != null) p0 = hs[effM].basic;
+      else p0 = oldBasicEst(effM);
+    }
+    var k0 = 0;
+    if(!(p0 > 0) && !(num(p.nb) > 0)){ warns.push("The pay drawn on the effective date could not be found (no pay slip on BPS-" + p.oldB + "). Type it in the field \"Pay drawn on the effective date\", then press Recalculate."); }
+    var scNew0 = scaleOf(p.newB, effM), scOld0 = scaleOf(p.oldB, effM);
+    if(num(p.nb) > 0){
+      var s0 = PF.stageOf(p.newB, num(p.nb), reg(effM) === 1);
+      if(s0 == null){ warns.push("The new basic pay Rs. " + money(p.nb) + " is not a stage of BPS-" + p.newB + "; the next stage above it is used."); s0 = nextAbove(scNew0, num(p.nb) - 1); }
+      k0 = s0;
+    } else if(scNew0 && scOld0){
+      k0 = nextAbove(scNew0, p.method === "B" ? p0 + scOld0[1] : p0);
+    }
+    function refHra(m){
+      var r = reg(m), best = 0;
+      (STATE.employees || []).forEach(function(o){
+        if(o.id === e.id) return; var s2 = slipsOf(o);
+        Object.keys(s2).sort().forEach(function(x){ if(reg(x) !== r) return; var h = headsOf(s2[x]); if(h.hra > 0 && PF.stageOf(p.newB, h.basic, r === 1) != null) best = h.hra; });
+      });
+      return best || HRA_FALLBACK[p.newB] || 0;
+    }
+    var hraCache = {}, rows = [];
+    (monthList || mRange(effM, p.to)).forEach(function(m){
+      if(m < effM) return;
+      var dr = drawnOf(m), r = reg(m), d = Object.assign({}, dr.h), scN = scaleOf(p.newB, m);
+      if(scN){
+        var kk = Math.min(k0 + decs(effM, m), scN[2]); d.basic = scN[0] + scN[1] * kk;
+        if(dr.h.hra > 0){ if(hraCache[r] == null) hraCache[r] = refHra(m); d.hra = hraCache[r] || dr.h.hra; }
+        if(dr.h.ca > 0) d.ca = PF.caRate(p.newB, r === 1);
+        if(dr.h.sa > 0) d.sa = PF.saAmount(p.newB, r === 1);
+        if(dr.h.ara25 > 0 && r === 0) d.ara25 = Math.round(d.basic * 0.10);
+        if(dr.h.ara26 > 0 && r === 1) d.ara26 = PF.ara26(d.basic);
+      }
+      var sn = 1, sd = 1;
+      if(m === effM){ var y = +m.slice(0, 4), mo = +m.slice(5), dn = new Date(y, mo, 0).getDate(), day = +p.eff.slice(8) || 1; sn = dn - day + 1; sd = dn; }
+      rows.push({m: m, sn: sn, sd: sd, src: dr.src, due: d, drawn: Object.assign({}, dr.h), ed: {}});
+    });
+    var seen = {}; warns = warns.filter(function(w){ if(seen[w]) return false; seen[w] = 1; return true; });
+    return {rows: rows, warns: warns, p0: p0, k0: k0};
+  }
+  function diffOf(row){
+    var o = {}, t = 0;
+    HK.forEach(function(k){ var v = Math.round(row.sn / row.sd * (num(row.due[k[0]]) - num(row.drawn[k[0]]))); o[k[0]] = v; t += v; });
+    o.total = t; return o;
+  }
+  function totalsOf(b){
+    var o = {total: 0}; HK.forEach(function(k){ o[k[0]] = 0; });
+    b.rows.forEach(function(r){ var d = diffOf(r); HK.forEach(function(k){ o[k[0]] += d[k[0]]; }); o.total += d.total; });
+    return o;
+  }
+  function visHeads(bs){
+    return HK.filter(function(k){
+      if(k[0] === "basic") return true;
+      return bs.some(function(b){ return b.rows.some(function(r){ return num(r.due[k[0]]) || num(r.drawn[k[0]]); }); });
+    });
+  }
+
+  /* ---------- stored data ---------- */
+  function root(){
+    var s = STATE.stmtData; if(!s || typeof s !== "object") s = STATE.stmtData = {};
+    if(!s.arrears || typeof s.arrears !== "object") s.arrears = {};
+    if(!s.arrears.bills || typeof s.arrears.bills !== "object") s.arrears.bills = {};
+    return s.arrears;
+  }
+  function bills(){ return root().bills; }
+  function billList(){ var o = bills(); return Object.keys(o).map(function(k){ return o[k]; }).sort(function(a, b){ return (a.created || 0) - (b.created || 0); }); }
+  var saveT = null, savedAt = 0;
+  function persist(){
+    if(typeof tabOK === "function" && !tabOK("cf")){ toast("You do not have permission to save here"); return false; }
+    clearTimeout(saveT); saveT = setTimeout(function(){ try{ saveData(); savedAt = Date.now(); var el = $("#ar_saved"); if(el) el.textContent = "✔ saved"; }catch(err){ console.error(err); } }, 700);
+    var el0 = $("#ar_saved"); if(el0) el0.textContent = "…";
+    return true;
+  }
+  function empOf(b){ var l = STATE.employees || [], i; for(i = 0; i < l.length; i++) if(l[i].id === b.empId) return l[i]; for(i = 0; i < l.length; i++) if(String(l[i].persNo) === String(b.persNo)) return l[i]; return null; }
+
+  /* ---------- state of the screen ---------- */
+  var view = "list", cur = null, sel = {}, form = null;
+  function newForm(){
+    var last = latestSlipMonth() || (new Date().getFullYear() + "-" + pad(new Date().getMonth() + 1));
+    var bl = billList(), ref = bl.length ? bl[bl.length - 1].ref : "";
+    return {emps: {}, kind: "up", oldB: "", newB: "", eff: "", to: last, method: "A", ref: ref || "", p0: "", nb: ""};
+  }
+
+  /* ---------- screens ---------- */
+  function viewList(){
+    var bl = billList(), h = "";
+    h += "<div class='pf-bar'><button type='button' class='btn' id='ar_new'>➕ " + T("New bill (one or many employees)", "نیا بل (ایک یا کئی ملازمین)") + "</button></div>";
+    h += "<p class='hint'>" + T("A bill compares the pay and allowances that were <b>due</b> with those <b>drawn</b> for each month, for an employee whose BPS changed (upgradation or promotion). Make one bill per employee, then export the statement and the covering letter for the Account Office.", "بل ہر مہینے کی <b>واجب</b> اور <b>وصول شدہ</b> تنخواہ کا موازنہ کرتا ہے، اس ملازم کے لیے جس کا BPS بدلا (اپ گریڈیشن یا ترقی)۔ ہر ملازم کا الگ بل بنائیں، پھر اکاؤنٹ آفس کے لیے گوشوارہ اور خط ایکسپورٹ کریں۔") + "</p>";
+    if(!bl.length){ return h + "<div class='pf-warn'>" + T("No bills yet. Press “New bill”.", "ابھی کوئی بل نہیں۔ ”نیا بل“ دبائیں۔") + "</div>"; }
+    h += "<div class='table-wrap'><table class='pf-tbl'><thead><tr><th class='c'></th><th>" + T("Employee", "ملازم") + "</th><th class='c'>" + T("BPS change", "BPS میں تبدیلی") + "</th><th class='c'>" + T("From", "سے") + "</th><th class='c'>" + T("To month", "ماہ تک") + "</th><th class='num'>" + T("Arrears (Rs.)", "بقایا جات (روپے)") + "</th><th class='c'>" + T("Status", "حالت") + "</th><th></th></tr></thead><tbody>";
+    var gt = 0, gn = 0;
+    bl.forEach(function(b){
+      var t = totalsOf(b).total; if(sel[b.id]){ gt += t; gn++; }
+      h += "<tr><td class='c'><input type='checkbox' class='ar-sel' data-id='" + esc(b.id) + "'" + (sel[b.id] ? " checked" : "") + "></td><td>" + esc(b.name || "") + "<div class='hint' style='margin:0'>" + esc(b.desig || "") + " · " + esc(b.persNo || "") + "</div></td><td class='c'>BPS-" + b.oldB + " → BPS-" + b.newB + "</td><td class='c'>" + esc(dLabel(b.eff)) + "</td><td class='c'>" + esc(mLabel(b.to)) + "</td><td class='num'><b>" + money(t) + "</b></td><td class='c'>" + esc(b.status || "Draft") + "</td><td class='c'><button type='button' class='btn small ar-open' data-id='" + esc(b.id) + "'>" + T("Open", "کھولیں") + "</button> <button type='button' class='btn small ar-del' data-id='" + esc(b.id) + "'>🗑</button></td></tr>";
+    });
+    h += "</tbody></table></div>";
+    var r = root(), n = Object.keys(sel).filter(function(k){ return sel[k] && bills()[k]; }).length;
+    h += "<div class='pf-bar' style='margin-top:12px'><div class='field' style='max-width:420px'><label>" + T("Letter is addressed to", "خط کس کے نام") + "</label><textarea id='ar_to' rows='2'>" + esc(r.toAddr != null ? r.toAddr : "The Account Officer,\nAccount Office.") + "</textarea></div><div class='field' style='max-width:300px'><label>" + T("Signed by (title)", "دستخط کنندہ (عہدہ)") + "</label><input id='ar_sign' value='" + esc(r.sign != null ? r.sign : "Drawing and Disbursing Officer") + "'></div></div>";
+    h += "<div class='pf-chips'><span class='pf-chip'>" + T("Selected", "منتخب") + ": " + n + "</span><span class='pf-chip'>" + T("Arrears of the selected", "منتخب کے بقایا جات") + ": Rs. " + money(gt) + "</span></div>";
+    var dis = n ? "" : " disabled";
+    h += "<div class='pf-bar'><b>" + T("Statement (due / drawn / difference)", "گوشوارہ (واجب / وصول / فرق)") + ":</b> <button type='button' class='btn small ar-ex' data-k='excel'" + dis + ">Excel</button> <button type='button' class='btn small ar-ex' data-k='word'" + dis + ">Word</button> <button type='button' class='btn small ar-ex' data-k='pdf'" + dis + ">PDF</button></div>";
+    h += "<div class='pf-bar'><b>" + T("Covering letter to the Account Office", "اکاؤنٹ آفس کے نام خط") + ":</b> <button type='button' class='btn small ar-lt' data-k='word'" + dis + ">Word</button> <button type='button' class='btn small ar-lt' data-k='pdf'" + dis + ">PDF</button></div>";
+    h += "<p class='hint'>" + T("Tick one bill for a single employee’s separate bill, or several to get them in one file and one letter.", "ایک ملازم کا الگ بل چاہیے تو ایک پر ٹک کریں، ایک فائل اور ایک خط کے لیے کئی پر۔") + "</p>";
+    return h;
+  }
+
+  function bpsOpts(v){ var o = "<option value=''>—</option>"; for(var i = 1; i <= 22; i++) o += "<option value='" + i + "'" + (String(v) === String(i) ? " selected" : "") + ">BPS-" + i + "</option>"; return o; }
+  function viewNew(){
+    var F = form, h = "<div class='pf-bar'><button type='button' class='btn small' id='ar_back'>← " + T("Back", "واپس") + "</button></div>";
+    h += "<h3 class='pf-h3'>" + T("New bill", "نیا بل") + "</h3><div class='pf-bar'>";
+    h += "<div class='field'><label>" + T("Kind", "قسم") + "</label><select id='ar_f_kind'><option value='up'" + (F.kind === "up" ? " selected" : "") + ">" + plain(T("Upgradation / time scale", "اپ گریڈیشن / ٹائم اسکیل")) + "</option><option value='promo'" + (F.kind === "promo" ? " selected" : "") + ">" + plain(T("Promotion", "ترقی")) + "</option></select></div>";
+    h += "<div class='field'><label>" + T("From BPS", "BPS سے") + "</label><select id='ar_f_oldB'>" + bpsOpts(F.oldB) + "</select></div>";
+    h += "<div class='field'><label>" + T("To BPS", "BPS تک") + "</label><select id='ar_f_newB'>" + bpsOpts(F.newB) + "</select></div>";
+    h += "<div class='field'><label>" + T("Effective date", "نافذ العمل تاریخ") + "</label><input type='date' id='ar_f_eff' value='" + esc(F.eff) + "'></div>";
+    h += "<div class='field'><label>" + T("Bill up to month", "بل کس ماہ تک") + "</label><input type='month' id='ar_f_to' value='" + esc(F.to) + "'></div>";
+    h += "<div class='field'><label>" + T("Pay fixation", "پے فکسیشن") + "</label><select id='ar_f_method'><option value='A'" + (F.method === "A" ? " selected" : "") + ">" + plain(T("A: next stage above the pay drawn", "الف: موجودہ تنخواہ سے اگلا اسٹیج")) + "</option><option value='B'" + (F.method === "B" ? " selected" : "") + ">" + plain(T("B: one increment first, then next stage", "ب: پہلے ایک انکریمنٹ، پھر اگلا اسٹیج")) + "</option></select></div>";
+    h += "</div><div class='pf-bar'><div class='field' style='max-width:520px;flex:2 1 320px'><label>" + T("Notification / order (number and date, as it will appear in the letter)", "نوٹیفکیشن / حکم (نمبر اور تاریخ، جیسا خط میں آئے)") + "</label><input id='ar_f_ref' value='" + esc(F.ref) + "' placeholder='Notification No. … dated …'></div>";
+    h += "<div class='field'><label>" + T("Pay drawn on the effective date (optional)", "نافذ تاریخ پر وصول شدہ تنخواہ (اختیاری)") + "</label><input type='number' id='ar_f_p0' value='" + esc(F.p0) + "'></div>";
+    h += "<div class='field'><label>" + T("New basic pay fixed (optional)", "نئی بنیادی تنخواہ (اختیاری)") + "</label><input type='number' id='ar_f_nb' value='" + esc(F.nb) + "'></div></div>";
+    h += "<h3 class='pf-h3'>" + T("Employees (one bill each)", "ملازمین (ہر ایک کا الگ بل)") + "</h3><div class='ar-emps'>";
+    (STATE.employees || []).slice().sort(function(a, b){ return String(a.name || "").localeCompare(String(b.name || "")); }).forEach(function(e){
+      h += "<label class='ar-emp'><input type='checkbox' class='ar-ce' data-id='" + esc(e.id) + "'" + (F.emps[e.id] ? " checked" : "") + "> " + esc(e.name || "") + " <span class='hint' style='margin:0'>" + esc(e.designation || "") + " · BPS-" + esc(String(e.bps || "")) + "</span></label>";
+    });
+    h += "</div><div class='pf-bar' style='margin-top:12px'><button type='button' class='btn' id='ar_create'>" + T("Calculate and create the bills", "حساب لگا کر بل بنائیں") + "</button></div>";
+    h += "<p class='hint'>" + T("The drawn pay comes from the pay slips in the system; for months without a slip the pay is worked out by the rule and marked “estimate” — you can type the real slip amounts over it afterwards. The due pay follows the scales (2022 until June 2026, 2026 from July 2026), the 1-December increment, Special Allowance (0.75 of the scale minimum) and Adhoc Relief 2025 / 2026.", "وصول شدہ تنخواہ سسٹم کی پے سلپ سے آتی ہے؛ جس مہینے کی سلپ نہ ہو وہاں اصول سے حساب لگتا ہے اور ”اندازہ“ لکھا آتا ہے، بعد میں اصل سلپ کی رقمیں اوپر لکھ سکتے ہیں۔ واجب تنخواہ اسکیل (جون 2026 تک 2022، جولائی 2026 سے 2026)، یکم دسمبر کا انکریمنٹ، اسپیشل الاؤنس (اسکیل کی کم از کم کا 0.75) اور ARA 2025 / 2026 کے مطابق ہے۔") + "</p>";
+    return h;
+  }
+
+  function cellIn(b, ri, w, k){
+    var r = b.rows[ri], v = r[w][k], ed = r.ed && r.ed[w + "." + k];
+    return "<td class='num'><input type='number' class='ar-in" + (ed ? " ar-ed" : "") + "' data-r='" + ri + "' data-w='" + w + "' data-k='" + k + "' value='" + (v || v === 0 ? v : "") + "'></td>";
+  }
+  function viewEdit(){
+    var b = bills()[cur]; if(!b){ view = "list"; return viewList(); }
+    var vh = visHeads([b]), h = "";
+    h += "<div class='pf-bar'><button type='button' class='btn small' id='ar_back'>← " + T("Back to the list", "فہرست پر واپس") + "</button><span class='hint' id='ar_saved' style='margin:0'></span></div>";
+    h += "<h3 class='pf-h3'>" + esc(b.name || "") + " <span class='hint' style='margin:0'>" + esc(b.desig || "") + " · " + esc(b.persNo || "") + "</span></h3>";
+    h += "<div class='pf-bar'>";
+    h += "<div class='field'><label>" + T("Kind", "قسم") + "</label><select data-f='kind'><option value='up'" + (b.kind === "up" ? " selected" : "") + ">" + plain(T("Upgradation / time scale", "اپ گریڈیشن / ٹائم اسکیل")) + "</option><option value='promo'" + (b.kind === "promo" ? " selected" : "") + ">" + plain(T("Promotion", "ترقی")) + "</option></select></div>";
+    h += "<div class='field'><label>" + T("From BPS", "BPS سے") + "</label><select data-f='oldB' class='ar-calc'>" + bpsOpts(b.oldB) + "</select></div>";
+    h += "<div class='field'><label>" + T("To BPS", "BPS تک") + "</label><select data-f='newB' class='ar-calc'>" + bpsOpts(b.newB) + "</select></div>";
+    h += "<div class='field'><label>" + T("Effective date", "نافذ تاریخ") + "</label><input type='date' data-f='eff' class='ar-calc' value='" + esc(b.eff) + "'></div>";
+    h += "<div class='field'><label>" + T("Up to month", "ماہ تک") + "</label><input type='month' data-f='to' class='ar-calc' value='" + esc(b.to) + "'></div>";
+    h += "<div class='field'><label>" + T("Pay fixation", "پے فکسیشن") + "</label><select data-f='method' class='ar-calc'><option value='A'" + (b.method === "A" ? " selected" : "") + ">A</option><option value='B'" + (b.method === "B" ? " selected" : "") + ">B</option></select></div>";
+    h += "<div class='field'><label>" + T("Pay drawn on the effective date", "نافذ تاریخ پر وصول شدہ تنخواہ") + "</label><input type='number' data-f='p0' class='ar-calc' value='" + esc(b.p0 || "") + "'></div>";
+    h += "<div class='field'><label>" + T("New basic fixed", "نئی بنیادی") + "</label><input type='number' data-f='nb' class='ar-calc' value='" + esc(b.nb || "") + "'></div>";
+    h += "<div class='field'><label>" + T("Status", "حالت") + "</label><select data-f='status'>" + ["Draft", "Checked", "Submitted"].map(function(s){ return "<option" + (b.status === s ? " selected" : "") + ">" + s + "</option>"; }).join("") + "</select></div>";
+    h += "</div><div class='pf-bar'><div class='field' style='max-width:640px;flex:2 1 360px'><label>" + T("Notification / order (as it will appear in the letter)", "نوٹیفکیشن / حکم (جیسا خط میں آئے)") + "</label><input data-f='ref' value='" + esc(b.ref || "") + "'></div><div class='field' style='max-width:640px;flex:2 1 360px'><label>" + T("Extra note (printed under the statement)", "اضافی نوٹ (گوشوارے کے نیچے)") + "</label><input data-f='note' value='" + esc(b.note || "") + "'></div></div>";
+    h += "<div id='ar_stale'" + (b.stale ? "" : " style='display:none'") + " class='pf-warn'>" + T("A calculation field was changed — press “Recalculate” to apply it (hand-typed table figures are replaced).", "حساب کا کوئی خانہ بدلا ہے — لاگو کرنے کے لیے ”دوبارہ حساب“ دبائیں (ہاتھ سے لکھی رقمیں بدل جائیں گی)۔") + "</div>";
+    (b.warns || []).forEach(function(w){ h += "<div class='pf-warn'>" + esc(w) + "</div>"; });
+    var est = b.rows.filter(function(r){ return r.src === "est"; }).length;
+    h += "<div class='pf-chips'><span class='pf-chip'>" + T("Months", "مہینے") + ": " + b.rows.length + "</span>" + (est ? "<span class='pf-chip pf-c-bad'>" + T("Estimated (no pay slip)", "اندازہ (سلپ نہیں)") + ": " + est + "</span>" : "") + "<span class='pf-chip pf-c-ok' id='ar_tot'>" + T("Total arrears", "کل بقایا جات") + ": Rs. " + money(totalsOf(b).total) + "</span></div>";
+    h += "<div class='table-wrap'><table class='pf-tbl ar-tbl'><thead><tr><th>" + T("Month", "مہینہ") + "</th><th></th>";
+    vh.forEach(function(k){ h += "<th class='num'>" + T(k[1], k[2]) + "</th>"; });
+    h += "<th class='num'>" + T("Total", "کل") + "</th></tr></thead><tbody>";
+    b.rows.forEach(function(r, ri){
+      var rowTotal = function(w){ var t = 0; vh.forEach(function(k){ t += num(r[w][k[0]]); }); return t; };
+      var share = r.sn === r.sd ? "" : " <span class='hint' style='margin:0'>(" + r.sn + "/" + r.sd + " " + plain(T("days", "دن")) + ")</span>";
+      var badge = r.src === "slip" ? "<span class='pf-chip pf-c-ok'>" + plain(T("slip", "سلپ")) + "</span>" : r.src === "est" ? "<span class='pf-chip pf-c-bad'>" + plain(T("estimate", "اندازہ")) + "</span>" : "<span class='pf-chip'>" + plain(T("typed", "ہاتھ سے")) + "</span>";
+      h += "<tr><td rowspan='3'><b>" + esc(mLabel(r.m)) + "</b>" + share + "<div>" + badge + " <button type='button' class='btn small ar-rm' data-r='" + ri + "' title='remove'>✖</button></div></td><td class='c'>" + T("Due", "واجب") + "</td>";
+      vh.forEach(function(k){ h += cellIn(b, ri, "due", k[0]); }); h += "<td class='num' data-t='due' data-r='" + ri + "'>" + money(rowTotal("due")) + "</td></tr>";
+      h += "<tr><td class='c'>" + T("Drawn", "وصول") + "</td>";
+      vh.forEach(function(k){ h += cellIn(b, ri, "drawn", k[0]); }); h += "<td class='num' data-t='drawn' data-r='" + ri + "'>" + money(rowTotal("drawn")) + "</td></tr>";
+      var d = diffOf(r);
+      h += "<tr class='pf-sum'><td class='c'><b>" + T("Difference", "فرق") + "</b></td>";
+      vh.forEach(function(k){ h += "<td class='num' data-d='" + k[0] + "' data-r='" + ri + "'><b>" + money(d[k[0]]) + "</b></td>"; });
+      h += "<td class='num' data-t='diff' data-r='" + ri + "'><b>" + money(d.total) + "</b></td></tr>";
+    });
+    var T0 = totalsOf(b);
+    h += "<tr class='pf-sum'><td colspan='2'><b>" + T("Total arrears", "کل بقایا جات") + "</b></td>";
+    vh.forEach(function(k){ h += "<td class='num' data-g='" + k[0] + "'><b>" + money(T0[k[0]]) + "</b></td>"; });
+    h += "<td class='num' data-g='total'><b>" + money(T0.total) + "</b></td></tr></tbody></table></div>";
+    h += "<div class='pf-bar' style='margin-top:12px'><button type='button' class='btn' id='ar_recalc'>↻ " + T("Recalculate", "دوبارہ حساب") + "</button><div class='field' style='max-width:180px'><label>" + T("Add a month", "مہینہ جوڑیں") + "</label><input type='month' id='ar_addm' value='" + esc(mAdd(b.to, 1)) + "'></div><button type='button' class='btn small' id='ar_addbtn'>➕ " + T("Add", "جوڑیں") + "</button></div>";
+    h += "<div class='pf-bar'><b>" + T("Statement", "گوشوارہ") + ":</b> <button type='button' class='btn small ar-ex' data-k='excel'>Excel</button> <button type='button' class='btn small ar-ex' data-k='word'>Word</button> <button type='button' class='btn small ar-ex' data-k='pdf'>PDF</button> &nbsp; <b>" + T("Letter", "خط") + ":</b> <button type='button' class='btn small ar-lt' data-k='word'>Word</button> <button type='button' class='btn small ar-lt' data-k='pdf'>PDF</button></div>";
+    h += "<p class='hint'>" + T("Yellow-marked figures were typed by hand. The first month is counted for the days after the effective date. " + KEEP_DEFAULT_NOTE, "پیلے نشان والی رقمیں ہاتھ سے لکھی گئی ہیں۔ پہلا مہینہ نافذ تاریخ کے بعد کے دنوں کا گنا جاتا ہے۔ میڈیکل، پرسنل، دھلائی اور ARA 2022 / 2023 / 2024 جیسی مدیں وصول شدہ کے برابر رکھی ہیں؛ اکاؤنٹ آفس BPS بدلنے پر انہیں دوبارہ طے کرتا ہے۔") + "</p>";
+    return h;
+  }
+
+  function viewMain(){
+    if(!allowed()) return "<div class='pf-warn'>" + T("This section is only for Admin / Super Admin.", "یہ حصہ صرف ایڈمن / سپر ایڈمن کے لیے ہے۔") + "</div>";
+    if(view === "new"){ if(!form) form = newForm(); return viewNew(); }
+    if(view === "edit") return viewEdit();
+    return viewList();
+  }
+  function rerender(){ if(window.__brPayFix && window.__brPayFix.render) window.__brPayFix.render(); }
+
+  /* ---------- actions ---------- */
+  function createBills(){
+    var F = form, ids = Object.keys(F.emps).filter(function(k){ return F.emps[k]; });
+    if(!ids.length){ toast("Tick at least one employee"); return; }
+    var oB = PF.bpsNum(F.oldB), nB = PF.bpsNum(F.newB);
+    if(!oB || !nB){ toast("Choose the BPS before and after"); return; }
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(F.eff)){ toast("Choose the effective date"); return; }
+    if(!/^\d{4}-\d{2}$/.test(F.to) || F.to < F.eff.slice(0, 7)){ toast("The last month must not be before the effective month"); return; }
+    var made = [];
+    ids.forEach(function(id){
+      var e = (STATE.employees || []).filter(function(x){ return x.id === id; })[0]; if(!e) return;
+      var p = {oldB: oB, newB: nB, eff: F.eff, to: F.to, method: F.method, p0: F.p0, nb: F.nb}, r = build(e, p);
+      var b = {id: uid(), empId: e.id, persNo: String(e.persNo || ""), name: e.name || "", desig: e.designation || "", oldB: oB, newB: nB, eff: F.eff, to: F.to, method: F.method, p0: F.p0 || "", nb: F.nb || "", kind: F.kind, ref: F.ref || "", status: "Draft", note: "", stale: false, warns: r.warns, rows: r.rows, created: Date.now() + made.length};
+      bills()[b.id] = b; made.push(b);
+    });
+    if(!persist()) return;
+    form = null; sel = {}; made.forEach(function(b){ sel[b.id] = true; });
+    if(made.length === 1){ cur = made[0].id; view = "edit"; } else view = "list";
+    toast(made.length + " bill(s) created"); rerender();
+  }
+  function recalc(){
+    var b = bills()[cur]; if(!b) return; var e = empOf(b);
+    if(!e){ toast("The employee record was not found"); return; }
+    var hand = b.rows.some(function(r){ return r.src === "manual" || Object.keys(r.ed || {}).length; });
+    if(hand && !confirm("Recalculate? The figures you typed in the table will be replaced.")) return;
+    var r = build(e, {oldB: PF.bpsNum(b.oldB), newB: PF.bpsNum(b.newB), eff: b.eff, to: b.to, method: b.method, p0: b.p0, nb: b.nb});
+    b.rows = r.rows; b.warns = r.warns; b.stale = false; persist(); rerender();
+  }
+  function addMonth(){
+    var b = bills()[cur]; if(!b) return; var m = ($("#ar_addm") || {}).value, e = empOf(b);
+    if(!/^\d{4}-\d{2}$/.test(m) || !e){ toast("Choose the month"); return; }
+    if(b.rows.some(function(r){ return r.m === m; })){ toast("That month is already in the bill"); return; }
+    if(m < b.eff.slice(0, 7)){ toast("That month is before the effective date"); return; }
+    var r = build(e, {oldB: PF.bpsNum(b.oldB), newB: PF.bpsNum(b.newB), eff: b.eff, to: m, method: b.method, p0: b.p0, nb: b.nb}, [m]);
+    if(!r.rows.length){ toast("Nothing to add"); return; }
+    b.rows.push(r.rows[0]); b.rows.sort(function(x, y){ return x.m < y.m ? -1 : 1; }); if(m > b.to) b.to = m;
+    persist(); rerender();
+  }
+  function refreshDiffs(b){
+    var vh = visHeads([b]);
+    b.rows.forEach(function(r, ri){
+      var d = diffOf(r);
+      vh.forEach(function(k){ var c = panel.querySelector("td[data-d='" + k[0] + "'][data-r='" + ri + "']"); if(c) c.innerHTML = "<b>" + money(d[k[0]]) + "</b>"; });
+      ["due", "drawn"].forEach(function(w){ var t = 0; vh.forEach(function(k){ t += num(r[w][k[0]]); }); var c = panel.querySelector("td[data-t='" + w + "'][data-r='" + ri + "']"); if(c) c.textContent = money(t); });
+      var c2 = panel.querySelector("td[data-t='diff'][data-r='" + ri + "']"); if(c2) c2.innerHTML = "<b>" + money(d.total) + "</b>";
+    });
+    var T0 = totalsOf(b);
+    vh.forEach(function(k){ var c = panel.querySelector("td[data-g='" + k[0] + "']"); if(c) c.innerHTML = "<b>" + money(T0[k[0]]) + "</b>"; });
+    var cg = panel.querySelector("td[data-g='total']"); if(cg) cg.innerHTML = "<b>" + money(T0.total) + "</b>";
+    var ct = $("#ar_tot"); if(ct) ct.innerHTML = T("Total arrears", "کل بقایا جات") + ": Rs. " + money(T0.total);
+  }
+
+  /* ---------- export: statement tables (same builders as the other tabs) ---------- */
+  function sN(v){ return String(Math.round(num(v))).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+  function stmtTables(bs){
+    var vh = visHeads(bs), tables = [];
+    bs.forEach(function(b){
+      var tt = totalsOf(b), heads = ["Month", ""].concat(vh.map(function(k){ return k[1]; })).concat(["Total"]), nm = heads.map(function(_, i){ return i >= 2; });
+      var rows = [];
+      b.rows.forEach(function(r){
+        var d = diffOf(r), lab = mLabel(r.m) + (r.sn === r.sd ? "" : " (" + r.sn + "/" + r.sd + ")") + (r.src === "est" ? " *" : "");
+        var td = 0, tr = 0; vh.forEach(function(k){ td += num(r.due[k[0]]); tr += num(r.drawn[k[0]]); });
+        rows.push({cells: [lab, "Due"].concat(vh.map(function(k){ return sN(r.due[k[0]]); })).concat([sN(td)]), nums: nm});
+        rows.push({cells: ["", "Drawn"].concat(vh.map(function(k){ return sN(r.drawn[k[0]]); })).concat([sN(tr)]), nums: nm});
+        rows.push({cells: ["", "Difference"].concat(vh.map(function(k){ return sN(d[k[0]]); })).concat([sN(d.total)]), nums: nm});
+      });
+      var foot = [{cells: ["Total arrears", ""].concat(vh.map(function(k){ return sN(tt[k[0]]); })).concat([sN(tt.total)]), nums: nm}];
+      tables.push({title: "Statement of due and drawn — " + (b.name || "") + " (" + (b.desig || "") + ", Pers. No. " + (b.persNo || "") + ") — BPS-" + b.oldB + " to BPS-" + b.newB + " w.e.f. " + dLabel(b.eff), heads: heads, num: nm, rows: rows, foot: foot, dense: heads.length > 9});
+      var notes = ["Difference = due − drawn for every head; the first month is counted for the days from the effective date (" + dLabel(b.eff) + ")."];
+      if(b.ref) notes.push(b.ref);
+      if(b.rows.some(function(r){ return r.src === "est"; })) notes.push("Months marked * are not taken from pay slips; the drawn pay is worked out by the rule — to be checked against the pay slips.");
+      notes.push("Pay fixed at the stage next above the pay drawn" + (b.method === "B" ? " after one increment" : "") + ". Special Allowance = 0.75 of the initial basic pay of the scale (Order dated 19-01-2023). Adhoc Relief 2025 = 10% and Adhoc Relief 2026 = 7% of basic pay.");
+      notes.push(KEEP_DEFAULT_NOTE);
+      if(b.note) notes.push(b.note);
+      tables.push({title: "Notes — " + (b.name || ""), heads: ["Notes"], num: [false], rows: notes.map(function(t, i){ return {cells: [(i + 1) + ". " + t], nums: [false]}; }), foot: []});
+    });
+    return tables;
+  }
+  async function exportStmt(kind){
+    var bs = Object.keys(sel).filter(function(k){ return sel[k] && bills()[k]; }).map(function(k){ return bills()[k]; });
+    if(view === "edit" && bills()[cur]) bs = [bills()[cur]];
+    if(!bs.length){ toast("Tick the bills first"); return; }
+    if(!window.__brExportTables){ toast("The export tools are not ready — reload the page"); return; }
+    var one = bs.length === 1, base = "ArrearsStatement_" + (one ? String(bs[0].name || "").replace(/[^A-Za-z0-9]+/g, "-") : bs.length + "-employees");
+    await window.__brExportTables(kind, stmtTables(bs), {title: "Statement of Due and Drawn (Arrears)", sub: bs.map(function(b){ return b.name; }).join(", "), base: base, landscape: true, office: "", paper: ((document.getElementById("globalPaperSize") || {}).value === "A4" ? "Legal" : (document.getElementById("globalPaperSize") || {}).value) || "Legal"});
+  }
+
+  /* ---------- the covering letter (Word / PDF) ---------- */
+  function letterBlocks(bs){
+    var r = root(), toLines = String(r.toAddr != null ? r.toAddr : "The Account Officer,\nAccount Office.").split("\n").filter(Boolean), sign = r.sign != null ? r.sign : "Drawing and Disbursing Officer";
+    var B = [], P = function(parts, o){ B.push(Object.assign({t: "p", parts: parts}, o || {})); }, x = function(s, o){ return Object.assign({x: s}, o || {}); };
+    P([x("No. ______________        Dated: ______________")], {al: "left", after: 160});
+    P([x("To,")], {al: "left", after: 0});
+    toLines.forEach(function(l, i){ P([x(l, {b: true})], {al: "left", after: i === toLines.length - 1 ? 160 : 0}); });
+    var anyPromo = bs.some(function(b){ return b.kind === "promo"; }), anyUp = bs.some(function(b){ return b.kind !== "promo"; });
+    var subj = "PAYMENT OF DIFFERENCE OF PAY AND ALLOWANCES (ARREARS) ON " + (anyUp && anyPromo ? "UPGRADATION AND PROMOTION" : anyPromo ? "PROMOTION" : "UPGRADATION");
+    P([x("Subject:  ", {b: true}), x(subj, {b: true})], {al: "left", after: 160});
+    P([x("Sir,")], {al: "left"});
+    P([x("I am directed to refer to the subject noted above and to state that the pay and allowances of the following employees of this office were not drawn according to the change of their BPS. The difference between the amounts due and the amounts drawn, month by month, is shown in the enclosed statements (Annexure-" + (bs.length > 1 ? "A to " + String.fromCharCode(64 + bs.length) : "A") + ") and in short below:")]);
+    var tot = 0, rows = bs.map(function(b, i){ var t = totalsOf(b).total; tot += t; return [String(i + 1), (b.name || "") + " (" + (b.desig || "") + ")", "BPS-" + b.oldB + " to BPS-" + b.newB, dLabel(b.eff) + " to " + mFull(b.to), sN(t)]; });
+    B.push({t: "table", heads: ["#", "Name and designation", "BPS", "Period", "Arrears (Rs)"], rows: rows, foot: ["", "Total", "", "", sN(tot)], w: [6, 38, 18, 24, 14]});
+    bs.forEach(function(b, i){
+      var up = b.kind !== "promo", t = totalsOf(b).total, first = mFull(b.rows.length ? b.rows[0].m : b.eff.slice(0, 7));
+      var parts = [x((i + 1) + ".  "), x((b.name || "") + ", " + (b.desig || "") + ",", {b: true}), x(" was " + (up ? "upgraded" : "promoted") + " from BPS-" + b.oldB + " to BPS-" + b.newB + " with effect from "), x(dLabel(b.eff), {b: true})];
+      if(b.ref) parts.push(x(" vide " + b.ref)); else parts.push(x(" vide "), x("(notification / order No. and date)", {hl: true}));
+      parts.push(x(". The pay and allowances however continued to be drawn on the old basis. The pay may please be fixed in BPS-" + b.newB + " (the stage next above the pay drawn" + (b.method === "B" ? ", after one increment" : "") + "), with the allowances worked out accordingly and the Adhoc Relief re-fixed as per rules. The difference from " + first + " to " + mFull(b.to) + " comes to Rs " + sN(t) + " as per Annexure-" + String.fromCharCode(65 + i) + "."));
+      P(parts);
+    });
+    P([x((bs.length + 1) + ".  It is therefore requested that the pay slips of the above employees may kindly be corrected from the dates mentioned above and the arrears of the difference may please be paid on a bill to be passed in the usual way. The deductions on the corrected pay may please be worked out by your office.")]);
+    P([x("Enclosures:", {b: true})], {al: "left", after: 40});
+    var enc = ["Statements of due and drawn (Annexure-" + (bs.length > 1 ? "A to " + String.fromCharCode(64 + bs.length) : "A") + ")", "Copy of the notification / order of each employee", "Copies of the pay slips for the months claimed"];
+    if(bs.some(function(b){ var T0 = totalsOf(b); return T0.sa; })) enc.splice(2, 0, "Copy of Order dated 19-01-2023 on the Special Allowance");
+    enc.forEach(function(s, i){ P([x((i + 1) + ".  " + s)], {al: "left", after: 30, ind: 420}); });
+    P([x("Yours faithfully,")], {al: "right", before: 200, after: 520});
+    P([x("______________________")], {al: "right", after: 0});
+    P([x(sign)], {al: "right", after: 0});
+    return B;
+  }
+  function selBills(){
+    var bs = Object.keys(sel).filter(function(k){ return sel[k] && bills()[k]; }).map(function(k){ return bills()[k]; });
+    if(view === "edit" && bills()[cur]) bs = [bills()[cur]];
+    return bs;
+  }
+  function dl(blob, name){ var a = document.createElement("a"), u = URL.createObjectURL(blob); a.href = u; a.download = name; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(u); a.remove(); }, 1500); }
+  async function letterWord(bs){
+    await window.__brUI.loadLib("docx"); var D = window.docx, FONT = "Times New Roman", blocks = letterBlocks(bs), ch = [];
+    var AL = {left: D.AlignmentType.LEFT, right: D.AlignmentType.RIGHT, c: D.AlignmentType.CENTER};
+    blocks.forEach(function(bk){
+      if(bk.t === "p"){
+        ch.push(new D.Paragraph({alignment: bk.al ? AL[bk.al] : D.AlignmentType.JUSTIFIED, spacing: {before: bk.before || 0, after: bk.after != null ? bk.after : 120, line: 276}, indent: bk.ind ? {left: bk.ind, hanging: 300} : undefined,
+          children: bk.parts.map(function(p){ return new D.TextRun({text: p.x, font: FONT, size: 22, bold: !!p.b, highlight: p.hl ? "yellow" : undefined}); })}));
+      } else if(bk.t === "table"){
+        var tw = 9300, cols = bk.w.map(function(w){ return Math.round(tw * w / 100); }), bd = {style: D.BorderStyle.SINGLE, size: 4, color: "777777"}, bds = {top: bd, bottom: bd, left: bd, right: bd};
+        var cell = function(t, i, o){ o = o || {}; return new D.TableCell({width: {size: cols[i], type: D.WidthType.DXA}, borders: bds, margins: {top: 50, bottom: 50, left: 90, right: 90}, shading: o.fill ? {fill: o.fill, type: D.ShadingType.CLEAR, color: "auto"} : undefined, children: [new D.Paragraph({alignment: o.r ? D.AlignmentType.RIGHT : o.c ? D.AlignmentType.CENTER : D.AlignmentType.LEFT, children: [new D.TextRun({text: String(t), font: FONT, size: 21, bold: !!o.b})]})]}); };
+        var rws = [new D.TableRow({tableHeader: true, children: bk.heads.map(function(h, i){ return cell(h, i, {b: true, fill: "DCE6F1", c: true}); })})];
+        bk.rows.forEach(function(r){ rws.push(new D.TableRow({cantSplit: true, children: r.map(function(v, i){ return cell(v, i, {r: i === r.length - 1}); })})); });
+        rws.push(new D.TableRow({children: bk.foot.map(function(v, i){ return cell(v, i, {b: true, fill: "F2F2F2", r: i === bk.foot.length - 1}); })}));
+        ch.push(new D.Table({width: {size: tw, type: D.WidthType.DXA}, columnWidths: cols, rows: rws}));
+        ch.push(new D.Paragraph({spacing: {after: 120}, children: []}));
+      }
+    });
+    var doc = new D.Document({styles: {default: {document: {run: {font: FONT, size: 22}}}}, sections: [{properties: {page: {size: {width: 11906, height: 16838}, margin: {top: 1100, bottom: 1000, left: 1300, right: 1300}}}, children: ch}]});
+    dl(await D.Packer.toBlob(doc), "ArrearsLetter_" + (bs.length === 1 ? String(bs[0].name || "").replace(/[^A-Za-z0-9]+/g, "-") : bs.length + "-employees") + ".docx");
+  }
+  async function letterPdf(bs){
+    await window.__brUI.loadLib("pdflib");
+    var PL = window.PDFLib, doc = await PL.PDFDocument.create(), F = await doc.embedFont(PL.StandardFonts.TimesRoman), FB = await doc.embedFont(PL.StandardFonts.TimesRomanBold);
+    var W = 595.28, H = 841.89, MX = 72, MT = 64, MB = 60, CW = W - 2 * MX, SZ = 11.5, LH = SZ * 1.38, black = PL.rgb(0, 0, 0), grey = PL.rgb(0.45, 0.45, 0.45);
+    var page = doc.addPage([W, H]), y = H - MT;
+    function safe(s){ return String(s == null ? "" : s).replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/[−–]/g, "-").replace(/[^\x20-\x7E\xA0-\xFF—•]/g, "?"); }
+    function fnt(b){ return b ? FB : F; }
+    /* width without kerning: the PDF viewers draw the text without kerning, so measuring with it would make the words touch */
+    function tw(s, b){ var f = fnt(b), t = 0; for(var i = 0; i < s.length; i++) t += f.widthOfTextAtSize(s.charAt(i), SZ); return t; }
+    function need(h){ if(y - h < MB){ page = doc.addPage([W, H]); y = H - MT; } }
+    function tokens(parts){
+      var t = [];
+      parts.forEach(function(p){ safe(p.x).split(/( +)/).forEach(function(w){ if(w === "") return; t.push({s: w, b: !!p.b, hl: !!p.hl, sp: /^ +$/.test(w)}); }); });
+      return t;
+    }
+    function wrap(toks, width){
+      var lines = [], cur = [], cw = 0;
+      toks.forEach(function(k){
+        k.w = tw(k.s, k.b);
+        if(k.sp){ if(cur.length){ cur.push(k); cw += k.w; } return; }
+        if(cw + k.w > width && cur.length){ while(cur.length && cur[cur.length - 1].sp){ cw -= cur.pop().w; } lines.push({t: cur, w: cw}); cur = []; cw = 0; }
+        cur.push(k); cw += k.w;
+      });
+      while(cur.length && cur[cur.length - 1].sp){ cw -= cur.pop().w; }
+      if(cur.length) lines.push({t: cur, w: cw, last: true});
+      return lines;
+    }
+    function drawLine(ln, x0, width, al, justify){
+      var gaps = ln.t.filter(function(k){ return k.sp; }), extra = 0, x = x0;
+      if(justify && !ln.last && gaps.length){ extra = (width - ln.w) / gaps.length; }
+      else if(al === "right") x = x0 + width - ln.w;
+      else if(al === "c") x = x0 + (width - ln.w) / 2;
+      ln.t.forEach(function(k){
+        var w = k.w + (k.sp ? extra : 0);
+        if(k.hl && !k.sp) page.drawRectangle({x: x, y: y - 3, width: w, height: SZ + 2, color: PL.rgb(1, 1, 0)});
+        if(!k.sp) page.drawText(k.s, {x: x, y: y, size: SZ, font: fnt(k.b), color: black});
+        x += w;
+      });
+    }
+    var blocks = letterBlocks(bs);
+    blocks.forEach(function(bk){
+      if(bk.t === "p"){
+        var ind = (bk.ind || 0) / 20, lines = wrap(tokens(bk.parts), CW - ind), al = bk.al || "j";
+        y -= (bk.before || 0) / 20;
+        need(LH * Math.min(lines.length, 3));
+        lines.forEach(function(ln){ need(LH); y -= SZ; drawLine(ln, MX + ind, CW - ind, al, al === "j"); y -= LH - SZ; });
+        y -= (bk.after != null ? bk.after : 120) / 20;
+      } else {
+        var cols = bk.w.map(function(w){ return CW * w / 100; }), PADX = 5, PADY = 3.5;
+        function rowOf(cells, o){
+          var wr = cells.map(function(c, i){ return wrap(tokens([{x: String(c), b: o.b}]), cols[i] - 2 * PADX); }), n = Math.max.apply(null, wr.map(function(l){ return l.length || 1; })), h = n * LH + 2 * PADY;
+          need(h); var x = MX, top = y;
+          if(o.fill) page.drawRectangle({x: MX, y: top - h, width: CW, height: h, color: o.fill});
+          cells.forEach(function(c, i){
+            page.drawRectangle({x: x, y: top - h, width: cols[i], height: h, borderColor: grey, borderWidth: 0.6});
+            var yy = top - PADY;
+            wr[i].forEach(function(ln){ y = yy - SZ; drawLine(ln, x + PADX, cols[i] - 2 * PADX, o.c ? "c" : (i === cells.length - 1 && !o.noR) ? "right" : "left", false); yy -= LH; });
+            x += cols[i];
+          });
+          y = top - h;
+        }
+        y -= 4;
+        rowOf(bk.heads, {b: true, c: true, fill: PL.rgb(0.86, 0.9, 0.95), noR: true});
+        bk.rows.forEach(function(r){ rowOf(r, {}); });
+        rowOf(bk.foot, {b: true, fill: PL.rgb(0.95, 0.95, 0.95)});
+        y -= 10;
+      }
+    });
+    var bytes = await doc.save();
+    dl(new Blob([bytes], {type: "application/pdf"}), "ArrearsLetter_" + (bs.length === 1 ? String(bs[0].name || "").replace(/[^A-Za-z0-9]+/g, "-") : bs.length + "-employees") + ".pdf");
+  }
+  async function exportLetter(kind){
+    var bs = selBills(); if(!bs.length){ toast("Tick the bills first"); return; }
+    try{
+      toast("Preparing the letter…");
+      if(kind === "word") await letterWord(bs); else await letterPdf(bs);
+    }catch(err){ console.error(err); toast("Could not build the letter: " + (err && err.message || err)); }
+  }
+
+  /* ---------- events ---------- */
+  panel.addEventListener("click", function(ev){
+    var t = ev.target.closest ? ev.target.closest("button") : null; if(!t || !allowed()) return;
+    if(t.id === "ar_new"){ form = newForm(); view = "new"; rerender(); return; }
+    if(t.id === "ar_back"){ view = "list"; form = null; cur = null; rerender(); return; }
+    if(t.id === "ar_create"){ createBills(); return; }
+    if(t.id === "ar_recalc"){ recalc(); return; }
+    if(t.id === "ar_addbtn"){ addMonth(); return; }
+    if(t.classList.contains("ar-open")){ cur = t.getAttribute("data-id"); view = "edit"; rerender(); return; }
+    if(t.classList.contains("ar-del")){
+      var id = t.getAttribute("data-id"), b = bills()[id]; if(!b) return;
+      if(!confirm("Delete the bill of " + (b.name || "") + "? This cannot be undone.")) return;
+      delete bills()[id]; delete sel[id]; persist(); rerender(); return;
+    }
+    if(t.classList.contains("ar-rm")){
+      var b2 = bills()[cur]; if(!b2) return; var ri = +t.getAttribute("data-r");
+      if(b2.rows.length < 2){ toast("A bill needs at least one month"); return; }
+      b2.rows.splice(ri, 1); persist(); rerender(); return;
+    }
+    if(t.classList.contains("ar-ex")){ exportStmt(t.getAttribute("data-k")); return; }
+    if(t.classList.contains("ar-lt")){ exportLetter(t.getAttribute("data-k")); return; }
+  });
+  panel.addEventListener("change", function(ev){
+    var t = ev.target; if(!allowed()) return;
+    if(t.classList.contains("ar-sel")){ sel[t.getAttribute("data-id")] = t.checked; rerender(); return; }
+    if(t.classList.contains("ar-ce") && form){ form.emps[t.getAttribute("data-id")] = t.checked; return; }
+    if(view === "new" && form && t.id && t.id.indexOf("ar_f_") === 0){ form[t.id.slice(5)] = t.value; return; }
+    if(view === "list" && (t.id === "ar_to" || t.id === "ar_sign")){ var r = root(); if(t.id === "ar_to") r.toAddr = t.value; else r.sign = t.value; persist(); return; }
+    var f = t.getAttribute && t.getAttribute("data-f");
+    if(view === "edit" && f){
+      var b = bills()[cur]; if(!b) return;
+      b[f] = (f === "oldB" || f === "newB") ? (+t.value || "") : t.value;
+      if(t.classList.contains("ar-calc")){ b.stale = true; var s = $("#ar_stale"); if(s) s.style.display = ""; }
+      persist(); if(f === "kind" || f === "status") return;
+    }
+  });
+  panel.addEventListener("input", function(ev){
+    var t = ev.target; if(!allowed()) return;
+    if(t.classList && t.classList.contains("ar-in") && view === "edit"){
+      var b = bills()[cur]; if(!b) return; var r = b.rows[+t.getAttribute("data-r")]; if(!r) return;
+      var w = t.getAttribute("data-w"), k = t.getAttribute("data-k");
+      r[w][k] = t.value === "" ? 0 : Number(t.value); r.ed = r.ed || {}; r.ed[w + "." + k] = 1; if(r.src === "slip" || r.src === "est") r.srcWas = r.src;
+      t.classList.add("ar-ed"); refreshDiffs(b); persist();
+      return;
+    }
+    var f = t.getAttribute && t.getAttribute("data-f");
+    if(view === "edit" && f && (f === "ref" || f === "note")){ var b2 = bills()[cur]; if(b2){ b2[f] = t.value; persist(); } }
+    if(view === "new" && form && t.id && t.id.indexOf("ar_f_") === 0 && (t.id === "ar_f_ref" || t.id === "ar_f_p0" || t.id === "ar_f_nb")) form[t.id.slice(5)] = t.value;
+  });
+
+  window.__brArrears = {view: viewMain, build: build, diffOf: diffOf, totalsOf: totalsOf, bills: bills, stmtTables: stmtTables, letterBlocks: letterBlocks, state: function(){ return {view: view, cur: cur}; }};
 })();
 
 /* ================= BM-26 MONTHLY SALARY STATEMENT (Admin / Super Admin) =================
