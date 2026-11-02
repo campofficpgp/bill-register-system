@@ -10013,6 +10013,12 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(!nqSeeded){
       ["31470373","31488774","31488775","31488783","31488786","31488793","31488803"].forEach(function(p){ if(!o[p]) o[p] = {from: "2", date: "2026-09-30"}; });
       promoSave(o); try{ localStorage.setItem(PROMO_KEY + "_nq", "1"); }catch(e){}
+    }
+    /* the Driver: one-time upgradation BPS-5 to BPS-6 (kind "up": pay fixed at the next stage above the pay drawn, like the Naib Qasids) */
+    var drvSeeded = false; try{ drvSeeded = localStorage.getItem(PROMO_KEY + "_drv") === "1"; }catch(e){}
+    if(!drvSeeded){
+      if(!o["31495236"]) o["31495236"] = {from: "5", date: "2026-09-30", kind: "up"};
+      promoSave(o); try{ localStorage.setItem(PROMO_KEY + "_drv", "1"); }catch(e){}
     }   /* the user told us: BPS-11 until 26-10-2026, BPS-14 from then */
     return o;
   }
@@ -10992,12 +10998,12 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     {key: "STENO", name: "Stenographer", bps: 15, sanc: 1},
     {key: "SRCLK", name: "Senior Clerk", bps: 14, sanc: 1},
     {key: "JRCLK", name: "Junior Clerk", bps: 11, sanc: 10},
-    {key: "DRV", name: "Driver", bps: 5, sanc: 1},
+    {key: "DRV", name: "Driver", bps: 6, sanc: 1},
     {key: "NQ", name: "Naib Qasid", bps: 3, sanc: 8}
   ];
   /* employees who come back to this office later than the base month: the slip of an earlier month is used for them */
   var RETURNS = {"31498255": {from: "November 2026", slipMonth: "2026-09"}};
-  var OLD_FROZEN = {16: {A01202: 2727, A01217: 1500, A0121N: 840}, 15: {A01202: 2349, A01217: 1500, A0121N: 930}, 14: {A01202: 3321, A01217: 1500, A0121N: 570}};
+  var OLD_FROZEN = {6: {A01202: 2316, A01217: 1500}, 16: {A01202: 2727, A01217: 1500, A0121N: 840}, 15: {A01202: 2349, A01217: 1500, A0121N: 930}, 14: {A01202: 3321, A01217: 1500, A0121N: 570}};
   /* allowance columns of Form BM-III-A: [object head code, description] */
   var ACOLS = [["A01103", "Special Pay"], ["A01105", "Qualification Pay"], ["A01216", "Qualification Allowance"], ["A01202", "House Rent Allowance"], ["A01203", "Conveyance Allowance"], ["A0120D", "Integrated Allowance"], ["A01207", "Washing Allowance"], ["A01217", "Medical Allowance"], ["A01224", "Entertainment Allowance"], ["A0121N", "Personal Allowance"], ["A01239", "Special Allowance"], ["A0124X", "Adhoc Relief Allowance 2023"], ["A0125E", "Adhoc Relief Allowance 2024"], ["A0125X", "Adhoc Relief Allowance 2026 (7%)"]];
   var COPY_CODES = ["A01103", "A01105", "A01216", "A01202", "A0120D", "A01207", "A01217", "A01224", "A0121N", "A0124X", "A0125E"];
@@ -11010,7 +11016,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(!s || typeof s !== "object") s = {};
     var d = {fy: "", bm: "", vac: 1, pct: 10, base: "prev", xara: 0, honor: "", inc: 1, meth: "B", dept: "", att: "", grant: "PC21010(010)", posts: clone(DEF_POSTS)};
     Object.keys(d).forEach(function(k){ if(s[k] == null || (k === "posts" && !(s.posts && s.posts.length))) s[k] = d[k]; });
-    (s.posts || []).forEach(function(p){ if(p && p.key === "NQ" && Number(p.bps) === 2) p.bps = 3; });   /* saved lists from before October 2026 */
+    (s.posts || []).forEach(function(p){ if(p && p.key === "NQ" && Number(p.bps) === 2) p.bps = 3; if(p && p.key === "DRV" && Number(p.bps) === 5) p.bps = 6; });   /* saved lists from before October 2026 */
     if(!s.v2){ s.v2 = 1; if(s.meth === "A") s.meth = "B"; (s.posts || []).forEach(function(p){ if(p && p.key === "SRCLK" && Number(p.sanc) === 2) p.sanc = 1; }); }   /* Senior Clerk: one seat; promotion pay: method B (as the Account Office fixed it) */
     return s;
   }
@@ -11283,9 +11289,11 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       if(pr){
         var ob = P.bpsNum(pr.from), osc = P.S26[ob];
         if(osc && P.stageOf(ob, basic, true) != null){
-          var inc = S.meth === "B" ? basic + osc[1] : basic, k = nextAbove(sc, inc), nb = sc[0] + sc[1] * k;
-          r.notes.push("PROVISIONAL: promoted to BPS-" + b + " on " + P.dLabel(pr.date) + "; new basic fixed at stage " + k + " (Rs. " + money(nb) + ", method " + (S.meth === "B" ? "B: one increment then next stage" : "A: next stage above the pay drawn") + ") — confirm with the promotion order");
-          model.warns.push(S.meth === "B"
+          var isUp = pr.kind === "up", useB = S.meth === "B" && !isUp, inc = useB ? basic + osc[1] : basic, k = nextAbove(sc, inc), nb = sc[0] + sc[1] * k;
+          r.notes.push((isUp ? "One-time upgradation to BPS-" : "PROVISIONAL: promoted to BPS-") + b + " on " + P.dLabel(pr.date) + "; new basic fixed at stage " + k + " (Rs. " + money(nb) + ", method " + (useB ? "B: one increment then next stage" : "A: next stage above the pay drawn") + ") — confirm " + (isUp ? "with the Account Office" : "with the promotion order"));
+          model.warns.push(isUp
+            ? T(esc(e.name || "") + " — one-time upgradation to BPS-" + b + "; basic fixed by method A at Rs. " + money(nb) + " (the next stage above the pay drawn — the same way the Account Office fixed the Naib Qasids). Adhoc Relief 2023 / 2024 are kept as they are now; the Account Office re-fixes them. Confirm when the Account Office applies it.", esc(e.name || "") + " — BPS-" + b + " میں ایک بار کی اپ گریڈیشن؛ بنیادی تنخواہ طریقہ A سے " + money(nb) + " (موجودہ تنخواہ سے اگلا اسٹیج — جیسے اکاؤنٹ آفس نے نائب قاصدوں کی کی)۔ ARA-2023 / 2024 ابھی کی طرح رکھے ہیں، اکاؤنٹ آفس انہیں دوبارہ طے کرے گا۔ اکاؤنٹ آفس کے لگانے پر تصدیق کریں۔")
+            : S.meth === "B"
             ? T(esc(e.name || "") + " — promoted to BPS-" + b + "; basic fixed by method B at Rs. " + money(nb) + " (one increment, then the next stage — the same way the Account Office fixed the October 2026 pay).", esc(e.name || "") + " — BPS-" + b + " میں ترقی؛ بنیادی تنخواہ طریقہ B سے " + money(nb) + " (پہلے ایک انکریمنٹ، پھر اگلا اسٹیج — اکاؤنٹ آفس نے اکتوبر 2026 کی تنخواہ اسی طرح طے کی)۔")
             : T("PROVISIONAL: " + esc(e.name || "") + " — promoted to BPS-" + b + "; basic fixed by method " + esc(S.meth) + " at Rs. " + money(nb) + ". Confirm with the promotion order.", "عارضی: " + esc(e.name || "") + " — BPS-" + b + " میں ترقی؛ بنیادی تنخواہ طریقہ " + esc(S.meth) + " سے " + money(nb) + " فرض کی۔ ترقی کے آرڈر سے تصدیق کریں۔"));
           basic = nb; st = k; r.prov = true;
