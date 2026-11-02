@@ -8520,6 +8520,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     page.drawText(st, {x:(PW - F.widthOfTextAtSize(st, 8.5)) / 2, y:y - 9, size:8.5, font:F, color:grey}); y -= 20;
     tables.forEach(function(t, ti){
       var lay = layout(t);
+      if(t.pageBreak && ti > 0) newPage();
       if(t.title) banner(t.title, gold, black, 10.5);
       if(y - 60 < M + FOOT) newPage();
       drawHeader(t, lay);
@@ -8592,6 +8593,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       border:{top:{style:D.BorderStyle.SINGLE, size:14, color:"B8860B", space:6}}}));
     children.push(para([run(m.sub, {size:16, color:"666666"})], {align:D.AlignmentType.CENTER, after:160}));
     tables.forEach(function(t){
+      if(t.pageBreak) children.push(new D.Paragraph({pageBreakBefore: true, spacing: {after: 0}, children: []}));
       var n = t.heads.length, wt = t.heads.map(function(h, i){
         var mx = t.dense ? Math.min(Math.max.apply(null, String(h).split(/\s+/).map(function(x){ return x.length; })), 11) : Math.max(h.length * 1.05, 5);
         t.rows.concat(t.foot).forEach(function(r){ if(r.cells) mx = Math.max(mx, Math.min(String(r.cells[i] || "").length, t.dense ? (i < 3 ? 16 : 11) : 36)); });
@@ -8713,7 +8715,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     function lines(text, w){ var n = 0; String(text == null ? "" : text).split("\n").forEach(function(p){ n += Math.max(1, Math.ceil(p.length * 1.1 / Math.max(4, w - 1))); }); return n; }
     var used = {};
     function sheetName(t, i){
-      var base = (t.title || m.title).replace(/[\[\]:*?\/\\]/g, " ").trim().slice(0, 28) || ("Sheet" + (i + 1)), nm = base, k = 2;
+      var base = (t.sheet || t.title || m.title).replace(/[\[\]:*?\/\\]/g, " ").trim().slice(0, 28) || ("Sheet" + (i + 1)), nm = base, k = 2;
       while(used[nm.toLowerCase()]) nm = base.slice(0, 26) + " " + (k++);
       used[nm.toLowerCase()] = 1; return nm;
     }
@@ -10560,10 +10562,11 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     h += "</tbody></table></div>";
     var r = root(), n = Object.keys(sel).filter(function(k){ return sel[k] && bills()[k]; }).length;
     h += "<div class='pf-bar' style='margin-top:12px'><div class='field' style='max-width:420px'><label>" + T("Letter is addressed to", "خط کس کے نام") + "</label><textarea id='ar_to' rows='2'>" + esc(r.toAddr != null ? r.toAddr : "The Account Officer,\nAccount Office.") + "</textarea></div><div class='field' style='max-width:300px'><label>" + T("Signed by (title)", "دستخط کنندہ (عہدہ)") + "</label><input id='ar_sign' value='" + esc(r.sign != null ? r.sign : "Drawing and Disbursing Officer") + "'></div></div>";
+    h += "<div class='pf-bar'><div class='field' style='max-width:420px'><label>" + T("Urdu letter: addressed to", "اردو خط: کس کے نام") + "</label><textarea id='ar_tou' rows='2' dir='rtl'>" + esc(r.toAddrUr != null ? r.toAddrUr : UR_ADDR) + "</textarea></div><div class='field' style='max-width:300px'><label>" + T("Urdu letter: signed by (title)", "اردو خط: دستخط کنندہ (عہدہ)") + "</label><input id='ar_signu' dir='rtl' value='" + esc(r.signUr != null ? r.signUr : UR_SIGN) + "'></div></div>";
     h += "<div class='pf-chips'><span class='pf-chip'>" + T("Selected", "منتخب") + ": " + n + "</span><span class='pf-chip'>" + T("Arrears of the selected", "منتخب کے بقایا جات") + ": Rs. " + money(gt) + "</span></div>";
     var dis = n ? "" : " disabled";
     h += "<div class='pf-bar'><b>" + T("Statement (due / drawn / difference)", "گوشوارہ (واجب / وصول / فرق)") + ":</b> <button type='button' class='btn small ar-ex' data-k='excel'" + dis + ">Excel</button> <button type='button' class='btn small ar-ex' data-k='word'" + dis + ">Word</button> <button type='button' class='btn small ar-ex' data-k='pdf'" + dis + ">PDF</button></div>";
-    h += "<div class='pf-bar'><b>" + T("Covering letter to the Account Office", "اکاؤنٹ آفس کے نام خط") + ":</b> <button type='button' class='btn small ar-lt' data-k='word'" + dis + ">Word</button> <button type='button' class='btn small ar-lt' data-k='pdf'" + dis + ">PDF</button></div>";
+    h += "<div class='pf-bar'><b>" + T("Covering letter to the Account Office", "اکاؤنٹ آفس کے نام خط") + ":</b> <button type='button' class='btn small ar-lt' data-k='word'" + dis + ">Word</button> <button type='button' class='btn small ar-lt' data-k='pdf'" + dis + ">PDF</button> &nbsp; <b>" + T("Urdu letter", "اردو خط") + ":</b> <button type='button' class='btn small ar-lu' data-k='word'" + dis + ">Word</button> <button type='button' class='btn small ar-lu' data-k='pdf'" + dis + ">PDF</button></div>";
     h += "<p class='hint'>" + T("Tick one bill for a single employee’s separate bill, or several to get them in one file and one letter.", "ایک ملازم کا الگ بل چاہیے تو ایک پر ٹک کریں، ایک فائل اور ایک خط کے لیے کئی پر۔") + "</p>";
     return h;
   }
@@ -10635,7 +10638,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     vh.forEach(function(k){ h += "<td class='num' data-g='" + k[0] + "'><b>" + money(T0[k[0]]) + "</b></td>"; });
     h += "<td class='num' data-g='total'><b>" + money(T0.total) + "</b></td></tr></tbody></table></div>";
     h += "<div class='pf-bar' style='margin-top:12px'><button type='button' class='btn' id='ar_recalc'>↻ " + T("Recalculate", "دوبارہ حساب") + "</button><div class='field' style='max-width:180px'><label>" + T("Add a month", "مہینہ جوڑیں") + "</label><input type='month' id='ar_addm' value='" + esc(mAdd(b.to, 1)) + "'></div><button type='button' class='btn small' id='ar_addbtn'>➕ " + T("Add", "جوڑیں") + "</button></div>";
-    h += "<div class='pf-bar'><b>" + T("Statement", "گوشوارہ") + ":</b> <button type='button' class='btn small ar-ex' data-k='excel'>Excel</button> <button type='button' class='btn small ar-ex' data-k='word'>Word</button> <button type='button' class='btn small ar-ex' data-k='pdf'>PDF</button> &nbsp; <b>" + T("Letter", "خط") + ":</b> <button type='button' class='btn small ar-lt' data-k='word'>Word</button> <button type='button' class='btn small ar-lt' data-k='pdf'>PDF</button></div>";
+    h += "<div class='pf-bar'><b>" + T("Statement", "گوشوارہ") + ":</b> <button type='button' class='btn small ar-ex' data-k='excel'>Excel</button> <button type='button' class='btn small ar-ex' data-k='word'>Word</button> <button type='button' class='btn small ar-ex' data-k='pdf'>PDF</button> &nbsp; <b>" + T("Letter", "خط") + ":</b> <button type='button' class='btn small ar-lt' data-k='word'>Word</button> <button type='button' class='btn small ar-lt' data-k='pdf'>PDF</button> &nbsp; <b>" + T("Urdu letter", "اردو خط") + ":</b> <button type='button' class='btn small ar-lu' data-k='word'>Word</button> <button type='button' class='btn small ar-lu' data-k='pdf'>PDF</button></div>";
     h += "<p class='hint'>" + T("Yellow-marked figures were typed by hand. The first month is counted for the days after the effective date. " + KEEP_DEFAULT_NOTE, "پیلے نشان والی رقمیں ہاتھ سے لکھی گئی ہیں۔ پہلا مہینہ نافذ تاریخ کے بعد کے دنوں کا گنا جاتا ہے۔ میڈیکل، پرسنل، دھلائی اور ARA 2022 / 2023 / 2024 جیسی مدیں وصول شدہ کے برابر رکھی ہیں؛ اکاؤنٹ آفس BPS بدلنے پر انہیں دوبارہ طے کرتا ہے۔") + "</p>";
     return h;
   }
@@ -10702,27 +10705,79 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
 
   /* ---------- export: statement tables (same builders as the other tabs) ---------- */
   function sN(v){ return String(Math.round(num(v))).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+  function rowSum(h, list){ var t = 0; list.forEach(function(k){ t += num(h[k[0]]); }); return t; }
+  function srcLabel(r){ var s = r.src === "est" ? "Estimate *" : "Pay slip"; if(r.ed && Object.keys(r.ed).length && r.src !== "est") s += " (figures typed)"; return s; }
+  /* the plain-language basis of calculation, written from the figures of the bill */
+  function basisLines(b){
+    var L = [], rows = b.rows; if(!rows.length) return L;
+    var r0 = rows[0], nB = PF.bpsNum(b.newB), oB = PF.bpsNum(b.oldB), promo = b.kind === "promo";
+    if(b.ref) L.push("Authority: " + b.ref);
+    L.push("The employee was " + (promo ? "promoted" : "upgraded") + " from BPS-" + oB + " to BPS-" + nB + " with effect from " + dLabel(b.eff) + ". Pay drawn on that date in BPS-" + oB + ": Rs " + sN(r0.drawn.basic) + ". " + (num(b.nb) > 0 ? "New basic pay fixed in BPS-" + nB + " at Rs " + sN(r0.due.basic) + "." : "Pay fixed in BPS-" + nB + " at the stage next above the pay drawn" + (b.method === "B" ? ", after one increment of the old scale" : "") + ": Rs " + sN(r0.due.basic) + "."));
+    var ch = [], prev = null;
+    rows.forEach(function(r){
+      var v = num(r.due.basic); if(v === prev) return;
+      var why = prev == null ? "from " + dLabel(b.eff) : r.m.slice(5) === "12" ? "from 1 " + mFull(r.m) + " (annual increment)" : r.m === "2026-07" ? "from 1 July 2026 (Pay Scales 2026, same stage)" : "from " + mFull(r.m);
+      ch.push("Rs " + sN(v) + " " + why); prev = v;
+    });
+    if(ch.length > 1) L.push("Basic pay due, month by month: " + ch.join("; ") + ".");
+    var has22 = rows.some(function(r){ return !reg(r.m); }), has26 = rows.some(function(r){ return reg(r.m); });
+    var p22 = rows.filter(function(r){ return !reg(r.m); })[0], p26 = rows.filter(function(r){ return reg(r.m); })[0];
+    if(rows.some(function(r){ return num(r.due.sa) > 0; })){
+      var f = nB >= 18 ? "1.25" : "0.75", sp = [];
+      if(has22 && S22[nB] && p22 && num(p22.due.sa) > 0) sp.push("scale 2022: " + sN(S22[nB][0]) + " x " + f + " = Rs " + sN(p22.due.sa));
+      if(has26 && S26[nB] && p26 && num(p26.due.sa) > 0) sp.push("scale 2026: " + sN(S26[nB][0]) + " x " + f + " = Rs " + sN(p26.due.sa));
+      L.push("Special Allowance = " + f + " of the initial pay of the scale (Order dated 19-01-2023)" + (sp.length ? " — " + sp.join("; ") : "") + ".");
+    }
+    var a25 = rows.filter(function(r){ return num(r.due.ara25) > 0; })[0], a26 = rows.filter(function(r){ return num(r.due.ara26) > 0; })[0];
+    if(a25) L.push("Adhoc Relief 2025 = 10% of basic pay up to June 2026 (e.g. 10% of Rs " + sN(a25.due.basic) + " = Rs " + sN(a25.due.ara25) + ").");
+    if(a26) L.push("Adhoc Relief 2026 = 7% of basic pay from July 2026, fraction of a rupee dropped (e.g. 7% of Rs " + sN(a26.due.basic) + " = Rs " + sN(a26.due.ara26) + ").");
+    var hc = [];
+    if(p22 && (num(p22.due.hra) || num(p22.due.ca))) hc.push("up to June 2026: house rent Rs " + sN(p22.due.hra) + ", conveyance Rs " + sN(p22.due.ca));
+    if(p26 && (num(p26.due.hra) || num(p26.due.ca))) hc.push("from July 2026: house rent Rs " + sN(p26.due.hra) + ", conveyance Rs " + sN(p26.due.ca));
+    if(hc.length) L.push("House rent and conveyance at the rates of BPS-" + nB + " — " + hc.join("; ") + ".");
+    if(r0.sn !== r0.sd) L.push("First month (" + mFull(r0.m) + "): only " + r0.sn + " of " + r0.sd + " days, from the effective date, are counted.");
+    L.push(KEEP_DEFAULT_NOTE);
+    L.push("Difference = due - drawn, worked out head by head in whole rupees; the arrears are the total of the monthly differences.");
+    if(rows.some(function(r){ return r.src === "est"; })) L.push("Months marked * are not taken from a pay slip: the drawn pay is worked out by the rule and is to be checked against the pay slip of that month.");
+    if(b.note) L.push(b.note);
+    return L;
+  }
   function stmtTables(bs){
-    var vh = visHeads(bs), tables = [];
-    bs.forEach(function(b){
-      var tt = totalsOf(b), heads = ["Month", ""].concat(vh.map(function(k){ return k[1]; })).concat(["Total"]), nm = heads.map(function(_, i){ return i >= 2; });
-      var rows = [];
-      b.rows.forEach(function(r){
-        var d = diffOf(r), lab = mLabel(r.m) + (r.sn === r.sd ? "" : " (" + r.sn + "/" + r.sd + ")") + (r.src === "est" ? " *" : "");
-        var td = 0, tr = 0; vh.forEach(function(k){ td += num(r.due[k[0]]); tr += num(r.drawn[k[0]]); });
-        rows.push({cells: [lab, "Due"].concat(vh.map(function(k){ return sN(r.due[k[0]]); })).concat([sN(td)]), nums: nm});
-        rows.push({cells: ["", "Drawn"].concat(vh.map(function(k){ return sN(r.drawn[k[0]]); })).concat([sN(tr)]), nums: nm});
-        rows.push({cells: ["", "Difference"].concat(vh.map(function(k){ return sN(d[k[0]]); })).concat([sN(d.total)]), nums: nm});
+    var tables = [];
+    if(bs.length > 1){
+      var gt = 0, srows = bs.map(function(b, i){ var t = totalsOf(b).total; gt += t; return {cells: [String(i + 1), (b.name || "") + " (" + (b.desig || "") + ")", "BPS-" + b.oldB + " to BPS-" + b.newB, dLabel(b.eff), b.rows.length ? mLabel(b.rows[b.rows.length - 1].m) : "", sN(t)], nums: [false, false, false, false, false, true]}; });
+      tables.push({sheet: "Summary", title: "Summary of arrears — all employees", heads: ["#", "Name and designation", "BPS change", "From", "Up to", "Arrears (Rs)"], num: [false, false, false, false, false, true], rows: srows, foot: [{cells: ["", "Total", "", "", "", sN(gt)], nums: [false, false, false, false, false, true]}]});
+    }
+    bs.forEach(function(b, bi){
+      var who = (b.name || "") + " (" + (b.desig || "") + ", Pers. No. " + (b.persNo || "") + ") — BPS-" + b.oldB + " to BPS-" + b.newB + " w.e.f. " + dLabel(b.eff), tt = totalsOf(b), all = HK;
+      /* 1. one line per month */
+      var s1 = b.rows.map(function(r){
+        var d = diffOf(r);
+        return {cells: [mLabel(r.m), r.sn === r.sd ? "Full month" : r.sn + " of " + r.sd + " days", srcLabel(r), sN(rowSum(r.due, all)), sN(rowSum(r.drawn, all)), sN(d.total)], nums: [false, false, false, true, true, true]};
       });
-      var foot = [{cells: ["Total arrears", ""].concat(vh.map(function(k){ return sN(tt[k[0]]); })).concat([sN(tt.total)]), nums: nm}];
-      tables.push({title: "Statement of due and drawn — " + (b.name || "") + " (" + (b.desig || "") + ", Pers. No. " + (b.persNo || "") + ") — BPS-" + b.oldB + " to BPS-" + b.newB + " w.e.f. " + dLabel(b.eff), heads: heads, num: nm, rows: rows, foot: foot, dense: heads.length > 9});
-      var notes = ["Difference = due − drawn for every head; the first month is counted for the days from the effective date (" + dLabel(b.eff) + ")."];
-      if(b.ref) notes.push(b.ref);
-      if(b.rows.some(function(r){ return r.src === "est"; })) notes.push("Months marked * are not taken from pay slips; the drawn pay is worked out by the rule — to be checked against the pay slips.");
-      notes.push("Pay fixed at the stage next above the pay drawn" + (b.method === "B" ? " after one increment" : "") + ". Special Allowance = 0.75 of the initial basic pay of the scale (Order dated 19-01-2023). Adhoc Relief 2025 = 10% and Adhoc Relief 2026 = 7% of basic pay.");
-      notes.push(KEEP_DEFAULT_NOTE);
-      if(b.note) notes.push(b.note);
-      tables.push({title: "Notes — " + (b.name || ""), heads: ["Notes"], num: [false], rows: notes.map(function(t, i){ return {cells: [(i + 1) + ". " + t], nums: [false]}; }), foot: []});
+      tables.push({sheet: "Annexure-" + String.fromCharCode(65 + bi) + " Statement", pageBreak: bs.length > 1, title: "Annexure-" + String.fromCharCode(65 + bi) + " — Statement of arrears — " + who, heads: ["Month", "Days counted", "Drawn pay taken from", "Pay and allowances due (Rs)", "Pay and allowances drawn (Rs)", "Difference (Rs)"], num: [false, false, false, true, true, true], rows: s1, foot: [{cells: ["Total arrears", "", "", "", "", sN(tt.total)], nums: [false, false, false, true, true, true]}]});
+      /* 2. the difference head by head */
+      var dh = HK.filter(function(k){ return b.rows.some(function(r){ return diffOf(r)[k[0]] !== 0; }); }); if(!dh.length) dh = [HK[0]];
+      var n2 = [false].concat(dh.map(function(){ return true; })).concat([true]);
+      var s2 = b.rows.map(function(r){ var d = diffOf(r); return {cells: [mLabel(r.m) + (r.sn === r.sd ? "" : " (" + r.sn + "/" + r.sd + ")")].concat(dh.map(function(k){ return sN(d[k[0]]); })).concat([sN(d.total)]), nums: n2}; });
+      tables.push({sheet: String.fromCharCode(65 + bi) + " Head-wise difference", title: "Difference head by head (Rs) — " + (b.name || ""), heads: ["Month"].concat(dh.map(function(k){ return k[1]; })).concat(["Total"]), num: n2, rows: s2, foot: [{cells: ["Total arrears"].concat(dh.map(function(k){ return sN(tt[k[0]]); })).concat([sN(tt.total)]), nums: n2}]});
+      /* 3. the detail of due and drawn, split in two parts so that the figures stay large */
+      var vh = visHeads([b]), half = Math.ceil(vh.length / 2), parts = vh.length > 7 ? [vh.slice(0, half), vh.slice(half)] : [vh];
+      parts.forEach(function(ph, pi){
+        var last = pi === parts.length - 1, heads = ["Month", ""].concat(ph.map(function(k){ return k[1]; })).concat(last ? ["Total of all heads"] : []), nm = heads.map(function(_, i){ return i >= 2; }), rows = [];
+        b.rows.forEach(function(r){
+          var d = diffOf(r), lab = mLabel(r.m) + (r.sn === r.sd ? "" : " (" + r.sn + "/" + r.sd + ")") + (r.src === "est" ? " *" : "");
+          rows.push({cells: [lab, "Due"].concat(ph.map(function(k){ return sN(r.due[k[0]]); })).concat(last ? [sN(rowSum(r.due, vh))] : []), nums: nm});
+          rows.push({cells: ["", "Drawn"].concat(ph.map(function(k){ return sN(r.drawn[k[0]]); })).concat(last ? [sN(rowSum(r.drawn, vh))] : []), nums: nm});
+          rows.push({cells: ["", "Difference"].concat(ph.map(function(k){ return sN(d[k[0]]); })).concat(last ? [sN(d.total)] : []), nums: nm});
+        });
+        tables.push({sheet: String.fromCharCode(65 + bi) + " Detail" + (parts.length > 1 ? " " + (pi + 1) : ""), title: "Detail of pay and allowances due and drawn" + (parts.length > 1 ? " — part " + (pi + 1) + " of " + parts.length : "") + " — " + (b.name || ""), heads: heads, num: nm, rows: rows, foot: [{cells: ["Total arrears", ""].concat(ph.map(function(k){ return sN(tt[k[0]]); })).concat(last ? [sN(tt.total)] : []), nums: nm}]});
+      });
+      /* 4. how it was worked out */
+      tables.push({sheet: String.fromCharCode(65 + bi) + " Basis of calculation", title: "Basis of calculation — " + (b.name || ""), heads: ["Notes"], num: [false], rows: basisLines(b).map(function(t, i){ return {cells: [(i + 1) + ".  " + t], nums: [false]}; }), foot: []});
+      /* 5. signatures */
+      var blank = {cells: ["", "", ""], nums: [false, false, false]};
+      tables.push({sheet: String.fromCharCode(65 + bi) + " Verification", title: "Verification — " + (b.name || ""), heads: ["Prepared by", "Checked by", "Drawing and Disbursing Officer"], num: [false, false, false], rows: [blank, blank, blank, blank, {cells: ["Signature and date", "Signature and date", "Signature, stamp and date"], nums: [false, false, false]}], foot: []});
     });
     return tables;
   }
@@ -10766,31 +10821,102 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     P([x(sign)], {al: "right", after: 0});
     return B;
   }
+  var UR_MONTHS = ["جنوری","فروری","مارچ","اپریل","مئی","جون","جولائی","اگست","ستمبر","اکتوبر","نومبر","دسمبر"];
+  function mFullUr(k){ var a = k.split("-"); return UR_MONTHS[+a[1] - 1] + " " + a[0]; }
+  var UR_ADDR = "اکاؤنٹ آفیسر،\nاکاؤنٹ آفس۔", UR_SIGN = "ڈرائنگ اینڈ ڈسبرسنگ آفیسر";
+  /* the same letter in Urdu (blocks are drawn right to left; al "start" = right edge, "end" = left edge) */
+  function letterBlocksUr(bs){
+    var r = root(), toLines = String(r.toAddrUr != null ? r.toAddrUr : UR_ADDR).split("\n").filter(Boolean), sign = r.signUr != null ? r.signUr : UR_SIGN;
+    var B = [], P = function(parts, o){ B.push(Object.assign({t: "p", parts: parts}, o || {})); }, x = function(s, o){ return Object.assign({x: s}, o || {}); };
+    var L = function(i){ return String.fromCharCode(65 + i); };
+    P([x("نمبر: ______________          تاریخ: ______________")], {al: "start", after: 160});
+    P([x("بخدمت،")], {al: "start", after: 0});
+    toLines.forEach(function(l, i){ P([x(l, {b: true})], {al: "start", after: i === toLines.length - 1 ? 160 : 0}); });
+    var anyPromo = bs.some(function(b){ return b.kind === "promo"; }), anyUp = bs.some(function(b){ return b.kind !== "promo"; });
+    var subj = (anyUp && anyPromo ? "ترقی اور اپ گریڈیشن" : anyPromo ? "ترقی" : "اپ گریڈیشن") + " کے باعث تنخواہ اور الاؤنسز کے فرق (بقایا جات) کی ادائیگی";
+    P([x("موضوع:  ", {b: true}), x(subj, {b: true})], {al: "start", after: 160});
+    P([x("جناب عالی،")], {al: "start"});
+    P([x("بحوالہ موضوع بالا مجھے ہدایت کی گئی ہے کہ عرض کروں کہ اس دفتر کے مندرجہ ذیل ملازمین کی تنخواہ اور الاؤنسز ان کے بی پی ایس میں تبدیلی کے مطابق ادا نہیں کیے گئے۔ ہر مہینے کی واجب اور وصول شدہ رقم کا فرق منسلکہ گوشواروں (ضمیمہ-A" + (bs.length > 1 ? " تا ضمیمہ-" + L(bs.length - 1) : "") + ") میں دکھایا گیا ہے اور مختصراً درج ذیل ہے:")]);
+    var tot = 0, rows = bs.map(function(b, i){ var t = totalsOf(b).total; tot += t; return [String(i + 1), (b.name || "") + " (" + (b.desig || "") + ")", "BPS-" + b.oldB + " سے BPS-" + b.newB, dLabel(b.eff) + " سے " + mFullUr(b.to), sN(t)]; });
+    B.push({t: "table", heads: ["نمبر", "نام و عہدہ", "بی پی ایس", "مدت", "بقایا جات (روپے)"], rows: rows, foot: ["", "میزان", "", "", sN(tot)], w: [7, 31, 23, 25, 14]});
+    bs.forEach(function(b, i){
+      var up = b.kind !== "promo", t = totalsOf(b).total, first = mFullUr(b.rows.length ? b.rows[0].m : b.eff.slice(0, 7));
+      var parts = [x((i + 1) + "۔  "), x((b.name || "") + "، " + (b.desig || "") + "،", {b: true}), x(" کو "), x(dLabel(b.eff), {b: true}), x(" سے BPS-" + b.oldB + " سے BPS-" + b.newB + " میں " + (up ? "اپ گریڈ" : "ترقی") + " دی گئی")];
+      if(b.ref) parts.push(x("، بحوالہ " + b.ref)); else parts.push(x("، بحوالہ "), x("(نوٹیفکیشن / حکم کا نمبر اور تاریخ)", {hl: true}));
+      parts.push(x("۔ تاہم تنخواہ اور الاؤنسز پرانے بی پی ایس کے مطابق ہی وصول ہوتے رہے۔ استدعا ہے کہ تنخواہ BPS-" + b.newB + " میں (وصول شدہ تنخواہ سے اگلے اسٹیج پر" + (b.method === "B" ? "، ایک انکریمنٹ کے بعد" : "") + ") طے کی جائے، الاؤنسز اس کے مطابق نکالے جائیں اور ایڈہاک ریلیف قواعد کے مطابق دوبارہ طے کیا جائے۔ " + first + " سے " + mFullUr(b.to) + " تک کا فرق ضمیمہ-" + L(i) + " کے مطابق " + sN(t) + " روپے بنتا ہے۔"));
+      P(parts);
+    });
+    P([x((bs.length + 1) + "۔  لہٰذا گزارش ہے کہ مذکورہ ملازمین کی تنخواہ کی پرچیاں مذکورہ تاریخوں سے درست کر دی جائیں اور فرق کے بقایا جات معمول کے مطابق بل پاس کر کے ادا کیے جائیں۔ درست شدہ تنخواہ پر کٹوتیاں آپ کا دفتر نکال لے۔")]);
+    P([x("ملفوفات:", {b: true})], {al: "start", after: 40});
+    var enc = ["گوشوارہ واجب و وصول شدہ (ضمیمہ-A" + (bs.length > 1 ? " تا ضمیمہ-" + L(bs.length - 1) : "") + ")", "ہر ملازم کے نوٹیفکیشن / حکم کی نقل", "دعویٰ کردہ مہینوں کی پے سلپس کی نقول"];
+    if(bs.some(function(b){ return totalsOf(b).sa; })) enc.splice(2, 0, "اسپیشل الاؤنس کے حکم مورخہ 19-01-2023 کی نقل");
+    enc.forEach(function(s, i){ P([x((i + 1) + "۔  " + s)], {al: "start", after: 30, ind: 420}); });
+    P([x("آپ کا مخلص،")], {al: "end", before: 200, after: 520});
+    P([x("______________________")], {al: "end", after: 0});
+    P([x(sign)], {al: "end", after: 0});
+    return B;
+  }
   function selBills(){
     var bs = Object.keys(sel).filter(function(k){ return sel[k] && bills()[k]; }).map(function(k){ return bills()[k]; });
     if(view === "edit" && bills()[cur]) bs = [bills()[cur]];
     return bs;
   }
   function dl(blob, name){ var a = document.createElement("a"), u = URL.createObjectURL(blob); a.href = u; a.download = name; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(u); a.remove(); }, 1500); }
-  async function letterWord(bs){
-    await window.__brUI.loadLib("docx"); var D = window.docx, FONT = "Times New Roman", blocks = letterBlocks(bs), ch = [];
-    var AL = {left: D.AlignmentType.LEFT, right: D.AlignmentType.RIGHT, c: D.AlignmentType.CENTER};
+  function letterName(bs, ur, ext){ return (ur ? "ArrearsLetterUrdu_" : "ArrearsLetter_") + (bs.length === 1 ? String(bs[0].name || "").replace(/[^A-Za-z0-9]+/g, "-") : bs.length + "-employees") + "." + ext; }
+  async function letterWord(bs, ur){
+    await window.__brUI.loadLib("docx"); var D = window.docx, FONT = "Times New Roman", UF = "Urdu Typesetting", blocks = ur ? letterBlocksUr(bs) : letterBlocks(bs), ch = [];
+    var AL = ur ? {start: D.AlignmentType.LEFT, end: D.AlignmentType.RIGHT, left: D.AlignmentType.LEFT, right: D.AlignmentType.RIGHT, c: D.AlignmentType.CENTER} : {left: D.AlignmentType.LEFT, right: D.AlignmentType.RIGHT, c: D.AlignmentType.CENTER};
+    function run(p, o){
+      o = o || {}; var isU = ur && /[؀-ۿ]/.test(p.x);
+      var cfg = {text: p.x, bold: !!(p.b || o.b), highlight: p.hl ? "yellow" : undefined};
+      if(ur){ cfg.font = {ascii: FONT, hAnsi: FONT, cs: UF}; cfg.size = o.size || 22; cfg.sizeComplexScript = (o.size || 22) + 6; cfg.rightToLeft = isU; cfg.boldComplexScript = !!(p.b || o.b); }
+      else { cfg.font = FONT; cfg.size = o.size || 22; }
+      return new D.TextRun(cfg);
+    }
     blocks.forEach(function(bk){
       if(bk.t === "p"){
-        ch.push(new D.Paragraph({alignment: bk.al ? AL[bk.al] : D.AlignmentType.JUSTIFIED, spacing: {before: bk.before || 0, after: bk.after != null ? bk.after : 120, line: 276}, indent: bk.ind ? {left: bk.ind, hanging: 300} : undefined,
-          children: bk.parts.map(function(p){ return new D.TextRun({text: p.x, font: FONT, size: 22, bold: !!p.b, highlight: p.hl ? "yellow" : undefined}); })}));
+        ch.push(new D.Paragraph({bidirectional: !!ur, alignment: bk.al ? AL[bk.al] : D.AlignmentType.JUSTIFIED, spacing: {before: bk.before || 0, after: bk.after != null ? bk.after : 120, line: ur ? 380 : 276}, indent: bk.ind ? (ur ? {right: bk.ind, hanging: 300} : {left: bk.ind, hanging: 300}) : undefined,
+          children: bk.parts.map(function(p){ return run(p); })}));
       } else if(bk.t === "table"){
         var tw = 9300, cols = bk.w.map(function(w){ return Math.round(tw * w / 100); }), bd = {style: D.BorderStyle.SINGLE, size: 4, color: "777777"}, bds = {top: bd, bottom: bd, left: bd, right: bd};
-        var cell = function(t, i, o){ o = o || {}; return new D.TableCell({width: {size: cols[i], type: D.WidthType.DXA}, borders: bds, margins: {top: 50, bottom: 50, left: 90, right: 90}, shading: o.fill ? {fill: o.fill, type: D.ShadingType.CLEAR, color: "auto"} : undefined, children: [new D.Paragraph({alignment: o.r ? D.AlignmentType.RIGHT : o.c ? D.AlignmentType.CENTER : D.AlignmentType.LEFT, children: [new D.TextRun({text: String(t), font: FONT, size: 21, bold: !!o.b})]})]}); };
+        var cell = function(t, i, o){ o = o || {}; return new D.TableCell({width: {size: cols[i], type: D.WidthType.DXA}, borders: bds, margins: {top: 50, bottom: 50, left: 90, right: 90}, shading: o.fill ? {fill: o.fill, type: D.ShadingType.CLEAR, color: "auto"} : undefined, children: [new D.Paragraph({bidirectional: !!ur, alignment: ur ? D.AlignmentType.CENTER : o.r ? D.AlignmentType.RIGHT : o.c ? D.AlignmentType.CENTER : D.AlignmentType.LEFT, children: [run({x: String(t)}, {b: o.b, size: 21})]})]}); };
         var rws = [new D.TableRow({tableHeader: true, children: bk.heads.map(function(h, i){ return cell(h, i, {b: true, fill: "DCE6F1", c: true}); })})];
         bk.rows.forEach(function(r){ rws.push(new D.TableRow({cantSplit: true, children: r.map(function(v, i){ return cell(v, i, {r: i === r.length - 1}); })})); });
         rws.push(new D.TableRow({children: bk.foot.map(function(v, i){ return cell(v, i, {b: true, fill: "F2F2F2", r: i === bk.foot.length - 1}); })}));
-        ch.push(new D.Table({width: {size: tw, type: D.WidthType.DXA}, columnWidths: cols, rows: rws}));
+        ch.push(new D.Table({width: {size: tw, type: D.WidthType.DXA}, columnWidths: cols, visuallyRightToLeft: !!ur, rows: rws}));
         ch.push(new D.Paragraph({spacing: {after: 120}, children: []}));
       }
     });
     var doc = new D.Document({styles: {default: {document: {run: {font: FONT, size: 22}}}}, sections: [{properties: {page: {size: {width: 11906, height: 16838}, margin: {top: 1100, bottom: 1000, left: 1300, right: 1300}}}, children: ch}]});
-    dl(await D.Packer.toBlob(doc), "ArrearsLetter_" + (bs.length === 1 ? String(bs[0].name || "").replace(/[^A-Za-z0-9]+/g, "-") : bs.length + "-employees") + ".docx");
+    dl(await D.Packer.toBlob(doc), letterName(bs, ur, "docx"));
+  }
+  async function letterPdfUr(bs){
+    var blocks = letterBlocksUr(bs), div = document.createElement("div"), FS = "'Jameel Noori Nastaleeq','Noto Nastaliq Urdu','Urdu Typesetting','Noto Naskh Arabic',Tahoma,Arial,sans-serif";
+    div.setAttribute("dir", "rtl");
+    div.style.cssText = "position:absolute;left:-10000px;top:0;width:794px;box-sizing:border-box;padding:56px 60px;background:#fff;color:#000;direction:rtl;font:15px/2.15 " + FS + ";";
+    var h = "";
+    blocks.forEach(function(bk){
+      if(bk.t === "p"){
+        var al = bk.al === "start" ? "right" : bk.al === "end" ? "left" : "justify";
+        h += "<p data-blk='1' style='margin:" + ((bk.before || 0) / 15) + "px " + ((bk.ind || 0) / 15) + "px " + ((bk.after != null ? bk.after : 120) / 15) + "px 0;text-align:" + al + ";'>" + bk.parts.map(function(p){ return "<span style='" + (p.b ? "font-weight:bold;" : "") + (p.hl ? "background:#ff0;" : "") + "'>" + esc(p.x) + "</span>"; }).join("") + "</p>";
+      } else {
+        h += "<table data-blk='1' style='border-collapse:collapse;width:100%;margin:6px 0 12px;font-size:14px;line-height:1.9'><thead><tr>" + bk.heads.map(function(t, i){ return "<th style='border:1px solid #777;padding:3px 7px;background:#dce6f1;text-align:center;width:" + bk.w[i] + "%'>" + esc(t) + "</th>"; }).join("") + "</tr></thead><tbody>" +
+          bk.rows.map(function(r){ return "<tr>" + r.map(function(v){ return "<td style='border:1px solid #777;padding:3px 7px;text-align:center'>" + esc(v) + "</td>"; }).join("") + "</tr>"; }).join("") +
+          "<tr>" + bk.foot.map(function(v){ return "<td style='border:1px solid #777;padding:3px 7px;background:#f2f2f2;font-weight:bold;text-align:center'>" + esc(v) + "</td>"; }).join("") + "</tr></tbody></table>";
+      }
+    });
+    div.innerHTML = h; document.body.appendChild(div);
+    try{
+      try{ await Promise.race([document.fonts.load("16px 'Noto Nastaliq Urdu'", "اردو"), new Promise(function(res){ setTimeout(res, 4000); })]); }catch(e){}
+      /* keep every paragraph / table whole: push one that would be cut by a page edge to the next page (1 page = 1148 px at this width) */
+      var PH = 1148, kids = [].slice.call(div.querySelectorAll("[data-blk]"));
+      kids.forEach(function(k){
+        var top = k.offsetTop, bot = top + k.offsetHeight, pg = Math.floor(top / PH), edge = (pg + 1) * PH - 30;
+        if(bot > edge && k.offsetHeight < PH - 120){ k.style.marginTop = (parseFloat(k.style.marginTop) || 0) + (pg + 1) * PH - top + 40 + "px"; }
+      });
+      await buildPdfFromElement(div, letterName(bs, true, "pdf"), 8, [210, 297], "portrait", {windowWidth: 794, scrollX: 0, scrollY: 0});
+    }
+    finally{ div.remove(); }
   }
   async function letterPdf(bs){
     await window.__brUI.loadLib("pdflib");
@@ -10861,13 +10987,13 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       }
     });
     var bytes = await doc.save();
-    dl(new Blob([bytes], {type: "application/pdf"}), "ArrearsLetter_" + (bs.length === 1 ? String(bs[0].name || "").replace(/[^A-Za-z0-9]+/g, "-") : bs.length + "-employees") + ".pdf");
+    dl(new Blob([bytes], {type: "application/pdf"}), letterName(bs, false, "pdf"));
   }
-  async function exportLetter(kind){
+  async function exportLetter(kind, ur){
     var bs = selBills(); if(!bs.length){ toast("Tick the bills first"); return; }
     try{
       toast("Preparing the letter…");
-      if(kind === "word") await letterWord(bs); else await letterPdf(bs);
+      if(kind === "word") await letterWord(bs, ur); else if(ur) await letterPdfUr(bs); else await letterPdf(bs);
     }catch(err){ console.error(err); toast("Could not build the letter: " + (err && err.message || err)); }
   }
 
@@ -10891,14 +11017,15 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       b2.rows.splice(ri, 1); persist(); rerender(); return;
     }
     if(t.classList.contains("ar-ex")){ exportStmt(t.getAttribute("data-k")); return; }
-    if(t.classList.contains("ar-lt")){ exportLetter(t.getAttribute("data-k")); return; }
+    if(t.classList.contains("ar-lt")){ exportLetter(t.getAttribute("data-k"), false); return; }
+    if(t.classList.contains("ar-lu")){ exportLetter(t.getAttribute("data-k"), true); return; }
   });
   panel.addEventListener("change", function(ev){
     var t = ev.target; if(!allowed()) return;
     if(t.classList.contains("ar-sel")){ sel[t.getAttribute("data-id")] = t.checked; rerender(); return; }
     if(t.classList.contains("ar-ce") && form){ form.emps[t.getAttribute("data-id")] = t.checked; return; }
     if(view === "new" && form && t.id && t.id.indexOf("ar_f_") === 0){ form[t.id.slice(5)] = t.value; return; }
-    if(view === "list" && (t.id === "ar_to" || t.id === "ar_sign")){ var r = root(); if(t.id === "ar_to") r.toAddr = t.value; else r.sign = t.value; persist(); return; }
+    if(view === "list" && (t.id === "ar_to" || t.id === "ar_sign" || t.id === "ar_tou" || t.id === "ar_signu")){ var r = root(); if(t.id === "ar_to") r.toAddr = t.value; else if(t.id === "ar_sign") r.sign = t.value; else if(t.id === "ar_tou") r.toAddrUr = t.value; else r.signUr = t.value; persist(); return; }
     var f = t.getAttribute && t.getAttribute("data-f");
     if(view === "edit" && f){
       var b = bills()[cur]; if(!b) return;
