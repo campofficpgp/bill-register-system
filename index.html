@@ -11257,10 +11257,25 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   }
   function blankLine(){ return {info: "", field: "", content: "", wage: "", wageDesc: "", amt: "", adj: "", eff: "", remark: ""}; }
 
+  /* everything that can be known from the portal is filled in automatically; the clerk only edits what is wrong, and an edit is remembered for the next form */
+  var DDO_CODE = "RI-4720";
+  function statusFor(e){ return /retire|suspend|dead|died|expire|resign|terminat|transfer|absorb|left/i.test(String((e && e.status) || "")) ? "Stop" : "Start"; }
+  function defaults(e){
+    var r = root(), dep = String((e && e.department) || "").trim(), off = String(STATE.officeName || "").trim();
+    return {ddo: r.ddo || DDO_CODE, ddoDesc: r.ddoDesc || dep, officeOf: r.officeOf || off || dep, status: statusFor(e), prep: r.prep || String(STATE.preparedByName || "").trim(), chk: r.chk || "", ver: r.ver || ""};
+  }
+  function fill(f){
+    var d = defaults(empById(f.empId)), ch = false;
+    ["ddo", "ddoDesc", "officeOf", "status", "prep", "chk", "ver"].forEach(function(k){ if(!f[k] && d[k]){ f[k] = d[k]; ch = true; } });
+    if(!f.month){ f.month = curMonth(); ch = true; }
+    if(!f.date){ f.date = today(); ch = true; }
+    return ch;
+  }
   function newForm(e, bill){
     var r = root(), f = {id: uid(), empId: e.id, persNo: String(e.persNo || ""), name: e.name || "", desig: e.designation || "", date: today(), page: "", officeOf: r.officeOf || "", month: curMonth(), ddo: r.ddo || "", ddoDesc: r.ddoDesc || "", grade: String(bill ? bill.newB : PF.bpsNum(e.bps) || ""), status: "", lines: [], prep: "", chk: "", ver: "", billId: bill ? bill.id : "", created: Date.now()};
     if(bill){ f.lines = linesFromBill(bill); }
     if(!f.lines.length) f.lines = [blankLine()];
+    fill(f);
     return f;
   }
 
@@ -11287,6 +11302,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   function fld(id, label, val, type, extra){ return "<div class='field'" + (extra && extra.style ? " style='" + extra.style + "'" : "") + "><label>" + label + "</label><input id='cf_f_" + id + "' type='" + (type || "text") + "' value='" + esc(val == null ? "" : String(val)) + "'" + (extra && extra.attr ? " " + extra.attr : "") + "></div>"; }
   function viewEdit(){
     var f = forms()[cur]; if(!f){ view = "list"; return viewList(); }
+    if(fill(f)) persist();
     var h = "<div class='pf-bar'><button type='button' class='btn small' id='cf_back'>← " + T("Back", "واپس") + "</button> <span class='hint' id='cf_saved' style='margin:0'></span></div>";
     h += "<h3 class='pf-h3'>FORM: PAY02 — " + T("Payroll System Amendment Form (single employee entry)", "پے رول سسٹم ترمیمی فارم (ایک ملازم)") + " · " + esc(f.name || "") + "</h3><div class='pf-bar'>";
     h += fld("date", T("1 Date", "1 تاریخ"), f.date, "date") + fld("page", T("2 Page No. (blank = automatic)", "2 صفحہ نمبر (خالی = خودکار)"), f.page, "text", {style: "max-width:150px"}) + fld("officeOf", T("3 Office of the", "3 دفتر"), f.officeOf) + fld("month", T("4 For the month of", "4 ماہ"), f.month, "month");
@@ -11324,6 +11340,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   function tables(fs){
     var T2 = [], page = 0;
     fs.forEach(function(f, fi){
+      fill(f);
       var ls = (f.lines || []).filter(function(l){ return l.wage || l.amt || l.content || l.field || l.info || l.eff || l.remark; });
       var pages = Math.max(1, Math.ceil(ls.length / PER_PAGE));
       for(var p = 0; p < pages; p++){
@@ -11386,7 +11403,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var f = forms()[cur];
     if(view === "edit" && f && t.id && t.id.indexOf("cf_f_") === 0){
       var k = t.id.slice(5); f[k] = t.value;
-      var r = root(); if(k === "ddo" || k === "ddoDesc" || k === "officeOf") r[k] = t.value;
+      var r = root(); if(k === "ddo" || k === "ddoDesc" || k === "officeOf" || k === "prep" || k === "chk" || k === "ver") r[k] = t.value;
       persist(); return;
     }
     if(view === "edit" && f && t.classList.contains("cf-in")){
@@ -11399,7 +11416,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var t = ev.target; if(!allowed() || !t.classList) return;
     var f = forms()[cur];
     if(view === "edit" && f && t.classList.contains("cf-in")){ var l = f.lines[+t.getAttribute("data-i")]; if(l){ var kk = t.getAttribute("data-k"); if(kk !== "wage"){ l[kk] = t.value; persist(); } } return; }
-    if(view === "edit" && f && t.id && t.id.indexOf("cf_f_") === 0 && t.type === "text"){ var k = t.id.slice(5); f[k] = t.value; var r = root(); if(k === "ddo" || k === "ddoDesc" || k === "officeOf") r[k] = t.value; persist(); }
+    if(view === "edit" && f && t.id && t.id.indexOf("cf_f_") === 0 && t.type === "text"){ var k = t.id.slice(5); f[k] = t.value; var r = root(); if(k === "ddo" || k === "ddoDesc" || k === "officeOf" || k === "prep" || k === "chk" || k === "ver") r[k] = t.value; persist(); }
   });
 
   window.__brChangeForm = {view: viewMain, forms: forms, tables: tables, linesFromBill: linesFromBill, newForm: newForm, state: function(){ return {view: view, cur: cur}; }};
