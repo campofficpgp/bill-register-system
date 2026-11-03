@@ -1300,6 +1300,8 @@ body.lang-ur .br-part{ font-size:17px; }
 #panel-payfix .ar-tbl td, #panel-payfix .ar-tbl th{ white-space:nowrap; }
 #panel-payfix .ar-emps{ display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:6px 14px; margin:6px 0; max-height:320px; overflow:auto; border:1px solid var(--border); border-radius:8px; padding:8px; }
 #panel-payfix .ar-emp{ display:flex; gap:6px; align-items:baseline; font-size:13px; cursor:pointer; }
+#panel-payfix .cf-tbl input.cf-in{ box-sizing:border-box; padding:3px 5px !important; height:28px !important; font-size:13px; margin:0; border:1px solid var(--border); border-radius:4px; }
+#panel-payfix .cf-tbl td, #panel-payfix .cf-tbl th{ white-space:nowrap; vertical-align:top; }
 #panel-payfix select.op-ch{ min-width:210px; width:100%; }
 #panel-payfix input.op-dt{ min-width:150px; }
 #panel-payfix td.op-st{ min-width:200px; max-width:340px; }
@@ -2210,6 +2212,7 @@ body.lang-ur .br-part{ font-size:17px; }
         <button type="button" class="pf-sub" data-m="chart"><span class="en">Pay-stage chart</span><span class="ur">پے اسٹیج چارٹ</span></button>
         <button type="button" class="pf-sub" data-m="arrears"><span class="en">Arrears bill</span><span class="ur">بقایا جات بل</span></button>
         <button type="button" class="pf-sub" data-m="option"><span class="en">Option record</span><span class="ur">آپشن ریکارڈ</span></button>
+        <button type="button" class="pf-sub" data-m="change"><span class="en">Change form PAY02</span><span class="ur">چینج فارم PAY02</span></button>
       </div>
       <div id="pfBody"></div>
     </section>
@@ -10303,7 +10306,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     }
     panel.querySelectorAll(".pf-sub").forEach(function(b){ b.classList.toggle("active", b.getAttribute("data-m") === mode); });
     try{
-      body.innerHTML = mode === "option" ? (window.__brOption ? window.__brOption.view() : "") : mode === "arrears" ? (window.__brArrears ? window.__brArrears.view() : "") : mode === "check" ? viewCheck() : mode === "calc" ? viewCalc() : viewChart();
+      body.innerHTML = mode === "change" ? (window.__brChangeForm ? window.__brChangeForm.view() : "") : mode === "option" ? (window.__brOption ? window.__brOption.view() : "") : mode === "arrears" ? (window.__brArrears ? window.__brArrears.view() : "") : mode === "check" ? viewCheck() : mode === "calc" ? viewCalc() : viewChart();
     }catch(err){ body.innerHTML = "<div class='pf-warn'>" + esc(String(err && err.message || err)) + "</div>"; }
     lastState = STATE;
   }
@@ -11179,6 +11182,227 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   });
 
   window.__brOption = {view: view, root: root, lastDay: lastDay, statusOf: statusOf, tables: tables};
+})();
+
+/* ================= CHANGE FORM PAY02 — Payroll System Amendment Form, Single Employee Entry (inside the Pay Fixation tab) =================
+   The Account Office's own form (FORM: PAY02) for a change in one employee's pay, allowances or personal data.  The employee's name,
+   personnel number and grade come from the portal; the lines (wage type, new amount, effective date) can be filled from an Arrears bill
+   or typed by hand.  Forms are saved with the Bill Register data (STATE.stmtData.changeForms) and exported to Excel / Word / PDF in the
+   order of the printed form.  The National ID Card Number box is deliberately never stored — it is left blank to be written by hand. */
+(function(){
+  "use strict";
+  var PF = window.__brPayFix, panel = document.getElementById("panel-payfix"), body = document.getElementById("pfBody");
+  if(!PF || !panel || !body) return;
+  var PER_PAGE = 10;
+  var HEADS = [["basic", "Basic Pay"], ["hra", "House Rent Allowance 45%"], ["ca", "Convey Allowance  2005"], ["med", "Medical Allowance"], ["pa", "Personal Allowance"], ["sa", "Special Allowance"], ["wash", "Washing Allowance"], ["ara22", "Adhoc Rel Al 15% 22(PS17)"], ["ara23", "Adhoc Relief All 2023 35%"], ["ara24", "Adhoc Relief All 2024 25%"], ["ara25", "Adhoc Relief 2025 (10%)"], ["ara26", "Adhoc Relief 2026 (7%)"]];
+  function $(sel){ return panel.querySelector(sel); }
+  function num(v){ var n = Number(v); return isFinite(n) ? n : 0; }
+  function T(en, ur){ return "<span class='en'>" + en + "</span><span class='ur'>" + ur + "</span>"; }
+  function plain(html){ var d = document.createElement("div"); d.innerHTML = html; d.querySelectorAll(".ur").forEach(function(x){ x.remove(); }); return d.textContent || ""; }
+  function allowed(){ try{ return isAdmin(); }catch(e){ return false; } }
+  function dLabel(d){ var a = String(d || "").split("-"); return a.length === 3 ? a[2] + "-" + a[1] + "-" + a[0] : String(d || ""); }
+  function mLabel(m){ var a = String(m || "").split("-"); return a.length === 2 ? a[1] + " / " + a[0] : ""; }
+  function uid(){ return "cf" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function today(){ var t = new Date(); return t.getFullYear() + "-" + ("0" + (t.getMonth() + 1)).slice(-2) + "-" + ("0" + t.getDate()).slice(-2); }
+  function curMonth(){ return today().slice(0, 7); }
+
+  function root(){
+    var s = STATE.stmtData; if(!s || typeof s !== "object") s = STATE.stmtData = {};
+    if(!s.changeForms || typeof s.changeForms !== "object") s.changeForms = {};
+    var c = s.changeForms;
+    if(!c.forms || typeof c.forms !== "object") c.forms = {};
+    return c;
+  }
+  function forms(){ return root().forms; }
+  function formList(){ var o = forms(); return Object.keys(o).map(function(k){ return o[k]; }).sort(function(a, b){ return (b.created || 0) - (a.created || 0); }); }
+  function empById(id){ var l = STATE.employees || []; for(var i = 0; i < l.length; i++) if(l[i].id === id) return l[i]; return null; }
+  function billsOf(empId){ var A = window.__brArrears; if(!A) return []; var o = A.bills(); return Object.keys(o).map(function(k){ return o[k]; }).filter(function(b){ return b.empId === empId; }); }
+
+  var saveT = null, view = "list", cur = null, sel = {};
+  function persist(){
+    if(typeof tabOK === "function" && !tabOK("cf")){ toast("You do not have permission to save here"); return false; }
+    clearTimeout(saveT); saveT = setTimeout(function(){ try{ saveData(); var el = $("#cf_saved"); if(el) el.textContent = "✔ saved"; }catch(err){ console.error(err); } }, 700);
+    var el0 = $("#cf_saved"); if(el0) el0.textContent = "…";
+    return true;
+  }
+  function rerender(){ if(window.__brPayFix && window.__brPayFix.render) window.__brPayFix.render(); }
+
+  /* ---------- lines from an Arrears bill ---------- */
+  function wageOf(k, bps){
+    var desc = "", hit = HEADS.filter(function(h){ return h[0] === k; })[0]; desc = hit ? hit[1] : k;
+    var b = PF.bpsNum(bps), pad = (b < 10 ? "0" : "") + b;
+    if(k === "med" && b >= 16) desc = "Medical Allow 15% (16-22)";
+    if(k === "ara23") desc = b >= 17 ? "Adhoc Relief All 2023 30%" : "Adhoc Relief All 2023 35%";
+    if(k === "ara24") desc = b >= 17 ? "Adhoc Relief All 2024 20%" : "Adhoc Relief All 2024 25%";
+    var code = ""; try{ code = slipCodeFor("earnings", desc, pad) || ""; }catch(e){}
+    return {code: code, desc: desc};
+  }
+  function linesFromBill(b){
+    var rows = b.rows || [], out = []; if(!rows.length) return out;
+    var keys = HEADS.map(function(h){ return h[0]; }); Object.keys(rows[0].due || {}).forEach(function(k){ if(keys.indexOf(k) < 0) keys.push(k); });
+    keys.forEach(function(k){
+      var prev = num(rows[0].drawn[k]);
+      rows.forEach(function(r, i){
+        var v = num(r.due[k]), dr = num(r.drawn[k]);
+        if(v !== prev && v !== dr){
+          var w = wageOf(k, b.newB), mm = r.m.slice(5);
+          out.push({info: "", field: "", content: "", wage: w.code, wageDesc: w.desc, amt: String(v), adj: "", eff: i === 0 ? b.eff : r.m + "-01", remark: i === 0 ? "BPS-" + b.oldB + " to BPS-" + b.newB : mm === "12" ? "Annual increment" : r.m === "2026-07" ? "Pay Scales 2026" : ""});
+        } else if(v !== prev && v === dr){ /* the Account Office already pays this amount from this month */ }
+        prev = v;
+      });
+    });
+    var order = HEADS.map(function(h){ return h[1]; });
+    out.sort(function(a, b2){ return a.eff < b2.eff ? -1 : a.eff > b2.eff ? 1 : order.indexOf(a.wageDesc) - order.indexOf(b2.wageDesc); });
+    return out;
+  }
+  function blankLine(){ return {info: "", field: "", content: "", wage: "", wageDesc: "", amt: "", adj: "", eff: "", remark: ""}; }
+
+  function newForm(e, bill){
+    var r = root(), f = {id: uid(), empId: e.id, persNo: String(e.persNo || ""), name: e.name || "", desig: e.designation || "", date: today(), page: "", officeOf: r.officeOf || "", month: curMonth(), ddo: r.ddo || "", ddoDesc: r.ddoDesc || "", grade: String(bill ? bill.newB : PF.bpsNum(e.bps) || ""), status: "", lines: [], prep: "", chk: "", ver: "", billId: bill ? bill.id : "", created: Date.now()};
+    if(bill){ f.lines = linesFromBill(bill); }
+    if(!f.lines.length) f.lines = [blankLine()];
+    return f;
+  }
+
+  /* ---------- screens ---------- */
+  var newSel = {emp: "", bill: ""};
+  function viewList(){
+    var list = formList(), h = "";
+    h += "<p class='hint'>" + T("The Account Office’s form PAY02 (Payroll System Amendment Form, single employee entry). Choose an employee; the name, personnel number and grade are filled from the portal, and the lines can be filled from an Arrears bill or written by hand. The National ID Card Number box is left blank for you to write by hand — the portal never keeps it.", "اکاؤنٹ آفس کا فارم PAY02 (پے رول سسٹم ترمیمی فارم، ایک ملازم)۔ ملازم چنیں؛ نام، پرسنل نمبر اور گریڈ پورٹل سے بھر جاتے ہیں، اور لائنیں بقایا جات بل سے بھر سکتی ہیں یا ہاتھ سے لکھ سکتے ہیں۔ شناختی کارڈ نمبر کا خانہ خالی رہتا ہے تاکہ آپ ہاتھ سے لکھیں — پورٹل اسے کبھی محفوظ نہیں رکھتا۔") + "</p>";
+    var emps = (STATE.employees || []).slice().sort(function(a, b){ return String(a.name || "").localeCompare(String(b.name || "")); });
+    var eo = "<option value=''>" + plain(T("— choose the employee —", "— ملازم چنیں —")) + "</option>" + emps.map(function(e){ return "<option value='" + esc(e.id) + "'" + (newSel.emp === e.id ? " selected" : "") + ">" + esc(e.name || "") + " · BPS-" + esc(String(e.bps || "")) + "</option>"; }).join("");
+    var bl = newSel.emp ? billsOf(newSel.emp) : [], bo = "<option value=''>" + plain(T("no bill — blank lines", "بل نہیں — خالی لائنیں")) + "</option>" + bl.map(function(b){ return "<option value='" + esc(b.id) + "'" + (newSel.bill === b.id ? " selected" : "") + ">BPS-" + esc(String(b.oldB)) + " → BPS-" + esc(String(b.newB)) + " · " + esc(dLabel(b.eff)) + "</option>"; }).join("");
+    h += "<div class='pf-bar'><div class='field' style='max-width:340px'><label>" + T("Employee", "ملازم") + "</label><select id='cf_n_emp'>" + eo + "</select></div><div class='field' style='max-width:340px'><label>" + T("Fill the lines from this Arrears bill", "لائنیں اس بقایا جات بل سے بھریں") + "</label><select id='cf_n_bill'" + (newSel.emp ? "" : " disabled") + ">" + bo + "</select></div><button type='button' class='btn' id='cf_create'" + (newSel.emp ? "" : " disabled") + ">➕ " + T("New form", "نیا فارم") + "</button></div>";
+    if(!list.length){ return h + "<div class='pf-warn'>" + T("No forms yet.", "ابھی کوئی فارم نہیں۔") + "</div>"; }
+    h += "<div class='table-wrap'><table class='pf-tbl'><thead><tr><th class='c'></th><th>" + T("Employee", "ملازم") + "</th><th class='c'>" + T("For the month", "ماہ") + "</th><th class='c'>" + T("Grade", "گریڈ") + "</th><th class='c'>" + T("Lines", "لائنیں") + "</th><th class='c'>" + T("Date", "تاریخ") + "</th><th></th></tr></thead><tbody>";
+    list.forEach(function(f){
+      var n = (f.lines || []).filter(function(l){ return l.wage || l.amt || l.content || l.field || l.info; }).length;
+      h += "<tr><td class='c'><input type='checkbox' class='cf-sel' data-id='" + esc(f.id) + "'" + (sel[f.id] ? " checked" : "") + "></td><td>" + esc(f.name || "") + "<div class='hint' style='margin:0'>" + esc(f.desig || "") + " · " + esc(f.persNo || "") + "</div></td><td class='c'>" + esc(mLabel(f.month)) + "</td><td class='c'>" + (f.grade ? "BPS-" + esc(f.grade) : "") + "</td><td class='c'>" + n + "</td><td class='c'>" + esc(dLabel(f.date)) + "</td><td class='c'><button type='button' class='btn small cf-open' data-id='" + esc(f.id) + "'>" + T("Open", "کھولیں") + "</button> <button type='button' class='btn small cf-del' data-id='" + esc(f.id) + "'>" + T("Delete", "حذف") + "</button></td></tr>";
+    });
+    var cnt = Object.keys(sel).filter(function(k){ return sel[k] && forms()[k]; }).length, dis = cnt ? "" : " disabled";
+    h += "</tbody></table></div><div class='pf-bar' style='margin-top:12px'><b>" + T("Print the selected forms", "منتخب فارم پرنٹ کریں") + " (" + cnt + "):</b> <button type='button' class='btn small cf-ex' data-k='excel'" + dis + ">Excel</button> <button type='button' class='btn small cf-ex' data-k='word'" + dis + ">Word</button> <button type='button' class='btn small cf-ex' data-k='pdf'" + dis + ">PDF</button></div>";
+    return h;
+  }
+
+  function fld(id, label, val, type, extra){ return "<div class='field'" + (extra && extra.style ? " style='" + extra.style + "'" : "") + "><label>" + label + "</label><input id='cf_f_" + id + "' type='" + (type || "text") + "' value='" + esc(val == null ? "" : String(val)) + "'" + (extra && extra.attr ? " " + extra.attr : "") + "></div>"; }
+  function viewEdit(){
+    var f = forms()[cur]; if(!f){ view = "list"; return viewList(); }
+    var h = "<div class='pf-bar'><button type='button' class='btn small' id='cf_back'>← " + T("Back", "واپس") + "</button> <span class='hint' id='cf_saved' style='margin:0'></span></div>";
+    h += "<h3 class='pf-h3'>FORM: PAY02 — " + T("Payroll System Amendment Form (single employee entry)", "پے رول سسٹم ترمیمی فارم (ایک ملازم)") + " · " + esc(f.name || "") + "</h3><div class='pf-bar'>";
+    h += fld("date", T("1 Date", "1 تاریخ"), f.date, "date") + fld("page", T("2 Page No. (blank = automatic)", "2 صفحہ نمبر (خالی = خودکار)"), f.page, "text", {style: "max-width:150px"}) + fld("officeOf", T("3 Office of the", "3 دفتر"), f.officeOf) + fld("month", T("4 For the month of", "4 ماہ"), f.month, "month");
+    h += "</div><div class='pf-bar'>" + fld("ddo", T("5 DDO Code (Cost Center)", "5 ڈی ڈی او کوڈ"), f.ddo, "text", {style: "max-width:200px"}) + fld("ddoDesc", T("6 Description", "6 تفصیل"), f.ddoDesc) + fld("persNo", T("7 Personnel Number", "7 پرسنل نمبر"), f.persNo, "text", {style: "max-width:200px"}) + fld("name", T("8 Employee Name", "8 ملازم کا نام"), f.name) + "</div>";
+    h += "<div class='pf-bar'><div class='field' style='max-width:260px'><label>" + T("9 National ID Card Number", "9 شناختی کارڈ نمبر") + "</label><input value='' disabled placeholder='" + esc(plain(T("write by hand on the printout", "پرنٹ پر ہاتھ سے لکھیں"))) + "'></div>" + fld("grade", T("10-11 Grade (Pay Scale Group)", "10-11 گریڈ"), f.grade, "number", {style: "max-width:150px", attr: "min='1' max='22'"});
+    h += "<div class='field' style='max-width:260px'><label>" + T("12 Salary Status", "12 تنخواہ کی حالت") + "</label><select id='cf_f_status'><option value=''" + (!f.status ? " selected" : "") + ">—</option><option value='Start'" + (f.status === "Start" ? " selected" : "") + ">Start</option><option value='Stop'" + (f.status === "Stop" ? " selected" : "") + ">Stop</option></select></div></div>";
+    var bl = billsOf(f.empId);
+    if(bl.length){
+      h += "<div class='pf-bar'><div class='field' style='max-width:340px'><label>" + T("Fill the lines from an Arrears bill (replaces the lines)", "لائنیں بقایا جات بل سے بھریں (موجودہ لائنیں بدل جائیں گی)") + "</label><select id='cf_e_bill'>" + bl.map(function(b){ return "<option value='" + esc(b.id) + "'" + (f.billId === b.id ? " selected" : "") + ">BPS-" + esc(String(b.oldB)) + " → BPS-" + esc(String(b.newB)) + " · " + esc(dLabel(b.eff)) + "</option>"; }).join("") + "</select></div><button type='button' class='btn small' id='cf_refill'>" + T("Fill from bill", "بل سے بھریں") + "</button></div>";
+    }
+    h += "<div class='table-wrap'><table class='pf-tbl cf-tbl'><thead><tr><th class='c'>#</th><th>" + T("14 Info Type", "14 انفو ٹائپ") + "</th><th>" + T("15 Field ID", "15 فیلڈ آئی ڈی") + "</th><th>" + T("16 New Contents (general data change)", "16 نیا مواد (عمومی ڈیٹا)") + "</th><th>" + T("18 Wage Type", "18 ویج ٹائپ") + "</th><th>" + T("17 Amount (Rs.)", "17 رقم (روپے)") + "</th><th>" + T("Adj", "ایڈج") + "</th><th>" + T("21 Effective Date", "21 نافذ تاریخ") + "</th><th>" + T("22 Remarks", "22 ریمارکس") + "</th><th></th></tr></thead><tbody>";
+    f.lines.forEach(function(l, i){
+      var dflt = i === 0 ? "0008" : i === 1 ? "0014" : "";
+      h += "<tr><td class='c'>" + (i + 1) + "</td><td><input class='cf-in' style='width:70px' data-i='" + i + "' data-k='info' value='" + esc(l.info) + "' placeholder='" + dflt + "'></td><td><input class='cf-in' style='width:70px' data-i='" + i + "' data-k='field' value='" + esc(l.field) + "'></td><td><input class='cf-in' style='width:190px' data-i='" + i + "' data-k='content' value='" + esc(l.content) + "'></td>" +
+        "<td><input class='cf-in' style='width:78px' data-i='" + i + "' data-k='wage' list='cf_wl' value='" + esc(l.wage) + "' placeholder='code'><div class='hint' style='margin:0'>" + esc(l.wageDesc || "") + "</div></td><td><input class='cf-in' type='number' step='0.01' style='width:110px' data-i='" + i + "' data-k='amt' value='" + esc(l.amt) + "'></td><td><input class='cf-in' style='width:50px' data-i='" + i + "' data-k='adj' value='" + esc(l.adj) + "'></td><td><input class='cf-in' type='date' data-i='" + i + "' data-k='eff' value='" + esc(l.eff) + "'></td><td><input class='cf-in' style='width:170px' data-i='" + i + "' data-k='remark' value='" + esc(l.remark) + "'></td><td><button type='button' class='btn small cf-rm' data-i='" + i + "' title='delete'>✖</button></td></tr>";
+    });
+    h += "</tbody></table></div><datalist id='cf_wl'>" + wageList().map(function(w){ return "<option value='" + esc(w[0]) + "'>" + esc(w[1]) + "</option>"; }).join("") + "</datalist>";
+    h += "<div class='pf-bar' style='margin-top:10px'><button type='button' class='btn small' id='cf_addline'>➕ " + T("Add a line", "لائن بڑھائیں") + "</button> <span class='hint' style='margin:0'>" + T("Ten lines fit on one page of the form; more lines continue on the next page.", "فارم کے ایک صفحے پر دس لائنیں آتی ہیں؛ زیادہ لائنیں اگلے صفحے پر جاتی ہیں۔") + "</span></div>";
+    h += "<div class='pf-bar'>" + fld("prep", T("23 Prepared By (name, optional)", "23 تیار کنندہ (نام، اختیاری)"), f.prep) + fld("chk", T("24 Audited / Checked By (optional)", "24 چیک کنندہ (اختیاری)"), f.chk) + fld("ver", T("25 Entered / Verified By (optional)", "25 درج / تصدیق کنندہ (اختیاری)"), f.ver) + "</div>";
+    h += "<div class='pf-bar'><b>" + T("Print this form", "یہ فارم پرنٹ کریں") + ":</b> <button type='button' class='btn small cf-ex' data-k='excel'>Excel</button> <button type='button' class='btn small cf-ex' data-k='word'>Word</button> <button type='button' class='btn small cf-ex' data-k='pdf'>PDF</button></div>";
+    return h;
+  }
+  function wageList(){
+    var seen = {}, out = [];
+    (STATE.allowanceRates || []).forEach(function(r){ if(r.code && !seen[r.code]){ seen[r.code] = 1; out.push([r.code, r.desc || ""]); } });
+    out.sort(function(a, b){ return a[0] < b[0] ? -1 : 1; }); return out;
+  }
+  function viewMain(){
+    if(!allowed()) return "<div class='pf-warn'>" + T("This section is only for Admin / Super Admin.", "یہ حصہ صرف ایڈمن / سپر ایڈمن کے لیے ہے۔") + "</div>";
+    return view === "edit" ? viewEdit() : viewList();
+  }
+
+  /* ---------- export: the form, page by page, in the order of the printed form ---------- */
+  function rs(v){ var n = Math.abs(num(v)); var r = Math.floor(n), p = Math.round((n - r) * 100); if(p === 100){ r++; p = 0; } return [String(r), ("0" + p).slice(-2)]; }
+  function tables(fs){
+    var T2 = [], page = 0;
+    fs.forEach(function(f, fi){
+      var ls = (f.lines || []).filter(function(l){ return l.wage || l.amt || l.content || l.field || l.info || l.eff || l.remark; });
+      var pages = Math.max(1, Math.ceil(ls.length / PER_PAGE));
+      for(var p = 0; p < pages; p++){
+        var pn = f.page && pages === 1 ? f.page : (p + 1) + " of " + pages, chunk = ls.slice(p * PER_PAGE, (p + 1) * PER_PAGE), tag = "F" + (fi + 1) + "-P" + (p + 1), first = page === 0; page++;
+        var hr = function(a, b2, c, d, e, g){ return {cells: [a, b2 || "", c || "", d || "", e || "", g || ""], nums: [false, false, false, false, false, false]}; };
+        T2.push({sheet: tag + " Header", pageBreak: !first, title: "FORM: PAY02 — Payroll System Amendment Form — Single Employee Entry", heads: ["Field", "Entry", "Field", "Entry", "Field", "Entry"], num: [false, false, false, false, false, false], rows: [
+          hr("1  Date", dLabel(f.date), "2  Page No.", pn, "3  Office of the", f.officeOf || ""),
+          hr("4  For the month of", mLabel(f.month), "5  DDO Code (Cost Center)", f.ddo || "", "6  Description", f.ddoDesc || ""),
+          hr("7  Personnel Number", f.persNo || "", "8  Employee Name", f.name || "", "9  National ID Card Number", ""),
+          hr("10-11  Grade (Pay Scale Group)", f.grade ? String(f.grade) : "", "12  Salary Status", f.status || "( Start / Stop )", "", "")], foot: [], dense: true});
+        var rows = [];
+        for(var i = 0; i < PER_PAGE; i++){
+          var l = chunk[i] || null, gi = p * PER_PAGE + i, dflt = gi === 0 ? "0008" : gi === 1 ? "0014" : "", a = l ? rs(l.amt) : ["", ""], has = l && num(l.amt) !== 0 || l && l.amt !== "" && l.amt != null;
+          rows.push({cells: [String(i + 1), l && l.info ? l.info : dflt, l ? l.field : "", l ? l.content : "", l ? l.wage + (l.wage && l.wageDesc ? "  " + l.wageDesc : l.wageDesc || "") : "", has ? a[0] : "", has ? a[1] : "", l ? l.adj : "", l && l.eff ? dLabel(l.eff) : "", l ? l.remark : ""], nums: [false, false, false, false, false, true, true, false, false, false]});
+        }
+        T2.push({sheet: tag + " Lines", title: "General data change / Change in payments and deductions", heads: ["#", "14 Info Type", "15 Field ID", "16 New Contents", "18 Wage Type", "17 Rupees", "Paisa", "Adj", "21 Effective Date", "22 Remarks"], num: [false, false, false, false, false, true, true, false, false, false], rows: rows, foot: []});
+        var blank = {cells: [" ", " ", " "], nums: [false, false, false]};
+        T2.push({sheet: tag + " Sign", title: "", heads: ["23  Prepared By", "24  Audited / Checked By", "25  Entered / Verified By"], num: [false, false, false], rows: [blank, {cells: [f.prep || " ", f.chk || " ", f.ver || " "], nums: [false, false, false]}], foot: [], dense: true});
+      }
+    });
+    return T2;
+  }
+  async function exportForms(kind){
+    var fs = view === "edit" && forms()[cur] ? [forms()[cur]] : Object.keys(sel).filter(function(k){ return sel[k] && forms()[k]; }).map(function(k){ return forms()[k]; });
+    if(!fs.length){ toast("Tick the forms first"); return; }
+    if(!window.__brExportTables){ toast("The export tools are not ready — reload the page"); return; }
+    var gp = document.getElementById("globalPaperSize") || {};
+    await window.__brExportTables(kind, tables(fs), {title: "Payroll System Amendment Form — PAY02", sub: fs.map(function(f){ return f.name; }).join(", "), base: "PAY02_Amendment_" + (fs.length === 1 ? String(fs[0].name || "").replace(/[^A-Za-z0-9]+/g, "-") : fs.length + "-forms"), landscape: true, office: "", paper: (gp.value === "A4" ? "Legal" : gp.value) || "Legal"});
+  }
+
+  /* ---------- events ---------- */
+  panel.addEventListener("click", function(ev){
+    var t = ev.target.closest ? ev.target.closest("button") : null; if(!t || !allowed()) return;
+    if(t.id === "cf_create"){
+      var e = empById(newSel.emp); if(!e){ toast("Choose the employee"); return; }
+      var bill = newSel.bill ? (window.__brArrears.bills()[newSel.bill] || null) : null, f = newForm(e, bill);
+      forms()[f.id] = f; cur = f.id; view = "edit"; persist(); rerender(); return;
+    }
+    if(t.id === "cf_back"){ view = "list"; cur = null; rerender(); return; }
+    if(t.id === "cf_addline"){ var f1 = forms()[cur]; if(f1){ f1.lines.push(blankLine()); persist(); rerender(); } return; }
+    if(t.id === "cf_refill"){
+      var f2 = forms()[cur], s2 = $("#cf_e_bill"), b2 = s2 && window.__brArrears.bills()[s2.value]; if(!f2 || !b2) return;
+      if(!confirm("Replace the lines of this form with the lines worked out from the selected bill?")) return;
+      f2.lines = linesFromBill(b2); if(!f2.lines.length) f2.lines = [blankLine()]; f2.billId = b2.id; f2.grade = String(b2.newB); persist(); rerender(); return;
+    }
+    if(t.classList.contains("cf-rm")){ var f3 = forms()[cur]; if(f3){ f3.lines.splice(+t.getAttribute("data-i"), 1); if(!f3.lines.length) f3.lines = [blankLine()]; persist(); rerender(); } return; }
+    if(t.classList.contains("cf-open")){ cur = t.getAttribute("data-id"); view = "edit"; rerender(); return; }
+    if(t.classList.contains("cf-del")){
+      var id = t.getAttribute("data-id"), f4 = forms()[id]; if(!f4) return;
+      if(!confirm("Delete the form of " + (f4.name || "") + "? This cannot be undone.")) return;
+      delete forms()[id]; delete sel[id]; persist(); rerender(); return;
+    }
+    if(t.classList.contains("cf-ex")){ exportForms(t.getAttribute("data-k")); }
+  });
+  panel.addEventListener("change", function(ev){
+    var t = ev.target; if(!allowed() || !t.classList && !t.id) return;
+    if(t.classList.contains("cf-sel")){ sel[t.getAttribute("data-id")] = t.checked; rerender(); return; }
+    if(t.id === "cf_n_emp"){ newSel.emp = t.value; newSel.bill = ""; var bl = newSel.emp ? billsOf(newSel.emp) : []; if(bl.length) newSel.bill = bl[bl.length - 1].id; rerender(); return; }
+    if(t.id === "cf_n_bill"){ newSel.bill = t.value; return; }
+    var f = forms()[cur];
+    if(view === "edit" && f && t.id && t.id.indexOf("cf_f_") === 0){
+      var k = t.id.slice(5); f[k] = t.value;
+      var r = root(); if(k === "ddo" || k === "ddoDesc" || k === "officeOf") r[k] = t.value;
+      persist(); return;
+    }
+    if(view === "edit" && f && t.classList.contains("cf-in")){
+      var l = f.lines[+t.getAttribute("data-i")]; if(!l) return; var kk = t.getAttribute("data-k"); l[kk] = t.value;
+      if(kk === "wage"){ var hit = wageList().filter(function(w){ return w[0] === t.value; })[0]; l.wageDesc = hit ? hit[1] : ""; persist(); rerender(); return; }
+      persist(); return;
+    }
+  });
+  panel.addEventListener("input", function(ev){
+    var t = ev.target; if(!allowed() || !t.classList) return;
+    var f = forms()[cur];
+    if(view === "edit" && f && t.classList.contains("cf-in")){ var l = f.lines[+t.getAttribute("data-i")]; if(l){ var kk = t.getAttribute("data-k"); if(kk !== "wage"){ l[kk] = t.value; persist(); } } return; }
+    if(view === "edit" && f && t.id && t.id.indexOf("cf_f_") === 0 && t.type === "text"){ var k = t.id.slice(5); f[k] = t.value; var r = root(); if(k === "ddo" || k === "ddoDesc" || k === "officeOf") r[k] = t.value; persist(); }
+  });
+
+  window.__brChangeForm = {view: viewMain, forms: forms, tables: tables, linesFromBill: linesFromBill, newForm: newForm, state: function(){ return {view: view, cur: cur}; }};
 })();
 
 /* ================= BM-26 MONTHLY SALARY STATEMENT (Admin / Super Admin) =================
