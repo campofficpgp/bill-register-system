@@ -11235,6 +11235,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(k === "ara23") desc = b >= 17 ? "Adhoc Relief All 2023 30%" : "Adhoc Relief All 2023 35%";
     if(k === "ara24") desc = b >= 17 ? "Adhoc Relief All 2024 20%" : "Adhoc Relief All 2024 25%";
     var code = ""; try{ code = slipCodeFor("earnings", desc, pad) || ""; }catch(e){}
+    if(!code && k === "ara26") code = "2456"; /* wage type of Adhoc Relief 2026 (7%) on the Account Office slips */
     return {code: code, desc: desc};
   }
   function linesFromBill(b){
@@ -11258,6 +11259,78 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   function lineAt(f, i){ if(!(i >= 0 && i < 500)) return null; while(f.lines.length <= i) f.lines.push(blankLine()); return f.lines[i]; }
   function blankLine(){ return {info: "", field: "", content: "", wage: "", wageDesc: "", amt: "", adj: "", eff: "", remark: ""}; }
 
+  /* ---------- helpers: wage-type dropdown, amounts by grade, designation by BPS ---------- */
+  function gradeOf(f){ return PF.bpsNum(f.grade); }
+  function newScaleAt(f, l){ var d = (l && l.eff) || (f.month ? f.month + "-01" : today()); return d >= "2026-07-01"; }
+  function desigByBps(b){
+    var cnt = {}, best = "", bc = 0;
+    (STATE.employees || []).forEach(function(e){ if(PF.bpsNum(e.bps) === b){ var d = String(e.designation || "").trim(); if(d){ cnt[d] = (cnt[d] || 0) + 1; if(cnt[d] > bc){ bc = cnt[d]; best = d; } } } });
+    return best;
+  }
+  function earn(slip, re){ var a = 0; ((slip && slip.earnings) || []).forEach(function(x){ if(re.test(String(x.desc || ""))) a = num(x.amount); }); return a; }
+  function hraFor(f, b, ns){
+    var best = 0, HRA = {5: 2255, 6: 2316, 11: 2778, 14: 3321};
+    (STATE.employees || []).forEach(function(o){
+      if(o.id === f.empId || PF.bpsNum(o.bps) !== b) return; var sl = (STATE.payslipData || {})[o.id] || {};
+      Object.keys(sl).sort().forEach(function(m){ if((m >= "2026-07") !== ns) return; var bs = earn(sl[m], /^basic pay/i), h = earn(sl[m], /house rent/i); if(h > 0 && PF.stageOf(b, bs, ns) != null) best = h; });
+    });
+    return best || HRA[b] || 0;
+  }
+  function suggest(f, l, key){
+    var b = gradeOf(f); if(!b) return null;
+    var ns = newScaleAt(f, l), sc = (ns ? PF.S26 : PF.S22)[b]; if(!sc) return null;
+    var stage = Math.max(0, Math.min(sc[2], Math.round(num(f.stage)))), basic = sc[0] + stage * sc[1];
+    if(key === "basic") return basic;
+    if(key === "sa") return PF.saAmount(b, ns);
+    if(key === "ca") return PF.caRate(b, ns);
+    if(key === "hra"){ var h = hraFor(f, b, ns); return h > 0 ? h : null; }
+    if(key === "med") return b <= 15 ? 1500 : null;
+    if(key === "ara26") return ns ? PF.ara26(basic) : null;
+    if(key === "ara25") return ns ? null : Math.floor(basic * 0.10 + 1e-9);
+    return null;
+  }
+  function headList(f){
+    var b = gradeOf(f), out = [], seen = {};
+    HEADS.forEach(function(h){ var w = wageOf(h[0], b); if(w.code && !seen[w.code]){ seen[w.code] = 1; out.push({key: h[0], code: w.code, desc: w.desc}); } });
+    return out;
+  }
+  function allCodes(){
+    var out = wageList().slice(), seen = {}; out.forEach(function(w){ seen[w[0]] = 1; });
+    (STATE.deductionRates || []).forEach(function(r){ if(r.code && !seen[r.code]){ seen[r.code] = 1; out.push([r.code, r.desc || ""]); } });
+    out.sort(function(a, b){ return a[0] < b[0] ? -1 : 1; }); return out;
+  }
+  function keyOfCode(f, code){ var h = headList(f).filter(function(x){ return x.code === code; })[0]; return h ? h.key : ""; }
+  function descOf(f, code){ var h = headList(f).filter(function(x){ return x.code === code; })[0]; if(h) return h.desc; var a = allCodes().filter(function(w){ return w[0] === code; })[0]; return a ? a[1] : ""; }
+  function wageSelect(f, l, gi, style){
+    var seen = {}, cur = String(l.wage || ""), o = "<option value=''>—</option><optgroup label='Pay and allowances (BPS-" + gradeOf(f) + ")'>";
+    headList(f).forEach(function(h){ seen[h.code] = 1; o += "<option value='" + esc(h.code) + "'" + (cur === h.code ? " selected" : "") + ">" + esc(h.code + "  " + h.desc) + "</option>"; });
+    o += "</optgroup><optgroup label='Other wage types'>";
+    allCodes().forEach(function(w){ if(seen[w[0]]) return; seen[w[0]] = 1; o += "<option value='" + esc(w[0]) + "'" + (cur === w[0] ? " selected" : "") + ">" + esc(w[0] + "  " + w[1]) + "</option>"; });
+    o += "</optgroup>";
+    if(cur && !seen[cur]) o += "<option value='" + esc(cur) + "' selected>" + esc(cur + "  " + (l.wageDesc || "")) + "</option>";
+    return "<select class='pp-i cf-in' data-i='" + gi + "' data-k='wage' title='Wage type' style='" + style + "'>" + o + "</select>";
+  }
+  function pickWage(f, l, code){
+    l.wage = code; l.wageDesc = code ? descOf(f, code) : "";
+    var key = keyOfCode(f, code);
+    if(code && key && (l.amt === "" || l.amt == null || l.autoAmt)){ var v = suggest(f, l, key); if(v != null){ l.amt = String(v); l.autoAmt = true; } else if(l.autoAmt){ l.amt = ""; l.autoAmt = false; } }
+  }
+  function refreshAmounts(f){
+    var n = 0;
+    (f.lines || []).forEach(function(l){ if(!l.wage) return; var key = keyOfCode(f, l.wage); if(!key) return; if(l.amt === "" || l.amt == null || l.autoAmt){ var v = suggest(f, l, key); if(v != null){ l.amt = String(v); l.autoAmt = true; n++; } } });
+    return n;
+  }
+  function inferStage(f, bill){
+    var b = gradeOf(f), basic = 0, ns = false;
+    if(bill && bill.rows && bill.rows.length){ var r = bill.rows[bill.rows.length - 1]; basic = num(r.due && r.due.basic); ns = String(r.m) >= "2026-07"; }
+    if(!(basic > 0)){ var sl = (STATE.payslipData || {})[f.empId] || {}, ms = Object.keys(sl).sort(); if(ms.length){ var m = ms[ms.length - 1]; basic = earn(sl[m], /^basic pay/i); ns = m >= "2026-07"; } }
+    var st = basic > 0 && b ? PF.stageOf(b, basic, ns) : null; return st == null ? 0 : st;
+  }
+  function autoDesig(f){
+    if(f.desigManual) return; var d = desigByBps(gradeOf(f));
+    if(d){ f.desig = d; var el = $("#cf_f_desig"); if(el) el.value = d; }
+  }
+
   /* everything that can be known from the portal is filled in automatically; the clerk only edits what is wrong, and an edit is remembered for the next form */
   var DDO_CODE = "RI4720"; function ddoClean(v){ return String(v == null ? "" : v).replace(/[^A-Za-z0-9]/g, ""); }
   function statusFor(e){ return /retire|suspend|dead|died|expire|resign|terminat|transfer|absorb|left/i.test(String((e && e.status) || "")) ? "Stop" : "Start"; }
@@ -11271,11 +11344,14 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(f.ddo && ddoClean(f.ddo) !== f.ddo){ f.ddo = ddoClean(f.ddo); ch = true; }
     if(!f.month){ f.month = curMonth(); ch = true; }
     if(!f.date){ f.date = today(); ch = true; }
+    if(f.stage == null){ f.stage = inferStage(f, f.billId ? ((window.__brArrears && window.__brArrears.bills()[f.billId]) || null) : null); ch = true; }
     return ch;
   }
   function newForm(e, bill){
     var r = root(), f = {id: uid(), empId: e.id, persNo: String(e.persNo || ""), name: e.name || "", desig: e.designation || "", date: today(), page: "", officeOf: r.officeOf || "", month: curMonth(), ddo: r.ddo || "", ddoDesc: r.ddoDesc || "", grade: String(bill ? bill.newB : PF.bpsNum(e.bps) || ""), status: "", lines: [], prep: "", chk: "", ver: "", billId: bill ? bill.id : "", created: Date.now()};
     if(bill){ f.lines = linesFromBill(bill); }
+    f.stage = inferStage(f, bill);
+    if(PF.bpsNum(e.bps) !== PF.bpsNum(f.grade) || !f.desig){ f.desig = desigByBps(PF.bpsNum(f.grade)) || f.desig; }
     if(!f.lines.length) f.lines = [blankLine()];
     fill(f);
     return f;
@@ -11313,6 +11389,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(bl.length){
       h += "<div class='pf-bar'><div class='field' style='max-width:340px'><label>" + T("Fill the lines from an Arrears bill (replaces the lines)", "لائنیں بقایا جات بل سے بھریں (موجودہ لائنیں بدل جائیں گی)") + "</label><select id='cf_e_bill'>" + bl.map(function(b){ return "<option value='" + esc(b.id) + "'" + (f.billId === b.id ? " selected" : "") + ">BPS-" + esc(String(b.oldB)) + " → BPS-" + esc(String(b.newB)) + " · " + esc(dLabel(b.eff)) + "</option>"; }).join("") + "</select></div><button type='button' class='btn small' id='cf_refill'>" + T("Fill from bill", "بل سے بھریں") + "</button></div>";
     }
+    h += "<div class='pf-bar'>" + fld("desig", T("Designation (filled from the BPS)", "عہدہ (BPS سے خود بھرتا ہے)"), f.desig, "text", {style: "max-width:260px"}) + fld("stage", T("Stage — increments earned (for the Basic Pay suggestion)", "اسٹیج — حاصل شدہ انکریمنٹ (بنیادی تنخواہ کی تجویز کے لیے)"), f.stage == null ? 0 : f.stage, "number", {style: "max-width:260px", attr: "min='0' max='30' step='1'"}) + "<button type='button' class='btn small' id='cf_autofill'>" + T("Fill the amounts by grade", "گریڈ کے مطابق رقمیں بھریں") + "</button></div><p class='hint'>" + T("Pick a wage type from the list in a line and its amount is suggested from the grade of this form (the BPS scale of the line’s date). Every amount can be typed over.", "لائن میں فہرست سے مد چنیں تو اس کی رقم اس فارم کے گریڈ (لائن کی تاریخ کے BPS اسکیل) کے مطابق خود تجویز ہو جاتی ہے۔ کوئی بھی رقم ہاتھ سے بدل سکتے ہیں۔") + "</p>";
     h += "<div style='overflow-x:auto;padding-bottom:6px'>" + allSheets(f, true) + "</div><datalist id='cf_wl'>" + wageList().map(function(w){ return "<option value='" + esc(w[0]) + "'>" + esc(w[1]) + "</option>"; }).join("") + "</datalist>";
     h += "<div class='pf-bar' style='margin-top:10px'><button type='button' class='btn small' id='cf_addline'>➕ " + T("New page (10 more lines)", "نیا صفحہ (10 مزید لائنیں)") + "</button> <span class='hint' style='margin:0'>" + T("Ten lines fit on one page of the form; add a new page when you need more.", "فارم کے ایک صفحے پر دس لائنیں آتی ہیں؛ زیادہ کے لیے نیا صفحہ بڑھائیں۔") + "</span></div>";
     h += "<div class='pf-bar'><b>" + T("Print / download this form", "یہ فارم پرنٹ / ڈاؤن لوڈ کریں") + ":</b> <button type='button' class='btn small cf-ex' data-k='print'>🖨 " + T("Print", "پرنٹ") + "</button> <button type='button' class='btn small cf-ex' data-k='pdf'>PDF</button> <button type='button' class='btn small cf-ex' data-k='word'>Word</button> <button type='button' class='btn small cf-ex' data-k='excel'>Excel</button> <button type='button' class='btn small' id='cf_prev'>👁 " + T(showPrev ? "Hide the printed look" : "Show the printed look", showPrev ? "چھپی ہوئی شکل چھپائیں" : "چھپی ہوئی شکل دیکھیں") + "</button></div>";
@@ -11432,7 +11509,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
         I.push("<input class='pp-i cf-in' data-i='" + gi + "' data-k='info' placeholder='" + dflt + "' maxlength='4' style='left:" + (X[0] + 1) + "px;top:" + (y0 + 2) + "px;width:" + (X[1] - X[0] - 2) + "px;height:" + (TY.rh - 4) + "px;text-align:right;padding:0 1px;font-size:11px' value='" + esc(l.info || "") + "'>");
         I.push(bxe("data-i='" + gi + "' data-k='field'", l.field, 2, "", (X[3] - X[1]) / 2, TY.rh, X[1], y0));
         I.push("<input class='pp-i cf-in' data-i='" + gi + "' data-k='content' style='left:" + (X[3] + 1) + "px;top:" + (y0 + 2) + "px;width:" + (X[4] - X[3] - 2) + "px;height:" + (TY.rh - 4) + "px' value='" + esc(l.content || "") + "'>");
-        I.push("<input class='pp-i cf-in' data-i='" + gi + "' data-k='wage' list='cf_wl' maxlength='4' style='left:" + (X[4] + 1) + "px;top:" + (y0 + 1) + "px;width:" + (X[5] - X[4] - 2) + "px;height:12px;font-size:11px' value='" + esc(l.wage || "") + "'>");
+        I.push(wageSelect(f, l, gi, "left:" + (X[4] + 1) + "px;top:" + (y0 + 1) + "px;width:" + (X[5] - X[4] - 2) + "px;height:13px;font-size:10px;padding:0"));
         I.push("<span class='pp-sub' style='left:" + (X[4] + 3) + "px;top:" + (y0 + 13) + "px;width:" + (X[5] - X[4] - 5) + "px'>" + esc(l.wageDesc || "") + "</span>");
         I.push("<input class='pp-i cf-in' type='number' step='0.01' data-i='" + gi + "' data-k='amt' style='left:" + (X[5] + 1) + "px;top:" + (y0 + 2) + "px;width:" + (X[13] - X[5] - 2) + "px;height:" + (TY.rh - 4) + "px;text-align:right' value='" + esc(l.amt == null ? "" : String(l.amt)) + "'>");
         I.push("<input class='pp-i cf-in' data-i='" + gi + "' data-k='adj' maxlength='3' style='left:" + (X[13] + 1) + "px;top:" + (y0 + 2) + "px;width:" + (X[14] - X[13] - 2) + "px;height:" + (TY.rh - 4) + "px;text-align:center' value='" + esc(l.adj || "") + "'>");
@@ -11611,6 +11688,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       var bill = newSel.bill ? (window.__brArrears.bills()[newSel.bill] || null) : null, f = newForm(e, bill);
       forms()[f.id] = f; cur = f.id; view = "edit"; persist(); rerender(); return;
     }
+    if(t.id === "cf_autofill"){ var f5 = forms()[cur]; if(f5){ var n5 = refreshAmounts(f5); persist(); rerender(); try{ toast(n5 + " amount(s) filled by grade"); }catch(e5){} } return; }
     if(t.id === "cf_prev"){ showPrev = !showPrev; rerender(); return; }
     if(t.id === "cf_back"){ view = "list"; cur = null; rerender(); return; }
     if(t.id === "cf_addline"){ var f1 = forms()[cur]; if(f1){ var tg = Math.max(1, Math.ceil(f1.lines.length / PER_PAGE)) * PER_PAGE + PER_PAGE; while(f1.lines.length < tg) f1.lines.push(blankLine()); persist(); rerender(); } return; }
@@ -11635,20 +11713,20 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(t.id === "cf_n_bill"){ newSel.bill = t.value; return; }
     var f = forms()[cur];
     if(view === "edit" && f && t.id && t.id.indexOf("cf_f_") === 0){
-      var k = t.id.slice(5); f[k] = t.value;
+      var k = t.id.slice(5); f[k] = t.value; if(k === "desig") f.desigManual = !!t.value;
       var r = root(); if(k === "ddo"){ t.value = f[k] = ddoClean(t.value); } if(k === "ddo" || k === "ddoDesc" || k === "officeOf" || k === "prep" || k === "chk" || k === "ver") r[k] = t.value;
       persist(); return;
     }
     if(view === "edit" && f && t.classList.contains("cf-in")){
       var l = lineAt(f, +t.getAttribute("data-i")); if(!l) return; var kk = t.getAttribute("data-k"); l[kk] = t.value;
-      if(kk === "wage"){ var hit = wageList().filter(function(w){ return w[0] === t.value; })[0]; l.wageDesc = hit ? hit[1] : ""; persist(); rerender(); return; }
+      if(kk === "amt") l.autoAmt = false; if(kk === "wage"){ pickWage(f, l, t.value); persist(); rerender(); return; }
       persist(); return;
     }
   });
   function boxValue(g){ return [].map.call(g.querySelectorAll("input"), function(x){ return x.value; }).join("").replace(/\s/g, ""); }
   function boxStore(g, f){
     var v = boxValue(g), hk = g.getAttribute("data-hk");
-    if(hk){ if(hk === "ddo"){ v = ddoClean(v); root().ddo = v; } f[hk] = v; }
+    if(hk){ if(hk === "ddo"){ v = ddoClean(v); root().ddo = v; } f[hk] = v; if(hk === "grade") autoDesig(f); }
     else { var l = lineAt(f, +g.getAttribute("data-i")), k = g.getAttribute("data-k"); if(!l) return; l[k] = v;
       if(k === "wage"){ var hit = wageList().filter(function(w){ return w[0] === v; })[0]; l.wageDesc = hit ? hit[1] : ""; var sp = g.parentElement.querySelector(".pp-sub"); if(sp) sp.textContent = l.wageDesc; } }
     persist();
@@ -11669,8 +11747,8 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var t = ev.target; if(!allowed() || !t.classList) return;
     var f = forms()[cur];
     if(view === "edit" && f && t.classList.contains("pp-c1")){ boxStore(t.parentElement, f); if(t.value && t.nextElementSibling) t.nextElementSibling.focus(); return; }
-    if(view === "edit" && f && t.classList.contains("cf-in")){ var l = lineAt(f, +t.getAttribute("data-i")); if(l){ var kk = t.getAttribute("data-k"); if(kk !== "wage"){ l[kk] = t.value; persist(); } } return; }
-    if(view === "edit" && f && t.id && t.id.indexOf("cf_f_") === 0 && t.type === "text"){ var k = t.id.slice(5); f[k] = t.value; var r = root(); if(k === "ddo" || k === "ddoDesc" || k === "officeOf" || k === "prep" || k === "chk" || k === "ver") r[k] = t.value; persist(); }
+    if(view === "edit" && f && t.classList.contains("cf-in")){ var l = lineAt(f, +t.getAttribute("data-i")); if(l){ var kk = t.getAttribute("data-k"); if(kk !== "wage"){ l[kk] = t.value; if(kk === "amt") l.autoAmt = false; persist(); } } return; }
+    if(view === "edit" && f && t.id && t.id.indexOf("cf_f_") === 0 && t.type === "text"){ var k = t.id.slice(5); f[k] = t.value; if(k === "desig") f.desigManual = !!t.value; var r = root(); if(k === "ddo" || k === "ddoDesc" || k === "officeOf" || k === "prep" || k === "chk" || k === "ver") r[k] = t.value; persist(); }
   });
 
   (function(){ var css = PAPER_CSS.split("}").map(function(r){ var i = r.indexOf("{"); if(i < 0) return ""; var sel0 = r.slice(0, i), dec = r.slice(i + 1); if(true) dec = dec.split(";").map(function(d){ d = d.trim(); return d && !/important/.test(d) ? d + " !important" : d; }).filter(Boolean).join(";"); return sel0.split(",").map(function(x){ return "#panel-payfix " + x.trim(); }).join(",") + "{" + dec + "}"; }).join("\n"); var st = document.createElement("style"); st.id = "cf_paper_css"; st.textContent = css; document.head.appendChild(st); })();
