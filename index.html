@@ -1415,6 +1415,34 @@ body.lang-ur .br-part{ font-size:17px; }
   #panel-bm26.bm-printing .panel-head, #panel-bm26.bm-printing .pf-bar, #panel-bm26.bm-printing .bm-card, #panel-bm26.bm-printing .pf-chips, #panel-bm26.bm-printing .pf-warn, #panel-bm26.bm-printing .pf-ok, #panel-bm26.bm-printing .hint, #panel-bm26.bm-printing .bm-frozen, #panel-bm26.bm-printing p.bm-muted{ display:none !important; }
   #panel-bm26.bm-printing .bm-tbl th{ min-width:0 !important; padding:2px 3px !important; } #panel-bm26.bm-printing .bm-tbl thead th{ background:#1b3f63 !important; color:#fff !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; } #panel-bm26.bm-printing .bm-tbl td{ padding:2px 3px !important; } }
 @media print{ #panel-bm26 .table-wrap{ overflow:visible !important; max-height:none !important; } #panel-bm26 .bm-tbl{ font-size:12px; } #panel-bm26 .bm-name{ position:static; } #panel-bm26 .bm-tools, #panel-bm26 .bm-sw, #panel-bm26 .bm-add, #panel-bm26 .bm-x, #panel-bm26 .pf-subnav{ display:none !important; } #panel-bm26 .bm-tbl, #panel-bm26 .bm-tbl th, #panel-bm26 .bm-tbl td{ border-color:#999; } #panel-bm26 .bm-tbl tr{ page-break-inside:avoid; } }
+
+.t30-subtabs{ display:flex; gap:8px; flex-wrap:wrap; margin:0 0 14px; }
+.t30-sub{ background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:8px 16px; font:inherit; font-weight:600; cursor:pointer; }
+.t30-sub.active{ background:var(--navy); color:#fff; border-color:var(--navy); }
+#panel-tr30 .t30-intro{ margin:0 0 10px; color:var(--muted); font-size:12.5px; max-width:720px; }
+
+/* TR-30 bill tab */
+#panel-tr30 .t30-bar{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px; margin:0 0 14px; align-items:end; }
+#panel-tr30 .t30-h{ font-size:14px; font-weight:700; margin:16px 0 8px; color:var(--navy); }
+#panel-tr30 .t30-tbl{ font-size:12.5px !important; width:100%; }
+#panel-tr30 .t30-tbl td.n, #panel-tr30 .t30-tbl th.n, #panel-tr30 .t30-sum td.n{ text-align:right; font-variant-numeric:tabular-nums; }
+#panel-tr30 .t30-tbl td.c{ text-align:center; width:34px; }
+#panel-tr30 .t30-tbl input, #panel-tr30 .t30-tbl select{ width:100%; min-width:70px; }
+#panel-tr30 .t30-tbl select{ min-width:200px; }
+#panel-tr30 .t30-tbl input.t30-p{ min-width:54px; width:64px; }
+#panel-tr30 .t30-tbl td:nth-child(2) input{ min-width:150px; }
+#panel-tr30 .t30-cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:14px; margin:14px 0 6px; }
+#panel-tr30 .t30-card{ border:1px solid var(--border); border-radius:10px; overflow:hidden; background:var(--surface); box-shadow:var(--br-shadow); }
+#panel-tr30 .t30-card h4{ margin:0; padding:9px 14px; font-size:14px; background:var(--navy); color:#fff; }
+#panel-tr30 .t30-card > div{ display:flex; justify-content:space-between; align-items:center; gap:14px; padding:7px 14px; border-bottom:1px solid var(--border); font-size:13.5px; }
+#panel-tr30 .t30-card > div b{ font-variant-numeric:tabular-nums; white-space:nowrap; }
+#panel-tr30 .t30-card > div.big{ font-weight:700; font-size:15px; }
+#panel-tr30 .t30-card > div.sub{ font-weight:700; background:color-mix(in srgb,var(--navy) 6%,var(--surface)); }
+#panel-tr30 .t30-card > div.tot{ font-weight:800; font-size:15px; background:color-mix(in srgb,var(--navy) 16%,var(--surface)); border-bottom:0; }
+#panel-tr30 .t30-card > div.tot.neg b{ color:#C62828; }
+#panel-tr30 .t30-note{ font-size:12.5px; margin:8px 0; padding:8px 10px; border-radius:6px; background:color-mix(in srgb,#d98b00 14%,var(--surface)); }
+#panel-tr30 .t30-f{ display:flex; gap:10px; flex-wrap:wrap; margin:12px 0; }
+#panel-tr30 .t30-tk{ accent-color:var(--navy); }
 </style>
 <!-- PWA: installable app -->
 <link rel="manifest" href="/manifest.webmanifest">
@@ -1636,6 +1664,8 @@ body.lang-ur .br-part{ font-size:17px; }
         </div>
         <span class="count-chip" id="billCount">0 bills</span>
       </div>
+      <div class="t30-subtabs"><button type="button" class="t30-sub active" data-sub="main"><span class="en">Bill entry &amp; register</span><span class="ur">بل اندراج اور رجسٹر</span></button><button type="button" class="t30-sub" data-sub="tr30"><span class="en">TR-30 Bill &amp; Sanction Order</span><span class="ur">TR-30 بل اور سینکشن آرڈر</span></button></div>
+      <div id="billMainWrap">
 
       <div class="card entry-form" id="billDedRatesCard">
         <h3 data-i18n="bill_dedRatesTitle">Deduction rates (%) — Administrator only</h3>
@@ -1733,6 +1763,13 @@ body.lang-ur .br-part{ font-size:17px; }
           <tbody id="billTableBody"></tbody>
           <tfoot><tr id="billTotalsRow"></tr></tfoot>
         </table>
+      </div>
+      </div>
+      <div id="t30Wrap" hidden>
+        <div id="panel-tr30">
+          <p class="t30-intro"><span class="en">Choose the head, month and vendor from the lists. The amounts come from the bills of the Bill Register (tick the bills) and you can also type extra lines. The TR 30 form (Excel) and the sanction orders (Word) are made from the same figures.</span><span class="ur">مد، مہینہ اور وینڈر فہرست سے چنیں۔ رقمیں بل رجسٹر کے بلوں سے خود آتی ہیں (بل ٹک کریں) اور اضافی سطریں ہاتھ سے بھی لکھ سکتے ہیں۔ TR 30 فارم (ایکسل) اور سینکشن آرڈر (ورڈ) انہی رقموں سے بنتے ہیں۔</span></p>
+          <div id="t30Body"></div>
+        </div>
       </div>
     </section>
 
@@ -9991,6 +10028,436 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   setInterval(function(){ try{ refreshIfActive(false); }catch(e){} }, 1500);
   window.__brStatement = {rows:function(mk){ return buildRows(mk); }, parseText:parseText, matchCode:matchCode, applyParsed:applyParsed, render:render};
 })();
+
+/* ================= TR-30 CONTINGENT BILL — pick the head, the month and the vendor from drop-downs; the amount is added up from the bills
+   of the Bill Register (tick the bills you want) and/or typed by hand; the Account Office form TR 30 is written to Excel with the
+   same layout as the clerk's own file (the "Detail, claim of bills" table on the right, budget lines, certificates).  The header
+   words (office lines, DDO name / designation) are typed once and remembered in STATE.stmtData.tr30 — never inside this page.  ================= */
+(function(){
+  "use strict";
+  var panel = document.getElementById("panel-tr30"), body = document.getElementById("t30Body");
+  if(!panel || !body) return;
+  var TPL = "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";
+  var MN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  var NUMSTYLE = 88, TXTSTYLE = 89, MAXROWS = 19;
+  function num(v){ return Number(v) || 0; }
+  function T0(en, ur){ return (document.body.classList.contains("lang-ur") || document.documentElement.getAttribute("lang") === "ur") ? ur : en; }
+  function T(en, ur){ return "<span class='en'>" + en + "</span><span class='ur'>" + ur + "</span>"; }
+  function money(n){ n = Math.round(num(n)); return (n < 0 ? "-" : "") + String(Math.abs(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+  function codeOf(label){ return String(label || "").split("-")[0].trim(); }
+  function nameOf(label){ var n = String(label || "").split("-").slice(1).join("-").trim().toLowerCase().replace(/\b[a-z]/g, function(c){ return c.toUpperCase(); }).replace(/\b(And|Of|For)\b/g, function(w){ return w.toLowerCase(); }); return n; }
+  function mLabel(m){ var a = String(m || "").split("-"); return a.length === 2 ? MN[+a[1] - 1] + "-" + a[0] : ""; }
+  function mEnd(m){ var a = m.split("-"), d = new Date(Date.UTC(+a[0], +a[1], 0)); return m + "-" + ("0" + d.getUTCDate()).slice(-2); }
+
+  /* ---------- stored header words ---------- */
+  function SDS(){ var s = STATE.stmtData; if(!s || typeof s !== "object") s = STATE.stmtData = {}; s.tr30 = s.tr30 || {}; s.tr30.hdr = s.tr30.hdr || {}; return s.tr30; }
+  var DEF = {ddoNo: "R I 4720", vrNo: "31047341", gov: "", office: "", ddoName: "", ddoDesig: "", ddoOffice: "", soRef: "", soRule: "Rule 3(1) of the Punjab Delegation of Financial Power Rules, 2016", soHead: "", soGrant: "", soCopy: ""};
+  function hv(k){ var v = SDS().hdr[k]; if(v != null && v !== "") return v; if((k === "ddoName" || k === "ddoDesig" || k === "ddoOffice") && STATE.stmtData && STATE.stmtData.sign && STATE.stmtData.sign[k]) return STATE.stmtData.sign[k]; return DEF[k] || ""; }
+  var saveT = null;
+  function persist(){ clearTimeout(saveT); saveT = setTimeout(function(){ try{ saveData(); }catch(e){ console.error(e); } }, 600); }
+  function canEdit(){ return typeof tabOK === "function" ? tabOK("cf") : true; }
+
+  /* ---------- screen state (not saved) ---------- */
+  var S = {allfy: null, soNo: "1", soDate: "", both: true, head: "", month: "", vendor: "", tick: {}, tickFor: "", manual: [], mode: "bills", pstPct: null, itPct: null, trNo: "", billNo: ""};
+
+  function allBills(){ return STATE.bills || []; }
+  function headsFor(fy){ try{ return getHeads(fy).filter(function(h){ return !isSalaryHead(h.label); }); }catch(e){ return []; } }
+  function allVendorNames(){ var set = {}, out = []; allBills().forEach(function(b){ var n = String(b.vendorName || "").trim(); if(n && !set[n]){ set[n] = 1; out.push(n); } }); return out.sort(); }
+  function monthsList(){
+    var set = {}, now = (typeof todayStr === "function" ? todayStr() : new Date().toISOString().slice(0, 10)).slice(0, 7);
+    allBills().forEach(function(b){ if(b.date) set[String(b.date).slice(0, 7)] = 1; });
+    var y = +now.slice(0, 4), m = +now.slice(5, 7); for(var i = 0; i < 24; i++){ set[y + "-" + ("0" + m).slice(-2)] = 1; m--; if(m < 1){ m = 12; y--; } }
+    return Object.keys(set).sort().reverse();
+  }
+  function isLaw(head){ return codeOf(head).replace(/\D/g, "") === "03917"; }
+  function rates(){ return (STATE.contingentDeductionRates) || {incomeTax: 4.5, pst: 16}; }
+  /* percentage of each deduction for the chosen head: what the clerk saved for this head, else the portal's rates (law charges: income tax 15) */
+  function headRates(){
+    var R = rates(), sv = (SDS().rates || {})[S.head] || {};
+    function pick(k, d){ return sv[k] != null && sv[k] !== "" ? num(sv[k]) : d; }
+    return {it: pick("it", isLaw(S.head) ? 15 : num(R.incomeTax)), pst: pick("pst", num(R.pst)), gst: pick("gst", num(R.gst)), oth: pick("oth", 0)};
+  }
+  function lp(m, k, hr){ var v = m[k + "P"]; return v === "" || v == null ? hr[k] : num(v); }
+  function cut(g, p){ return Math.round(num(g) * num(p)) / 100; }
+
+  function headBills(){
+    return allBills().filter(function(b){ return b.head === S.head && String(b.date || "").slice(0, 7) === S.month && (!S.vendor || String(b.vendorName || "").trim() === S.vendor); })
+      .sort(function(x, y){ return String(x.date || "").localeCompare(String(y.date || "")); });
+  }
+  function ensureDefaults(){
+    var hs = headsFor(null), labs = hs.map(function(h){ return h.label; });
+    if(!S.head || labs.indexOf(S.head) < 0){
+      var withBills = allBills().filter(function(b){ return labs.indexOf(b.head) >= 0; }).sort(function(x, y){ return String(y.date || "").localeCompare(String(x.date || "")); })[0];
+      S.head = withBills ? withBills.head : (labs[0] || "");
+      S.month = withBills ? String(withBills.date).slice(0, 7) : "";
+    }
+    if(!S.month){ var hb = allBills().filter(function(b){ return b.head === S.head && b.date; }).sort(function(x, y){ return String(y.date).localeCompare(String(x.date)); })[0]; S.month = hb ? String(hb.date).slice(0, 7) : (typeof todayStr === "function" ? todayStr() : new Date().toISOString().slice(0, 10)).slice(0, 7); }
+    var key = S.head + "|" + S.month + "|" + S.vendor;
+    if(S.tickFor !== key){ S.tickFor = key; S.tick = {}; headBills().forEach(function(b){ S.tick[b.id] = true; }); }
+  }
+
+  /* ---------- the numbers ---------- */
+  function compute(){
+    var fy = fyOfDate(S.month + "-01"), hrec = headsFor(fy).filter(function(h){ return h.label === S.head; })[0] || {finalBudget: 0, prior: 0};
+    var rows = [], warn = [], hr = headRates(), mrows = [];
+    headBills().forEach(function(b){
+      if(!S.tick[b.id]) return;
+      var gross = num(b.gross), pst = num(b.pst), it = num(b.it), gst = num(b.gst), ot = num(b.other) + num(b.comm);
+      if(S.mode === "rates"){ pst = cut(gross, hr.pst); it = cut(gross, hr.it); gst = cut(gross, hr.gst); ot = cut(gross, hr.oth); }
+      rows.push({vendor: String(b.vendorName || "").trim(), title: (b.vendorName || "") + (b.billNo ? " (" + b.billNo + ")" : ""), gross: gross, pst: pst, it: it, gst: gst, ot: ot, oth: gst + ot, src: "bill"});
+    });
+    S.manual.forEach(function(m){
+      var gross = num(m.gross), r = {it: cut(gross, lp(m, "it", hr)), pst: cut(gross, lp(m, "pst", hr)), gst: cut(gross, lp(m, "gst", hr)), ot: cut(gross, lp(m, "oth", hr))};
+      mrows.push(r);
+      if(gross) rows.push({vendor: String(m.vendor || "").trim(), title: [m.vendor, m.title].filter(Boolean).join(" — "), gross: gross, pst: r.pst, it: r.it, gst: r.gst, ot: r.ot, oth: r.gst + r.ot, src: "manual"});
+    });
+    var shown = rows.slice(0, MAXROWS);
+    if(rows.length > MAXROWS){
+      var rest = rows.slice(MAXROWS - 1), last = {title: "Others (" + rest.length + ")", gross: 0, pst: 0, it: 0, gst: 0, ot: 0, oth: 0};
+      rest.forEach(function(r){ last.gross += r.gross; last.pst += r.pst; last.it += r.it; last.gst += r.gst; last.ot += r.ot; last.oth += r.oth; });
+      shown = rows.slice(0, MAXROWS - 1).concat([last]);
+    }
+    var gross = 0, pst = 0, it = 0, othT = 0, gstT = 0, otT = 0; rows.forEach(function(r){ gross += r.gross; pst += r.pst; it += r.it; othT += r.oth; gstT += r.gst; otT += r.ot; });
+    var before = num(hrec.prior);
+    allBills().forEach(function(b){ if(b.head === S.head && fyOfDate(b.date) === fy && String(b.date || "") < S.month + "-01") before += num(b.gross); });
+    return {fy: fy, rows: rows, shown: shown, gross: gross, pst: pst, it: it, oth: othT, gst: gstT, ot: otT, mrows: mrows, ded: pst + it + othT, net: gross - pst - it - othT, budget: num(hrec.finalBudget), incl: before + gross, bal: num(hrec.finalBudget) - before - gross, warn: warn, over: rows.length > MAXROWS};
+  }
+  function fyLong(fy){ var a = String(fy).split("-"); return a[0] + "-" + (+a[0] + 1); }
+
+  /* ---------- screen ---------- */
+  function opt(v, t, cur){ return "<option value='" + esc(v) + "'" + (String(cur) === String(v) ? " selected" : "") + ">" + esc(t) + "</option>"; }
+  function render(){
+    ensureDefaults();
+    var heads = headsFor(null), withBills = {}; allBills().forEach(function(b){ withBills[b.head] = 1; });
+    var h = "<div class='t30-bar'>";
+    h += "<div class='field'><label>" + T("Contingent head", "کنٹنجنسی مد") + "</label><select id='t30_head'>" + heads.map(function(x){ return opt(x.label, x.label + (withBills[x.label] ? "" : "  (no bills)"), S.head); }).join("") + "</select></div>";
+    h += "<div class='field'><label>" + T("Month", "مہینہ") + "</label><select id='t30_month'>" + monthsList().map(function(m){ return opt(m, mLabel(m), S.month); }).join("") + "</select></div>";
+    var vend = {}, vl = []; allBills().filter(function(b){ return b.head === S.head && String(b.date || "").slice(0, 7) === S.month; }).forEach(function(b){ var n = String(b.vendorName || "").trim(); if(n && !vend[n]){ vend[n] = 1; vl.push(n); } });
+    if(S.vendor && vl.indexOf(S.vendor) < 0) vl.push(S.vendor);
+    h += "<div class='field'><label>" + T("Vendor", "وینڈر") + "</label><select id='t30_vendor'>" + opt("", "— all vendors —", S.vendor) + vl.sort().map(function(n){ return opt(n, n, S.vendor); }).join("") + "</select></div>";
+    h += "</div>";
+    /* rates of this head */
+    var hr = headRates();
+    function rf(k, lab){ return "<div class='field'><label>" + lab + "</label><input class='t30-r' type='number' step='0.01' min='0' data-rk='" + k + "' value='" + esc(hr[k]) + "'></div>"; }
+    h += "<h3 class='t30-h'>" + T("Deduction rates of this head (% of the gross amount)", "اس مد کی کٹوتی کی فیصد (کل رقم کا %)") + "</h3><div class='t30-bar'>" + rf("it", T("Income tax %", "انکم ٹیکس %")) + rf("pst", "PST %") + rf("gst", "GST %") + rf("oth", T("Other tax %", "دوسرا ٹیکس %"))
+      + "<div class='field'><label>" + T("Bills from the register", "رجسٹر کے بل") + "</label><select id='t30_mode'>" + opt("bills", T0("deductions as entered in the bill", "کٹوتی جیسی بل میں درج ہے"), S.mode) + opt("rates", T0("recalculate with these %", "ان فیصد سے دوبارہ نکالیں"), S.mode) + "</select></div></div>";
+    /* bills of that head, month, vendor */
+    var hb = headBills();
+    h += "<h3 class='t30-h'>" + T("Bills of this head in the month (tick the ones in this TR-30 bill)", "اس مد کے اس مہینے کے بل (جو اس TR-30 بل میں شامل ہوں ان پر ٹک لگائیں)") + "</h3>";
+    if(!hb.length) h += "<div class='t30-note'>" + T("No bill of this head is entered for this month" + (S.vendor ? " and vendor" : "") + ". Pick another month / vendor, or type the amount in the lines below.", "اس مد کا اس مہینے" + (S.vendor ? " اور وینڈر" : "") + " کا کوئی بل درج نہیں۔ دوسرا مہینہ / وینڈر چنیں یا رقم نیچے لائنوں میں خود لکھیں۔") + "</div>";
+    else {
+      h += "<div class='table-wrap'><table class='t30-tbl'><thead><tr><th class='c'><input type='checkbox' id='t30_all'" + (hb.every(function(b){ return S.tick[b.id]; }) ? " checked" : "") + "></th><th>" + T("Date", "تاریخ") + "</th><th>" + T("Bill No", "بل نمبر") + "</th><th>" + T("Vendor", "وینڈر") + "</th><th class='n'>" + T("Gross", "کل رقم") + "</th><th class='n'>PST</th><th class='n'>" + T("Income tax", "انکم ٹیکس") + "</th><th class='n'>" + T("Other", "دیگر") + "</th><th class='n'>" + T("Net", "نیٹ") + "</th></tr></thead><tbody>";
+      hb.forEach(function(b){
+        var oth = num(b.gst) + num(b.other) + num(b.comm);
+        h += "<tr><td class='c'><input type='checkbox' class='t30-tk' data-id='" + esc(b.id) + "'" + (S.tick[b.id] ? " checked" : "") + "></td><td>" + esc(b.date || "") + "</td><td>" + esc(b.billNo || "") + "</td><td>" + esc(b.vendorName || "") + "</td><td class='n'>" + money(b.gross) + "</td><td class='n'>" + money(b.pst) + "</td><td class='n'>" + money(b.it) + "</td><td class='n'>" + (oth ? money(oth) : "-") + "</td><td class='n'>" + money(num(b.gross) - num(b.pst) - num(b.it) - oth) + "</td></tr>";
+      });
+      h += "</tbody></table></div>";
+    }
+    /* typed lines */
+    var vnames = allVendorNames();
+    h += "<h3 class='t30-h'>" + T("Extra lines typed by hand (optional — added to the bills above)", "ہاتھ سے لکھی گئی اضافی لائنیں (اختیاری — اوپر کے بلوں کے ساتھ جمع ہوں گی)") + "</h3>";
+    function pc(m, i, k, lab){ var v = m[k + "P"]; return "<td class='n'><input class='t30-m n t30-p' type='number' step='0.01' min='0' data-i='" + i + "' data-k='" + k + "P' placeholder='" + esc(hr[k]) + "' value='" + esc(v == null ? "" : v) + "'></td>"; }
+    function ca(i, k){ return "<td class='n t30-ca' data-ca='" + i + ":" + k + "'>0</td>"; }
+    h += "<div class='table-wrap'><table class='t30-tbl'><thead><tr><th>" + T("Vendor", "وینڈر") + "</th><th>" + T("Title / case / remarks", "عنوان / کیس / ریمارکس") + "</th><th class='n'>" + T("Gross amount", "کل رقم") + "</th>"
+      + "<th class='n'>" + T("Income tax %", "انکم ٹیکس %") + "</th><th class='n'>PST %</th><th class='n'>GST %</th><th class='n'>" + T("Other tax %", "دوسرا ٹیکس %") + "</th>"
+      + "<th class='n'>" + T("Income tax", "انکم ٹیکس") + "</th><th class='n'>PST</th><th class='n'>GST</th><th class='n'>" + T("Other tax", "دوسرا ٹیکس") + "</th><th></th></tr></thead><tbody>";
+    S.manual.forEach(function(m, i){
+      var known = vnames.indexOf(m.vendor || "") >= 0, custom = !!m.custom || (m.vendor && !known);
+      var vsel = "<select class='t30-m' data-i='" + i + "' data-k='vendor'>" + opt("", T0("— choose vendor —", "— وینڈر چنیں —"), custom ? "__other__" : (m.vendor || "")) + vnames.map(function(n){ return opt(n, n, custom ? "__other__" : (m.vendor || "")); }).join("") + opt("__other__", T0("✎ other — type a name", "✎ دوسرا — نام لکھیں"), custom ? "__other__" : "") + "</select>"
+        + (custom ? "<input class='t30-m' data-i='" + i + "' data-k='vendor' value='" + esc(m.vendor || "") + "' placeholder='" + T0("Type the vendor name", "وینڈر کا نام لکھیں") + "' style='margin-top:4px'>" : "");
+      h += "<tr><td>" + vsel + "</td><td><input class='t30-m' data-i='" + i + "' data-k='title' value='" + esc(m.title || "") + "'></td><td class='n'><input class='t30-m n' type='number' step='0.01' data-i='" + i + "' data-k='gross' value='" + esc(m.gross == null ? "" : m.gross) + "'></td>"
+        + pc(m, i, "it") + pc(m, i, "pst") + pc(m, i, "gst") + pc(m, i, "oth") + ca(i, "it") + ca(i, "pst") + ca(i, "gst") + ca(i, "ot")
+        + "<td class='c'><button type='button' class='btn small t30-rm' data-i='" + i + "'>✖</button></td></tr>";
+    });
+    h += "</tbody></table></div><p class='hint'>" + T("Leave a % box empty to use the rate of the head (shown faint inside the box). Type a % in a line to give that line its own rate — e.g. 15 for a travelling bill’s income tax. Deductions are worked out on the gross amount.", "فیصد کا خانہ خالی چھوڑیں تو مد کی فیصد لگے گی (خانے میں ہلکی لکھی نظر آتی ہے)۔ کسی لائن کو اپنی فیصد دینی ہو تو وہ خانے میں لکھ دیں، جیسے سفری بل کا انکم ٹیکس 15۔ کٹوتی کل رقم (Gross) پر لگتی ہے۔") + "</p>"
+      + "<div class='t30-bar' style='margin-top:8px'><button type='button' class='btn small' id='t30_add'>➕ " + T("Add a line", "لائن بڑھائیں") + "</button></div>";
+    h += "<div id='t30_sum'></div>";
+    /* bill details */
+    h += "<h3 class='t30-h'>" + T("Bill details (written on the form)", "بل کی تفصیل (فارم پر لکھی جاتی ہے)") + "</h3><div class='t30-bar'>";
+    function fl(id, lab, val, w, ph){ return "<div class='field' style='max-width:" + (w || 220) + "px'><label>" + lab + "</label><input class='t30-f' id='t30_f_" + id + "' value='" + esc(val) + "'" + (ph ? " placeholder='" + esc(ph) + "'" : "") + "></div>"; }
+    h += fl("trNo", "TR No", S.trNo, 120) + fl("billNo", T("Bill No", "بل نمبر"), S.billNo, 120);
+    h += "</div><div class='t30-bar'>" + fl("gov", T("Top line of the form", "فارم کی اوپر والی سطر"), hv("gov"), 240, "e.g. PROVINCIAL GOVERNMENT") + fl("office", T("Office line (claim table heading)", "دفتر کی سطر (دعوے کی جدول کا عنوان)"), hv("office"), 340) + fl("ddoNo", "D.D.O No", hv("ddoNo"), 130) + fl("vrNo", "V. No.", hv("vrNo"), 150) + "</div><div class='t30-bar'>" + fl("ddoName", T("DDO name", "DDO کا نام"), hv("ddoName"), 260) + fl("ddoDesig", T("DDO designation", "DDO کا عہدہ"), hv("ddoDesig"), 240) + fl("ddoOffice", T("DDO office", "DDO کا دفتر"), hv("ddoOffice"), 300) + "</div>";
+    h += "<p class='hint'>" + T("These words are saved with your data once typed (not in the page itself) and come back next time.", "یہ الفاظ ایک بار لکھنے پر آپ کے ڈیٹا میں محفوظ ہو جاتے ہیں (صفحے میں نہیں) اور اگلی بار خود آ جاتے ہیں۔") + "</p>";
+    function fa(id, lab, val, rows){ return "<div class='field' style='grid-column:1/-1'><label>" + lab + "</label><textarea class='t30-f' rows='" + rows + "' id='t30_f_" + id + "'>" + esc(val) + "</textarea></div>"; }
+    h += "<h3 class='t30-h'>" + T("Sanction order (made together with the bill)", "سینکشن آرڈر (بل کے ساتھ ہی بنتا ہے)") + "</h3><div class='t30-bar'>"
+      + fl("soNo", T("Order No. (first)", "آرڈر نمبر (پہلا)"), S.soNo, 120) + "<div class='field' style='max-width:180px'><label>" + T("Dated", "تاریخ") + "</label><input class='t30-f' type='date' id='t30_f_soDate' value='" + esc(S.soDate) + "'></div>"
+      + fl("soRef", T("File / reference (after the number)", "فائل / حوالہ (نمبر کے بعد)"), hv("soRef"), 260, "e.g. PGP.CRL/CMP/ISB-26-27") + fl("soRule", T("Rule", "رول"), hv("soRule"), 420)
+      + fa("soHead", T("Letter head (top of the order, one line each)", "آرڈر کا اوپر کا عنوان (ہر سطر الگ)"), hv("soHead"), 3)
+      + fa("soGrant", T("Grant / function text (before the head code)", "گرانٹ / فنکشن کی عبارت (مد کے کوڈ سے پہلے)"), hv("soGrant"), 3)
+      + fa("soCopy", T("Copy forwarded to (one line each)", "نقل بھیجی جائے (ہر سطر الگ)"), hv("soCopy"), 3) + "</div>"
+      + "<p class='hint'>" + T("One order is made for each vendor of the bill (amount = the vendor’s gross total). Order numbers go 1, 2, 3 … from the first number.", "بل کے ہر وینڈر کا ایک آرڈر بنتا ہے (رقم = اس وینڈر کی کل رقم Gross)۔ نمبر پہلے نمبر سے 1، 2، 3 … چلتے ہیں۔") + "</p>";
+    h += "<div class='t30-bar' style='margin-top:10px'><label style='display:flex;gap:8px;align-items:center;grid-column:1/-1'><input type='checkbox' id='t30_both'" + (S.both ? " checked" : "") + "> " + T("Make the sanction order(s) together with the bill", "بل کے ساتھ سینکشن آرڈر بھی بنائیں") + "</label>"
+      + "<button type='button' class='btn' id='t30_xl'>⬇ " + T("TR-30 bill (Excel)", "TR-30 بل (ایکسل)") + "</button><button type='button' class='btn' id='t30_so'>⬇ " + T("Sanction order(s) (Word)", "سینکشن آرڈر (ورڈ)") + "</button></div>";
+    var fys = fyList(), nAll = allBills().filter(function(b){ return b.head && !isSalaryHead(b.head) && b.date; }).length;
+    h += "<h3 class='t30-h'>" + T("All bills of the register at once", "رجسٹر کے تمام بل ایک ساتھ") + "</h3><div class='t30-bar'><div class='field'><label>" + T("Financial year", "مالی سال") + "</label><select id='t30_allfy'>" + fys.map(function(f){ return opt(f, T0("Year ", "سال ") + f, S.allfy == null ? fys[0] : S.allfy); }).join("") + opt("", T0("All years", "تمام سال"), S.allfy == null ? fys[0] : S.allfy) + "</select></div>"
+      + "<button type='button' class='btn' id='t30_allzip'>⬇ " + T("All bills → TR-30 + sanction orders (ZIP)", "تمام بل ← TR-30 + سینکشن آرڈر (ZIP)") + "</button></div><p class='hint'>" + T("Makes, for every head and every month that has bills (" + nAll + " bills in the register), one TR-30 bill and its sanction orders, in a ZIP with a folder for each month. The sanction order numbers run on from the number above.", "رجسٹر کی ہر اس مد اور ہر اس مہینے کا (" + nAll + " بل) ایک TR-30 بل اور اس کے سینکشن آرڈر ZIP میں بنتے ہیں، ہر مہینے کا الگ فولڈر۔ آرڈر نمبر اوپر والے نمبر سے آگے چلتے ہیں۔") + "</p>";
+    body.innerHTML = h;
+    sumRefresh();
+  }
+  function refreshPh(){ var hr = headRates(); document.querySelectorAll("#t30Body .t30-p").forEach(function(e){ e.placeholder = hr[e.getAttribute("data-k").slice(0, -1)]; }); }
+  function sumRefresh(){
+    var el = document.getElementById("t30_sum"); if(!el) return; var c = compute();
+    function R(l, v, cls){ return "<div class='" + (cls || "") + "'><span>" + l + "</span><b>" + v + "</b></div>"; }
+    var before = c.incl - c.gross;
+    var h = "<div class='t30-cards'>";
+    h += "<div class='t30-card'><h4>" + T("① Bill amount", "① بل کی رقم") + "</h4>"
+      + R(T("Gross amount", "کل رقم (Gross)"), money(c.gross), "big")
+      + R(T("Less: PST", "منفی: PST"), money(c.pst))
+      + R(T("Less: Income tax", "منفی: انکم ٹیکس"), money(c.it))
+      + R(T("Less: GST", "منفی: GST"), money(c.gst))
+      + R(T("Less: Other tax", "منفی: دوسرا ٹیکس"), money(c.ot))
+      + R(T("Total deductions", "کل کٹوتیاں"), money(c.ded), "sub")
+      + R(T("GRAND TOTAL (to be paid) = Gross − Deductions", "گرینڈ ٹوٹل (ادائیگی) = کل رقم − کٹوتیاں"), money(c.net), "tot") + "</div>";
+    h += "<div class='t30-card'><h4>" + T("② Budget of this head (" + fyLong(c.fy) + ")", "② اس مد کا بجٹ (" + fyLong(c.fy) + ")") + "</h4>"
+      + R(T("Budget of the head", "مد کا بجٹ"), money(c.budget), "big")
+      + R(T("Spent before this bill", "اس بل سے پہلے خرچ"), money(before))
+      + R(T("This bill (gross amount)", "یہ بل (کل رقم)"), money(c.gross))
+      + R(T("Total spent including this bill", "اس بل سمیت کل خرچ"), money(c.incl), "sub")
+      + R(T("REMAINING BUDGET", "بچا ہوا بجٹ"), money(c.bal), "tot" + (c.bal < 0 ? " neg" : "")) + "</div>";
+    h += "</div><p class='hint'>" + T("The budget is reduced by the gross amount of the bill (not by the grand total).", "بجٹ بل کی کل رقم (Gross) کے حساب سے کم ہوتا ہے، گرینڈ ٹوٹل کے حساب سے نہیں۔") + "</p>";
+    if(!c.rows.length) h += "<div class='t30-note'>" + T("Nothing selected yet — tick a bill or type a line.", "ابھی کچھ منتخب نہیں — بل پر ٹک لگائیں یا لائن لکھیں۔") + "</div>";
+    if(c.over) h += "<div class='t30-note'>" + T("More than " + MAXROWS + " rows: the form’s table holds " + MAXROWS + ", so the last rows are added together in one row “Others”.", MAXROWS + " سے زیادہ بل: فارم کی جدول میں " + MAXROWS + " سطریں آتی ہیں، اس لیے آخری بل ایک سطر “Others” میں جمع ہو جائیں گے۔") + "</div>";
+    if(c.warn.length) h += "<div class='t30-note'>" + T("These bills also carry GST / other deductions that have no place on form TR-30 (bill: amount): " + esc(c.warn.join(", ")), "ان بلوں میں GST / دیگر کٹوتی بھی ہے جس کی TR-30 فارم میں جگہ نہیں (بل: رقم): " + esc(c.warn.join(", "))) + "</div>";
+    el.innerHTML = h;
+    document.querySelectorAll("#t30Body .t30-ca").forEach(function(td){ var q = td.getAttribute("data-ca").split(":"), r = c.mrows[+q[0]]; td.textContent = r ? money(r[q[1]]) : "0"; });
+  }
+
+  /* ---------- the Excel form ---------- */
+  var DIG = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"], TEN = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+  function below1000(n){ var s = ""; if(n >= 100){ s += DIG[Math.floor(n / 100)] + " Hundred"; n %= 100; if(n) s += " "; } if(n >= 20){ s += TEN[Math.floor(n / 10)]; if(n % 10) s += " " + DIG[n % 10]; } else if(n) s += DIG[n]; return s; }
+  function words(n){ n = Math.round(num(n)); if(n <= 0) return "Zero Only"; var parts = [], u = [[1000000000, "Billion"], [1000000, "Million"], [1000, "Thousand"]]; u.forEach(function(x){ if(n >= x[0]){ parts.push(below1000(Math.floor(n / x[0])) + " " + x[1]); n %= x[0]; } }); if(n) parts.push(below1000(n)); return parts.join(" ") + " Only"; }
+  function xe(s){ return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  var cellRe = /<c r="([A-Z]+)(\d+)"([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g;
+  function colN(c){ var n = 0; for(var i = 0; i < c.length; i++) n = n * 26 + c.charCodeAt(i) - 64; return n; }
+  function cellXml(ref, v, st){
+    var s = st != null ? " s=\"" + st + "\"" : "";
+    if(v == null || v === "") return "<c r=\"" + ref + "\"" + s + "/>";
+    if(typeof v === "number") return "<c r=\"" + ref + "\"" + s + "><v>" + v + "</v></c>";
+    if(typeof v === "object") return "<c r=\"" + ref + "\"" + s + "><f>" + xe(v.f) + "</f><v>" + num(v.v) + "</v></c>";
+    return "<c r=\"" + ref + "\"" + s + " t=\"inlineStr\"><is><t xml:space=\"preserve\">" + xe(v) + "</t></is></c>";
+  }
+  /* put one value into one cell of the sheet xml (keeps the cell's own style; a missing cell gets the style given) */
+  function styleOf(xml, ref){ var m = new RegExp("<c r=\"" + ref + "\"[^>]*? s=\"(\\d+)\"").exec(xml); return m ? m[1] : null; }
+  function setCell(xml, ref, v, defStyle, force){
+    var m = /^([A-Z]+)(\d+)$/.exec(ref), col = m[1], row = m[2];
+    var rowRe = new RegExp("<row r=\"" + row + "\"([^>]*)>([\\s\\S]*?)</row>"), rm = rowRe.exec(xml);
+    if(!rm) return xml;
+    var cells = [], mm, inner = rm[2]; cellRe.lastIndex = 0;
+    while((mm = cellRe.exec(inner))) cells.push({col: mm[1], st: (/ s="(\d+)"/.exec(mm[3]) || [])[1], xml: mm[0]});
+    var done = false;
+    cells.forEach(function(c){ if(c.col === col){ c.xml = cellXml(ref, v, (c.st != null && !force) ? c.st : defStyle); done = true; } });
+    if(!done){ cells.push({col: col, xml: cellXml(ref, v, defStyle)}); cells.sort(function(a, b){ return colN(a.col) - colN(b.col); }); }
+    var attrs = rm[1].replace(/ spans="[^"]*"/, "");
+    return xml.replace(rowRe, "<row r=\"" + row + "\"" + attrs + ">" + cells.map(function(c){ return c.xml; }).join("") + "</row>");
+  }
+  async function exportXlsx(){
+    var r = await buildXlsx(); if(!r){ toastMsg("Tick a bill or type a line first.", "پہلے بل پر ٹک لگائیں یا لائن لکھیں۔"); return; }
+    await saveBlob(r.blob, r.name);
+    toastMsg("TR-30 bill file is ready.", "TR-30 بل کی فائل تیار ہے۔");
+    if(S.both) await exportOrders(true);
+  }
+  async function buildXlsx(){
+    var c = compute(); if(!c.rows.length) return null;
+    await window.__brUI.loadLib("jszip");
+    var zip = await JSZip.loadAsync(TPL, {base64: true});
+    var ss = await zip.file("xl/sharedStrings.xml").async("string");
+    var office = hv("office"), headName = nameOf(S.head), code = codeOf(S.head), law = isLaw(S.head), ml = mLabel(S.month);
+    var claim = "Detail, Claim of Bills " + headName + (office ? " " + office : "");
+    var map = {"{{gov}}": hv("gov"), "{{claimTitle}}": claim, "{{ddoName}}": hv("ddoName"), "{{ddoDesig}}": hv("ddoDesig"), "{{ddoOffice}}": hv("ddoOffice")};
+    Object.keys(map).forEach(function(k){ ss = ss.split(k).join(xe(map[k])); });
+    zip.file("xl/sharedStrings.xml", ss);
+    var x = await zip.file("xl/worksheets/sheet1.xml").async("string");
+    var set = function(r, v, st){ x = setCell(x, r, v, st); };
+    set("A1", "TR No " + (S.trNo || "______"));
+    set("E2", "D.D.O NO  " + hv("ddoNo"));
+    set("E3", "V. NO. " + hv("vrNo"));
+    set("A8", "Fully vouched contingent bill for the Month of " + ml);
+    set("A9", "Bill No: " + (S.billNo || "__________"));
+    set("D11", "Payment for " + ml);
+    set("C13", code + " ");
+    set("I13", {f: "P22", v: c.gross});
+    set("D15", "Budget Year " + fyLong(c.fy));
+    set("J17", c.budget);
+    set("J19", {f: "Q22", v: c.pst});
+    set("J20", {f: "R22", v: c.it});
+    var ext = c.oth > 0, stl = {};
+    ["C20", "J20", "C21", "J21", "C22", "J22", "R2", "R22"].forEach(function(r){ stl[r] = styleOf(x, r); });
+    if(ext){
+      /* one more line in the deduction block: Other Tax, then Total Deduction, then Grand Total */
+      x = setCell(x, "C21", "Other Tax", stl.C20, true); x = setCell(x, "J21", {f: "T22", v: c.oth}, stl.J20, true);
+      x = setCell(x, "C22", "Total Decuction", stl.C21, true); x = setCell(x, "J22", {f: "J19+J20+J21", v: c.ded}, stl.J21, true);
+      x = setCell(x, "C23", "Grand Total", stl.C22, true); x = setCell(x, "J23", {f: "I13-J22", v: c.net}, stl.J22, true);
+    } else {
+      set("J21", {f: "J19+J20", v: c.ded});
+      set("J22", {f: "I13-J19-J20", v: c.net});
+    }
+    set("J32", {f: "J17", v: c.budget});
+    set("J34", c.incl);
+    set("J36", {f: "I13", v: c.gross});
+    set("J38", {f: "J17-J34", v: c.bal});
+    set("C46", "(vi) The material store has been taken according to the specification of supply order and verified for RS " + money(c.gross) + " Rupees " + words(c.gross) + " for payment");
+    set("A57", "Sanction order, detail of " + headName + " bills / miscellaneous");
+    set("B57", code); set("D57", headName);
+    set("I57", {f: "J36", v: c.gross}); set("I58", {f: "I57", v: c.gross});
+    set("L2", law ? "Title of Case" : "Vendor / Bill No");
+    set("N2", law ? "Notice and Composing Charges" : "Amount");
+    set("O2", law ? "Photo Copy, Scanning & Binding" : "Other charges");
+    c.shown.forEach(function(r, i){
+      var n = 3 + i;
+      set("L" + n, r.title, TXTSTYLE);
+      set("N" + n, r.gross, NUMSTYLE);
+      set("P" + n, {f: "N" + n + "+O" + n, v: r.gross}, NUMSTYLE);
+      set("Q" + n, r.pst, NUMSTYLE); set("R" + n, r.it, NUMSTYLE);
+      if(ext){ set("T" + n, r.oth, NUMSTYLE); set("S" + n, {f: "P" + n + "-Q" + n + "-R" + n + "-T" + n, v: r.gross - r.pst - r.it - r.oth}, NUMSTYLE); }
+      else set("S" + n, {f: "P" + n + "-Q" + n + "-R" + n, v: r.gross - r.pst - r.it}, NUMSTYLE);
+    });
+    set("N22", {f: "SUM(N3:N21)", v: c.gross}); set("O22", {f: "SUM(O3:O21)", v: 0}); set("P22", {f: "SUM(P3:P21)", v: c.gross});
+    set("Q22", {f: "SUM(Q3:Q21)", v: c.pst}); set("R22", {f: "SUM(R3:R21)", v: c.it}); set("S22", {f: "SUM(S3:S21)", v: c.net});
+    if(ext){ x = setCell(x, "T2", "GST / Other Tax", stl.R2, true); x = setCell(x, "T22", {f: "SUM(T3:T21)", v: c.oth}, stl.R22, true); }
+    set("P23", {f: "S22", v: c.net});
+    zip.file("xl/worksheets/sheet1.xml", x);
+    var blob = await zip.generateAsync({type: "blob", mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", compression: "DEFLATE"});
+    return {blob: blob, name: "TR30_" + code + "_" + S.month + ".xlsx"};
+  }
+  async function saveBlob(blob, name){
+    if(window.__t30Save) return window.__t30Save(blob, name);
+    var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+  }
+  /* ---------- the sanction order(s), one Word file: one page per vendor ---------- */
+  function dmy(iso){ var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ""); return m ? m[3] + "/" + m[2] + "/" + m[1] : ""; }
+  function wpara(text, o){
+    o = o || {};
+    var runs = String(text == null ? "" : text).split("\n").map(function(t, i){
+      return (i ? "<w:r><w:br/></w:r>" : "") + "<w:r><w:rPr><w:rFonts w:ascii=\"Times New Roman\" w:hAnsi=\"Times New Roman\" w:cs=\"Times New Roman\"/>" + (o.b ? "<w:b/>" : "") + (o.u ? "<w:u w:val=\"single\"/>" : "") + "<w:sz w:val=\"" + (o.sz || 24) + "\"/></w:rPr><w:t xml:space=\"preserve\">" + xe(t) + "</w:t></w:r>";
+    }).join("");
+    return "<w:p><w:pPr>" + (o.pb ? "<w:pageBreakBefore/>" : "") + "<w:spacing w:before=\"" + (o.before || 0) + "\" w:after=\"" + (o.after == null ? 120 : o.after) + "\" w:line=\"" + (o.line || 276) + "\" w:lineRule=\"auto\"/>" + (o.ind ? "<w:ind w:firstLine=\"" + o.ind + "\"/>" : "") + "<w:jc w:val=\"" + (o.jc || "left") + "\"/></w:pPr>" + runs + "</w:p>";
+  }
+  function orderGroups(c){
+    var g = [], idx = {};
+    c.rows.forEach(function(r){ var k = r.vendor || ""; if(idx[k] == null){ idx[k] = g.length; g.push({vendor: k, gross: 0}); } g[idx[k]].gross += r.gross; });
+    return g;
+  }
+  async function exportOrders(quiet){
+    var r = await buildOrders(); if(!r){ toastMsg("Tick a bill or type a line first.", "پہلے بل پر ٹک لگائیں یا لائن لکھیں۔"); return; }
+    await saveBlob(r.blob, r.name);
+    if(!quiet) toastMsg("Sanction order file is ready.", "سینکشن آرڈر کی فائل تیار ہے۔");
+  }
+  async function buildOrders(){
+    var c = compute(); if(!c.rows.length) return null;
+    await window.__brUI.loadLib("jszip");
+    var groups = orderGroups(c), code = codeOf(S.head), headName = nameOf(S.head), ml = mLabel(S.month), n0 = parseInt(S.soNo, 10); if(!(n0 >= 0)) n0 = 1;
+    var date = dmy(S.soDate || (typeof todayStr === "function" ? todayStr() : "")), sig = [hv("ddoName"), hv("ddoDesig"), hv("ddoOffice")].filter(Boolean).join("\n");
+    var copies = hv("soCopy").split("\n").map(function(x){ return x.trim(); }).filter(Boolean);
+    var body = "";
+    groups.forEach(function(gp, i){
+      var first = i === 0;
+      if(hv("soHead")) body += wpara(hv("soHead"), {b: 1, jc: "center", pb: !first, after: 200});
+      body += wpara("ORDER:", {b: 1, u: 1, before: 120, after: 160, pb: first && !hv("soHead") ? false : false});
+      body += wpara("Sanction is hereby accorded under " + hv("soRule") + " for incurring of an expenditure of Rs." + money(gp.gross) + "/- (" + words(gp.gross) + ") in favor of " + (gp.vendor || "____________") + " for the month of " + ml + ". The expenditure involved will be debited to the " + (hv("soGrant") ? hv("soGrant") + " " : "") + code + " (" + headName + ") for the current financial year " + fyLong(c.fy) + ".", {jc: "both", ind: 720, after: 360});
+      if(sig) body += wpara(sig, {b: 1, jc: "right", after: 240});
+      body += wpara("No. " + (n0 + i) + (hv("soRef") ? "- " + hv("soRef") : "") + (date ? "    Dated " + date : ""), {after: 160});
+      if(copies.length){
+        body += wpara("Copy Forwarded for information and necessary action to:-", {after: 80});
+        copies.forEach(function(t, k){ body += wpara((k + 1) + ".  " + t, {after: 40}); });
+      }
+      if(sig) body += wpara(sig, {b: 1, jc: "right", before: 360, after: 0});
+    });
+    var doc = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><w:document xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><w:body>" + body + "<w:sectPr><w:pgSz w:w=\"11906\" w:h=\"16838\"/><w:pgMar w:top=\"1134\" w:right=\"1134\" w:bottom=\"1134\" w:left=\"1134\" w:header=\"567\" w:footer=\"567\" w:gutter=\"0\"/></w:sectPr></w:body></w:document>";
+    var z = new JSZip();
+    z.file("[Content_Types].xml", "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"><Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/><Default Extension=\"xml\" ContentType=\"application/xml\"/><Override PartName=\"/word/document.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml\"/></Types>");
+    z.file("_rels/.rels", "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"word/document.xml\"/></Relationships>");
+    z.file("word/document.xml", doc);
+    var blob = await z.generateAsync({type: "blob", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", compression: "DEFLATE"});
+    return {blob: blob, name: "SanctionOrder_" + code + "_" + S.month + ".docx", count: groups.length};
+  }
+  /* ---------- every bill of the register at once: one ZIP, a folder per month, TR-30 + sanction order for each head ---------- */
+  function allGroups(fy){
+    var idx = {}, out = [];
+    allBills().forEach(function(b){
+      if(!b.head || isSalaryHead(b.head) || !b.date) return;
+      if(fy && fyOfDate(b.date) !== fy) return;
+      var k = String(b.date).slice(0, 7) + "|" + b.head;
+      if(!idx[k]){ idx[k] = {month: String(b.date).slice(0, 7), head: b.head, n: 0}; out.push(idx[k]); }
+      idx[k].n++;
+    });
+    return out.sort(function(a, b){ return a.month < b.month ? -1 : a.month > b.month ? 1 : (a.head < b.head ? -1 : 1); });
+  }
+  function fyList(){ var set = {}; allBills().forEach(function(b){ if(b.date && b.head && !isSalaryHead(b.head)) set[fyOfDate(b.date)] = 1; }); return Object.keys(set).sort().reverse(); }
+  async function exportAll(){
+    var fy = (document.getElementById("t30_allfy") || {}).value || "", gs = allGroups(fy);
+    if(!gs.length){ toastMsg("No bills found for this choice.", "اس انتخاب کے کوئی بل نہیں ملے۔"); return; }
+    await window.__brUI.loadLib("jszip");
+    var keep = {head: S.head, month: S.month, vendor: S.vendor, tick: S.tick, manual: S.manual, mode: S.mode, soNo: S.soNo}, zip = new JSZip(), counter = parseInt(S.soNo, 10); if(!(counter >= 0)) counter = 1;
+    var nb = 0, files = [];
+    try{
+      S.manual = []; S.vendor = ""; S.mode = "bills";
+      for(var i = 0; i < gs.length; i++){
+        S.head = gs[i].head; S.month = gs[i].month; S.tick = {}; headBills().forEach(function(b){ S.tick[b.id] = true; });
+        var x = await buildXlsx(); if(!x) continue;
+        S.soNo = String(counter); var o = await buildOrders();
+        zip.file(S.month + "/" + x.name, x.blob); if(o){ zip.file(S.month + "/" + o.name, o.blob); counter += o.count; }
+        nb += gs[i].n; files.push(S.month + "  " + S.head + "  (" + gs[i].n + ")");
+      }
+    } finally { S.head = keep.head; S.month = keep.month; S.vendor = keep.vendor; S.tick = keep.tick; S.manual = keep.manual; S.mode = keep.mode; S.soNo = keep.soNo; }
+    zip.file("list.txt", files.join("\r\n"));
+    var blob = await zip.generateAsync({type: "blob", compression: "DEFLATE"});
+    await saveBlob(blob, "TR30_AllBills_" + (fy || "all") + ".zip");
+    toastMsg(nb + " bills, " + gs.length + " TR-30 bills made.", nb + " بل، " + gs.length + " TR-30 بل بن گئے۔");
+  }
+  function toastMsg(en, ur){ try{ toast((document.documentElement.getAttribute("lang") === "ur" || document.body.classList.contains("ur")) ? ur : en); }catch(e){} }
+
+  /* ---------- events ---------- */
+  panel.addEventListener("change", function(ev){
+    var t = ev.target; if(!t.id && !t.classList) return;
+    if(t.id === "t30_head"){ S.head = t.value; S.month = ""; S.vendor = ""; render(); return; }
+    if(t.id === "t30_month"){ S.month = t.value; S.vendor = ""; render(); return; }
+    if(t.id === "t30_vendor"){ S.vendor = t.value; render(); return; }
+    if(t.id === "t30_all"){ headBills().forEach(function(b){ S.tick[b.id] = t.checked; }); render(); return; }
+    if(t.classList.contains("t30-tk")){ S.tick[t.getAttribute("data-id")] = t.checked; var hb = headBills(), all = document.getElementById("t30_all"); if(all) all.checked = hb.every(function(b){ return S.tick[b.id]; }); sumRefresh(); return; }
+    if(t.id === "t30_both"){ S.both = t.checked; return; }
+    if(t.id === "t30_allfy"){ S.allfy = t.value; return; }
+    if(t.id === "t30_mode"){ S.mode = t.value; sumRefresh(); return; }
+    if(t.classList.contains("t30-m") && t.tagName === "SELECT"){ var mm = S.manual[+t.getAttribute("data-i")]; if(t.value === "__other__"){ mm.custom = true; mm.vendor = ""; render(); return; } mm.custom = false; mm.vendor = t.value; render(); return; }
+  });
+  panel.addEventListener("input", function(ev){
+    var t = ev.target;
+    if(t.classList && t.classList.contains("t30-r")){ var sd = SDS(); sd.rates = sd.rates || {}; sd.rates[S.head] = sd.rates[S.head] || {}; sd.rates[S.head][t.getAttribute("data-rk")] = t.value === "" ? "" : num(t.value); if(canEdit()) persist(); refreshPh(); sumRefresh(); return; }
+    if(t.classList && t.classList.contains("t30-m") && t.tagName === "INPUT"){ var m = S.manual[+t.getAttribute("data-i")], k = t.getAttribute("data-k"); m[k] = (k === "title" || k === "vendor") ? t.value : (t.value === "" ? "" : num(t.value)); sumRefresh(); return; }
+    if(t.classList && t.classList.contains("t30-f")){
+      var k2 = t.id.slice(6), v = t.value;
+      if(k2 === "trNo" || k2 === "billNo" || k2 === "soNo" || k2 === "soDate"){ S[k2] = v; return; }
+      if(!canEdit()) return;
+      SDS().hdr[k2] = v; persist();
+    }
+  });
+  panel.addEventListener("click", function(ev){
+    var t = ev.target.closest ? ev.target.closest("button") : null; if(!t) return;
+    if(t.id === "t30_add"){ S.manual.push({vendor: S.vendor || "", title: "", gross: ""}); render(); return; }
+    if(t.classList.contains("t30-rm")){ S.manual.splice(+t.getAttribute("data-i"), 1); render(); return; }
+    if(t.id === "t30_allzip"){ exportAll().catch(function(e){ console.error(e); toastMsg("Could not make the file: " + e.message, "فائل نہیں بن سکی: " + e.message); }); return; }
+    if(t.id === "t30_so"){ exportOrders().catch(function(e){ console.error(e); toastMsg("Could not make the file: " + e.message, "فائل نہیں بن سکی: " + e.message); }); return; }
+    if(t.id === "t30_xl"){ exportXlsx().catch(function(e){ console.error(e); toastMsg("Could not make the file: " + e.message, "فائل نہیں بن سکی: " + e.message); }); return; }
+  });
+  var lastSig = "";
+  function sig(){ return allBills().length + "|" + (STATE.bills || []).map(function(b){ return b.id + ":" + b.gross + ":" + b.pst + ":" + b.it + ":" + b.head + ":" + b.date + ":" + b.vendorName; }).join(",").length; }
+  function refreshIfActive(force){
+    if(!panel.offsetParent) return;
+    var s = sig(); if(!force && s === lastSig) return;
+    var ae = document.activeElement; if(!force && ae && panel.contains(ae) && /INPUT|SELECT|TEXTAREA/.test(ae.tagName)) return;
+    lastSig = s; S.tickFor = ""; render();
+  }
+  /* the two parts of the Contingent Bill tab: "Bill entry & register" and this TR-30 part */
+  document.querySelectorAll(".t30-sub").forEach(function(b){ b.addEventListener("click", function(){
+    var main = document.getElementById("billMainWrap"), mine = document.getElementById("t30Wrap"), which = b.getAttribute("data-sub");
+    if(main) main.hidden = which !== "main"; if(mine) mine.hidden = which !== "tr30";
+    document.querySelectorAll(".t30-sub").forEach(function(x){ x.classList.toggle("active", x === b); });
+    if(which === "tr30") setTimeout(function(){ refreshIfActive(true); }, 0);
+  }); });
+  setInterval(function(){ try{ refreshIfActive(false); }catch(e){} }, 1500);
+  window.__brTr30 = {compute: compute, state: S, render: render, exportXlsx: exportXlsx, words: words, setCell: setCell};
+})();
+
 
 /* ================= PAY FIXATION (Pay Scales 2026) — read-only checker, calculator and chart (Admin / Super Admin) =================
    Rules come from Finance Department, Government of the Punjab, Notification No. FD.SR-V.2-1/2026 dated 22-07-2026
