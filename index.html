@@ -1300,6 +1300,10 @@ body.lang-ur .br-part{ font-size:17px; }
 #panel-payfix .ar-tbl td, #panel-payfix .ar-tbl th{ white-space:nowrap; }
 #panel-payfix .ar-emps{ display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:6px 14px; margin:6px 0; max-height:320px; overflow:auto; border:1px solid var(--border); border-radius:8px; padding:8px; }
 #panel-payfix .ar-emp{ display:flex; gap:6px; align-items:baseline; font-size:13px; cursor:pointer; }
+#panel-payfix select.op-ch{ min-width:210px; width:100%; }
+#panel-payfix input.op-dt{ min-width:150px; }
+#panel-payfix td.op-st{ min-width:200px; max-width:340px; }
+#panel-payfix td.op-st .pf-chip{ display:inline-block; white-space:normal; line-height:1.35; border-radius:12px; }
 #panel-payfix .pf-bar{ display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; margin:0 0 12px; }
 #panel-payfix .pf-bar .field{ min-width:140px; flex:1 1 160px; max-width:260px; margin:0; }
 #panel-payfix .pf-chips{ display:flex; flex-wrap:wrap; gap:8px; margin:0 0 12px; }
@@ -2205,6 +2209,7 @@ body.lang-ur .br-part{ font-size:17px; }
         <button type="button" class="pf-sub" data-m="calc"><span class="en">Calculator</span><span class="ur">کیلکولیٹر</span></button>
         <button type="button" class="pf-sub" data-m="chart"><span class="en">Pay-stage chart</span><span class="ur">پے اسٹیج چارٹ</span></button>
         <button type="button" class="pf-sub" data-m="arrears"><span class="en">Arrears bill</span><span class="ur">بقایا جات بل</span></button>
+        <button type="button" class="pf-sub" data-m="option"><span class="en">Option record</span><span class="ur">آپشن ریکارڈ</span></button>
       </div>
       <div id="pfBody"></div>
     </section>
@@ -10298,7 +10303,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     }
     panel.querySelectorAll(".pf-sub").forEach(function(b){ b.classList.toggle("active", b.getAttribute("data-m") === mode); });
     try{
-      body.innerHTML = mode === "arrears" ? (window.__brArrears ? window.__brArrears.view() : "") : mode === "check" ? viewCheck() : mode === "calc" ? viewCalc() : viewChart();
+      body.innerHTML = mode === "option" ? (window.__brOption ? window.__brOption.view() : "") : mode === "arrears" ? (window.__brArrears ? window.__brArrears.view() : "") : mode === "check" ? viewCheck() : mode === "calc" ? viewCalc() : viewChart();
     }catch(err){ body.innerHTML = "<div class='pf-warn'>" + esc(String(err && err.message || err)) + "</div>"; }
     lastState = STATE;
   }
@@ -11049,6 +11054,131 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   });
 
   window.__brArrears = {view: viewMain, build: build, diffOf: diffOf, totalsOf: totalsOf, bills: bills, stmtTables: stmtTables, letterBlocks: letterBlocks, state: function(){ return {view: view, cur: cur}; }};
+})();
+
+/* ================= OPTION RECORD — Pay Scales 2022 or 2026 (inside the Pay Fixation tab, Admin / Super Admin) =================
+   Para 12 of the Punjab notification (FD.SR-V.2-1/2026, 22-07-2026): every existing employee had 30 days from the date of issue to give an
+   irrevocable option in writing — keep drawing pay in the Basic Pay Scales 2022 or move to the Basic Pay Scales 2026.  An employee who did
+   not reply in time is deemed to have opted for the Scales 2026.  This screen only KEEPS A RECORD (who opted what, on which date, remarks)
+   and prints it; it does not change any pay figure anywhere.  Saved with the Bill Register data (STATE.stmtData.options). */
+(function(){
+  "use strict";
+  var PF = window.__brPayFix, panel = document.getElementById("panel-payfix"), body = document.getElementById("pfBody");
+  if(!PF || !panel || !body) return;
+  var DEF_ISSUE = "2026-07-22", DEF_DAYS = 30, DEF_REF = "Notification No. FD.SR-V.2-1/2026 dated 22-07-2026";
+  function $(sel){ return panel.querySelector(sel); }
+  function T(en, ur){ return "<span class='en'>" + en + "</span><span class='ur'>" + ur + "</span>"; }
+  function plain(html){ var d = document.createElement("div"); d.innerHTML = html; d.querySelectorAll(".ur").forEach(function(x){ x.remove(); }); return d.textContent || ""; }
+  function allowed(){ try{ return isAdmin(); }catch(e){ return false; } }
+  function dLabel(d){ var a = String(d || "").split("-"); return a.length === 3 ? a[2] + "-" + a[1] + "-" + a[0] : String(d || ""); }
+  function isDate(s){ return /^\d{4}-\d{2}-\d{2}$/.test(String(s || "")); }
+  function addDays(d, n){ var a = d.split("-"), t = new Date(Date.UTC(+a[0], +a[1] - 1, +a[2] + n)); return t.getUTCFullYear() + "-" + ("0" + (t.getUTCMonth() + 1)).slice(-2) + "-" + ("0" + t.getUTCDate()).slice(-2); }
+
+  function root(){
+    var s = STATE.stmtData; if(!s || typeof s !== "object") s = STATE.stmtData = {};
+    if(!s.options || typeof s.options !== "object") s.options = {};
+    var o = s.options;
+    if(!isDate(o.issue)) o.issue = DEF_ISSUE;
+    if(!(+o.days > 0)) o.days = DEF_DAYS;
+    if(typeof o.ref !== "string") o.ref = DEF_REF;
+    if(!o.emps || typeof o.emps !== "object") o.emps = {};
+    return o;
+  }
+  /* last day to give the option: 30 days commencing from the date of issue */
+  function lastDay(){ var o = root(); return addDays(o.issue, Math.round(+o.days)); }
+
+  var saveT = null;
+  function persist(){
+    if(typeof tabOK === "function" && !tabOK("cf")){ toast("You do not have permission to save here"); return false; }
+    clearTimeout(saveT); saveT = setTimeout(function(){ try{ saveData(); var el = $("#op_saved"); if(el) el.textContent = "✔ saved"; }catch(err){ console.error(err); } }, 700);
+    var el0 = $("#op_saved"); if(el0) el0.textContent = "…";
+    return true;
+  }
+
+  /* status of one employee: {k, en, ur, bad} */
+  function statusOf(rec, last){
+    var c = rec && rec.choice;
+    if(c !== "2022" && c !== "2026") return {k: "deemed", en: "Deemed Scales 2026 (no option given)", ur: "نیا اسکیل 2026 (طے شدہ — آپشن نہیں دیا)", bad: 0, short: "Deemed 2026"};
+    var d = rec.date, inTime = isDate(d) && d <= last;
+    if(c === "2026") return inTime ? {k: "o26", en: "Opted Scales 2026", ur: "آپشن: نیا اسکیل 2026", bad: 0, short: "Opted 2026"} : {k: "o26", en: "Opted Scales 2026" + (isDate(d) ? " (after the last date — same result)" : ""), ur: "آپشن: نیا اسکیل 2026" + (isDate(d) ? " (آخری تاریخ کے بعد — نتیجہ وہی)" : ""), bad: 0, short: "Opted 2026"};
+    if(inTime) return {k: "o22", en: "Opted Scales 2022", ur: "آپشن: پرانا اسکیل 2022", bad: 0, short: "Opted 2022"};
+    return {k: "o22late", en: isDate(d) ? "Scales 2022 — date is after the last date: check (deemed 2026 if not in time)" : "Scales 2022 — date missing: check", ur: isDate(d) ? "پرانا اسکیل 2022 — تاریخ آخری تاریخ کے بعد ہے: جانچ لیں (وقت پر نہ ہو تو نیا اسکیل مانا جائے گا)" : "پرانا اسکیل 2022 — تاریخ درج نہیں: جانچ لیں", bad: 1, short: "Scales 2022 - check"};
+  }
+  function empList(){ return (STATE.employees || []).slice().sort(function(a, b){ return String(a.name || "").localeCompare(String(b.name || "")); }); }
+  function recOf(e){ return root().emps[e.id] || null; }
+
+  function view(){
+    if(!allowed()) return "<div class='pf-warn'>" + T("This section is only for Admin / Super Admin.", "یہ حصہ صرف ایڈمن / سپر ایڈمن کے لیے ہے۔") + "</div>";
+    var o = root(), last = lastDay(), list = empList(), cnt = {deemed: 0, o26: 0, o22: 0, o22late: 0};
+    var rows = list.map(function(e, i){
+      var rec = recOf(e), st = statusOf(rec, last); cnt[st.k]++;
+      var c = rec && rec.choice || "";
+      return "<tr" + (st.bad ? " class='pf-bad'" : "") + "><td class='c'>" + (i + 1) + "</td><td>" + esc(e.name || "") + "<div class='hint' style='margin:0'>" + esc(e.designation || "") + " · BPS-" + esc(String(e.bps || "")) + " · " + esc(String(e.persNo || "")) + "</div></td>" +
+        "<td><select class='op-ch' data-id='" + esc(e.id) + "'><option value=''" + (c === "" ? " selected" : "") + ">" + plain(T("— no option given", "— آپشن نہیں دیا")) + "</option><option value='2026'" + (c === "2026" ? " selected" : "") + ">" + plain(T("Scales 2026 (new)", "نیا اسکیل 2026")) + "</option><option value='2022'" + (c === "2022" ? " selected" : "") + ">" + plain(T("Scales 2022 (old)", "پرانا اسکیل 2022")) + "</option></select></td>" +
+        "<td><input type='date' class='op-dt' data-id='" + esc(e.id) + "' value='" + esc(rec && rec.date || "") + "'" + (c === "" ? " disabled" : "") + "></td>" +
+        "<td><input class='op-nt' data-id='" + esc(e.id) + "' value='" + esc(rec && rec.note || "") + "' placeholder='" + esc(plain(T("remarks", "ریمارکس"))) + "' style='min-width:160px'></td>" +
+        "<td class='op-st'><span class='pf-chip " + (st.bad ? "pf-c-bad" : st.k === "deemed" ? "" : "pf-c-ok") + "'>" + T(esc(st.en), esc(st.ur)) + "</span></td></tr>";
+    });
+    var h = "<p class='hint'>" + T("Para 12 of the notification: within 30 days of the date of issue every existing employee gives an irrevocable written option — pay in the Basic Pay Scales 2022 or in the Basic Pay Scales 2026. An employee who gives no option in time is deemed to have opted for the Scales 2026. This page only keeps the record; it does not change any pay or calculation.", "نوٹیفکیشن کا پیرا 12: اجراء کی تاریخ سے 30 دن کے اندر ہر موجودہ ملازم تحریری، ناقابلِ تنسیخ آپشن دیتا ہے — بنیادی تنخواہ کا اسکیل 2022 یا اسکیل 2026۔ جو ملازم وقت پر آپشن نہ دے اسے اسکیل 2026 کا آپشن دیا ہوا مانا جاتا ہے۔ یہ صفحہ صرف ریکارڈ رکھتا ہے، کسی تنخواہ یا حساب کو نہیں بدلتا۔") + "</p>";
+    h += "<div class='pf-bar'><div class='field' style='max-width:200px'><label>" + T("Date of issue of the notification", "نوٹیفکیشن کے اجراء کی تاریخ") + "</label><input type='date' id='op_issue' value='" + esc(o.issue) + "'></div>" +
+      "<div class='field' style='max-width:120px'><label>" + T("Days allowed", "دن") + "</label><input type='number' id='op_days' min='1' value='" + esc(String(o.days)) + "'></div>" +
+      "<div class='field' style='max-width:520px;flex:2 1 300px'><label>" + T("Notification (as it will appear in the printout)", "نوٹیفکیشن (پرنٹ میں جیسا آئے)") + "</label><input id='op_ref' value='" + esc(o.ref) + "'></div></div>";
+    h += "<div class='pf-chips'><span class='pf-chip'>" + T("Last date for the option", "آپشن کی آخری تاریخ") + ": " + esc(dLabel(last)) + "</span><span class='pf-chip'>" + T("Employees", "ملازمین") + ": " + list.length + "</span><span class='pf-chip'>" + T("Deemed 2026", "طے شدہ 2026") + ": " + cnt.deemed + "</span><span class='pf-chip pf-c-ok'>" + T("Opted 2026", "آپشن 2026") + ": " + cnt.o26 + "</span><span class='pf-chip pf-c-ok'>" + T("Opted 2022", "آپشن 2022") + ": " + cnt.o22 + "</span>" + (cnt.o22late ? "<span class='pf-chip pf-c-bad'>" + T("To check", "جانچ طلب") + ": " + cnt.o22late + "</span>" : "") + " <span class='hint' id='op_saved' style='margin:0'></span></div>";
+    if(cnt.o22 + cnt.o22late) h += "<div class='pf-warn'>" + T("Note: the checks, calculator, arrears bills and budget demand of this system work on the Scales 2026 for everyone. For an employee who opted for the Scales 2022 the record is kept here only — his pay in the pay slip stays the guide.", "نوٹ: اس سسٹم کے چیک، کیلکولیٹر، بقایا جات بل اور بجٹ ڈیمانڈ سب کے لیے اسکیل 2026 پر چلتے ہیں۔ جس ملازم نے اسکیل 2022 کا آپشن دیا اس کا ریکارڈ صرف یہاں رکھا جاتا ہے — اس کی تنخواہ کے لیے پے سلپ ہی رہنما رہے گی۔") + "</div>";
+    h += "<div class='table-wrap'><table class='pf-tbl'><thead><tr><th class='c'>#</th><th>" + T("Employee", "ملازم") + "</th><th>" + T("Option", "آپشن") + "</th><th>" + T("Date of option", "آپشن کی تاریخ") + "</th><th>" + T("Remarks", "ریمارکس") + "</th><th>" + T("Status", "حالت") + "</th></tr></thead><tbody>" + (rows.join("") || "<tr><td colspan='6' class='c'>" + T("No employees in the system.", "سسٹم میں کوئی ملازم نہیں۔") + "</td></tr>") + "</tbody></table></div>";
+    h += "<div class='pf-bar' style='margin-top:12px'><b>" + T("Print the record", "ریکارڈ پرنٹ کریں") + ":</b> <button type='button' class='btn small op-ex' data-k='excel'>Excel</button> <button type='button' class='btn small op-ex' data-k='word'>Word</button> <button type='button' class='btn small op-ex' data-k='pdf'>PDF</button></div>";
+    h += "<p class='hint'>" + T("Pick the option an employee gave and the date he gave it; leave “no option given” for those who did not reply. The PDF shows English text only; Urdu remarks appear in Word and Excel.", "جس ملازم نے جو آپشن دیا وہ اور اس کی تاریخ چنیں؛ جس نے جواب نہیں دیا اس کے آگے ”آپشن نہیں دیا“ رہنے دیں۔ پی ڈی ایف میں صرف انگریزی متن آتا ہے؛ اردو ریمارکس ورڈ اور ایکسل میں آتے ہیں۔") + "</p>";
+    return h;
+  }
+
+  function tables(){
+    var o = root(), last = lastDay(), list = empList(), cnt = {deemed: 0, o26: 0, o22: 0, o22late: 0};
+    var rows = list.map(function(e, i){
+      var rec = recOf(e), st = statusOf(rec, last); cnt[st.k]++;
+      var c = rec && rec.choice; var opt = c === "2022" ? "Scales 2022 (old)" : c === "2026" ? "Scales 2026 (new)" : "No option given";
+      return {cells: [String(i + 1), String(e.name || ""), String(e.designation || ""), "BPS-" + (e.bps || ""), String(e.persNo || ""), opt, c ? dLabel(rec.date) : "", st.short, String(rec && rec.note || "")], nums: [false, false, false, false, false, false, false, false, false]};
+    });
+    return [{sheet: "Option record", title: "Record of options given", heads: ["#", "Name", "Designation", "BPS", "Pers. No.", "Option", "Date of option", "Status", "Remarks"], num: [false, false, false, false, false, false, false, false, false], rows: rows,
+      foot: [{cells: ["", "Total " + list.length, "", "", "", "Opted 2022: " + (cnt.o22 + cnt.o22late), "Opted 2026: " + cnt.o26, "Deemed 2026: " + cnt.deemed, ""], nums: [false, false, false, false, false, false, false, false, false]}]},
+      {sheet: "Basis", title: "Basis", heads: ["Notes"], num: [false], rows: [
+        {cells: ["1.  " + (o.ref || DEF_REF) + ", para 12: within " + o.days + " days of the date of issue (" + dLabel(o.issue) + "), i.e. up to " + dLabel(last) + ", every existing employee gives an irrevocable written option to draw pay in the Basic Pay Scales 2022 or in the Basic Pay Scales 2026."], nums: [false]},
+        {cells: ["2.  An employee who does not exercise the option within the time limit is deemed to have opted for the Scales 2026."], nums: [false]}], foot: []}];
+  }
+  async function exportRec(kind){
+    if(!window.__brExportTables){ toast("The export tools are not ready — reload the page"); return; }
+    var gp = document.getElementById("globalPaperSize") || {};
+    await window.__brExportTables(kind, tables(), {title: "Option Record — Basic Pay Scales 2022 / 2026", sub: "Last date for the option: " + dLabel(lastDay()), base: "OptionRecord_PayScales2026", landscape: true, office: "", paper: (gp.value === "A4" ? "Legal" : gp.value) || "Legal"});
+  }
+
+  function setRec(id, f, v){
+    var o = root(), r = o.emps[id] || (o.emps[id] = {});
+    r[f] = v;
+    if(f === "choice" && v === ""){ delete r.date; }
+    r.updated = Date.now();
+    return persist();
+  }
+  panel.addEventListener("click", function(ev){
+    var t = ev.target.closest ? ev.target.closest("button") : null; if(!t || !allowed()) return;
+    if(t.classList.contains("op-ex")){ exportRec(t.getAttribute("data-k")); }
+  });
+  panel.addEventListener("change", function(ev){
+    var t = ev.target; if(!allowed() || !t.classList) return;
+    if(t.classList.contains("op-ch")){
+      var id = t.getAttribute("data-id");
+      setRec(id, "choice", t.value);
+      if(window.__brPayFix && window.__brPayFix.render) window.__brPayFix.render(); return;
+    }
+    if(t.classList.contains("op-dt")){ setRec(t.getAttribute("data-id"), "date", t.value); if(window.__brPayFix && window.__brPayFix.render) window.__brPayFix.render(); return; }
+    if(t.id === "op_issue"){ if(isDate(t.value)){ root().issue = t.value; persist(); if(window.__brPayFix && window.__brPayFix.render) window.__brPayFix.render(); } return; }
+    if(t.id === "op_days"){ var n = Math.round(+t.value); if(n > 0){ root().days = n; persist(); if(window.__brPayFix && window.__brPayFix.render) window.__brPayFix.render(); } return; }
+  });
+  panel.addEventListener("input", function(ev){
+    var t = ev.target; if(!allowed() || !t.classList) return;
+    if(t.classList.contains("op-nt")){ var id = t.getAttribute("data-id"), o = root(); if(o.emps[id]) { o.emps[id].note = t.value; persist(); } else if(t.value){ o.emps[id] = {choice: "", note: t.value}; persist(); } return; }
+    if(t.id === "op_ref"){ root().ref = t.value; persist(); }
+  });
+
+  window.__brOption = {view: view, root: root, lastDay: lastDay, statusOf: statusOf, tables: tables};
 })();
 
 /* ================= BM-26 MONTHLY SALARY STATEMENT (Admin / Super Admin) =================
