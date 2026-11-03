@@ -11891,6 +11891,79 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     show(0);
   }
 
+
+  /* ---------- one separate file per person, all in one ZIP ----------
+     The existing Excel / Word / PDF buttons of the screen are pressed once for every ticked person (with only that person ticked) and the
+     files they would download are caught and put in a ZIP instead, one folder per person.  The original selection is put back afterwards. */
+  var ZJOBS = {
+    change: [["pdf", "PDF", "button.cf-ex[data-k=pdf]", 1], ["word", "Word", "button.cf-ex[data-k=word]", 1], ["excel", "Excel", "button.cf-ex[data-k=excel]", 0]],
+    arrears: [["s_pdf", "Statement — PDF", "button.ar-ex[data-k=pdf]", 1], ["s_word", "Statement — Word", "button.ar-ex[data-k=word]", 0], ["s_xl", "Statement — Excel", "button.ar-ex[data-k=excel]", 0],
+      ["l_word", "Letter — Word", "button.ar-lt[data-k=word]", 1], ["l_pdf", "Letter — PDF", "button.ar-lt[data-k=pdf]", 0], ["u_word", "Urdu letter — Word", "button.ar-lu[data-k=word]", 0], ["u_pdf", "Urdu letter — PDF", "button.ar-lu[data-k=pdf]", 0]]
+  };
+  function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+  function waitFor(fn, ms){ return new Promise(function(res){ var t0 = Date.now(); (function p(){ if(fn()) return res(true); if(Date.now() - t0 > ms) return res(false); setTimeout(p, 120); })(); }); }
+  function startCapture(){
+    var blobs = {}, got = [], oc = URL.createObjectURL, ok = HTMLAnchorElement.prototype.click, od = EventTarget.prototype.dispatchEvent, oa = window.__campAskStamp;
+    URL.createObjectURL = function(b){ var u = oc.call(URL, b); blobs[u] = b; return u; };
+    function grab(a){ if(a && a.download && blobs[a.href]){ got.push({name: a.download, blob: blobs[a.href]}); return true; } return false; }
+    HTMLAnchorElement.prototype.click = function(){ if(grab(this)) return; return ok.apply(this, arguments); };
+    EventTarget.prototype.dispatchEvent = function(ev){ if(this instanceof HTMLAnchorElement && ev && ev.type === "click" && grab(this)) return true; return od.apply(this, arguments); };
+    window.__campAskStamp = null;
+    return {got: got, stop: function(){ URL.createObjectURL = oc; HTMLAnchorElement.prototype.click = ok; EventTarget.prototype.dispatchEvent = od; window.__campAskStamp = oa; }};
+  }
+  function setSelection(sc, want){
+    var q = sc === "arrears" ? ".ar-sel" : ".cf-sel";
+    for(var g = 0; g < 100; g++){
+      var boxes = body.querySelectorAll(q), bad = null;
+      for(var i = 0; i < boxes.length; i++){ if(boxes[i].checked !== !!want[boxes[i].getAttribute("data-id")]){ bad = boxes[i]; break; } }
+      if(!bad) return true; bad.click();
+    }
+    return false;
+  }
+  function safeName(s){ return String(s || "").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "") || "item"; }
+  async function zipRun(sc, ids, keys, prog){
+    await window.__brUI.loadLib("jszip");
+    var Z = new window.JSZip(), cap = startCapture(), orig = {}, fails = [], made = 0, today = new Date().toISOString().slice(0, 10);
+    ticked(sc).forEach(function(i){ orig[i] = 1; });
+    var jobs = ZJOBS[sc].filter(function(j){ return keys.indexOf(j[0]) >= 0; });
+    try{
+      for(var i = 0; i < ids.length; i++){
+        var id = ids[i], nm = nameOf(sc, id), one = {}; one[id] = 1;
+        prog(i, ids.length, nm);
+        if(!setSelection(sc, one)){ fails.push(nm); continue; }
+        for(var j = 0; j < jobs.length; j++){
+          var b = body.querySelector(jobs[j][2]);
+          if(!b || b.disabled){ fails.push(nm + " — " + jobs[j][1]); continue; }
+          var before = cap.got.length; b.click();
+          var ok = await waitFor(function(){ return cap.got.length > before; }, 60000);
+          if(!ok){ fails.push(nm + " — " + jobs[j][1]); continue; }
+          await sleep(250);
+          cap.got.slice(before).forEach(function(f){ Z.file(safeName(nm) + "/" + f.name, f.blob); made++; });
+        }
+      }
+    } finally { cap.stop(); setSelection(sc, orig); }
+    if(!made) throw new Error("No file could be made");
+    var blob = await Z.generateAsync({type: "blob"}), a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = (sc === "arrears" ? "ArrearsBills" : "ChangeForms") + "_separate_" + today + ".zip"; document.body.appendChild(a); a.click(); a.remove();
+    return {made: made, fails: fails, name: a.download};
+  }
+  function openZip(d){
+    var ids = ticked(d.sc).filter(function(id){ return (dict(d.sc) || {})[id]; });
+    if(!ids.length){ toast("Tick the people you want first"); return; }
+    var boxes = ZJOBS[d.sc].map(function(j){ return "<label style='display:block;margin:4px 0'><input type='checkbox' class='et-zk' value='" + j[0] + "'" + (j[3] ? " checked" : "") + "> " + esc(j[1]) + "</label>"; }).join("");
+    var ov = overlay("<div class='et-hd'><b>📦 " + T("Separate file for each person (one ZIP)", "ہر شخص کی الگ فائل (ایک ZIP میں)") + "</b><span class='sp'></span></div><div style='padding:14px'><p style='margin:0 0 8px'>" + T("People ticked", "ٹِک کیے ہوئے لوگ") + ": <b>" + ids.length + "</b></p>" + boxes + "<div class='pf-bar' style='margin-top:12px'><button type='button' class='btn' id='et_zgo'>" + T("Make the ZIP", "ZIP بنائیں") + "</button> <button type='button' class='btn small' id='et_zx'>" + T("Close", "بند") + "</button></div><div id='et_zmsg' style='margin-top:8px;font-size:13px'></div></div>", "sm");
+    var go = ov.querySelector("#et_zgo"), x = ov.querySelector("#et_zx"), msg = ov.querySelector("#et_zmsg");
+    x.onclick = function(){ ov.remove(); };
+    go.onclick = function(){
+      var keys = [].map.call(ov.querySelectorAll(".et-zk:checked"), function(c){ return c.value; });
+      if(!keys.length){ msg.textContent = "Tick at least one kind of file"; return; }
+      go.disabled = true; x.disabled = true; msg.textContent = "…";
+      zipRun(d.sc, ids, keys, function(i, n, nm){ msg.textContent = (i + 1) + " / " + n + " — " + nm; }).then(function(r){
+        msg.innerHTML = "✔ " + esc(r.name) + " — " + r.made + " files" + (r.fails.length ? "<br>⚠ " + esc(r.fails.join("; ")) : ""); x.disabled = false;
+      }).catch(function(err){ console.error(err); msg.textContent = "⚠ " + (err && err.message || err); x.disabled = false; go.disabled = false; });
+    };
+  }
+
   /* ---------- the bar ---------- */
   function btn(id, label, extra){ return "<button type='button' class='btn small' id='" + id + "'" + (extra || "") + ">" + label + "</button>"; }
   function build(d){
@@ -11899,6 +11972,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(d.sc === "option") h += btn("et_del", "🗑 " + T("Clear all", "سب صاف")); else h += btn("et_del", "🗑 " + T("Delete", "مٹائیں"));
     h += "<span class='et-sep'></span>" + btn("et_undo", "↶ " + T("Undo", "واپس")) + btn("et_redo", "↷ " + T("Redo", "دوبارہ")) + btn("et_save", "💾 " + T("Save", "محفوظ"));
     h += "<span class='et-sep'></span>" + btn("et_prev", "👁 " + T("Print preview", "پرنٹ پری ویو")) + btn("et_print", "🖨 " + T("Print", "پرنٹ"));
+    if(list) h += btn("et_zip", "📦 " + T("Separate files (ZIP)", "ہر شخص کی الگ فائل (ZIP)"));
     h += "<span class='et-status' id='et_status'></span>";
     return h;
   }
@@ -11932,6 +12006,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     else if(t.id === "et_del") doDelete(d);
     else if(t.id === "et_prev") preview(d, false);
     else if(t.id === "et_print") preview(d, true);
+    else if(t.id === "et_zip") openZip(d);
   });
   document.addEventListener("keydown", function(ev){
     if(!(ev.ctrlKey || ev.metaKey) || document.querySelector(".et-ov")) return;
