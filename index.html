@@ -10541,7 +10541,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   var saveT = null, savedAt = 0;
   function persist(){
     if(typeof tabOK === "function" && !tabOK("cf")){ toast("You do not have permission to save here"); return false; }
-    clearTimeout(saveT); saveT = setTimeout(function(){ try{ saveData(); savedAt = Date.now(); var el = $("#ar_saved"); if(el) el.textContent = "✔ saved"; }catch(err){ console.error(err); } }, 700);
+    if(window.__brEdit) window.__brEdit.touch("arrears"); clearTimeout(saveT); saveT = setTimeout(function(){ try{ saveData(); savedAt = Date.now(); var el = $("#ar_saved"); if(el) el.textContent = "✔ saved"; }catch(err){ console.error(err); } }, 700);
     var el0 = $("#ar_saved"); if(el0) el0.textContent = "…";
     return true;
   }
@@ -11056,7 +11056,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(view === "new" && form && t.id && t.id.indexOf("ar_f_") === 0 && (t.id === "ar_f_ref" || t.id === "ar_f_p0" || t.id === "ar_f_nb")) form[t.id.slice(5)] = t.value;
   });
 
-  window.__brArrears = {view: viewMain, build: build, diffOf: diffOf, totalsOf: totalsOf, bills: bills, stmtTables: stmtTables, letterBlocks: letterBlocks, state: function(){ return {view: view, cur: cur}; }};
+  window.__brArrears = {view: viewMain, build: build, diffOf: diffOf, totalsOf: totalsOf, bills: bills, stmtTables: stmtTables, letterBlocks: letterBlocks, letterBlocksUr: letterBlocksUr, root: root, state: function(){ return {view: view, cur: cur}; }};
 })();
 
 /* ================= OPTION RECORD — Pay Scales 2022 or 2026 (inside the Pay Fixation tab, Admin / Super Admin) =================
@@ -11093,7 +11093,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   var saveT = null;
   function persist(){
     if(typeof tabOK === "function" && !tabOK("cf")){ toast("You do not have permission to save here"); return false; }
-    clearTimeout(saveT); saveT = setTimeout(function(){ try{ saveData(); var el = $("#op_saved"); if(el) el.textContent = "✔ saved"; }catch(err){ console.error(err); } }, 700);
+    if(window.__brEdit) window.__brEdit.touch("option"); clearTimeout(saveT); saveT = setTimeout(function(){ try{ saveData(); var el = $("#op_saved"); if(el) el.textContent = "✔ saved"; }catch(err){ console.error(err); } }, 700);
     var el0 = $("#op_saved"); if(el0) el0.textContent = "…";
     return true;
   }
@@ -11221,7 +11221,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   var saveT = null, view = "list", cur = null, sel = {};
   function persist(){
     if(typeof tabOK === "function" && !tabOK("cf")){ toast("You do not have permission to save here"); return false; }
-    clearTimeout(saveT); saveT = setTimeout(function(){ try{ saveData(); var el = $("#cf_saved"); if(el) el.textContent = "✔ saved"; }catch(err){ console.error(err); } }, 700);
+    if(window.__brEdit) window.__brEdit.touch("change"); clearTimeout(saveT); saveT = setTimeout(function(){ try{ saveData(); var el = $("#cf_saved"); if(el) el.textContent = "✔ saved"; }catch(err){ console.error(err); } }, 700);
     var el0 = $("#cf_saved"); if(el0) el0.textContent = "…";
     return true;
   }
@@ -11674,8 +11674,278 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   });
 
   (function(){ var css = PAPER_CSS.split("}").map(function(r){ var i = r.indexOf("{"); if(i < 0) return ""; var sel0 = r.slice(0, i), dec = r.slice(i + 1); if(true) dec = dec.split(";").map(function(d){ d = d.trim(); return d && !/important/.test(d) ? d + " !important" : d; }).filter(Boolean).join(";"); return sel0.split(",").map(function(x){ return "#panel-payfix " + x.trim(); }).join(",") + "{" + dec + "}"; }).join("\n"); var st = document.createElement("style"); st.id = "cf_paper_css"; st.textContent = css; document.head.appendChild(st); })();
-  window.__brChangeForm = {view: viewMain, forms: forms, tables: tables, sheets: sheetsOf, docHtml: docHtml, pdf: pdfSheets, docx: docxSheets, linesFromBill: linesFromBill, newForm: newForm, state: function(){ return {view: view, cur: cur}; }};
+  window.__brChangeForm = {view: viewMain, forms: forms, tables: tables, sheets: sheetsOf, docHtml: docHtml, pdf: pdfSheets, docx: docxSheets, linesFromBill: linesFromBill, newForm: newForm, previewHtml: function(fs){ return docHtml(sheetsOf(fs), false, paperKey()); }, state: function(){ return {view: view, cur: cur}; }};
 })();
+
+/* ================= EDIT TOOLS — one toolbar for the Arrears bill, Change form PAY02 and Option record (Pay Fixation tab) =================
+   Add / Edit / Delete / Undo / Redo / Save / Print preview / Print on all three screens.  Undo and Redo work on the whole stored record of
+   the screen (so a deleted bill or form can be brought back too), up to the last 50 steps while the page stays open.  Save writes the
+   data and then reads the online copy back, so the clerk sees "saved on the server" only when it really is there. */
+(function(){
+  "use strict";
+  var PF = window.__brPayFix, panel = document.getElementById("panel-payfix"), body = document.getElementById("pfBody");
+  if(!PF || !panel || !body) return;
+  var MAXSTEPS = 50, KEYS = {arrears: "arrears", change: "changeForms", option: "options"};
+  function T(en, ur){ return "<span class='en'>" + en + "</span><span class='ur'>" + ur + "</span>"; }
+  function allowed(){ try{ return isAdmin(); }catch(e){ return false; } }
+  function canSave(){ if(typeof tabOK === "function" && !tabOK("cf")){ toast("You do not have permission to save here"); return false; } return true; }
+  function sd(){ var s = STATE.stmtData; if(!s || typeof s !== "object") s = STATE.stmtData = {}; return s; }
+  function snapOf(sc){ try{ return JSON.stringify(sd()[KEYS[sc]] || {}); }catch(e){ return "{}"; } }
+  function canon(v){
+    if(Array.isArray(v)) return "[" + v.map(canon).join(",") + "]";
+    if(v && typeof v === "object") return "{" + Object.keys(v).sort().map(function(k){ return JSON.stringify(k) + ":" + canon(v[k]); }).join(",") + "}";
+    return JSON.stringify(v === undefined ? null : v);
+  }
+
+  /* ---------- history (whole record of one screen) ---------- */
+  var HS = {};
+  function hist(sc){ var h = HS[sc]; if(!h){ h = HS[sc] = {st: [snapOf(sc)], i: 0, tm: null}; } return h; }
+  function commit(sc){
+    var h = hist(sc); clearTimeout(h.tm); h.tm = null;
+    var s = snapOf(sc); if(s === h.st[h.i]) return false;
+    h.st = h.st.slice(0, h.i + 1); h.st.push(s);
+    if(h.st.length > MAXSTEPS + 1) h.st.shift();
+    h.i = h.st.length - 1; return true;
+  }
+
+  /* ---------- online check ---------- */
+  var stat = {k: "idle", t: 0}, vt = null, vtries = 0;
+  function setStatus(k){
+    stat.k = k; if(k === "saved") stat.t = Date.now();
+    var el = body.querySelector("#et_status"); if(!el) return;
+    var d = new Date(stat.t), hm = ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
+    el.className = "et-status " + k;
+    el.innerHTML = k === "saving" ? "⏳ " + T("saving…", "محفوظ ہو رہا ہے…") : k === "saved" ? "✔ " + T("saved on the server", "سرور پر محفوظ") + " " + hm : k === "pending" ? "● " + T("changed — saving soon", "تبدیلی ہوئی — ابھی محفوظ ہوگی") : k === "unconfirmed" ? "⚠ " + T("not confirmed — press Save", "تصدیق نہیں ہوئی — Save دبائیں") : "";
+  }
+  function checkServer(sc){
+    return SHARED_DOC_REF.get().then(function(ds){
+      var d = ds.exists ? ds.data() : {}, sv = (d.stmtData || {})[KEYS[sc]];
+      return canon(sv === undefined ? {} : sv) === canon(JSON.parse(snapOf(sc)));
+    });
+  }
+  function verifyLater(sc, delay){
+    clearTimeout(vt); vtries = 0; setStatus("saving");
+    vt = setTimeout(function tick(){
+      var again = function(){ if(++vtries < 20) vt = setTimeout(tick, 2500); else setStatus("unconfirmed"); };
+      checkServer(sc).then(function(ok){ if(ok) setStatus("saved"); else again(); }).catch(again);
+    }, delay == null ? 2500 : delay);
+  }
+
+  /* called by the three modules after every change they make */
+  function touch(sc){
+    var h = hist(sc); clearTimeout(h.tm);
+    h.tm = setTimeout(function(){ commit(sc); refresh(); verifyLater(sc, 2500); }, 900);
+    setStatus("pending"); refresh();
+  }
+  function afterChange(sc){
+    try{ saveData(); }catch(e){ console.error(e); }
+    PF.render(); verifyLater(sc, 2500);
+  }
+  function doUndoRedo(sc, dir){
+    if(!canSave()) return; var h = hist(sc); commit(sc);
+    var n = h.i + dir; if(n < 0 || n >= h.st.length){ toast(dir < 0 ? "Nothing more to undo" : "Nothing more to redo"); return; }
+    h.i = n; sd()[KEYS[sc]] = JSON.parse(h.st[h.i]); afterChange(sc);
+  }
+  function doSave(sc){
+    if(!canSave()) return; commit(sc);
+    try{ saveData(); }catch(e){ console.error(e); toast("Could not save: " + (e && e.message || e)); return; }
+    verifyLater(sc, 1500); refresh();
+  }
+
+  /* ---------- which screen is showing ---------- */
+  function detect(){
+    if(body.querySelector("#ar_new")) return {sc: "arrears", v: "list"};
+    if(body.querySelector("#ar_recalc")) return {sc: "arrears", v: "edit"};
+    if(body.querySelector("#cf_create")) return {sc: "change", v: "list"};
+    if(body.querySelector("#cf_prev, #cf_addline")) return {sc: "change", v: "edit"};
+    if(body.querySelector(".op-ch, #op_issue")) return {sc: "option", v: "list"};
+    return null;
+  }
+  function api(sc){ return sc === "arrears" ? window.__brArrears : sc === "change" ? window.__brChangeForm : window.__brOption; }
+  function dict(sc){ var a = api(sc); return sc === "arrears" ? a.bills() : sc === "change" ? a.forms() : null; }
+  function ticked(sc){ var q = sc === "arrears" ? ".ar-sel:checked" : ".cf-sel:checked", out = []; body.querySelectorAll(q).forEach(function(c){ out.push(c.getAttribute("data-id")); }); return out; }
+  function targets(d){ if(d.v === "edit"){ var c = api(d.sc).state().cur; return c ? [c] : []; } return ticked(d.sc); }
+  function nameOf(sc, id){ var r = (dict(sc) || {})[id]; return r ? (r.name || id) : id; }
+
+  /* ---------- small helpers: css, modal, confirm ---------- */
+  function css(){
+    if(document.getElementById("et_css")) return;
+    var s = document.createElement("style"); s.id = "et_css";
+    s.textContent = ".et-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;border:1px solid var(--border,#c9d1dc);background:var(--surface,#fff);border-radius:10px;padding:8px 10px;margin:0 0 12px}" +
+      ".et-bar .et-sep{width:1px;align-self:stretch;background:var(--border,#c9d1dc);margin:0 4px}" +
+      ".et-bar button[disabled]{opacity:.45;cursor:not-allowed}" +
+      ".et-status{font-size:12.5px;margin-inline-start:auto;color:inherit}.et-status.saved{color:#1b7f3b}.et-status.unconfirmed{color:#b42318}" +
+      ".et-ov{position:fixed;inset:0;background:rgba(10,20,40,.55);z-index:99999;display:flex;align-items:center;justify-content:center;padding:12px}" +
+      ".et-box{background:var(--surface,#fff);color:inherit;border-radius:12px;max-width:min(1180px,98vw);width:100%;max-height:96vh;display:flex;flex-direction:column;box-shadow:0 12px 40px rgba(0,0,0,.35)}" +
+      ".et-box.sm{max-width:460px;padding:18px}.et-box.sm p{margin:0 0 14px;font-size:14px}" +
+      ".et-hd{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--border,#c9d1dc)}" +
+      ".et-hd .sp{flex:1}.et-tab.on{background:var(--navy,#1c3a63)!important;color:#fff!important}" +
+      ".et-fr{flex:1;min-height:60vh;border:0;background:#fff;border-radius:0 0 12px 12px;width:100%}";
+    document.head.appendChild(s);
+  }
+  function overlay(inner, cls){
+    css(); var ov = document.createElement("div"); ov.className = "et-ov";
+    ov.innerHTML = "<div class='et-box " + (cls || "") + "'>" + inner + "</div>";
+    document.body.appendChild(ov); return ov;
+  }
+  function ask(en, ur, yes){
+    var ov = overlay("<p>" + T(en, ur) + "</p><div class='pf-bar'><button type='button' class='btn' id='et_yes'>" + T("Yes, do it", "ہاں، کر دیں") + "</button> <button type='button' class='btn small' id='et_no'>" + T("Cancel", "منسوخ") + "</button></div>", "sm");
+    ov.querySelector("#et_no").onclick = function(){ ov.remove(); };
+    ov.querySelector("#et_yes").onclick = function(){ ov.remove(); yes(); };
+  }
+
+  /* ---------- actions ---------- */
+  function doAdd(d){
+    if(d.sc === "arrears"){ var n = body.querySelector("#ar_new"); if(n) n.click(); return; }
+    if(d.sc === "change"){
+      var s = body.querySelector("#cf_n_emp");
+      if(s && s.value){ var c = body.querySelector("#cf_create"); if(c) c.click(); }
+      else if(s){ s.focus(); try{ s.scrollIntoView({block: "center"}); }catch(e){} toast("Choose the employee in the list, then press Add"); }
+    }
+  }
+  function doEdit(d){
+    var ids = ticked(d.sc);
+    if(ids.length !== 1){ toast(ids.length ? "Tick only one to edit" : "Tick the one you want to edit"); return; }
+    var b = body.querySelector((d.sc === "arrears" ? ".ar-open" : ".cf-open") + "[data-id='" + ids[0] + "']"); if(b) b.click();
+  }
+  function doDelete(d){
+    if(!canSave()) return;
+    if(d.sc === "option"){
+      ask("Clear every option entry (choice, date, remarks) for all employees? You can bring it back with Undo.", "سب ملازمین کا آپشن (انتخاب، تاریخ، ریمارکس) صاف کر دیں؟ Undo سے واپس لا سکتے ہیں۔", function(){
+        commit("option"); sd().options.emps = {}; commit("option"); afterChange("option");
+      });
+      return;
+    }
+    var ids = targets(d).filter(function(id){ return (dict(d.sc) || {})[id]; });
+    if(!ids.length){ toast("Tick what you want to delete"); return; }
+    var names = ids.map(function(id){ return nameOf(d.sc, id); }).join(", "), what = d.sc === "arrears" ? ["bill", "بل"] : ["form", "فارم"];
+    ask("Delete the " + what[0] + (ids.length > 1 ? "s" : "") + " of " + esc(names) + "? You can bring it back with Undo.", esc(names) + " کا " + what[1] + " مٹا دیں؟ Undo سے واپس لا سکتے ہیں۔", function(){
+      commit(d.sc);
+      if(d.v === "edit"){ var bk = body.querySelector(d.sc === "arrears" ? "#ar_back" : "#cf_back"); if(bk) bk.click(); }
+      var dd = dict(d.sc); ids.forEach(function(id){ delete dd[id]; });
+      commit(d.sc); afterChange(d.sc);
+    });
+  }
+
+  /* ---------- preview / print ---------- */
+  function htmlTables(tables, title, sub, land){
+    var h = "<!doctype html><html><head><meta charset='utf-8'><style>body{font:12px Arial,sans-serif;margin:14px;color:#000}h1{font-size:16px;margin:0 0 2px}.sub{color:#444;margin:0 0 8px}h2{font-size:13px;margin:14px 0 4px}table{border-collapse:collapse;width:100%;margin-bottom:6px}th,td{border:1px solid #444;padding:3px 6px;vertical-align:top}th{background:#e8edf3}td.n{text-align:right}tfoot td{font-weight:bold;background:#f3f3f3}.pb{page-break-before:always}@page{size:" + (land ? "legal landscape" : "A4") + ";margin:8mm}</style></head><body><h1>" + esc(title) + "</h1><div class='sub'>" + esc(sub || "") + "</div>";
+    tables.forEach(function(t, ti){
+      h += ((t.title || t.sheet) === title ? "" : "<h2" + (t.pageBreak && ti ? " class='pb'" : "") + ">" + esc(t.title || t.sheet || "") + "</h2>") + "<table><thead><tr>" + t.heads.map(function(x, i){ return "<th" + (t.num && t.num[i] ? " style='text-align:right'" : "") + ">" + esc(x) + "</th>"; }).join("") + "</tr></thead><tbody>";
+      var row = function(r){ return "<tr>" + r.cells.map(function(c, i){ return "<td" + ((r.nums || t.num || [])[i] ? " class='n'" : "") + ">" + esc(c) + "</td>"; }).join("") + "</tr>"; };
+      (t.rows || []).forEach(function(r){ h += row(r); });
+      h += "</tbody>" + ((t.foot || []).length ? "<tfoot>" + t.foot.map(row).join("") + "</tfoot>" : "") + "</table>";
+    });
+    return h + "</body></html>";
+  }
+  function htmlBlocks(B, rtl){
+    var fam = rtl ? "'Noto Nastaliq Urdu','Jameel Noori Nastaleeq','Urdu Typesetting','Segoe UI',serif" : "'Times New Roman',serif";
+    var h = "<!doctype html><html dir='" + (rtl ? "rtl" : "ltr") + "'><head><meta charset='utf-8'><style>body{font:14px/1.6 " + fam + ";margin:0;padding:22mm 20mm;color:#000}p{margin:0 0 8px;white-space:pre-wrap}table{border-collapse:collapse;width:100%;margin:8px 0}th,td{border:1px solid #333;padding:4px 6px}th{background:#eee}tfoot td{font-weight:bold}.hl{background:#ff0}@page{size:A4;margin:0}</style></head><body>";
+    B.forEach(function(b){
+      if(b.t === "p"){
+        var st = "text-align:" + (b.al || "justify") + ";"; if(b.after != null) st += "margin-bottom:" + Math.round(b.after / 15) + "px;"; if(b.before) st += "margin-top:" + Math.round(b.before / 15) + "px;"; if(b.ind) st += (rtl ? "margin-right:" : "margin-left:") + Math.round(b.ind / 15) + "px;";
+        h += "<p style='" + st + "'>" + b.parts.map(function(x){ var s = esc(x.x); if(x.b) s = "<b>" + s + "</b>"; if(x.hl) s = "<span class='hl'>" + s + "</span>"; return s; }).join("") + "</p>";
+      } else if(b.t === "table"){
+        h += "<table>" + (b.w ? "<colgroup>" + b.w.map(function(w){ return "<col style='width:" + w + "%'>"; }).join("") + "</colgroup>" : "") + "<thead><tr>" + b.heads.map(function(x){ return "<th>" + esc(x) + "</th>"; }).join("") + "</tr></thead><tbody>" +
+          b.rows.map(function(r){ return "<tr>" + r.map(function(c, i){ return "<td" + (i === r.length - 1 ? " style='text-align:right'" : "") + ">" + esc(c) + "</td>"; }).join("") + "</tr>"; }).join("") + "</tbody>" +
+          (b.foot ? "<tfoot><tr>" + b.foot.map(function(c, i){ return "<td" + (i === b.foot.length - 1 ? " style='text-align:right'" : "") + ">" + esc(c) + "</td>"; }).join("") + "</tr></tfoot>" : "") + "</table>";
+      }
+    });
+    return h + "</body></html>";
+  }
+  function docsFor(d){
+    var ids, rec, A, out = [];
+    if(d.sc === "option"){
+      var tb = window.__brOption.tables(); return [{label: "Option record", html: htmlTables(tb, "Record of options given", "Last date for the option: " + window.__brOption.lastDay(), true)}];
+    }
+    ids = targets(d).filter(function(id){ return (dict(d.sc) || {})[id]; });
+    if(!ids.length){ toast("Tick what you want to preview"); return null; }
+    rec = ids.map(function(id){ return dict(d.sc)[id]; });
+    if(d.sc === "change"){
+      if(!window.__brChangeForm.previewHtml){ toast("Preview is not ready — reload the page"); return null; }
+      return [{label: "Form PAY02", html: window.__brChangeForm.previewHtml(rec)}];
+    }
+    A = window.__brArrears;
+    out.push({label: "Statement", html: htmlTables(A.stmtTables(rec), "Statement of Due and Drawn (Arrears)", rec.map(function(b){ return b.name; }).join(", "), true)});
+    out.push({label: "Letter", edit: true, html: htmlBlocks(A.letterBlocks(rec), false)});
+    if(A.letterBlocksUr) out.push({label: "Urdu letter · اردو خط", edit: true, html: htmlBlocks(A.letterBlocksUr(rec), true)});
+    return out;
+  }
+  function preview(d, autoPrint){
+    var docs; try{ docs = docsFor(d); }catch(err){ console.error(err); toast("Could not make the preview: " + (err && err.message || err)); return; }
+    if(!docs) return;
+    var tabs = docs.map(function(x, i){ return "<button type='button' class='btn small et-tab" + (i ? "" : " on") + "' data-i='" + i + "'>" + esc(x.label) + "</button>"; }).join(" ");
+    var ov = overlay("<div class='et-hd'><b>" + T("Print preview", "پرنٹ سے پہلے کا منظر") + "</b> " + (docs.length > 1 ? tabs : "") + "<span class='sp'></span><button type='button' class='btn small' id='et_pedit' style='display:none'>✎ " + T("Edit text (for this print only)", "متن بدلیں (صرف اس پرنٹ کے لیے)") + "</button><button type='button' class='btn' id='et_pprint'>🖨 " + T("Print", "پرنٹ") + "</button><button type='button' class='btn small' id='et_pclose'>✕ " + T("Close", "بند") + "</button></div><iframe class='et-fr'></iframe>");
+    var fr = ov.querySelector("iframe"), cur = 0;
+    function show(i){
+      cur = i; fr.srcdoc = docs[i].html;
+      ov.querySelectorAll(".et-tab").forEach(function(b){ b.classList.toggle("on", +b.getAttribute("data-i") === i); });
+      ov.querySelector("#et_pedit").style.display = docs[i].edit ? "" : "none";
+    }
+    ov.querySelectorAll(".et-tab").forEach(function(b){ b.onclick = function(){ show(+b.getAttribute("data-i")); }; });
+    ov.querySelector("#et_pclose").onclick = function(){ ov.remove(); };
+    ov.querySelector("#et_pedit").onclick = function(){ try{ var dc = fr.contentDocument; dc.designMode = dc.designMode === "on" ? "off" : "on"; toast(dc.designMode === "on" ? "You can type in the letter now. The Word file is the place for lasting changes." : "Editing off"); }catch(e){} };
+    function doPrint(){ try{ fr.contentWindow.focus(); fr.contentWindow.print(); }catch(e){ toast("Printing is not available here"); } }
+    ov.querySelector("#et_pprint").onclick = doPrint;
+    fr.onload = function(){ if(autoPrint){ autoPrint = false; setTimeout(doPrint, 300); } };
+    show(0);
+  }
+
+  /* ---------- the bar ---------- */
+  function btn(id, label, extra){ return "<button type='button' class='btn small' id='" + id + "'" + (extra || "") + ">" + label + "</button>"; }
+  function build(d){
+    var h = "", list = d.v === "list" && d.sc !== "option";
+    if(list){ h += btn("et_add", "➕ " + T("Add", "نیا")) + btn("et_edit", "✎ " + T("Edit", "تبدیل")); }
+    if(d.sc === "option") h += btn("et_del", "🗑 " + T("Clear all", "سب صاف")); else h += btn("et_del", "🗑 " + T("Delete", "مٹائیں"));
+    h += "<span class='et-sep'></span>" + btn("et_undo", "↶ " + T("Undo", "واپس")) + btn("et_redo", "↷ " + T("Redo", "دوبارہ")) + btn("et_save", "💾 " + T("Save", "محفوظ"));
+    h += "<span class='et-sep'></span>" + btn("et_prev", "👁 " + T("Print preview", "پرنٹ پری ویو")) + btn("et_print", "🖨 " + T("Print", "پرنٹ"));
+    h += "<span class='et-status' id='et_status'></span>";
+    return h;
+  }
+  function refresh(){
+    var bar = body.querySelector("#et_bar"); if(!bar) return;
+    var sc = bar.getAttribute("data-sc"), h = hist(sc), u = bar.querySelector("#et_undo"), r = bar.querySelector("#et_redo");
+    var canU = h.i > 0 || (h.tm && snapOf(sc) !== h.st[h.i]), canR = h.i < h.st.length - 1;
+    if(u) u.disabled = !canU; if(r) r.disabled = !canR;
+  }
+  function inject(){
+    var d = detect(), old = body.querySelector("#et_bar");
+    if(!d || !allowed()){ if(old) old.remove(); return; }
+    var key = d.sc + ":" + d.v;
+    if(old && old.getAttribute("data-k") === key){ refresh(); return; }
+    if(old) old.remove();
+    css(); hist(d.sc); commit(d.sc);
+    var bar = document.createElement("div"); bar.className = "pf-bar et-bar"; bar.id = "et_bar"; bar.setAttribute("data-k", key); bar.setAttribute("data-sc", d.sc); bar.setAttribute("data-v", d.v);
+    bar.innerHTML = build(d); body.insertBefore(bar, body.firstChild);
+    refresh(); setStatus(stat.k);
+  }
+  new MutationObserver(function(){ inject(); }).observe(body, {childList: true});
+  panel.addEventListener("click", function(ev){
+    var t = ev.target.closest ? ev.target.closest("button") : null; if(!t || !t.id || t.id.indexOf("et_") !== 0 || !allowed()) return;
+    var bar = body.querySelector("#et_bar"); if(!bar) return;
+    var d = {sc: bar.getAttribute("data-sc"), v: bar.getAttribute("data-v")};
+    if(t.id === "et_undo") doUndoRedo(d.sc, -1);
+    else if(t.id === "et_redo") doUndoRedo(d.sc, 1);
+    else if(t.id === "et_save") doSave(d.sc);
+    else if(t.id === "et_add") doAdd(d);
+    else if(t.id === "et_edit") doEdit(d);
+    else if(t.id === "et_del") doDelete(d);
+    else if(t.id === "et_prev") preview(d, false);
+    else if(t.id === "et_print") preview(d, true);
+  });
+  document.addEventListener("keydown", function(ev){
+    if(!(ev.ctrlKey || ev.metaKey) || document.querySelector(".et-ov")) return;
+    var bar = body.querySelector("#et_bar"); if(!bar || !allowed() || !body.offsetParent) return;
+    var el = ev.target, tg = el && el.tagName; if(tg === "INPUT" || tg === "TEXTAREA" || tg === "SELECT" || (el && el.isContentEditable)) return;
+    var k = String(ev.key || "").toLowerCase(), sc = bar.getAttribute("data-sc");
+    if(k === "z" && !ev.shiftKey){ ev.preventDefault(); doUndoRedo(sc, -1); }
+    else if(k === "y" || (k === "z" && ev.shiftKey)){ ev.preventDefault(); doUndoRedo(sc, 1); }
+    else if(k === "s"){ ev.preventDefault(); doSave(sc); }
+  });
+  window.__brEdit = {touch: touch, hist: hist, commit: commit, inject: inject, state: function(){ return {status: stat.k, steps: Object.keys(HS).map(function(k){ return k + ":" + HS[k].i + "/" + (HS[k].st.length - 1); }).join(" ")}; }};
+  inject();
+})();
+
 
 /* ================= BM-26 MONTHLY SALARY STATEMENT (Admin / Super Admin) =================
    The monthly statement of pay and allowances of every employee (allowances head-wise, deductions, net pay), made from the pay slips
