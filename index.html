@@ -11255,18 +11255,20 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     out.sort(function(a, b2){ return a.eff < b2.eff ? -1 : a.eff > b2.eff ? 1 : order.indexOf(a.wageDesc) - order.indexOf(b2.wageDesc); });
     return out;
   }
+  function lineAt(f, i){ if(!(i >= 0 && i < 500)) return null; while(f.lines.length <= i) f.lines.push(blankLine()); return f.lines[i]; }
   function blankLine(){ return {info: "", field: "", content: "", wage: "", wageDesc: "", amt: "", adj: "", eff: "", remark: ""}; }
 
   /* everything that can be known from the portal is filled in automatically; the clerk only edits what is wrong, and an edit is remembered for the next form */
-  var DDO_CODE = "RI-4720";
+  var DDO_CODE = "RI4720"; function ddoClean(v){ return String(v == null ? "" : v).replace(/[^A-Za-z0-9]/g, ""); }
   function statusFor(e){ return /retire|suspend|dead|died|expire|resign|terminat|transfer|absorb|left/i.test(String((e && e.status) || "")) ? "Stop" : "Start"; }
   function defaults(e){
     var r = root(), dep = String((e && e.department) || "").trim(), off = String(STATE.officeName || "").trim();
-    return {ddo: r.ddo || DDO_CODE, ddoDesc: r.ddoDesc || dep, officeOf: r.officeOf || off || dep, status: statusFor(e), prep: r.prep || String(STATE.preparedByName || "").trim(), chk: r.chk || "", ver: r.ver || ""};
+    return {ddo: ddoClean(r.ddo) || DDO_CODE, ddoDesc: r.ddoDesc || dep, officeOf: r.officeOf || off || dep, status: statusFor(e), prep: r.prep || String(STATE.preparedByName || "").trim(), chk: r.chk || "", ver: r.ver || ""};
   }
   function fill(f){
     var d = defaults(empById(f.empId)), ch = false;
     ["ddo", "ddoDesc", "officeOf", "status", "prep", "chk", "ver"].forEach(function(k){ if(!f[k] && d[k]){ f[k] = d[k]; ch = true; } });
+    if(f.ddo && ddoClean(f.ddo) !== f.ddo){ f.ddo = ddoClean(f.ddo); ch = true; }
     if(!f.month){ f.month = curMonth(); ch = true; }
     if(!f.date){ f.date = today(); ch = true; }
     return ch;
@@ -11300,29 +11302,21 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   }
 
   function fld(id, label, val, type, extra){ return "<div class='field'" + (extra && extra.style ? " style='" + extra.style + "'" : "") + "><label>" + label + "</label><input id='cf_f_" + id + "' type='" + (type || "text") + "' value='" + esc(val == null ? "" : String(val)) + "'" + (extra && extra.attr ? " " + extra.attr : "") + "></div>"; }
+  var showPrev = false;
   function viewEdit(){
     var f = forms()[cur]; if(!f){ view = "list"; return viewList(); }
     if(fill(f)) persist();
     var h = "<div class='pf-bar'><button type='button' class='btn small' id='cf_back'>← " + T("Back", "واپس") + "</button> <span class='hint' id='cf_saved' style='margin:0'></span></div>";
-    h += "<h3 class='pf-h3'>FORM: PAY02 — " + T("Payroll System Amendment Form (single employee entry)", "پے رول سسٹم ترمیمی فارم (ایک ملازم)") + " · " + esc(f.name || "") + "</h3><div class='pf-bar'>";
-    h += fld("date", T("1 Date", "1 تاریخ"), f.date, "date") + fld("page", T("2 Page No. (blank = automatic)", "2 صفحہ نمبر (خالی = خودکار)"), f.page, "text", {style: "max-width:150px"}) + fld("officeOf", T("3 Office of the", "3 دفتر"), f.officeOf) + fld("month", T("4 For the month of", "4 ماہ"), f.month, "month");
-    h += "</div><div class='pf-bar'>" + fld("ddo", T("5 DDO Code (Cost Center)", "5 ڈی ڈی او کوڈ"), f.ddo, "text", {style: "max-width:200px"}) + fld("ddoDesc", T("6 Description", "6 تفصیل"), f.ddoDesc) + fld("persNo", T("7 Personnel Number", "7 پرسنل نمبر"), f.persNo, "text", {style: "max-width:200px"}) + fld("name", T("8 Employee Name", "8 ملازم کا نام"), f.name) + "</div>";
-    h += "<div class='pf-bar'><div class='field' style='max-width:260px'><label>" + T("9 National ID Card Number", "9 شناختی کارڈ نمبر") + "</label><input value='' disabled placeholder='" + esc(plain(T("write by hand on the printout", "پرنٹ پر ہاتھ سے لکھیں"))) + "'></div>" + fld("grade", T("10-11 Grade (Pay Scale Group)", "10-11 گریڈ"), f.grade, "number", {style: "max-width:150px", attr: "min='1' max='22'"});
-    h += "<div class='field' style='max-width:260px'><label>" + T("12 Salary Status", "12 تنخواہ کی حالت") + "</label><select id='cf_f_status'><option value=''" + (!f.status ? " selected" : "") + ">—</option><option value='Start'" + (f.status === "Start" ? " selected" : "") + ">Start</option><option value='Stop'" + (f.status === "Stop" ? " selected" : "") + ">Stop</option></select></div></div>";
+    h += "<h3 class='pf-h3'>FORM: PAY02 — " + T("Payroll System Amendment Form (single employee entry)", "پے رول سسٹم ترمیمی فارم (ایک ملازم)") + " · " + esc(f.name || "") + "</h3>";
+    h += "<p class='hint'>" + T("This is the Account Office form itself — write directly in its boxes. The National ID Card Number is left blank for you to write by hand on the printout; the portal never keeps it.", "یہ اکاؤنٹ آفس کا اصل فارم ہے — اسی کے خانوں میں لکھیں۔ شناختی کارڈ نمبر خالی رہتا ہے تاکہ پرنٹ پر ہاتھ سے لکھیں؛ پورٹل اسے کبھی محفوظ نہیں رکھتا۔") + "</p>";
     var bl = billsOf(f.empId);
     if(bl.length){
       h += "<div class='pf-bar'><div class='field' style='max-width:340px'><label>" + T("Fill the lines from an Arrears bill (replaces the lines)", "لائنیں بقایا جات بل سے بھریں (موجودہ لائنیں بدل جائیں گی)") + "</label><select id='cf_e_bill'>" + bl.map(function(b){ return "<option value='" + esc(b.id) + "'" + (f.billId === b.id ? " selected" : "") + ">BPS-" + esc(String(b.oldB)) + " → BPS-" + esc(String(b.newB)) + " · " + esc(dLabel(b.eff)) + "</option>"; }).join("") + "</select></div><button type='button' class='btn small' id='cf_refill'>" + T("Fill from bill", "بل سے بھریں") + "</button></div>";
     }
-    h += "<div class='table-wrap'><table class='pf-tbl cf-tbl'><thead><tr><th class='c'>#</th><th>" + T("14 Info Type", "14 انفو ٹائپ") + "</th><th>" + T("15 Field ID", "15 فیلڈ آئی ڈی") + "</th><th>" + T("16 New Contents (general data change)", "16 نیا مواد (عمومی ڈیٹا)") + "</th><th>" + T("18 Wage Type", "18 ویج ٹائپ") + "</th><th>" + T("17 Amount (Rs.)", "17 رقم (روپے)") + "</th><th>" + T("Adj", "ایڈج") + "</th><th>" + T("21 Effective Date", "21 نافذ تاریخ") + "</th><th>" + T("22 Remarks", "22 ریمارکس") + "</th><th></th></tr></thead><tbody>";
-    f.lines.forEach(function(l, i){
-      var dflt = i === 0 ? "0008" : i === 1 ? "0014" : "";
-      h += "<tr><td class='c'>" + (i + 1) + "</td><td><input class='cf-in' style='width:70px' data-i='" + i + "' data-k='info' value='" + esc(l.info) + "' placeholder='" + dflt + "'></td><td><input class='cf-in' style='width:70px' data-i='" + i + "' data-k='field' value='" + esc(l.field) + "'></td><td><input class='cf-in' style='width:190px' data-i='" + i + "' data-k='content' value='" + esc(l.content) + "'></td>" +
-        "<td><input class='cf-in' style='width:78px' data-i='" + i + "' data-k='wage' list='cf_wl' value='" + esc(l.wage) + "' placeholder='code'><div class='hint' style='margin:0'>" + esc(l.wageDesc || "") + "</div></td><td><input class='cf-in' type='number' step='0.01' style='width:110px' data-i='" + i + "' data-k='amt' value='" + esc(l.amt) + "'></td><td><input class='cf-in' style='width:50px' data-i='" + i + "' data-k='adj' value='" + esc(l.adj) + "'></td><td><input class='cf-in' type='date' data-i='" + i + "' data-k='eff' value='" + esc(l.eff) + "'></td><td><input class='cf-in' style='width:170px' data-i='" + i + "' data-k='remark' value='" + esc(l.remark) + "'></td><td><button type='button' class='btn small cf-rm' data-i='" + i + "' title='delete'>✖</button></td></tr>";
-    });
-    h += "</tbody></table></div><datalist id='cf_wl'>" + wageList().map(function(w){ return "<option value='" + esc(w[0]) + "'>" + esc(w[1]) + "</option>"; }).join("") + "</datalist>";
-    h += "<div class='pf-bar' style='margin-top:10px'><button type='button' class='btn small' id='cf_addline'>➕ " + T("Add a line", "لائن بڑھائیں") + "</button> <span class='hint' style='margin:0'>" + T("Ten lines fit on one page of the form; more lines continue on the next page.", "فارم کے ایک صفحے پر دس لائنیں آتی ہیں؛ زیادہ لائنیں اگلے صفحے پر جاتی ہیں۔") + "</span></div>";
-    h += "<div class='pf-bar'>" + fld("prep", T("23 Prepared By (name, optional)", "23 تیار کنندہ (نام، اختیاری)"), f.prep) + fld("chk", T("24 Audited / Checked By (optional)", "24 چیک کنندہ (اختیاری)"), f.chk) + fld("ver", T("25 Entered / Verified By (optional)", "25 درج / تصدیق کنندہ (اختیاری)"), f.ver) + "</div>";
-    h += "<div class='pf-bar'><b>" + T("Print this form", "یہ فارم پرنٹ کریں") + ":</b> <button type='button' class='btn small cf-ex' data-k='excel'>Excel</button> <button type='button' class='btn small cf-ex' data-k='word'>Word</button> <button type='button' class='btn small cf-ex' data-k='pdf'>PDF</button></div>";
+    h += "<div style='overflow-x:auto;padding-bottom:6px'>" + allSheets(f, true) + "</div><datalist id='cf_wl'>" + wageList().map(function(w){ return "<option value='" + esc(w[0]) + "'>" + esc(w[1]) + "</option>"; }).join("") + "</datalist>";
+    h += "<div class='pf-bar' style='margin-top:10px'><button type='button' class='btn small' id='cf_addline'>➕ " + T("New page (10 more lines)", "نیا صفحہ (10 مزید لائنیں)") + "</button> <span class='hint' style='margin:0'>" + T("Ten lines fit on one page of the form; add a new page when you need more.", "فارم کے ایک صفحے پر دس لائنیں آتی ہیں؛ زیادہ کے لیے نیا صفحہ بڑھائیں۔") + "</span></div>";
+    h += "<div class='pf-bar'><b>" + T("Print / download this form", "یہ فارم پرنٹ / ڈاؤن لوڈ کریں") + ":</b> <button type='button' class='btn small cf-ex' data-k='print'>🖨 " + T("Print", "پرنٹ") + "</button> <button type='button' class='btn small cf-ex' data-k='pdf'>PDF</button> <button type='button' class='btn small cf-ex' data-k='word'>Word</button> <button type='button' class='btn small cf-ex' data-k='excel'>Excel</button> <button type='button' class='btn small' id='cf_prev'>👁 " + T(showPrev ? "Hide the printed look" : "Show the printed look", showPrev ? "چھپی ہوئی شکل چھپائیں" : "چھپی ہوئی شکل دیکھیں") + "</button></div>";
+    if(showPrev){ h += "<div style='overflow-x:auto;padding:8px 0'>" + sheetsOf([f]).join("<div style='height:14px'></div>") + "</div>"; }
     return h;
   }
   function wageList(){
@@ -11363,12 +11357,250 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     });
     return T2;
   }
+  /* ======== the paper: a faithful copy of the Account Office / AG Punjab form PAY02 (Letter landscape, drawn at 90 dpi = 990 x 765) ========
+     One layout function describes every line, box and word of a sheet. The same description is turned into SVG (screen, preview, print)
+     and into vector PDF; editable boxes are laid over it on the screen. */
+  var PGW = 990, PGH = 765;
+  var GX = [21.3, 54.5, 79, 104, 374, 453, 481.6, 506, 531, 556, 580, 605, 629.6, 654, 678.6, 777, 966.8];
+  var TY = {g: 330, h: 343, m: 357, r: 371, rh: 20.7};
+  function chars(v, n, right){ var a = String(v == null ? "" : v).split("").slice(0, n), pad = []; for(var i = a.length; i < n; i++) pad.push(""); return right ? pad.concat(a) : a.concat(pad); }
+  function g2(v){ v = String(v == null ? "" : v).replace(/\D/g, ""); return v ? ("0" + v).slice(-2) : ""; }
+  function dparts(iso){ var a = String(iso || "").split("-"); return a.length === 3 ? [a[2], a[1], a[0]] : ["", "", ""]; }
+  function tw(s, sz, b){ var w = 0; for(var i = 0; i < s.length; i++){ var c = s.charAt(i); w += /[ilIj.,:;'!|]/.test(c) ? .28 : /[ft()\-\/ ]/.test(c) ? .33 : /[MW]/.test(c) ? .86 : /[mw]/.test(c) ? .78 : /[A-Z]/.test(c) ? .68 : /[0-9]/.test(c) ? .556 : .53; } return w * sz * (b ? 1.06 : 1); }
+  /* editable single-character boxes (the digits of a code), cell width cw, height ch */
+  function bxe(attrs, v, n, ph, cw, chh, left, top){ var a = chars(v, n), pa = String(ph || "").split(""); return "<span class='pp-bxe' " + attrs + " style='left:" + left + "px;top:" + top + "px'>" + a.map(function(c, i){ return "<input class='pp-c1' maxlength='1' style='width:" + cw + "px;height:" + chh + "px' value='" + esc(c) + "' placeholder='" + esc(pa[i] || "") + "' autocomplete='off'>"; }).join("") + "</span>"; }
+
+  var PAPER_CSS =
+    ".pp{ position:relative; box-sizing:content-box; width:" + PGW + "px; height:" + PGH + "px; margin:0 auto; background:#fff; color:#000; font:12px Arial,Helvetica,sans-serif; overflow:hidden; }" +
+    ".pp svg{ position:absolute; left:0; top:0; }" +
+    ".pp .pa{ position:absolute; }" +
+    ".pp .pp-bxe{ position:absolute; display:flex; border-left:1px solid #000; box-sizing:content-box; }" +
+    ".pp input.pp-c1{ box-sizing:border-box; min-width:0; min-height:0; padding:0; margin:0; border:1px solid #000; border-left-width:0; border-radius:0; text-align:center; font:700 13px/18px Arial,Helvetica,sans-serif; background:#fffdf0; color:#000; }" +
+    ".pp input.pp-c1:focus{ outline:2px solid #1d6fd1; background:#fff; position:relative; z-index:1; }" +
+    ".pp input.pp-i, .pp select.pp-i{ position:absolute; box-sizing:border-box; min-height:0; padding:0 3px; margin:0; border:0; border-bottom:1px solid #777; background:#fffdf0; color:#000; font:700 12px Arial,Helvetica,sans-serif; border-radius:0; }" +
+    ".pp input.pp-i:focus, .pp select.pp-i:focus{ outline:2px solid #1d6fd1; background:#fff; z-index:2; }" +
+    ".pp .pp-sub{ position:absolute; font:400 6.3px Arial,Helvetica,sans-serif; color:#444; white-space:nowrap; overflow:hidden; }" +
+    ".pp button.cf-rm{ position:absolute; left:2px; min-height:0; height:15px; width:17px; padding:0; font-size:8px; line-height:1; }";
+
+  /* ---- layout: the whole sheet as primitives ---- */
+  function layout(f, chunk, p, pages, ed, startIdx){
+    var P = [], I = [], pn = f.page && pages === 1 ? f.page : (p + 1) + " of " + pages, hed = ed && p === 0;
+    function T(s, x, y, sz, o){ if(s === "" || s == null) return; P.push({t: "text", s: String(s), x: x, y: y, sz: sz, o: o || {}}); }
+    function Ln(x1, y1, x2, y2, w){ P.push({t: "line", x1: x1, y1: y1, x2: x2, y2: y2, w: w || 1}); }
+    function Rc(x, y, w, h, bw, fill){ P.push({t: "rect", x: x, y: y, w: w, h: h, bw: bw || 1, fill: fill}); }
+    function lab(x, y, s, num, o){ T(s, x, y, 11.5, o); if(num) T(num, x + tw(s, 11.5, o && o.b) + 1.5, y - 3, 7); }
+    function val(s, x, y, sz, o){ if(!hed) T(s, x, y, sz || 12, Object.assign({b: true}, o || {})); }
+    function boxes(v, n, x, y, w, h, right){ if(hed) return; var a = chars(v, n, right); for(var i = 0; i < n; i++){ Rc(x + i * w, y, w, h, 1); if(a[i]) T(a[i], x + i * w + w / 2, y + (h - 13) / 2 - .5, 13, {b: true, c: true}); } }
+    function fi(k, x, y, w, h, o){ o = o || {}; I.push("<input class='pp-i' id='cf_f_" + k + "' " + (o.type ? "type='" + o.type + "' " : "") + "style='left:" + x + "px;top:" + y + "px;width:" + w + "px;height:" + h + "px" + (o.st ? ";" + o.st : "") + "' value='" + esc(f[k] || "") + "'" + (o.ph ? " placeholder='" + o.ph + "'" : "") + " autocomplete='off'>"); }
+    /* top block */
+    T("FORM: PAY02", 878, 74, 11, {b: true});
+    lab(878, 108, "Date", "1"); Ln(878, 123, 968, 123, 1); val(dLabel(f.date), 967, 108, 10.5, {r: true});
+    lab(878, 135, "Page No.", "2"); Ln(878, 150, 968, 150, 1); val(pn, 967, 135, 10.5, {r: true});
+    T("PAYROLL SYSTEM", 131, 90, 13, {b: true}); T("AMENDMENT FORM", 131, 106, 13, {b: true}); T("SINGLE EMPLOYEE ENTRY", 131, 122, 10.5, {b: true});
+    lab(131, 148, "OFFICE OF THE", "3", {b: true}); Ln(252, 162, 560, 162, 1); val(f.officeOf, 254, 147, 12);
+    lab(131, 175, "FOR THE MONTH OF", "4", {b: true}); Ln(272, 190, 372, 190, 1);
+    var mo = String(f.month || "").split("-"); if(!hed){ T(mo[1] || "", 318, 174, 12, {b: true}); T("/", 352, 174, 12); T(mo[0] || "", 368, 174, 12, {b: true}); }
+    lab(131, 201, "DDO Code", "5"); T("(Cost Center)", 131, 219, 11.5); boxes(f.ddo, 6, 202, 201, 24.5, 30);
+    lab(352, 202, "Description", "6"); Ln(352, 234, 555, 234, 1); val(f.ddoDesc, 354, 220, 11);
+    lab(131, 247, "Personnel", null); T("Number", 131, 264, 11.5); T("7", 131 + tw("Number", 11.5) + 1.5, 261, 7); boxes(f.persNo, 8, 202, 247, 24.7, 30);
+    T("Employee", 431, 247, 11.5); lab(431, 263, "Name", "8"); Ln(431, 278, 740, 278, 1); val(f.name, 478, 262, 12);
+    T("National ID", 755, 247, 11.5); T("9", 755 + tw("National ID", 11.5) + 1.5, 244, 7); T("Card Number", 755, 263, 11.5); Ln(852, 278, 968, 278, 1);
+    T("Grade (Pay", 131, 290, 11.5); lab(131, 304, "Scale Group)", "10"); boxes(g2(f.grade), 2, 228, 290, 24, 28); T("11", 279, 307, 7); Ln(275, 317, 455, 317, 1);
+    T("Salary", 656, 290, 11.5); T("12", 656 + tw("Salary", 11.5) + 2, 287, 7); T("Status", 656, 304, 11.5);
+    if(!hed){ Rc(727, 302, 25, 16, 1); if(f.status === "Start") T("X", 739.5, 303, 13, {b: true, c: true}); T("Start", 758, 304, 11.5); Rc(803, 302, 25, 16, 1); if(f.status === "Stop") T("X", 815.5, 303, 13, {b: true, c: true}); T("Stop", 834, 304, 11.5); }
+    /* table frame */
+    var X = GX, yB = TY.r + 10 * TY.rh, yE = TY.r + 10 * TY.rh;
+    Ln(X[1], TY.g, X[14], TY.g, 1.6); Ln(X[1], TY.g, X[1], TY.h, 1.6); Ln(X[4], TY.g, X[4], TY.h, 1.6); Ln(X[14], TY.g, X[14], TY.h, 1.6);
+    Ln(X[0], TY.h, X[16], TY.h, 1.6); Ln(X[5], TY.m, X[14], TY.m, 1.2); Ln(X[0], TY.r, X[16], TY.r, 1.6);
+    for(var r = 1; r <= 10; r++) Ln(X[0], TY.r + r * TY.rh, X[16], TY.r + r * TY.rh, r === 10 ? 1.6 : 1);
+    [[0, TY.h], [1, TY.g], [2, TY.r], [3, TY.g], [4, TY.g], [5, TY.h], [6, TY.r], [7, TY.r], [8, TY.r], [9, TY.r], [10, TY.r], [11, TY.r], [12, TY.r], [13, TY.m], [14, TY.g], [15, TY.h], [16, TY.h]].forEach(function(c){ if(ed && c[0] >= 6 && c[0] <= 12) return; Ln(X[c[0]], c[1], X[c[0]], yB, [1, 3, 4, 5, 11, 13, 14, 15, 16].indexOf(c[0]) >= 0 ? 1.6 : 1); });
+    /* table heads */
+    var cen = function(s, a, b2, y, sz, o, num){ var w = tw(s, sz, o && o.b), cx = (a + b2) / 2; T(s, cx, y, sz, Object.assign({c: true}, o || {})); if(num) T(num, cx + w / 2 + 1.5, y - 3, 7); };
+    cen("GENERAL DATA CHANGE", X[1], X[4], TY.g + 1.5, 10.5, {b: true}, "13"); cen("CHANGE IN PAYMENTS / DEDUCTIONS", X[4], X[14], TY.g + 1.5, 10.5, {b: true}, "17");
+    T("Info", X[0] + 2, TY.h + 2, 11.5); T("14", X[0] + 2 + tw("Info", 11.5) + 1, TY.h - 1, 7); T("Type", X[0] + 2, TY.h + 14, 11.5);
+    cen("Field", X[1], X[3], TY.h + 2, 11.5); cen("ID", X[1], X[3], TY.h + 14, 11.5, null, "15"); cen("New Contents", X[3], X[4], TY.h + 14, 11, {b: true}, "16");
+    cen("Wage", X[4], X[5], TY.h + 2, 11.5); cen("Type", X[4], X[5], TY.h + 14, 11.5, null, "18");
+    cen("Amount", X[5], X[14], TY.h + 1, 11, {b: true}); T("19", X[5] + 22, TY.m + 1, 7); cen("Rupees", X[5], X[11], TY.m + 2, 10.5, {b: true}); cen("Paisa", X[11], X[13], TY.m + 2, 10.5, {b: true}); cen("Adj", X[13], X[14], TY.m + 2, 10.5, {b: true});
+    cen("Effective", X[14], X[15], TY.h + 2, 11.5); cen("Date", X[14], X[15], TY.h + 14, 11.5, null, "21"); cen("Remarks", X[15], X[16], TY.h + 14, 11.5, null, "22");
+    /* table rows */
+    var n = 10;
+    for(var i = 0; i < n; i++){
+      var l = chunk[i] || null, gi = startIdx + i, y0 = TY.r + i * TY.rh, dflt = gi === 0 ? "0008" : gi === 1 ? "0014" : "";
+      if(ed){
+        if(!l) l = {info: "", field: "", content: "", wage: "", wageDesc: "", amt: "", adj: "", eff: "", remark: ""};
+        I.push("<button type='button' class='btn small cf-rm' data-i='" + gi + "' title='delete' style='top:" + (y0 + 3) + "px'>✖</button>");
+        I.push("<input class='pp-i cf-in' data-i='" + gi + "' data-k='info' placeholder='" + dflt + "' maxlength='4' style='left:" + (X[0] + 1) + "px;top:" + (y0 + 2) + "px;width:" + (X[1] - X[0] - 2) + "px;height:" + (TY.rh - 4) + "px;text-align:right;padding:0 1px;font-size:11px' value='" + esc(l.info || "") + "'>");
+        I.push(bxe("data-i='" + gi + "' data-k='field'", l.field, 2, "", (X[3] - X[1]) / 2, TY.rh, X[1], y0));
+        I.push("<input class='pp-i cf-in' data-i='" + gi + "' data-k='content' style='left:" + (X[3] + 1) + "px;top:" + (y0 + 2) + "px;width:" + (X[4] - X[3] - 2) + "px;height:" + (TY.rh - 4) + "px' value='" + esc(l.content || "") + "'>");
+        I.push("<input class='pp-i cf-in' data-i='" + gi + "' data-k='wage' list='cf_wl' maxlength='4' style='left:" + (X[4] + 1) + "px;top:" + (y0 + 1) + "px;width:" + (X[5] - X[4] - 2) + "px;height:12px;font-size:11px' value='" + esc(l.wage || "") + "'>");
+        I.push("<span class='pp-sub' style='left:" + (X[4] + 3) + "px;top:" + (y0 + 13) + "px;width:" + (X[5] - X[4] - 5) + "px'>" + esc(l.wageDesc || "") + "</span>");
+        I.push("<input class='pp-i cf-in' type='number' step='0.01' data-i='" + gi + "' data-k='amt' style='left:" + (X[5] + 1) + "px;top:" + (y0 + 2) + "px;width:" + (X[13] - X[5] - 2) + "px;height:" + (TY.rh - 4) + "px;text-align:right' value='" + esc(l.amt == null ? "" : String(l.amt)) + "'>");
+        I.push("<input class='pp-i cf-in' data-i='" + gi + "' data-k='adj' maxlength='3' style='left:" + (X[13] + 1) + "px;top:" + (y0 + 2) + "px;width:" + (X[14] - X[13] - 2) + "px;height:" + (TY.rh - 4) + "px;text-align:center' value='" + esc(l.adj || "") + "'>");
+        I.push("<input class='pp-i cf-in' type='date' data-i='" + gi + "' data-k='eff' style='left:" + (X[14] + 1) + "px;top:" + (y0 + 2) + "px;width:" + (X[15] - X[14] - 2) + "px;height:" + (TY.rh - 4) + "px;font-size:10px;padding:0' value='" + esc(l.eff || "") + "'>");
+        I.push("<input class='pp-i cf-in' data-i='" + gi + "' data-k='remark' style='left:" + (X[15] + 1) + "px;top:" + (y0 + 2) + "px;width:" + (X[16] - X[15] - 2) + "px;height:" + (TY.rh - 4) + "px;font-size:10.5px' value='" + esc(l.remark || "") + "'>");
+      } else {
+        var info = l && l.info ? l.info : dflt;
+        T(info, X[1] - 3, y0 + 4, 12, {r: true});
+        if(l){
+          var fc = chars(l.field, 2); if(fc[0]) T(fc[0], (X[1] + X[2]) / 2, y0 + 4, 12, {c: true}); if(fc[1]) T(fc[1], (X[2] + X[3]) / 2, y0 + 4, 12, {c: true});
+          T(l.content, X[3] + 4, y0 + 5, 11);
+          T(l.wage, X[4] + 4, y0 + 2, 11, {b: true}); if(l.wageDesc) T(l.wageDesc, X[4] + 4, y0 + 13, 6.3, {color: "#444"});
+          var hasA = l.amt !== "" && l.amt != null;
+          if(hasA){ var a = rs(l.amt), rc = chars(a[0], 6, true), pc = chars(a[1], 2); for(var q = 0; q < 6; q++) if(rc[q]) T(rc[q], (X[5 + q] + X[6 + q]) / 2, y0 + 4, 12, {c: true}); for(q = 0; q < 2; q++) if(pc[q]) T(pc[q], (X[11 + q] + X[12 + q]) / 2, y0 + 4, 12, {c: true}); }
+          T(l.adj, (X[13] + X[14]) / 2, y0 + 4, 11, {c: true});
+          if(l.eff) T(dLabel(l.eff), (X[14] + X[15]) / 2, y0 + 4.5, 11, {c: true});
+          T(l.remark, X[15] + 4, y0 + 5.5, 10);
+        }
+      }
+    }
+    /* signatures */
+    var sy = 660;
+    Ln(54, sy, 202, sy, 1); Ln(374, sy, 605, sy, 1); Ln(850, sy, 968, sy, 1);
+    lab(98, sy + 3, "Prepared By", "23"); lab(442, sy + 3, "Audited/Checked By", "24"); lab(862, sy + 3, "Entered / Verified By", "25");
+    if(ed){ fi("prep", 54, sy - 20, 148, 18); fi("chk", 374, sy - 20, 231, 18); fi("ver", 820, sy - 20, 148, 18); }
+    else { T(f.prep, 56, sy - 16, 11, {b: true}); T(f.chk, 376, sy - 16, 11, {b: true}); T(f.ver, 822, sy - 16, 11, {b: true}); }
+    /* editable header boxes and fields */
+    if(hed){
+      I.push(bxe("data-hk='ddo'", f.ddo, 6, "", 24.5, 30, 202, 201));
+      I.push(bxe("data-hk='persNo'", f.persNo, 8, "", 24.7, 30, 202, 247));
+      I.push(bxe("data-hk='grade'", g2(f.grade), 2, "", 24, 28, 228, 290));
+      fi("date", 902, 104, 88, 19, {type: "date", st: "font-size:10.5px;padding:0 1px"}); fi("page", 936, 130, 54, 19, {ph: "auto", st: "font-size:11px"}); fi("officeOf", 252, 143, 308, 19); fi("month", 272, 170, 112, 19, {type: "month"});
+      fi("ddoDesc", 354, 212, 201, 20); fi("name", 476, 257, 264, 20);
+      I.push("<select class='pp-i' id='cf_f_status' style='left:727px;top:300px;width:100px;height:20px'><option value=''" + (!f.status ? " selected" : "") + ">—</option><option value='Start'" + (f.status === "Start" ? " selected" : "") + ">Start</option><option value='Stop'" + (f.status === "Stop" ? " selected" : "") + ">Stop</option></select>");
+    }
+    return {P: P, I: I};
+  }
+  function svgOf(P){
+    var s = "<svg xmlns='http://www.w3.org/2000/svg' width='" + PGW + "' height='" + PGH + "' viewBox='0 0 " + PGW + " " + PGH + "' font-family='Arial,Helvetica,sans-serif'>";
+    P.forEach(function(q){
+      if(q.t === "line") s += "<line x1='" + q.x1 + "' y1='" + q.y1 + "' x2='" + q.x2 + "' y2='" + q.y2 + "' stroke='#000' stroke-width='" + q.w + "'/>";
+      else if(q.t === "rect") s += "<rect x='" + q.x + "' y='" + q.y + "' width='" + q.w + "' height='" + q.h + "' fill='" + (q.fill || "none") + "' stroke='#000' stroke-width='" + q.bw + "'/>";
+      else { var o = q.o; s += "<text x='" + q.x + "' y='" + (q.y + q.sz * .82) + "' font-size='" + q.sz + "'" + (o.b ? " font-weight='700'" : "") + (o.c ? " text-anchor='middle'" : o.r ? " text-anchor='end'" : "") + " fill='" + (o.color || "#000") + "'>" + esc(q.s) + "</text>"; }
+    });
+    return s + "</svg>";
+  }
+  function sheetHtml(f, chunk, p, pages, ed, startIdx){ var L = layout(f, chunk, p, pages, ed, startIdx); return "<div class='pp'>" + svgOf(L.P) + L.I.join("") + "</div>"; }
+  function allSheets(f, ed){
+    var ls = (f.lines || []).filter(function(l){ return l.wage || l.amt || l.content || l.field || l.info || l.eff || l.remark; });
+    if(ed){ var all = f.lines || [], np = Math.max(1, Math.ceil(all.length / PER_PAGE)), o = []; for(var p = 0; p < np; p++) o.push("<div style='overflow-x:auto;margin-bottom:12px'>" + sheetHtml(f, all.slice(p * PER_PAGE, (p + 1) * PER_PAGE), p, np, true, p * PER_PAGE) + "</div>"); return o.join(""); }
+    var pages = Math.max(1, Math.ceil(ls.length / PER_PAGE)), out = [];
+    for(var p2 = 0; p2 < pages; p2++) out.push(sheetHtml(f, ls.slice(p2 * PER_PAGE, (p2 + 1) * PER_PAGE), p2, pages, false, p2 * PER_PAGE));
+    return out;
+  }
+  function sheetsOf(fs){ var out = []; fs.forEach(function(f){ fill(f); out = out.concat(allSheets(f, false)); }); return out; }
+  function docHtml(sheets, word, paperKey){
+    var css = PAPER_CSS + "body{ margin:0; background:#fff; } .pg{ page-break-after:always; } .pg:last-child{ page-break-after:auto; } .pp{ margin:0; } @page{ size:" + (paperKey === "Legal" ? "legal landscape" : "A4 landscape") + "; margin:3mm; } @media print{ .pp{ zoom:" + (paperKey === "Legal" ? "1.0" : "0.97") + "; } }";
+    return "<!doctype html><html><head><meta charset='utf-8'><title>PAY02</title><style>" + css + "</style></head><body>" + sheets.map(function(s){ return "<div class='pg'>" + s + "</div>"; }).join("") + "</body></html>";
+  }
+  function dlBlob(blob, name){ var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 1500); }
+  function printHtml(html){
+    var fr = document.createElement("iframe"); fr.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;"; document.body.appendChild(fr);
+    var d = fr.contentWindow.document; d.open(); d.write(html); d.close();
+    setTimeout(function(){ try{ fr.contentWindow.focus(); fr.contentWindow.print(); }catch(e){ toast("Printing is not available here"); } setTimeout(function(){ fr.remove(); }, 60000); }, 400);
+  }
+
+  /* ---- vector PDF: the same primitives drawn with pdf-lib ---- */
+  async function pdfSheets(fs, paperKey){
+    await window.__brUI.loadLib("pdflib");
+    var L = window.PDFLib, doc = await L.PDFDocument.create(), F = await doc.embedFont(L.StandardFonts.Helvetica), FB = await doc.embedFont(L.StandardFonts.HelveticaBold);
+    var PW = paperKey === "Legal" ? [1008, 612] : [841.9, 595.3];
+    function clean(s){ return String(s == null ? "" : s).replace(/[^\x20-\x7E -ÿ]/g, "?"); }
+    fs.forEach(function(f){
+      fill(f);
+      var ls = (f.lines || []).filter(function(l){ return l.wage || l.amt || l.content || l.field || l.info || l.eff || l.remark; }), pages = Math.max(1, Math.ceil(ls.length / PER_PAGE));
+      for(var p = 0; p < pages; p++){
+        var P = layout(f, ls.slice(p * PER_PAGE, (p + 1) * PER_PAGE), p, pages, false, p * PER_PAGE).P, pg = doc.addPage(PW), s = Math.min(PW[0] / PGW, PW[1] / PGH), ox = (PW[0] - PGW * s) / 2, oy = PW[1] - (PW[1] - PGH * s) / 2;
+        var black = L.rgb(0, 0, 0);
+        P.forEach(function(q){
+          if(q.t === "line") pg.drawLine({start: {x: ox + q.x1 * s, y: oy - q.y1 * s}, end: {x: ox + q.x2 * s, y: oy - q.y2 * s}, thickness: q.w * s * .75, color: black});
+          else if(q.t === "rect") pg.drawRectangle({x: ox + q.x * s, y: oy - (q.y + q.h) * s, width: q.w * s, height: q.h * s, borderColor: black, borderWidth: q.bw * s * .75});
+          else {
+            var o = q.o, fnt = o.b ? FB : F, t = clean(q.s), w = fnt.widthOfTextAtSize(t, q.sz * s), x = ox + q.x * s; if(o.c) x -= w / 2; else if(o.r) x -= w;
+            var col = o.color === "#444" ? L.rgb(.27, .27, .27) : black;
+            pg.drawText(t, {x: x, y: oy - (q.y + q.sz * .82) * s, size: q.sz * s, font: fnt, color: col});
+          }
+        });
+      }
+    });
+    return await doc.save();
+  }
+
+  /* ---- real Word file (.docx): the same form on a 76-column grid (one column = half a digit box) ---- */
+  async function docxSheets(fs, paperKey){
+    await window.__brUI.loadLib("docx");
+    var D = window.docx, legal = paperKey === "Legal", PWd = legal ? [12240, 20160] : [11906, 16838], MG = 500, usable = PWd[1] - 2 * MG, COLS = 76, U = Math.floor(usable / COLS);
+    var NONE = {style: D.BorderStyle.NONE, size: 0, color: "FFFFFF"}, LN = {style: D.BorderStyle.SINGLE, size: 6, color: "000000"}, TK = {style: D.BorderStyle.SINGLE, size: 12, color: "000000"};
+    function run(t, o){ o = o || {}; return new D.TextRun({text: String(t == null ? "" : t), font: "Arial", size: o.size || 17, bold: !!o.b, superScript: !!o.sup}); }
+    function C(txt, span, o){ return {txt: txt, span: span || 1, o: o || {}}; }
+    function BX(v, n, right, w){ return chars(v, n, right).map(function(c){ return C(c, w || 2, {box: true}); }); }
+    function mk(sp){
+      var o = sp.o, brd = {top: NONE, bottom: NONE, left: NONE, right: NONE};
+      if(o.box || o.line){ brd = {top: LN, bottom: LN, left: LN, right: LN}; } else if(o.ul){ brd.bottom = LN; }
+      if(o.tk){ brd = {top: TK, bottom: TK, left: TK, right: TK}; }
+      var al = o.right ? D.AlignmentType.RIGHT : (o.box || o.center) ? D.AlignmentType.CENTER : D.AlignmentType.LEFT, paras;
+      if(o.paras) paras = o.paras;
+      else if(o.ls) paras = o.ls.map(function(x){ return new D.Paragraph({alignment: al, children: [run(x[0], {size: o.size, b: o.b})].concat(x[1] ? [run(x[1], {size: 15, sup: true})] : [])}); });
+      else paras = [new D.Paragraph({alignment: al, children: [run(sp.txt, {size: o.size || (o.box ? 20 : 17), b: o.b || o.box})].concat(o.num ? [run(o.num, {size: 15, sup: true})] : [])})];
+      return new D.TableCell({columnSpan: sp.span > 1 ? sp.span : undefined, rowSpan: o.rowSpan, width: {size: U * sp.span, type: D.WidthType.DXA}, verticalAlign: o.bottom ? D.VerticalAlign.BOTTOM : o.top2 ? D.VerticalAlign.TOP : D.VerticalAlign.CENTER, borders: brd,
+        margins: {top: 15, bottom: 15, left: 40, right: 40}, children: paras});
+    }
+    function R(specs, h){ return new D.TableRow({cantSplit: true, height: h ? {value: h, rule: D.HeightRule.ATLEAST} : undefined, children: specs.map(mk)}); }
+    var children = [], first = true;
+    fs.forEach(function(f){
+      fill(f);
+      var ls = (f.lines || []).filter(function(l){ return l.wage || l.amt || l.content || l.field || l.info || l.eff || l.remark; }), pages = Math.max(1, Math.ceil(ls.length / PER_PAGE));
+      for(var p = 0; p < pages; p++){
+        var chunk = ls.slice(p * PER_PAGE, (p + 1) * PER_PAGE), pn = f.page && pages === 1 ? f.page : (p + 1) + " of " + pages, rows = [], mm = String(f.month || "").split("-");
+        var titleParas = [new D.Paragraph({children: [run("PAYROLL SYSTEM", {size: 28, b: true})]}), new D.Paragraph({children: [run("AMENDMENT FORM", {size: 28, b: true})]}), new D.Paragraph({children: [run("SINGLE EMPLOYEE ENTRY", {size: 20, b: true})]})];
+        rows.push(R([C("", 52, {rowSpan: 3, paras: titleParas}), C("FORM: PAY02", 24, {right: true, b: true, size: 20})], 300));
+        rows.push(R([C("Date", 8, {num: "1", right: true}), C(dLabel(f.date), 16, {ul: true, center: true, b: true})], 330));
+        rows.push(R([C("Page No.", 8, {num: "2", right: true}), C(pn, 16, {ul: true, center: true, b: true})], 330));
+        rows.push(R([C("OFFICE OF THE", 12, {b: true, num: "3"}), C(f.officeOf || "", 40, {ul: true, b: true}), C("", 24)], 380));
+        rows.push(R([C("FOR THE MONTH OF", 14, {b: true, num: "4"}), C(mm[1] || "", 6, {ul: true, center: true, b: true}), C("/", 2, {center: true}), C(mm[0] || "", 8, {ul: true, center: true, b: true}), C("", 46)], 380));
+        rows.push(R([C("", 10, {ls: [["DDO Code", "5"], ["(Cost Center)", ""]]})].concat(BX(f.ddo, 6), [C("", 3), C("Description", 10, {num: "6"}), C(f.ddoDesc || "", 30, {ul: true, b: true}), C("", 11)]), 520));
+        rows.push(R([C("", 10, {ls: [["Personnel", ""], ["Number", "7"]]})].concat(BX(f.persNo, 8), [C("", 3), C("", 8, {ls: [["Employee", ""], ["Name", "8"]]}), C(f.name || "", 20, {ul: true, b: true, bottom: true}), C("", 9, {ls: [["National ID", "9"], ["Card Number", ""]]}), C("", 10, {ul: true})]), 520));
+        rows.push(R([C("", 10, {ls: [["Grade (Pay", ""], ["Scale Group)", "10"]]})].concat(BX(g2(f.grade), 2), [C("11", 2, {size: 12}), C("", 24, {ul: true}), C("", 12), C("", 8, {ls: [["Salary", "12"], ["Status", ""]]}), C(f.status === "Start" ? "X" : "", 2, {box: true, b: true}), C("Start", 6), C(f.status === "Stop" ? "X" : "", 2, {box: true, b: true}), C("Stop", 6)]), 520));
+        /* gap, then the table */
+        rows.push(R([C("", 76)], 160));
+        var H = function(t, span, o){ o = o || {}; o.line = true; o.center = true; o.b = true; o.size = 16; return C(t, span, o); };
+        var hp = function(a, b2, num){ return {paras: [new D.Paragraph({alignment: D.AlignmentType.CENTER, children: [run(a, {size: 16})]}), new D.Paragraph({alignment: D.AlignmentType.CENTER, children: [run(b2, {size: 16}), run(num || "", {size: 15, sup: true})]})]}; };
+        rows.push(R([C("", 3), H("GENERAL DATA CHANGE", 26, {num: "13"}), H("CHANGE IN PAYMENTS / DEDUCTIONS", 26, {num: "17"}), C("", 21)], 280));
+        rows.push(new D.TableRow({cantSplit: true, children: [
+          mk(C("", 3, Object.assign({line: true, rowSpan: 2}, hp("Info", "Type", "14")))), mk(C("", 4, Object.assign({line: true, rowSpan: 2}, hp("Field", "ID", "15")))), mk(C("New Contents", 22, {line: true, rowSpan: 2, center: true, b: true, size: 16, num: "16"})),
+          mk(C("", 8, Object.assign({line: true, rowSpan: 2}, hp("Wage", "Type", "18")))), mk(C("Amount", 18, {line: true, center: true, b: true, size: 16, num: "19"})),
+          mk(C("", 8, Object.assign({line: true, rowSpan: 2}, hp("Effective", "Date", "21")))), mk(C("Remarks", 13, {line: true, rowSpan: 2, center: true, b: true, size: 16, num: "22"}))], height: {value: 280, rule: D.HeightRule.ATLEAST}}));
+        rows.push(new D.TableRow({cantSplit: true, children: [mk(H("Rupees", 12)), mk(H("Paisa", 4)), mk(H("Adj", 2))], height: {value: 260, rule: D.HeightRule.ATLEAST}}));
+        for(var i = 0; i < PER_PAGE; i++){
+          var l = chunk[i] || null, gi = p * PER_PAGE + i, dflt = gi === 0 ? "0008" : gi === 1 ? "0014" : "", hasA = l && l.amt !== "" && l.amt != null, a = hasA ? rs(l.amt) : ["", ""], fc = chars(l ? l.field : "", 2);
+          var wp = [new D.Paragraph({children: [run(l ? l.wage || "" : "", {size: 17, b: true})]})]; if(l && l.wageDesc) wp.push(new D.Paragraph({children: [run(l.wageDesc, {size: 10})]}));
+          rows.push(R([C(l && l.info ? l.info : dflt, 3, {line: true, right: true}), C(fc[0], 2, {line: true, center: true}), C(fc[1], 2, {line: true, center: true}), C(l ? l.content : "", 22, {line: true}), C("", 8, {line: true, paras: wp})]
+            .concat(BX(a[0], 6, true, 2), BX(a[1], 2, false, 2), [C(l ? l.adj || "" : "", 2, {line: true, center: true}), C(l && l.eff ? dLabel(l.eff) : "", 8, {line: true, center: true, size: 16}), C(l ? l.remark || "" : "", 13, {line: true, size: 16})]), 400));
+        }
+        rows.push(R([C("", 76)], 700));
+        rows.push(R([C(f.prep || "", 22, {ul: true, center: true, b: true, bottom: true}), C("", 5), C(f.chk || "", 22, {ul: true, center: true, b: true, bottom: true}), C("", 5), C(f.ver || "", 22, {ul: true, center: true, b: true, bottom: true})], 330));
+        rows.push(R([C("Prepared By", 22, {center: true, num: "23"}), C("", 5), C("Audited/Checked By", 22, {center: true, num: "24"}), C("", 5), C("Entered / Verified By", 22, {center: true, num: "25"})], 300));
+        if(!first) children.push(new D.Paragraph({pageBreakBefore: true, spacing: {before: 0, after: 0}, children: [run("", {size: 2})]}));
+        first = false;
+        children.push(new D.Table({rows: rows, width: {size: U * COLS, type: D.WidthType.DXA}, columnWidths: Array.apply(null, Array(COLS)).map(function(){ return U; }), layout: D.TableLayoutType.FIXED, borders: {top: NONE, bottom: NONE, left: NONE, right: NONE, insideHorizontal: NONE, insideVertical: NONE}}));
+      }
+    });
+    var doc = new D.Document({creator: "", title: "PAY02 Amendment Form", sections: [{properties: {page: {size: {width: PWd[0], height: PWd[1], orientation: D.PageOrientation.LANDSCAPE}, margin: {top: MG, bottom: MG, left: MG, right: MG}}}, children: children}]});
+    return await D.Packer.toBlob(doc);
+  }
+  function paperKey(){ var gp = document.getElementById("globalPaperSize") || {}; return gp.value === "Legal" ? "Legal" : "A4"; }
   async function exportForms(kind){
     var fs = view === "edit" && forms()[cur] ? [forms()[cur]] : Object.keys(sel).filter(function(k){ return sel[k] && forms()[k]; }).map(function(k){ return forms()[k]; });
     if(!fs.length){ toast("Tick the forms first"); return; }
-    if(!window.__brExportTables){ toast("The export tools are not ready — reload the page"); return; }
-    var gp = document.getElementById("globalPaperSize") || {};
-    await window.__brExportTables(kind, tables(fs), {title: "Payroll System Amendment Form — PAY02", sub: fs.map(function(f){ return f.name; }).join(", "), base: "PAY02_Amendment_" + (fs.length === 1 ? String(fs[0].name || "").replace(/[^A-Za-z0-9]+/g, "-") : fs.length + "-forms"), landscape: true, office: "", paper: (gp.value === "A4" ? "Legal" : gp.value) || "Legal"});
+    var base = "PAY02_Amendment_" + (fs.length === 1 ? String(fs[0].name || "").replace(/[^A-Za-z0-9]+/g, "-") : fs.length + "-forms") + "_" + today();
+    try{
+      if(kind === "print"){ printHtml(docHtml(sheetsOf(fs), false, paperKey())); return; }
+      if(kind === "word"){ dlBlob(await docxSheets(fs, paperKey()), base + ".docx"); return; }
+      if(kind === "pdf"){ dlBlob(new Blob([await pdfSheets(fs, paperKey())], {type: "application/pdf"}), base + ".pdf"); return; }
+      if(kind === "excel"){
+        if(!window.__brExportTables){ toast("The export tools are not ready — reload the page"); return; }
+        await window.__brExportTables("excel", tables(fs), {title: "Payroll System Amendment Form — PAY02", sub: fs.map(function(f){ return f.name; }).join(", "), base: base.replace(/_\d{4}-\d{2}-\d{2}$/, ""), landscape: true, office: "", paper: "Legal"});
+      }
+    }catch(err){ console.error(err); toast("Could not make the file: " + (err && err.message || err)); }
   }
 
   /* ---------- events ---------- */
@@ -11379,8 +11611,9 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       var bill = newSel.bill ? (window.__brArrears.bills()[newSel.bill] || null) : null, f = newForm(e, bill);
       forms()[f.id] = f; cur = f.id; view = "edit"; persist(); rerender(); return;
     }
+    if(t.id === "cf_prev"){ showPrev = !showPrev; rerender(); return; }
     if(t.id === "cf_back"){ view = "list"; cur = null; rerender(); return; }
-    if(t.id === "cf_addline"){ var f1 = forms()[cur]; if(f1){ f1.lines.push(blankLine()); persist(); rerender(); } return; }
+    if(t.id === "cf_addline"){ var f1 = forms()[cur]; if(f1){ var tg = Math.max(1, Math.ceil(f1.lines.length / PER_PAGE)) * PER_PAGE + PER_PAGE; while(f1.lines.length < tg) f1.lines.push(blankLine()); persist(); rerender(); } return; }
     if(t.id === "cf_refill"){
       var f2 = forms()[cur], s2 = $("#cf_e_bill"), b2 = s2 && window.__brArrears.bills()[s2.value]; if(!f2 || !b2) return;
       if(!confirm("Replace the lines of this form with the lines worked out from the selected bill?")) return;
@@ -11403,23 +11636,45 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var f = forms()[cur];
     if(view === "edit" && f && t.id && t.id.indexOf("cf_f_") === 0){
       var k = t.id.slice(5); f[k] = t.value;
-      var r = root(); if(k === "ddo" || k === "ddoDesc" || k === "officeOf" || k === "prep" || k === "chk" || k === "ver") r[k] = t.value;
+      var r = root(); if(k === "ddo"){ t.value = f[k] = ddoClean(t.value); } if(k === "ddo" || k === "ddoDesc" || k === "officeOf" || k === "prep" || k === "chk" || k === "ver") r[k] = t.value;
       persist(); return;
     }
     if(view === "edit" && f && t.classList.contains("cf-in")){
-      var l = f.lines[+t.getAttribute("data-i")]; if(!l) return; var kk = t.getAttribute("data-k"); l[kk] = t.value;
+      var l = lineAt(f, +t.getAttribute("data-i")); if(!l) return; var kk = t.getAttribute("data-k"); l[kk] = t.value;
       if(kk === "wage"){ var hit = wageList().filter(function(w){ return w[0] === t.value; })[0]; l.wageDesc = hit ? hit[1] : ""; persist(); rerender(); return; }
       persist(); return;
     }
   });
+  function boxValue(g){ return [].map.call(g.querySelectorAll("input"), function(x){ return x.value; }).join("").replace(/\s/g, ""); }
+  function boxStore(g, f){
+    var v = boxValue(g), hk = g.getAttribute("data-hk");
+    if(hk){ if(hk === "ddo"){ v = ddoClean(v); root().ddo = v; } f[hk] = v; }
+    else { var l = lineAt(f, +g.getAttribute("data-i")), k = g.getAttribute("data-k"); if(!l) return; l[k] = v;
+      if(k === "wage"){ var hit = wageList().filter(function(w){ return w[0] === v; })[0]; l.wageDesc = hit ? hit[1] : ""; var sp = g.parentElement.querySelector(".pp-sub"); if(sp) sp.textContent = l.wageDesc; } }
+    persist();
+  }
+  panel.addEventListener("keydown", function(ev){
+    var t = ev.target; if(!t.classList || !t.classList.contains("pp-c1")) return;
+    if(ev.key === "Backspace" && !t.value && t.previousElementSibling){ t.previousElementSibling.focus(); t.previousElementSibling.value = ""; var f0 = forms()[cur]; if(f0) boxStore(t.parentElement, f0); ev.preventDefault(); }
+    if(ev.key === "ArrowLeft" && t.previousElementSibling){ t.previousElementSibling.focus(); ev.preventDefault(); }
+    if(ev.key === "ArrowRight" && t.nextElementSibling){ t.nextElementSibling.focus(); ev.preventDefault(); }
+  });
+  panel.addEventListener("paste", function(ev){
+    var t = ev.target; if(!t.classList || !t.classList.contains("pp-c1") || !allowed()) return;
+    var txt = ((ev.clipboardData || window.clipboardData).getData("text") || "").replace(/\s/g, ""), g = t.parentElement, ins = [].slice.call(g.querySelectorAll("input")), at = ins.indexOf(t);
+    ev.preventDefault(); for(var i = 0; i < txt.length && at + i < ins.length; i++) ins[at + i].value = txt.charAt(i);
+    var f1 = forms()[cur]; if(f1) boxStore(g, f1);
+  });
   panel.addEventListener("input", function(ev){
     var t = ev.target; if(!allowed() || !t.classList) return;
     var f = forms()[cur];
-    if(view === "edit" && f && t.classList.contains("cf-in")){ var l = f.lines[+t.getAttribute("data-i")]; if(l){ var kk = t.getAttribute("data-k"); if(kk !== "wage"){ l[kk] = t.value; persist(); } } return; }
+    if(view === "edit" && f && t.classList.contains("pp-c1")){ boxStore(t.parentElement, f); if(t.value && t.nextElementSibling) t.nextElementSibling.focus(); return; }
+    if(view === "edit" && f && t.classList.contains("cf-in")){ var l = lineAt(f, +t.getAttribute("data-i")); if(l){ var kk = t.getAttribute("data-k"); if(kk !== "wage"){ l[kk] = t.value; persist(); } } return; }
     if(view === "edit" && f && t.id && t.id.indexOf("cf_f_") === 0 && t.type === "text"){ var k = t.id.slice(5); f[k] = t.value; var r = root(); if(k === "ddo" || k === "ddoDesc" || k === "officeOf" || k === "prep" || k === "chk" || k === "ver") r[k] = t.value; persist(); }
   });
 
-  window.__brChangeForm = {view: viewMain, forms: forms, tables: tables, linesFromBill: linesFromBill, newForm: newForm, state: function(){ return {view: view, cur: cur}; }};
+  (function(){ var css = PAPER_CSS.split("}").map(function(r){ var i = r.indexOf("{"); if(i < 0) return ""; var sel0 = r.slice(0, i), dec = r.slice(i + 1); if(true) dec = dec.split(";").map(function(d){ d = d.trim(); return d && !/important/.test(d) ? d + " !important" : d; }).filter(Boolean).join(";"); return sel0.split(",").map(function(x){ return "#panel-payfix " + x.trim(); }).join(",") + "{" + dec + "}"; }).join("\n"); var st = document.createElement("style"); st.id = "cf_paper_css"; st.textContent = css; document.head.appendChild(st); })();
+  window.__brChangeForm = {view: viewMain, forms: forms, tables: tables, sheets: sheetsOf, docHtml: docHtml, pdf: pdfSheets, docx: docxSheets, linesFromBill: linesFromBill, newForm: newForm, state: function(){ return {view: view, cur: cur}; }};
 })();
 
 /* ================= BM-26 MONTHLY SALARY STATEMENT (Admin / Super Admin) =================
