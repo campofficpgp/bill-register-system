@@ -11311,6 +11311,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(cur && !seen[cur]) o += opt(cur, l.wageDesc || "").replace(" selected", "") .replace("<option ", "<option selected ");
     return "<select class='pp-i cf-in' data-i='" + gi + "' data-k='wage' title='" + esc(cur ? cur + " — " + (l.wageDesc || "") : "Wage type") + "' style='" + style + "'>" + o + "</select>";
   }
+  var NID = {}; function nidOf(f){ return (f && NID[f.id]) || ""; }
   function contentOf(f, l){ if(!l) return ""; if(l.content) return l.content; return l.wage && l.autoContent !== false ? (l.wageDesc || descOf(f, l.wage) || "") : ""; }
   function wageOpen(sel, full){ [].forEach.call(sel.options, function(op){ var x = op.getAttribute(full ? "data-full" : "data-code"); if(x) op.textContent = x; }); }
   function sumHtml(f){
@@ -11357,6 +11358,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(f.ddo && ddoClean(f.ddo) !== f.ddo){ f.ddo = ddoClean(f.ddo); ch = true; }
     if(!f.month){ f.month = curMonth(); ch = true; }
     if(!f.date){ f.date = today(); ch = true; }
+    if(!f.desig && !f.desigManual){ var dd = desigByBps(gradeOf(f)); if(dd){ f.desig = dd; ch = true; } }
     if(f.stage == null){ f.stage = inferStage(f, f.billId ? ((window.__brArrears && window.__brArrears.bills()[f.billId]) || null) : null); ch = true; }
     return ch;
   }
@@ -11397,12 +11399,12 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(fill(f)) persist();
     var h = "<div class='pf-bar'><button type='button' class='btn small' id='cf_back'>← " + T("Back", "واپس") + "</button> <span class='hint' id='cf_saved' style='margin:0'></span></div>";
     h += "<h3 class='pf-h3'>FORM: PAY02 — " + T("Payroll System Amendment Form (single employee entry)", "پے رول سسٹم ترمیمی فارم (ایک ملازم)") + " · " + esc(f.name || "") + "</h3>";
-    h += "<p class='hint'>" + T("This is the Account Office form itself — write directly in its boxes. The National ID Card Number is left blank for you to write by hand on the printout; the portal never keeps it.", "یہ اکاؤنٹ آفس کا اصل فارم ہے — اسی کے خانوں میں لکھیں۔ شناختی کارڈ نمبر خالی رہتا ہے تاکہ پرنٹ پر ہاتھ سے لکھیں؛ پورٹل اسے کبھی محفوظ نہیں رکھتا۔") + "</p>";
+    h += "<p class='hint'>" + T("This is the Account Office form itself — write directly in its boxes. The National ID Card Number box can be typed here for the printout only — it is never saved and is gone when you leave or reload this page.", "یہ اکاؤنٹ آفس کا اصل فارم ہے — اسی کے خانوں میں لکھیں۔ شناختی کارڈ نمبر کا خانہ صرف پرنٹ کے لیے یہاں ٹائپ ہو سکتا ہے — یہ کبھی محفوظ نہیں ہوتا اور صفحہ چھوڑنے یا دوبارہ کھولنے پر ختم ہو جاتا ہے۔") + "</p>";
     var bl = billsOf(f.empId);
     if(bl.length){
       h += "<div class='pf-bar'><div class='field' style='max-width:340px'><label>" + T("Fill the lines from an Arrears bill (replaces the lines)", "لائنیں بقایا جات بل سے بھریں (موجودہ لائنیں بدل جائیں گی)") + "</label><select id='cf_e_bill'>" + bl.map(function(b){ return "<option value='" + esc(b.id) + "'" + (f.billId === b.id ? " selected" : "") + ">BPS-" + esc(String(b.oldB)) + " → BPS-" + esc(String(b.newB)) + " · " + esc(dLabel(b.eff)) + "</option>"; }).join("") + "</select></div><button type='button' class='btn small' id='cf_refill'>" + T("Fill from bill", "بل سے بھریں") + "</button></div>";
     }
-    h += "<div class='pf-bar'>" + fld("desig", T("Designation (filled from the BPS)", "عہدہ (BPS سے خود بھرتا ہے)"), f.desig, "text", {style: "max-width:260px"}) + fld("stage", T("Stage — increments earned (for the Basic Pay suggestion)", "اسٹیج — حاصل شدہ انکریمنٹ (بنیادی تنخواہ کی تجویز کے لیے)"), f.stage == null ? 0 : f.stage, "number", {style: "max-width:260px", attr: "min='0' max='30' step='1'"}) + "<button type='button' class='btn small' id='cf_autofill'>" + T("Fill the amounts by grade", "گریڈ کے مطابق رقمیں بھریں") + "</button></div><p class='hint'>" + T("Pick a wage type from the list in a line and its amount is suggested from the grade of this form (the BPS scale of the line’s date). Every amount can be typed over.", "لائن میں فہرست سے مد چنیں تو اس کی رقم اس فارم کے گریڈ (لائن کی تاریخ کے BPS اسکیل) کے مطابق خود تجویز ہو جاتی ہے۔ کوئی بھی رقم ہاتھ سے بدل سکتے ہیں۔") + "</p>";
+    h += "<div class='pf-bar'>" + fld("stage", T("Stage — increments earned (for the Basic Pay suggestion)", "اسٹیج — حاصل شدہ انکریمنٹ (بنیادی تنخواہ کی تجویز کے لیے)"), f.stage == null ? 0 : f.stage, "number", {style: "max-width:260px", attr: "min='0' max='30' step='1'"}) + "<button type='button' class='btn small' id='cf_autofill'>" + T("Fill the amounts by grade", "گریڈ کے مطابق رقمیں بھریں") + "</button> <button type='button' class='btn small' id='cf_cleardates'>" + T("Clear all effective dates", "تمام مؤثر تاریخیں خالی کریں") + "</button></div><p class='hint'>" + T("The designation is filled in the form from the BPS (box next to the grade). Effective dates may be left empty. Pick a wage type from the list in a line and its amount is suggested from the grade of this form (the BPS scale of the line’s date). Every amount can be typed over.", "لائن میں فہرست سے مد چنیں تو اس کی رقم اس فارم کے گریڈ (لائن کی تاریخ کے BPS اسکیل) کے مطابق خود تجویز ہو جاتی ہے۔ کوئی بھی رقم ہاتھ سے بدل سکتے ہیں۔") + "</p>";
     h += "<div style='overflow-x:auto;padding-bottom:6px'>" + allSheets(f, true) + "</div><datalist id='cf_wl'>" + wageList().map(function(w){ return "<option value='" + esc(w[0]) + "'>" + esc(w[1]) + "</option>"; }).join("") + "</datalist>";
     h += "<h4 class='pf-h3' style='font-size:14px;margin:14px 0 6px'>" + T("Wage lines of this form — code and name of each head", "اس فارم کی ویج لائنیں — ہر مد کا کوڈ اور نام") + "</h4><div id='cf_sum'>" + sumHtml(f) + "</div>";
     h += "<div class='pf-bar' style='margin-top:10px'><button type='button' class='btn small' id='cf_addline'>➕ " + T("New page (10 more lines)", "نیا صفحہ (10 مزید لائنیں)") + "</button> <span class='hint' style='margin:0'>" + T("Ten lines fit on one page of the form; add a new page when you need more.", "فارم کے ایک صفحے پر دس لائنیں آتی ہیں؛ زیادہ کے لیے نیا صفحہ بڑھائیں۔") + "</span></div>";
@@ -11434,8 +11436,8 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
         T2.push({sheet: tag + " Header", pageBreak: !first, title: "FORM: PAY02 — Payroll System Amendment Form — Single Employee Entry", heads: ["Field", "Entry", "Field", "Entry", "Field", "Entry"], num: [false, false, false, false, false, false], rows: [
           hr("1  Date", dLabel(f.date), "2  Page No.", pn, "3  Office of the", f.officeOf || ""),
           hr("4  For the month of", mLabel(f.month), "5  DDO Code (Cost Center)", f.ddo || "", "6  Description", f.ddoDesc || ""),
-          hr("7  Personnel Number", f.persNo || "", "8  Employee Name", f.name || "", "9  National ID Card Number", ""),
-          hr("10-11  Grade (Pay Scale Group)", f.grade ? String(f.grade) : "", "12  Salary Status", f.status || "( Start / Stop )", "", "")], foot: [], dense: true});
+          hr("7  Personnel Number", f.persNo || "", "8  Employee Name", f.name || "", "9  National ID Card Number", nidOf(f)),
+          hr("10-11  Grade (Pay Scale Group)", f.grade ? String(f.grade) : "", "12  Salary Status", f.status || "( Start / Stop )", "Designation", f.desig || "")], foot: [], dense: true});
         var rows = [];
         for(var i = 0; i < PER_PAGE; i++){
           var l = chunk[i] || null, gi = p * PER_PAGE + i, dflt = gi === 0 ? "0008" : gi === 1 ? "0014" : "", a = l ? rs(l.amt) : ["", ""], has = l && num(l.amt) !== 0 || l && l.amt !== "" && l.amt != null;
@@ -11470,6 +11472,8 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     ".pp input.pp-c1:focus{ outline:2px solid #1d6fd1; background:#fff; position:relative; z-index:1; }" +
     ".pp input.pp-i, .pp select.pp-i{ position:absolute; box-sizing:border-box; min-height:0; padding:0 3px; margin:0; border:0; border-bottom:1px solid #777; background:#fffdf0; color:#000; font:700 12px Arial,Helvetica,sans-serif; border-radius:0; }" +
     ".pp input.pp-i:focus, .pp select.pp-i:focus{ outline:2px solid #1d6fd1; background:#fff; z-index:2; }" +
+    ".pp input.pp-i.noval:not(:focus)::-webkit-datetime-edit{ color:transparent; }" +
+    ".pp input.pp-i.noval:not(:focus):not(:hover)::-webkit-calendar-picker-indicator{ opacity:0; }" +
     ".pp .pp-sub{ position:absolute; font:400 6.3px Arial,Helvetica,sans-serif; color:#444; white-space:nowrap; overflow:hidden; }" +
     ".pp button.cf-rm{ position:absolute; left:2px; min-height:0; height:15px; width:17px; padding:0; font-size:8px; line-height:1; }";
 
@@ -11495,8 +11499,9 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     lab(352, 202, "Description", "6"); Ln(352, 234, 555, 234, 1); val(f.ddoDesc, 354, 220, 11);
     lab(131, 247, "Personnel", null); T("Number", 131, 264, 11.5); T("7", 131 + tw("Number", 11.5) + 1.5, 261, 7); boxes(f.persNo, 8, 202, 247, 24.7, 30);
     T("Employee", 431, 247, 11.5); lab(431, 263, "Name", "8"); Ln(431, 278, 740, 278, 1); val(f.name, 478, 262, 12);
-    T("National ID", 755, 247, 11.5); T("9", 755 + tw("National ID", 11.5) + 1.5, 244, 7); T("Card Number", 755, 263, 11.5); Ln(852, 278, 968, 278, 1);
+    T("National ID", 755, 247, 11.5); T("9", 755 + tw("National ID", 11.5) + 1.5, 244, 7); T("Card Number", 755, 263, 11.5); Ln(852, 278, 968, 278, 1); val(nidOf(f), 854, 262, 11);
     T("Grade (Pay", 131, 290, 11.5); lab(131, 304, "Scale Group)", "10"); boxes(g2(f.grade), 2, 228, 290, 24, 28); T("11", 279, 307, 7); Ln(275, 317, 455, 317, 1);
+    T("Designation", 466, 296, 11.5); Ln(538, 317, 652, 317, 1); val(f.desig, 540, 300, 11);
     T("Salary", 656, 290, 11.5); T("12", 656 + tw("Salary", 11.5) + 2, 287, 7); T("Status", 656, 304, 11.5);
     if(!hed){ Rc(727, 302, 25, 16, 1); if(f.status === "Start") T("X", 739.5, 303, 13, {b: true, c: true}); T("Start", 758, 304, 11.5); Rc(803, 302, 25, 16, 1); if(f.status === "Stop") T("X", 815.5, 303, 13, {b: true, c: true}); T("Stop", 834, 304, 11.5); }
     /* table frame */
@@ -11526,7 +11531,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
         I.push(wageSelect(f, l, gi, "left:" + (X[4] + 1) + "px;top:" + (y0 + 1) + "px;width:" + (X[5] - X[4] - 2) + "px;height:13px;font-size:10px;padding:0"));
         I.push("<input class='pp-i cf-in' type='number' step='0.01' data-i='" + gi + "' data-k='amt' style='left:" + (X[5] + 1) + "px;top:" + (y0 + 2) + "px;width:" + (X[13] - X[5] - 2) + "px;height:" + (TY.rh - 4) + "px;text-align:right' value='" + esc(l.amt == null ? "" : String(l.amt)) + "'>");
         I.push("<input class='pp-i cf-in' data-i='" + gi + "' data-k='adj' maxlength='3' style='left:" + (X[13] + 1) + "px;top:" + (y0 + 2) + "px;width:" + (X[14] - X[13] - 2) + "px;height:" + (TY.rh - 4) + "px;text-align:center' value='" + esc(l.adj || "") + "'>");
-        I.push("<input class='pp-i cf-in' type='date' data-i='" + gi + "' data-k='eff' style='left:" + (X[14] + 1) + "px;top:" + (y0 + 2) + "px;width:" + (X[15] - X[14] - 2) + "px;height:" + (TY.rh - 4) + "px;font-size:10px;padding:0' value='" + esc(l.eff || "") + "'>");
+        I.push("<input class='pp-i cf-in" + (l.eff ? "" : " noval") + "' type='date' data-i='" + gi + "' data-k='eff' style='left:" + (X[14] + 1) + "px;top:" + (y0 + 2) + "px;width:" + (X[15] - X[14] - 2) + "px;height:" + (TY.rh - 4) + "px;font-size:10px;padding:0' value='" + esc(l.eff || "") + "'>");
         I.push("<input class='pp-i cf-in' data-i='" + gi + "' data-k='remark' style='left:" + (X[15] + 1) + "px;top:" + (y0 + 2) + "px;width:" + (X[16] - X[15] - 2) + "px;height:" + (TY.rh - 4) + "px;font-size:10.5px' value='" + esc(l.remark || "") + "'>");
       } else {
         var info = l && l.info ? l.info : dflt;
@@ -11555,7 +11560,8 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       I.push(bxe("data-hk='persNo'", f.persNo, 8, "", 24.7, 30, 202, 247));
       I.push(bxe("data-hk='grade'", g2(f.grade), 2, "", 24, 28, 228, 290));
       fi("date", 902, 104, 88, 19, {type: "date", st: "font-size:10.5px;padding:0 1px"}); fi("page", 936, 130, 54, 19, {ph: "auto", st: "font-size:11px"}); fi("officeOf", 252, 143, 308, 19); fi("month", 272, 170, 112, 19, {type: "month"});
-      fi("ddoDesc", 354, 212, 201, 20); fi("name", 476, 257, 264, 20);
+      fi("ddoDesc", 354, 212, 201, 20); fi("name", 476, 257, 264, 20); fi("desig", 538, 296, 114, 20, {st: "font-size:11px"});
+      I.push("<input class='pp-i' id='cf_nid' maxlength='15' inputmode='numeric' autocomplete='off' placeholder='type for print' title='Typed for printing only — never saved' style='left:853px;top:257px;width:115px;height:20px;font-size:11px' value='" + esc(nidOf(f)) + "'>");
       I.push("<select class='pp-i' id='cf_f_status' style='left:727px;top:300px;width:100px;height:20px'><option value=''" + (!f.status ? " selected" : "") + ">—</option><option value='Start'" + (f.status === "Start" ? " selected" : "") + ">Start</option><option value='Stop'" + (f.status === "Stop" ? " selected" : "") + ">Stop</option></select>");
     }
     return {P: P, I: I};
@@ -11648,8 +11654,8 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
         rows.push(R([C("OFFICE OF THE", 12, {b: true, num: "3"}), C(f.officeOf || "", 40, {ul: true, b: true}), C("", 24)], 380));
         rows.push(R([C("FOR THE MONTH OF", 14, {b: true, num: "4"}), C(mm[1] || "", 6, {ul: true, center: true, b: true}), C("/", 2, {center: true}), C(mm[0] || "", 8, {ul: true, center: true, b: true}), C("", 46)], 380));
         rows.push(R([C("", 10, {ls: [["DDO Code", "5"], ["(Cost Center)", ""]]})].concat(BX(f.ddo, 6), [C("", 3), C("Description", 10, {num: "6"}), C(f.ddoDesc || "", 30, {ul: true, b: true}), C("", 11)]), 520));
-        rows.push(R([C("", 10, {ls: [["Personnel", ""], ["Number", "7"]]})].concat(BX(f.persNo, 8), [C("", 3), C("", 8, {ls: [["Employee", ""], ["Name", "8"]]}), C(f.name || "", 20, {ul: true, b: true, bottom: true}), C("", 9, {ls: [["National ID", "9"], ["Card Number", ""]]}), C("", 10, {ul: true})]), 520));
-        rows.push(R([C("", 10, {ls: [["Grade (Pay", ""], ["Scale Group)", "10"]]})].concat(BX(g2(f.grade), 2), [C("11", 2, {size: 12}), C("", 24, {ul: true}), C("", 12), C("", 8, {ls: [["Salary", "12"], ["Status", ""]]}), C(f.status === "Start" ? "X" : "", 2, {box: true, b: true}), C("Start", 6), C(f.status === "Stop" ? "X" : "", 2, {box: true, b: true}), C("Stop", 6)]), 520));
+        rows.push(R([C("", 10, {ls: [["Personnel", ""], ["Number", "7"]]})].concat(BX(f.persNo, 8), [C("", 3), C("", 8, {ls: [["Employee", ""], ["Name", "8"]]}), C(f.name || "", 20, {ul: true, b: true, bottom: true}), C("", 9, {ls: [["National ID", "9"], ["Card Number", ""]]}), C(nidOf(f), 10, {ul: true, b: true, size: 18})]), 520));
+        rows.push(R([C("", 10, {ls: [["Grade (Pay", ""], ["Scale Group)", "10"]]})].concat(BX(g2(f.grade), 2), [C("11", 2, {size: 12}), C("", 24, {ul: true}), C(f.desig ? "Desig.: " + f.desig : "", 12, {size: 14, b: true}), C("", 8, {ls: [["Salary", "12"], ["Status", ""]]}), C(f.status === "Start" ? "X" : "", 2, {box: true, b: true}), C("Start", 6), C(f.status === "Stop" ? "X" : "", 2, {box: true, b: true}), C("Stop", 6)]), 520));
         /* gap, then the table */
         rows.push(R([C("", 76)], 160));
         var H = function(t, span, o){ o = o || {}; o.line = true; o.center = true; o.b = true; o.size = 16; return C(t, span, o); };
@@ -11701,9 +11707,10 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       var bill = newSel.bill ? (window.__brArrears.bills()[newSel.bill] || null) : null, f = newForm(e, bill);
       forms()[f.id] = f; cur = f.id; view = "edit"; persist(); rerender(); return;
     }
+    if(t.id === "cf_cleardates"){ var f6 = forms()[cur]; if(f6){ (f6.lines || []).forEach(function(l6){ l6.eff = ""; }); persist(); rerender(); try{ toast("Effective dates cleared"); }catch(e6){} } return; }
     if(t.id === "cf_autofill"){ var f5 = forms()[cur]; if(f5){ var n5 = refreshAmounts(f5); persist(); rerender(); try{ toast(n5 + " amount(s) filled by grade"); }catch(e5){} } return; }
     if(t.id === "cf_prev"){ showPrev = !showPrev; rerender(); return; }
-    if(t.id === "cf_back"){ view = "list"; cur = null; rerender(); return; }
+    if(t.id === "cf_back"){ view = "list"; cur = null; NID = {}; rerender(); return; }
     if(t.id === "cf_addline"){ var f1 = forms()[cur]; if(f1){ var tg = Math.max(1, Math.ceil(f1.lines.length / PER_PAGE)) * PER_PAGE + PER_PAGE; while(f1.lines.length < tg) f1.lines.push(blankLine()); persist(); rerender(); } return; }
     if(t.id === "cf_refill"){
       var f2 = forms()[cur], s2 = $("#cf_e_bill"), b2 = s2 && window.__brArrears.bills()[s2.value]; if(!f2 || !b2) return;
@@ -11732,7 +11739,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     }
     if(view === "edit" && f && t.classList.contains("cf-in")){
       var l = lineAt(f, +t.getAttribute("data-i")); if(!l) return; var kk = t.getAttribute("data-k"); l[kk] = t.value;
-      if(kk === "amt") l.autoAmt = false; if(kk === "content") l.autoContent = false; if(kk === "wage"){ pickWage(f, l, t.value); persist(); rerender(); return; }
+      if(kk === "amt") l.autoAmt = false; if(kk === "content") l.autoContent = false; if(kk === "eff") t.classList.toggle("noval", !t.value); if(kk === "wage"){ pickWage(f, l, t.value); persist(); rerender(); return; }
       persist(); sumRefresh(); return;
     }
   });
@@ -11762,6 +11769,8 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   panel.addEventListener("input", function(ev){
     var t = ev.target; if(!allowed() || !t.classList) return;
     var f = forms()[cur];
+    if(t.id === "cf_nid"){ if(f){ t.value = t.value.replace(/[^0-9\-]/g, ""); NID[f.id] = t.value; } return; }
+    if(t.getAttribute && t.getAttribute("data-k") === "eff") t.classList.toggle("noval", !t.value);
     if(view === "edit" && f && t.classList.contains("pp-c1")){ boxStore(t.parentElement, f); if(t.value && t.nextElementSibling) t.nextElementSibling.focus(); return; }
     if(view === "edit" && f && t.classList.contains("cf-in")){ var l = lineAt(f, +t.getAttribute("data-i")); if(l){ var kk = t.getAttribute("data-k"); if(kk !== "wage"){ l[kk] = t.value; if(kk === "amt") l.autoAmt = false; if(kk === "content") l.autoContent = false; persist(); sumRefresh(); } } return; }
     if(view === "edit" && f && t.id && t.id.indexOf("cf_f_") === 0 && t.type === "text"){ var k = t.id.slice(5); f[k] = t.value; if(k === "desig") f.desigManual = !!t.value; var r = root(); if(k === "ddo" || k === "ddoDesc" || k === "officeOf" || k === "prep" || k === "chk" || k === "ver") r[k] = t.value; persist(); }
