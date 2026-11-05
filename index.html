@@ -1419,6 +1419,40 @@ body.lang-ur .br-part{ font-size:17px; }
 .t30-subtabs{ display:flex; gap:8px; flex-wrap:wrap; margin:0 0 14px; }
 .t30-sub{ background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:8px 16px; font:inherit; font-weight:600; cursor:pointer; }
 .t30-sub.active{ background:var(--navy); color:#fff; border-color:var(--navy); }
+.aom-subtabs{ display:flex; gap:8px; flex-wrap:wrap; margin:0 0 14px; }
+.aom-sub{ background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:8px 16px; font:inherit; font-weight:600; cursor:pointer; }
+.aom-sub.active{ background:var(--navy); color:#fff; border-color:var(--navy); }
+#panel-aomatch .aom-pick{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:0 0 12px; }
+#panel-aomatch .aom-file{ display:inline-flex; flex-direction:column; gap:6px; font-weight:600; font-size:13px; }
+#panel-aomatch .aom-fn{ color:var(--muted); font-size:12.5px; word-break:break-all; }
+#panel-aomatch .aom-banner{ padding:9px 12px; border-radius:var(--radius); margin:0 0 10px; font-size:13px; border:1px solid var(--border); background:rgba(127,127,127,.10); }
+#panel-aomatch .aom-banner.good{ background:rgba(46,160,90,.14); border-color:rgba(46,160,90,.55); }
+#panel-aomatch .aom-banner.warn{ background:rgba(232,176,74,.18); border-color:rgba(232,176,74,.7); }
+#panel-aomatch .aom-banner.bad{ background:rgba(205,60,60,.14); border-color:rgba(205,60,60,.6); }
+#panel-aomatch .aom-note{ padding:7px 12px; border-radius:var(--radius); margin:0 0 10px; font-size:12.5px; color:var(--muted); border:1px dashed var(--border); }
+#panel-aomatch .aom-cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin:0 0 12px; }
+#panel-aomatch .aom-card{ border:1px solid var(--border); border-radius:var(--radius); padding:8px 12px; background:var(--surface); display:flex; flex-direction:column; gap:2px; }
+#panel-aomatch .aom-card span{ font-size:12px; color:var(--muted); }
+#panel-aomatch .aom-card b{ font-size:18px; font-variant-numeric:tabular-nums; }
+#panel-aomatch .aom-card b.neg{ color:#c0392b; }
+#panel-aomatch .aom-bar{ display:flex; gap:12px; align-items:end; flex-wrap:wrap; margin:0 0 10px; }
+#panel-aomatch .aom-bar label{ display:flex; flex-direction:column; gap:3px; font-size:12px; font-weight:600; }
+#panel-aomatch .aom-h{ margin:16px 0 6px; }
+#panel-aomatch .aom-hint{ color:var(--muted); font-size:12.5px; margin:0 0 8px; max-width:820px; }
+#panel-aomatch .aom-wrap{ overflow-x:auto; max-width:100%; border:1px solid var(--border); border-radius:var(--radius); margin:0 0 12px; }
+#panel-aomatch .aom-tbl{ border-collapse:collapse; width:100%; font-size:12.5px; font-variant-numeric:tabular-nums; }
+#panel-aomatch .aom-tbl th, #panel-aomatch .aom-tbl td{ padding:5px 8px; border-bottom:1px solid var(--border); white-space:nowrap; text-align:right; }
+#panel-aomatch .aom-tbl th{ background:var(--navy); color:#fff; position:sticky; top:0; }
+#panel-aomatch .aom-tbl td.h, #panel-aomatch .aom-tbl th:first-child{ text-align:left; white-space:normal; min-width:230px; }
+#panel-aomatch .aom-tbl th.m, #panel-aomatch .aom-tbl td.aom-ok, #panel-aomatch .aom-tbl td.aom-na{ text-align:center; }
+#panel-aomatch .aom-tbl small{ font-weight:400; opacity:.8; }
+#panel-aomatch .aom-ok{ color:#1e8449; }
+#panel-aomatch .aom-na{ color:var(--muted); }
+#panel-aomatch .aom-bad{ font-weight:700; }
+#panel-aomatch .aom-bad.pos, #panel-aomatch .aom-bad.neg, #panel-aomatch td.neg{ color:#c0392b; }
+#panel-aomatch .aom-tot td{ font-weight:700; background:rgba(127,127,127,.12); }
+#panel-aomatch .aom-tag{ background:rgba(232,176,74,.25); border-radius:4px; padding:1px 5px; margin-left:4px; }
+#panel-aomatch .aom-empty{ text-align:center !important; color:var(--muted); padding:16px; }
 #panel-tr30 .t30-intro{ margin:0 0 10px; color:var(--muted); font-size:12.5px; max-width:720px; }
 
 /* TR-30 bill tab */
@@ -2053,6 +2087,10 @@ body.lang-ur .br-part{ font-size:17px; }
         <span class="count-chip" id="ledgerCount">41 heads</span>
       </div>
 
+      <div class="aom-subtabs"><button type="button" class="aom-sub active" data-sub="main"><span class="en">Ledger &amp; Budget</span><span class="ur">لیجر اور بجٹ</span></button><button type="button" class="aom-sub" data-sub="aom"><span class="en">Account Office match</span><span class="ur">اکاؤنٹس آفس سے ملاپ</span></button></div>
+
+      <div id="ledgerMainWrap">
+
       <div class="card" id="ledgerAddHeadCard" style="display:none;">
         <h3 data-i18n="ledger_addHeadTitle">Add a new Contingent Head</h3>
         <div class="grid cols-2">
@@ -2090,6 +2128,11 @@ body.lang-ur .br-part{ font-size:17px; }
         </table>
       </div>
       <p class="field-hint" style="margin-top:8px;" data-i18n="ledger_clickToCorrect">Click a Final Budget or Prior Expenditure figure to correct it. Changes are saved automatically. Pick the Financial year above to see another year; Total Expenditure counts the full gross amount of every bill in that year (deductions are not subtracted).</p>
+      </div>
+      <div id="aomWrap" hidden>
+        <p class="field-hint" style="margin:0 0 10px;"><span class="en">Compare this register with the Account Office RI-4720 file for one financial year. Read-only: nothing is saved or changed.</span><span class="ur">اس رجسٹر کو اکاؤنٹس آفس کی RI-4720 فائل (ایک مالی سال) سے ملا کر دیکھیں۔ صرف دیکھنے کے لیے: کچھ بھی محفوظ یا تبدیل نہیں ہوتا۔</span></p>
+        <div id="panel-aomatch"><div id="aomBody"></div></div>
+      </div>
     </section>
 
     <!-- ================= REPORTS ================= -->
@@ -10456,6 +10499,317 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   }); });
   setInterval(function(){ try{ refreshIfActive(false); }catch(e){} }, 1500);
   window.__brTr30 = {compute: compute, state: S, render: render, exportXlsx: exportXlsx, words: words, setCell: setCell};
+})();
+
+
+/* ================= ACCOUNT OFFICE MATCH — Ledger & Budget sub-tab (read-only) =================
+   Pick an Account Office RI-4720 export (.xlsx, one financial year) and see, head by head and month by month,
+   where this register agrees with the Account Office and where it does not. Nothing here is ever saved. */
+(function(){
+  "use strict";
+  var panel = document.getElementById("panel-aomatch"), body = document.getElementById("aomBody");
+  if(!panel || !body) return;
+  var C = window.__aoMatchCore;
+  /* Account Office match — pure core (no DOM). Compares an Account Office RI-4720 export (month columns per head)
+   with the register's own month-wise figures, head by head and month by month. */
+(function(root){
+  "use strict";
+  var MON = ["JUL","AUG","SEP","OCT","NOV","DEC","JAN","FEB","MAR","APR","MAY","JUN"];
+  var MN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  function num(v){ var n = Number(v); return isFinite(n) ? n : 0; }
+  function codeOf(label){ return String(label == null ? "" : label).split("-")[0].trim().toUpperCase(); }
+  function isSalaryCode(c){ return /^A01/.test(c); }
+  function fyMonths(fy){            /* "2021-22" -> ["2021-07", ... "2022-06"] */
+    var y = parseInt(String(fy).slice(0, 4), 10), out = [];
+    for(var i = 0; i < 12; i++){ var m = (i + 6) % 12 + 1, yy = i < 6 ? y : y + 1; out.push(yy + "-" + (m < 10 ? "0" : "") + m); }
+    return out;
+  }
+  function fyOfYear(y){ y = parseInt(y, 10); return y + "-" + String((y + 1) % 100).padStart(2, "0"); }
+
+  /* rows = array of arrays (first row = headers) from the Account Office "Data" sheet */
+  function parseAO(rows){
+    if(!rows || rows.length < 2) throw new Error("The file has no rows.");
+    var hdr = rows[0].map(function(h){ return String(h == null ? "" : h).trim(); });
+    var ix = {}; hdr.forEach(function(h, i){ ix[h.toUpperCase()] = i; });
+    var dIx = ix["DETAIL OBJECT DESC"], yIx = ix["YEAR"], eIx = ix["EXPENDITURE"];
+    if(dIx == null) throw new Error("Column 'Detail Object Desc' not found — is this the Account Office RI-4720 file?");
+    var mIx = MON.map(function(m){ return ix[m + "_AMOUNT"]; });
+    if(mIx.some(function(v){ return v == null; })) throw new Error("Month columns (JUL_AMOUNT … JUN_AMOUNT) not found.");
+    var heads = {}, order = [], year = null, warn = [];
+    for(var r = 1; r < rows.length; r++){
+      var row = rows[r], desc = row[dIx];
+      if(desc == null || String(desc).trim() === "") continue;
+      desc = String(desc).trim();
+      if(!/^[A-Za-z]\d{4,5}[A-Za-z0-9]?\s*-/.test(desc)) continue;          /* "Total" and other non-head rows */
+      if(year == null && yIx != null && row[yIx] != null && row[yIx] !== "") year = parseInt(row[yIx], 10);
+      var m = mIx.map(function(i){ return num(row[i]); }), exp = eIx != null ? num(row[eIx]) : m.reduce(function(a, b){ return a + b; }, 0);
+      var c = codeOf(desc), h = heads[c];
+      if(!h){ h = heads[c] = {code: c, label: desc, m: m, exp: exp, lines: 1}; order.push(c); }
+      else{
+        h.lines++;
+        if(m.join() !== h.m.join()){                                       /* several budget lines should repeat the same months */
+          var sum = m.reduce(function(a, b){ return a + b; }, 0), sumOld = h.m.reduce(function(a, b){ return a + b; }, 0);
+          if(Math.abs(sum - exp) < 1 && Math.abs(sumOld - h.exp) >= 1){ h.m = m; h.exp = exp; }
+          warn.push("Head " + c + ": budget lines carry different month figures — the line whose months add up to Expenditure was used.");
+        }
+      }
+    }
+    return {year: year, fy: year ? fyOfYear(year) : null, heads: heads, order: order, warn: Array.from(new Set(warn))};
+  }
+
+  /* reg = {contMonthly:{code:{"YYYY-MM":gross}}, contFYHasData:{fy:bool}, salMonthly:{code:{"YYYY-MM":amount}}, salMonthHasData:{"YYYY-MM":bool}} */
+  function compare(ao, reg){
+    var fy = ao.fy, months = fyMonths(fy), codes = {}, list = [];
+    ao.order.forEach(function(c){ codes[c] = 1; });
+    Object.keys(reg.contMonthly || {}).concat(Object.keys(reg.salMonthly || {})).forEach(function(c){ codes[c] = 1; });
+    var contHas = !!(reg.contFYHasData && reg.contFYHasData[fy]);
+    Object.keys(codes).sort().forEach(function(c){
+      var a = ao.heads[c], sal = isSalaryCode(c), cells = [], hasAny = false;
+      months.forEach(function(mk, i){
+        var aoV = a ? a.m[i] : 0, regV = sal ? num(((reg.salMonthly || {})[c] || {})[mk]) : num(((reg.contMonthly || {})[c] || {})[mk]);
+        var has = sal ? !!(reg.salMonthHasData && reg.salMonthHasData[mk]) : contHas;
+        var cell = {mk: mk, ao: Math.round(aoV), reg: Math.round(regV), has: has, diff: has ? Math.round(regV) - Math.round(aoV) : null};
+        if(has) hasAny = true; cells.push(cell);
+      });
+      var aoT = cells.reduce(function(s, x){ return s + x.ao; }, 0), regT = cells.filter(function(x){ return x.has; }).reduce(function(s, x){ return s + x.reg; }, 0);
+      var aoTcmp = cells.filter(function(x){ return x.has; }).reduce(function(s, x){ return s + x.ao; }, 0);
+      var nDiff = cells.filter(function(x){ return x.has && x.diff !== 0; }).length;
+      list.push({code: c, label: a ? a.label : c, salary: sal, inAO: !!a, hasReg: hasAny, cells: cells, aoTotal: aoT, aoCompared: aoTcmp, regTotal: regT, diff: hasAny ? regT - aoTcmp : null, nDiff: nDiff, aoExp: a ? Math.round(a.exp) : 0});
+    });
+    /* heads that carry no money anywhere are noise */
+    list = list.filter(function(h){ return h.aoTotal || h.regTotal || h.aoExp; });
+    var tot = months.map(function(mk, i){
+      var o = {mk: mk, aoC: 0, regC: 0, aoS: 0, regS: 0, hasC: contHas, hasS: !!(reg.salMonthHasData && reg.salMonthHasData[mk])};
+      list.forEach(function(h){ var x = h.cells[i]; if(h.salary){ o.aoS += x.ao; o.regS += x.reg; } else { o.aoC += x.ao; o.regC += x.reg; } });
+      return o;
+    });
+    var sum = {heads: list.length, withDiff: list.filter(function(h){ return h.nDiff > 0; }).length, noRegData: list.filter(function(h){ return !h.hasReg; }).length,
+      onlyInAO: list.filter(function(h){ return h.inAO && !h.hasReg; }).length, onlyInReg: list.filter(function(h){ return !h.inAO; }).length, cellsDiff: 0, cellsCompared: 0};
+    list.forEach(function(h){ h.cells.forEach(function(x){ if(x.has){ sum.cellsCompared++; if(x.diff !== 0) sum.cellsDiff++; } }); });
+    return {fy: fy, months: months, heads: list, totals: tot, summary: sum, contHas: contHas, warn: ao.warn};
+  }
+  var api = {parseAO: parseAO, compare: compare, fyMonths: fyMonths, fyOfYear: fyOfYear, codeOf: codeOf, isSalaryCode: isSalaryCode, MN: MN};
+  if(typeof module !== "undefined" && module.exports) module.exports = api; else root.__aoMatchCore = api;
+})(typeof window !== "undefined" ? window : this);
+
+  C = C || window.__aoMatchCore;
+  var MS = ["Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun"];
+  function num(v){ return Number(v) || 0; }
+  function T(en, ur){ return "<span class='en'>" + en + "</span><span class='ur'>" + ur + "</span>"; }
+  function T0(en, ur){ return (document.body.classList.contains("lang-ur") || document.documentElement.getAttribute("lang") === "ur") ? ur : en; }
+  function money(n){ n = Math.round(num(n)); return (n < 0 ? "-" : "") + String(Math.abs(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+  function signed(n){ return n === 0 ? "0" : (n > 0 ? "+" : "") + money(n); }
+  function ym(d){ var m = /^(\d{4})-(\d{2})/.exec(d || ""); return m ? m[1] + "-" + m[2] : ""; }
+
+  /* ---- the register's own month-wise figures (same slip mapping the Monthly Report uses) ---- */
+  function slipCode(desc, bps){
+    var d = String(desc || "").toLowerCase();
+    if(d === "basic pay") return Number(bps) >= 16 ? "A01101" : "A01151";
+    if(d === "special pay") return "A01103";
+    if(d === "qualification pay") return "A01105";
+    if(d.indexOf("house rent allowance") === 0) return "A01202";
+    if(d.indexOf("convey") === 0) return "A01203";
+    if(d === "washing allowance") return "A01207";
+    if(d.indexOf("integrated") === 0) return "A0120D";
+    if(d.indexOf("medical") === 0) return "A01217";
+    if(d === "personal allowance") return "A0121N";
+    if(d === "entertainment allowance") return "A01224";
+    if(d === "qualification allowance") return "A01216";
+    if(d === "special allowance") return "A01239";
+    if(d.indexOf("adhoc rel al 15%") === 0) return "A0124R";
+    if(d.indexOf("adhoc relief all 2023") === 0) return "A0124X";
+    if(d.indexOf("adhoc relief all 2024") === 0) return "A0125E";
+    if(d.indexOf("adhoc relief 2025") === 0) return "A0125P";
+    if(d.indexOf("adhoc relief 2026") === 0) return "A0125X";
+    if(d === "adj honorarium") return "A01273";
+    return null;
+  }
+  function registerFigures(){
+    var reg = {contMonthly: {}, contFYHasData: {}, salMonthly: {}, salMonthHasData: {}, unmapped: {}};
+    (STATE.bills || []).forEach(function(b){
+      var c = C.codeOf(b.head), d = ym(b.date), fy = fyOfDate(b.date);
+      reg.contFYHasData[fy] = true;
+      if(!c || C.isSalaryCode(c) || !d) return;
+      var o = reg.contMonthly[c] = reg.contMonthly[c] || {}; o[d] = (o[d] || 0) + num(b.gross);
+    });
+    var emps = {}; (STATE.employees || []).forEach(function(e){ emps[e.id] = e; });
+    var ps = STATE.payslipData || {}, slipSet = {};
+    Object.keys(ps).forEach(function(id){
+      var e = emps[id] || {};
+      Object.keys(ps[id] || {}).forEach(function(mk){
+        var sl = ps[id][mk]; if(!sl || !(sl.earnings || []).length) return;
+        slipSet[mk] = 1; reg.salMonthHasData[mk] = true;
+        (sl.earnings || []).forEach(function(x){
+          var code = slipCode(x.desc, e.bps);
+          if(!code){ reg.unmapped[x.desc || "other"] = 1; return; }
+          var o = reg.salMonthly[code] = reg.salMonthly[code] || {}; o[mk] = (o[mk] || 0) + num(x.amount);
+        });
+      });
+    });
+    var hist = (STATE.stmtData && STATE.stmtData.hist) || {};
+    Object.keys(hist).forEach(function(mk){
+      if(slipSet[mk]) return;                        /* a month with pay slips uses the slips, exactly like the Monthly Report */
+      var any = false;
+      Object.keys(hist[mk] || {}).forEach(function(code){
+        var a = num(hist[mk][code]); if(!a) return; any = true;
+        var o = reg.salMonthly[code] = reg.salMonthly[code] || {}; o[mk] = (o[mk] || 0) + a;
+      });
+      if(any) reg.salMonthHasData[mk] = true;
+    });
+    return reg;
+  }
+  /* year-total check: Ledger & Budget (Prior + bills) against the Account Office "Expenditure" column */
+  function ledgerTotals(fy){
+    var out = {}, bills = STATE.bills || [];
+    try{
+      getHeads(fy).forEach(function(h){
+        var c = C.codeOf(h.label), g = 0;
+        bills.forEach(function(b){ if(b.head === h.label && fyOfDate(b.date) === fy) g += num(b.gross); });
+        out[c] = {label: h.label, total: Math.round(num(h.prior) + g)};
+      });
+    }catch(e){}
+    return out;
+  }
+
+  /* ---- screen state (never saved) ---- */
+  var S = {res: null, ao: null, fileName: "", err: "", show: "diff", group: "all", ledger: null};
+
+  function readFile(file){
+    S.err = ""; S.fileName = file.name; S.res = null;
+    var fr = new FileReader();
+    fr.onload = function(){
+      try{
+        if(typeof XLSX === "undefined") throw new Error(T0("The Excel reader is still loading — try again in a moment.", "ایکسل ریڈر ابھی لوڈ ہو رہا ہے، تھوڑی دیر بعد دوبارہ کوشش کریں۔"));
+        var wb = XLSX.read(new Uint8Array(fr.result), {type: "array"});
+        var name = wb.SheetNames.indexOf("Data") >= 0 ? "Data" : wb.SheetNames[0];
+        var rows = XLSX.utils.sheet_to_json(wb.Sheets[name], {header: 1, raw: true, defval: null});
+        var ao = C.parseAO(rows);
+        if(!ao.fy) throw new Error(T0("The 'Year' column is missing, so the financial year cannot be told.", "فائل میں 'Year' کالم نہیں، اس لیے مالی سال معلوم نہیں ہو سکا۔"));
+        S.ao = ao; S.res = C.compare(ao, registerFigures()); S.ledger = ledgerTotals(ao.fy);
+      }catch(e){ S.err = e.message || String(e); }
+      render();
+    };
+    fr.onerror = function(){ S.err = T0("The file could not be read.", "فائل پڑھی نہیں جا سکی۔"); render(); };
+    fr.readAsArrayBuffer(file);
+  }
+
+  function cellHtml(x){
+    if(!x.has) return "<td class='aom-na' title='" + T0("No register figures for this month", "اس مہینے کے رجسٹر میں اعداد نہیں") + "'>—</td>";
+    if(x.diff === 0) return "<td class='aom-ok' title='" + T0("Register", "رجسٹر") + " " + money(x.reg) + " = " + T0("Account Office", "اکاؤنٹس آفس") + " " + money(x.ao) + "'>" + (x.ao || x.reg ? "✓" : "·") + "</td>";
+    return "<td class='aom-bad " + (x.diff > 0 ? "pos" : "neg") + "' title='" + T0("Register", "رجسٹر") + " " + money(x.reg) + " / " + T0("Account Office", "اکاؤنٹس آفس") + " " + money(x.ao) + "'>" + signed(x.diff) + "</td>";
+  }
+  function visibleHeads(res){
+    return res.heads.filter(function(h){
+      if(S.group === "cont" && h.salary) return false;
+      if(S.group === "sal" && !h.salary) return false;
+      if(S.show === "diff") return h.nDiff > 0 || !h.hasReg || !h.inAO;
+      return true;
+    });
+  }
+  function drawResult(res){
+    var s = res.summary, fy = res.fy, html = "";
+    var allOk = s.cellsDiff === 0 && s.cellsCompared > 0;
+    html += "<div class='aom-banner " + (allOk ? "good" : (s.cellsCompared ? "warn" : "info")) + "'>" +
+      (allOk ? T("Everything compared agrees with the Account Office — " + money(s.cellsCompared) + " head-month figures checked.", "جو کچھ ملایا گیا وہ اکاؤنٹس آفس کے عین مطابق ہے، " + money(s.cellsCompared) + " ہیڈ-مہینے کے اعداد چیک ہوئے۔") :
+       s.cellsCompared ? T(money(s.cellsDiff) + " of " + money(s.cellsCompared) + " head-month figures differ from the Account Office (see the red numbers).", money(s.cellsCompared) + " میں سے " + money(s.cellsDiff) + " ہیڈ-مہینے کے اعداد اکاؤنٹس آفس سے مختلف ہیں (سرخ اعداد دیکھیں)۔") :
+       T("This register has no month-wise figures for FY " + fy + " yet, so only the year totals below can be checked.", "اس رجسٹر میں مالی سال " + fy + " کے مہینہ وار اعداد ابھی نہیں، اس لیے صرف نیچے سالانہ کل ملائے جا سکتے ہیں۔")) + "</div>";
+    if(!res.contHas) html += "<div class='aom-note'>" + T("No bills are entered in the register for FY " + fy + ", so the contingent heads are not compared month by month (their year totals are checked against the Ledger below).", "مالی سال " + fy + " کے کوئی بل رجسٹر میں درج نہیں، اس لیے کنٹنجنٹ ہیڈز مہینہ وار نہیں ملائے گئے (ان کے سالانہ کل نیچے لیجر سے ملائے ہیں)۔") + "</div>";
+    if(S.ao.warn && S.ao.warn.length) html += "<div class='aom-note'>" + S.ao.warn.map(function(w){ return esc(w); }).join("<br>") + "</div>";
+    var un = Object.keys(registerFigures().unmapped); if(un.length) html += "<div class='aom-note'>" + T("Some pay-slip lines could not be given a head, so they are not in the salary comparison: ", "پے سلپ کی کچھ لائنوں کا ہیڈ معلوم نہیں ہو سکا، اس لیے وہ تنخواہ کے موازنے میں شامل نہیں: ") + esc(un.slice(0, 6).join(", ")) + "</div>";
+
+    html += "<div class='aom-cards'>" +
+      "<div class='aom-card'><span>" + T("Financial year", "مالی سال") + "</span><b>" + esc(fy) + "</b></div>" +
+      "<div class='aom-card'><span>" + T("Heads", "ہیڈز") + "</span><b>" + s.heads + "</b></div>" +
+      "<div class='aom-card'><span>" + T("Heads with a difference", "فرق والے ہیڈز") + "</span><b class='" + (s.withDiff ? "neg" : "") + "'>" + s.withDiff + "</b></div>" +
+      "<div class='aom-card'><span>" + T("Heads not in the register", "رجسٹر میں نہ ہونے والے ہیڈز") + "</span><b>" + s.noRegData + "</b></div></div>";
+
+    var hs = visibleHeads(res);
+    html += "<div class='aom-bar'>" +
+      "<label>" + T("Show", "دکھائیں") + " <select id='aom_show'><option value='diff'" + (S.show === "diff" ? " selected" : "") + ">" + T0("Only heads with a difference", "صرف فرق والے ہیڈز") + "</option><option value='all'" + (S.show === "all" ? " selected" : "") + ">" + T0("All heads", "تمام ہیڈز") + "</option></select></label>" +
+      "<label>" + T("Heads", "ہیڈز") + " <select id='aom_group'><option value='all'" + (S.group === "all" ? " selected" : "") + ">" + T0("Contingent and salary", "کنٹنجنٹ اور تنخواہ") + "</option><option value='cont'" + (S.group === "cont" ? " selected" : "") + ">" + T0("Contingent only", "صرف کنٹنجنٹ") + "</option><option value='sal'" + (S.group === "sal" ? " selected" : "") + ">" + T0("Salary only", "صرف تنخواہ") + "</option></select></label>" +
+      "<button type='button' class='btn secondary small' id='aom_xl'>" + T("Download as Excel", "ایکسل میں ڈاؤن لوڈ") + "</button></div>";
+
+    html += "<h4 class='aom-h'>" + T("Head × month: Register minus Account Office", "ہیڈ × مہینہ: رجسٹر منفی اکاؤنٹس آفس") + "</h4>";
+    html += "<p class='aom-hint'>" + T("✓ means equal. A red number is how much the register is above (+) or below (−) the Account Office. Hover a figure to see both amounts. “—” means the register has no figures for that month.", "✓ کا مطلب برابر۔ سرخ عدد بتاتا ہے کہ رجسٹر اکاؤنٹس آفس سے کتنا زیادہ (+) یا کم (−) ہے۔ عدد پر ماؤس لے جائیں تو دونوں رقمیں نظر آئیں گی۔ “—” کا مطلب اس مہینے کے رجسٹر میں اعداد نہیں۔") + "</p>";
+    html += "<div class='aom-wrap'><table class='aom-tbl'><thead><tr><th>" + T("Head", "ہیڈ") + "</th><th class='n'>" + T("Account Office", "اکاؤنٹس آفس") + "</th><th class='n'>" + T("Register", "رجسٹر") + "</th><th class='n'>" + T("Difference", "فرق") + "</th>" +
+      res.months.map(function(mk, i){ return "<th class='m'>" + MS[i] + "<br><small>" + mk.slice(2, 4) + "</small></th>"; }).join("") + "</tr></thead><tbody>";
+    if(!hs.length) html += "<tr><td colspan='16' class='aom-empty'>" + T("Nothing to show with this filter.", "اس فلٹر کے ساتھ دکھانے کو کچھ نہیں۔") + "</td></tr>";
+    hs.forEach(function(h){
+      html += "<tr><td class='h'>" + esc(h.label) + (h.inAO ? "" : " <small class='aom-tag'>" + T0("not in Account Office file", "اکاؤنٹس آفس فائل میں نہیں") + "</small>") + "</td><td class='n'>" + money(h.aoTotal) + "</td><td class='n'>" + (h.hasReg ? money(h.regTotal) : "—") + "</td>" +
+        "<td class='n " + (h.diff ? "neg" : "") + "'>" + (h.diff == null ? "—" : signed(h.diff)) + "</td>" + h.cells.map(cellHtml).join("") + "</tr>";
+    });
+    html += "</tbody><tfoot>";
+    [["cont", T("Contingent heads — total", "کنٹنجنٹ ہیڈز — کل"), "aoC", "regC", "hasC"], ["sal", T("Salary heads — total", "تنخواہ کے ہیڈز — کل"), "aoS", "regS", "hasS"]].forEach(function(g){
+      if(S.group !== "all" && S.group !== g[0]) return;
+      var a = 0, r = 0, ad = 0, rd = 0;
+      res.totals.forEach(function(t){ a += t[g[2]]; if(t[g[4]]){ r += t[g[3]]; ad += t[g[2]]; } });
+      html += "<tr class='aom-tot'><td class='h'>" + g[1] + "</td><td class='n'>" + money(a) + "</td><td class='n'>" + (r || ad ? money(r) : "—") + "</td><td class='n'>" + (r || ad ? signed(r - ad) : "—") + "</td>" +
+        res.totals.map(function(t){ if(!t[g[4]]) return "<td class='aom-na'>—</td>"; var d = t[g[3]] - t[g[2]]; return "<td class='" + (d ? "aom-bad " + (d > 0 ? "pos" : "neg") : "aom-ok") + "'>" + (d ? signed(d) : "✓") + "</td>"; }).join("") + "</tr>";
+    });
+    html += "</tfoot></table></div>";
+
+    /* year totals: Ledger & Budget against the Account Office Expenditure column */
+    var lrows = [], lsumA = 0, lsumL = 0;
+    res.heads.forEach(function(h){
+      var L = S.ledger[h.code], lt = L ? L.total : 0; lsumA += h.aoExp; lsumL += lt;
+      if(Math.abs(lt - h.aoExp) >= 1 && (h.aoExp || lt)) lrows.push({h: h, lt: lt});
+    });
+    html += "<h4 class='aom-h'>" + T("Year totals: Ledger & Budget against the Account Office Expenditure", "سالانہ کل: لیجر اور بجٹ بمقابلہ اکاؤنٹس آفس کا خرچ") + "</h4>";
+    if(!lrows.length) html += "<div class='aom-banner good'>" + T("Every head's year total in Ledger & Budget equals the Account Office Expenditure (" + money(lsumA) + ").", "لیجر اور بجٹ میں ہر ہیڈ کا سالانہ کل اکاؤنٹس آفس کے خرچ کے برابر ہے (" + money(lsumA) + ")۔") + "</div>";
+    else html += "<div class='aom-wrap'><table class='aom-tbl'><thead><tr><th>" + T("Head", "ہیڈ") + "</th><th class='n'>" + T("Ledger & Budget", "لیجر اور بجٹ") + "</th><th class='n'>" + T("Account Office", "اکاؤنٹس آفس") + "</th><th class='n'>" + T("Difference", "فرق") + "</th></tr></thead><tbody>" +
+      lrows.map(function(x){ var d = x.lt - x.h.aoExp; return "<tr><td class='h'>" + esc(x.h.label) + "</td><td class='n'>" + money(x.lt) + "</td><td class='n'>" + money(x.h.aoExp) + "</td><td class='n neg'>" + signed(d) + "</td></tr>"; }).join("") +
+      "</tbody><tfoot><tr class='aom-tot'><td class='h'>" + T("Total of all heads", "تمام ہیڈز کا کل") + "</td><td class='n'>" + money(lsumL) + "</td><td class='n'>" + money(lsumA) + "</td><td class='n'>" + signed(lsumL - lsumA) + "</td></tr></tfoot></table></div>";
+    return html;
+  }
+
+  function render(){
+    var h = "<div class='aom-pick'><label class='aom-file'>" + T("Choose the Account Office file (.xlsx, one financial year)", "اکاؤنٹس آفس کی فائل چنیں (.xlsx، ایک مالی سال)") + "<input type='file' id='aom_file' accept='.xlsx,.xls'></label>" +
+      (S.fileName ? "<span class='aom-fn'>" + esc(S.fileName) + "</span>" : "") + "</div>";
+    if(S.err) h += "<div class='aom-banner bad'>" + esc(S.err) + "</div>";
+    if(S.res) h += drawResult(S.res);
+    else if(!S.err) h += "<p class='aom-hint'>" + T("Nothing is saved or changed — this page only reads the file and compares it with what the register already holds.", "کچھ بھی محفوظ یا تبدیل نہیں ہوتا؛ یہ صفحہ صرف فائل پڑھ کر رجسٹر کے موجودہ اعداد سے ملاتا ہے۔") + "</p>";
+    body.innerHTML = h;
+  }
+
+  async function exportXlsx(){
+    if(!S.res) return;
+    var res = S.res, fy = res.fy, wb = XLSX.utils.book_new();
+    var sum = [["Account Office match — FY " + fy], [], ["Heads", res.summary.heads], ["Heads with a difference", res.summary.withDiff], ["Head-months compared", res.summary.cellsCompared], ["Head-months that differ", res.summary.cellsDiff], ["Source file", S.fileName], [], ["Difference = Register minus Account Office. Nothing in the register was changed."]];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sum), "Summary");
+    var hdr = ["Head", "Account Office total", "Register total", "Difference"].concat(res.months.map(function(mk, i){ return MS[i] + "-" + mk.slice(2, 4); }));
+    var grid = [hdr];
+    res.heads.forEach(function(h){ grid.push([h.label, h.aoTotal, h.hasReg ? h.regTotal : "", h.diff == null ? "" : h.diff].concat(h.cells.map(function(x){ return x.has ? x.diff : ""; }))); });
+    var ws = XLSX.utils.aoa_to_sheet(grid); ws["!cols"] = [{wch: 46}, {wch: 16}, {wch: 14}, {wch: 12}].concat(res.months.map(function(){ return {wch: 10}; }));
+    XLSX.utils.book_append_sheet(wb, ws, "Head x Month difference");
+    var det = [["Head", "Month", "Account Office", "Register", "Difference"]];
+    res.heads.forEach(function(h){ h.cells.forEach(function(x){ if(x.ao || x.reg) det.push([h.label, x.mk, x.ao, x.has ? x.reg : "", x.has ? x.diff : ""]); }); });
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(det), "Detail");
+    var out = XLSX.write(wb, {bookType: "xlsx", type: "array"});
+    var blob = new Blob([out], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}), name = "Account_Office_match_FY" + fy + ".xlsx";
+    if(window.__aomSave) return window.__aomSave(blob, name);
+    var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+  }
+
+  panel.addEventListener("change", function(e){
+    var t = e.target;
+    if(t.id === "aom_file" && t.files && t.files[0]){ readFile(t.files[0]); }
+    else if(t.id === "aom_show"){ S.show = t.value; render(); }
+    else if(t.id === "aom_group"){ S.group = t.value; render(); }
+  });
+  panel.addEventListener("click", function(e){
+    var t = e.target.closest ? e.target.closest("button") : null; if(!t) return;
+    if(t.id === "aom_xl") exportXlsx().catch(function(err){ console.error(err); try{ toast("Could not make the file: " + err.message); }catch(x){} });
+  });
+  /* the two parts of Ledger & Budget */
+  document.querySelectorAll(".aom-sub").forEach(function(b){ b.addEventListener("click", function(){
+    var main = document.getElementById("ledgerMainWrap"), mine = document.getElementById("aomWrap"), which = b.getAttribute("data-sub");
+    if(main) main.hidden = which !== "main"; if(mine) mine.hidden = which !== "aom";
+    document.querySelectorAll(".aom-sub").forEach(function(x){ x.classList.toggle("active", x === b); });
+    if(which === "aom"){ if(S.ao){ S.res = C.compare(S.ao, registerFigures()); S.ledger = ledgerTotals(S.ao.fy); } render(); }
+  }); });
+  render();
+  window.__brAoMatch = {state: S, render: render, registerFigures: registerFigures, ledgerTotals: ledgerTotals, load: function(rows){ S.ao = C.parseAO(rows); S.res = C.compare(S.ao, registerFigures()); S.ledger = ledgerTotals(S.ao.fy); render(); return S.res; }};
 })();
 
 
