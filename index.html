@@ -1456,7 +1456,7 @@ body.lang-ur .br-part{ font-size:17px; }
 </head>
 <body>
 <div class="pb-print-masthead" id="pbPrintMasthead">
-  <img src="logo-punjab-govt.png" alt="Government of the Punjab">
+  <img src="logo-punjab-govt.png" alt="Logo">
   <div class="pb-mh-text">
     <div class="pb-mh-t1"></div>
     <div class="pb-mh-t2"></div>
@@ -7891,7 +7891,7 @@ function buildEditableSlipHtml(e, monthVal, lang, incPercent, incFromVal){
   function v(k, x){ return "<span class='v' data-k='"+k+"'>"+esc(x==null? "" : x)+"</span>"; }
   var eid = esc(e.id), mid = esc(monthVal);
 
-  return "<div class='ps-top'><img class='ps-logo' data-camp-logo='govt' src='logo-punjab-govt.png' alt='Government of the Punjab'>"+
+  return "<div class='ps-top'><img class='ps-logo' data-camp-logo='govt' src='logo-punjab-govt.png' alt='Logo'>"+
       "<div class='ps-title'><div class='l1'>"+L.govt+"</div><div class='l2'>"+L.office+"</div><div class='l3' data-k='title'>"+L.stmt+" ("+esc(monthTitle)+")</div></div></div>"+
     "<div class='ps-sec'>"+L.persInfo+" "+v("name", e.name)+(e.soName? (" "+L.dws+" "+esc(e.soName)) : "")+"</div>"+
     "<div class='ps-row'><span>"+L.persNo+": "+v("persNo", e.persNo)+"</span><span>"+L.cnic+": "+esc(cnicDisplay)+"</span></div>"+
@@ -8854,7 +8854,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
           (pg ? '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/pros.png"/>' : '') + '</Relationships>');
         var colPx = Math.round((s.lastW || 10) * 7 + 5), lastCol = Math.max(0, (s.nCols || 1) - 1);
         zip.file("xl/drawings/drawing" + (i + 1) + ".xml", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">' +
-          (lg ? pic(2, "Government of the Punjab", "rId1", LW * 9525, LH * 9525, 0, 38100) : '') +
+          (lg ? pic(2, "Logo", "rId1", LW * 9525, LH * 9525, 0, 38100) : '') +
           (pg ? pic(3, "Public Prosecution Punjab", "rId2", PW2 * 9525, LH * 9525, lastCol, Math.max(0, (colPx - PW2 - 4) * 9525)) : '') + '</xdr:wsDr>');
       });
     }
