@@ -1422,37 +1422,46 @@ body.lang-ur .br-part{ font-size:17px; }
 .aom-subtabs{ display:flex; gap:8px; flex-wrap:wrap; margin:0 0 14px; }
 .aom-sub{ background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:8px 16px; font:inherit; font-weight:600; cursor:pointer; }
 .aom-sub.active{ background:var(--navy); color:#fff; border-color:var(--navy); }
-#panel-aomatch .aom-pick{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:0 0 12px; }
-#panel-aomatch .aom-file{ display:inline-flex; flex-direction:column; gap:6px; font-weight:600; font-size:13px; }
-#panel-aomatch .aom-fn{ color:var(--muted); font-size:12.5px; word-break:break-all; }
-#panel-aomatch .aom-banner{ padding:9px 12px; border-radius:var(--radius); margin:0 0 10px; font-size:13px; border:1px solid var(--border); background:rgba(127,127,127,.10); }
-#panel-aomatch .aom-banner.good{ background:rgba(46,160,90,.14); border-color:rgba(46,160,90,.55); }
-#panel-aomatch .aom-banner.warn{ background:rgba(232,176,74,.18); border-color:rgba(232,176,74,.7); }
-#panel-aomatch .aom-banner.bad{ background:rgba(205,60,60,.14); border-color:rgba(205,60,60,.6); }
-#panel-aomatch .aom-note{ padding:7px 12px; border-radius:var(--radius); margin:0 0 10px; font-size:12.5px; color:var(--muted); border:1px dashed var(--border); }
-#panel-aomatch .aom-cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin:0 0 12px; }
-#panel-aomatch .aom-card{ border:1px solid var(--border); border-radius:var(--radius); padding:8px 12px; background:var(--surface); display:flex; flex-direction:column; gap:2px; }
-#panel-aomatch .aom-card span{ font-size:12px; color:var(--muted); }
-#panel-aomatch .aom-card b{ font-size:18px; font-variant-numeric:tabular-nums; }
-#panel-aomatch .aom-card b.neg{ color:#c0392b; }
-#panel-aomatch .aom-bar{ display:flex; gap:12px; align-items:end; flex-wrap:wrap; margin:0 0 10px; }
-#panel-aomatch .aom-bar label{ display:flex; flex-direction:column; gap:3px; font-size:12px; font-weight:600; }
-#panel-aomatch .aom-h{ margin:16px 0 6px; }
-#panel-aomatch .aom-hint{ color:var(--muted); font-size:12.5px; margin:0 0 8px; max-width:820px; }
-#panel-aomatch .aom-wrap{ overflow-x:auto; max-width:100%; border:1px solid var(--border); border-radius:var(--radius); margin:0 0 12px; }
-#panel-aomatch .aom-tbl{ border-collapse:collapse; width:100%; font-size:12.5px; font-variant-numeric:tabular-nums; }
-#panel-aomatch .aom-tbl th, #panel-aomatch .aom-tbl td{ padding:5px 8px; border-bottom:1px solid var(--border); white-space:nowrap; text-align:right; }
-#panel-aomatch .aom-tbl th{ background:var(--navy); color:#fff; position:sticky; top:0; }
-#panel-aomatch .aom-tbl td.h, #panel-aomatch .aom-tbl th:first-child{ text-align:left; white-space:normal; min-width:230px; }
-#panel-aomatch .aom-tbl th.m, #panel-aomatch .aom-tbl td.aom-ok, #panel-aomatch .aom-tbl td.aom-na{ text-align:center; }
-#panel-aomatch .aom-tbl small{ font-weight:400; opacity:.8; }
-#panel-aomatch .aom-ok{ color:#1e8449; }
-#panel-aomatch .aom-na{ color:var(--muted); }
-#panel-aomatch .aom-bad{ font-weight:700; }
-#panel-aomatch .aom-bad.pos, #panel-aomatch .aom-bad.neg, #panel-aomatch td.neg{ color:#c0392b; }
-#panel-aomatch .aom-tot td{ font-weight:700; background:rgba(127,127,127,.12); }
-#panel-aomatch .aom-tag{ background:rgba(232,176,74,.25); border-radius:4px; padding:1px 5px; margin-left:4px; }
-#panel-aomatch .aom-empty{ text-align:center !important; color:var(--muted); padding:16px; }
+:is(#panel-aomatch,#panel-mclose) .aom-pick{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:0 0 12px; }
+:is(#panel-aomatch,#panel-mclose) .aom-file{ display:inline-flex; flex-direction:column; gap:6px; font-weight:600; font-size:13px; }
+:is(#panel-aomatch,#panel-mclose) .aom-fn{ color:var(--muted); font-size:12.5px; word-break:break-all; }
+:is(#panel-aomatch,#panel-mclose) .aom-banner{ padding:9px 12px; border-radius:var(--radius); margin:0 0 10px; font-size:13px; border:1px solid var(--border); background:rgba(127,127,127,.10); }
+:is(#panel-aomatch,#panel-mclose) .aom-banner.good{ background:rgba(46,160,90,.14); border-color:rgba(46,160,90,.55); }
+:is(#panel-aomatch,#panel-mclose) .aom-banner.warn{ background:rgba(232,176,74,.18); border-color:rgba(232,176,74,.7); }
+:is(#panel-aomatch,#panel-mclose) .aom-banner.bad{ background:rgba(205,60,60,.14); border-color:rgba(205,60,60,.6); }
+:is(#panel-aomatch,#panel-mclose) .aom-note{ padding:7px 12px; border-radius:var(--radius); margin:0 0 10px; font-size:12.5px; color:var(--muted); border:1px dashed var(--border); }
+:is(#panel-aomatch,#panel-mclose) .aom-cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin:0 0 12px; }
+:is(#panel-aomatch,#panel-mclose) .aom-card{ border:1px solid var(--border); border-radius:var(--radius); padding:8px 12px; background:var(--surface); display:flex; flex-direction:column; gap:2px; }
+:is(#panel-aomatch,#panel-mclose) .aom-card span{ font-size:12px; color:var(--muted); }
+:is(#panel-aomatch,#panel-mclose) .aom-card b{ font-size:18px; font-variant-numeric:tabular-nums; }
+:is(#panel-aomatch,#panel-mclose) .aom-card b.neg{ color:#c0392b; }
+:is(#panel-aomatch,#panel-mclose) .aom-bar{ display:flex; gap:12px; align-items:end; flex-wrap:wrap; margin:0 0 10px; }
+:is(#panel-aomatch,#panel-mclose) .aom-bar label{ display:flex; flex-direction:column; gap:3px; font-size:12px; font-weight:600; }
+:is(#panel-aomatch,#panel-mclose) .aom-h{ margin:16px 0 6px; }
+:is(#panel-aomatch,#panel-mclose) .aom-hint{ color:var(--muted); font-size:12.5px; margin:0 0 8px; max-width:820px; }
+:is(#panel-aomatch,#panel-mclose) .aom-wrap{ overflow-x:auto; max-width:100%; border:1px solid var(--border); border-radius:var(--radius); margin:0 0 12px; }
+:is(#panel-aomatch,#panel-mclose) .aom-tbl{ border-collapse:collapse; width:100%; font-size:12.5px; font-variant-numeric:tabular-nums; }
+:is(#panel-aomatch,#panel-mclose) .aom-tbl th, :is(#panel-aomatch,#panel-mclose) .aom-tbl td{ padding:5px 8px; border-bottom:1px solid var(--border); white-space:nowrap; text-align:right; }
+:is(#panel-aomatch,#panel-mclose) .aom-tbl th{ background:var(--navy); color:#fff; position:sticky; top:0; }
+:is(#panel-aomatch,#panel-mclose) .aom-tbl td.h, :is(#panel-aomatch,#panel-mclose) .aom-tbl th:first-child{ text-align:left; white-space:normal; }
+:is(#panel-aomatch,#panel-mclose) .aom-tbl td.h:first-child, :is(#panel-aomatch,#panel-mclose) .aom-tbl th:first-child{ min-width:230px; }
+#panel-mclose .aom-tbl th{ text-align:left; } #panel-mclose .aom-tbl th.n{ text-align:right; }
+#panel-mclose .mc-tbl td.h:first-child, #panel-mclose .mc-tbl th:first-child{ min-width:0; }
+:is(#panel-aomatch,#panel-mclose) .aom-tbl th.m, :is(#panel-aomatch,#panel-mclose) .aom-tbl td.aom-ok, :is(#panel-aomatch,#panel-mclose) .aom-tbl td.aom-na{ text-align:center; }
+:is(#panel-aomatch,#panel-mclose) .aom-tbl small{ font-weight:400; opacity:.8; }
+:is(#panel-aomatch,#panel-mclose) .aom-ok{ color:#1e8449; }
+:is(#panel-aomatch,#panel-mclose) .aom-na{ color:var(--muted); }
+:is(#panel-aomatch,#panel-mclose) .aom-bad{ font-weight:700; }
+:is(#panel-aomatch,#panel-mclose) .aom-bad.pos, :is(#panel-aomatch,#panel-mclose) .aom-bad.neg, #panel-aomatch td.neg{ color:#c0392b; }
+:is(#panel-aomatch,#panel-mclose) .aom-tot td{ font-weight:700; background:rgba(127,127,127,.12); }
+:is(#panel-aomatch,#panel-mclose) .aom-tag{ background:rgba(232,176,74,.25); border-radius:4px; padding:1px 5px; margin-left:4px; }
+#panel-mclose .aom-bar, #panel-mclose .aom-cards, #panel-mclose .aom-banner, #panel-mclose .aom-note, #panel-mclose .aom-wrap, #panel-mclose .aom-tbl, #panel-mclose .aom-hint{ }
+#panel-mclose .mc-badge{ display:inline-block; min-width:22px; text-align:center; padding:1px 8px; border-radius:11px; font-size:12px; font-weight:700; margin-left:6px; vertical-align:middle; }
+#panel-mclose .mc-badge.ok{ background:rgba(46,160,90,.18); color:#1e8449; }
+#panel-mclose .mc-badge.bad{ background:rgba(205,60,60,.18); color:#c0392b; }
+#panel-mclose .mc-badge.soft{ background:rgba(232,176,74,.3); }
+#panel-mclose .mc-why{ white-space:normal; min-width:200px; }
+:is(#panel-aomatch,#panel-mclose) .aom-empty{ text-align:center !important; color:var(--muted); padding:16px; }
 #panel-tr30 .t30-intro{ margin:0 0 10px; color:var(--muted); font-size:12.5px; max-width:720px; }
 
 /* TR-30 bill tab */
@@ -2087,7 +2096,7 @@ body.lang-ur .br-part{ font-size:17px; }
         <span class="count-chip" id="ledgerCount">41 heads</span>
       </div>
 
-      <div class="aom-subtabs"><button type="button" class="aom-sub active" data-sub="main"><span class="en">Ledger &amp; Budget</span><span class="ur">لیجر اور بجٹ</span></button><button type="button" class="aom-sub" data-sub="aom"><span class="en">Account Office match</span><span class="ur">اکاؤنٹس آفس سے ملاپ</span></button></div>
+      <div class="aom-subtabs"><button type="button" class="aom-sub active" data-sub="main"><span class="en">Ledger &amp; Budget</span><span class="ur">لیجر اور بجٹ</span></button><button type="button" class="aom-sub" data-sub="aom"><span class="en">Account Office match</span><span class="ur">اکاؤنٹس آفس سے ملاپ</span></button><button type="button" class="aom-sub" data-sub="mc"><span class="en">Month-end checklist</span><span class="ur">مہینہ بند کرنے کی چیک لسٹ</span></button></div>
 
       <div id="ledgerMainWrap">
 
@@ -2132,6 +2141,10 @@ body.lang-ur .br-part{ font-size:17px; }
       <div id="aomWrap" hidden>
         <p class="field-hint" style="margin:0 0 10px;"><span class="en">Compare this register with the Account Office RI-4720 file for one financial year. Read-only: nothing is saved or changed.</span><span class="ur">اس رجسٹر کو اکاؤنٹس آفس کی RI-4720 فائل (ایک مالی سال) سے ملا کر دیکھیں۔ صرف دیکھنے کے لیے: کچھ بھی محفوظ یا تبدیل نہیں ہوتا۔</span></p>
         <div id="panel-aomatch"><div id="aomBody"></div></div>
+      </div>
+      <div id="mcWrap" hidden>
+        <p class="field-hint" style="margin:0 0 10px;"><span class="en">Pick a month to see what still needs attention before closing it: bills with something missing, doubtful deductions, repeated bills, and each head against the Cash Book. Read-only: nothing is saved or changed.</span><span class="ur">مہینہ چنیں تو بند کرنے سے پہلے کیا دیکھنا باقی ہے سامنے آ جائے گا: ادھورے بل، مشکوک کٹوتیاں، دہرائے ہوئے بل، اور ہر ہیڈ کا کیش بک سے ملاپ۔ صرف دیکھنے کے لیے: کچھ بھی محفوظ یا تبدیل نہیں ہوتا۔</span></p>
+        <div id="panel-mclose"><div id="mcBody"></div></div>
       </div>
     </section>
 
@@ -10803,13 +10816,170 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   });
   /* the two parts of Ledger & Budget */
   document.querySelectorAll(".aom-sub").forEach(function(b){ b.addEventListener("click", function(){
-    var main = document.getElementById("ledgerMainWrap"), mine = document.getElementById("aomWrap"), which = b.getAttribute("data-sub");
-    if(main) main.hidden = which !== "main"; if(mine) mine.hidden = which !== "aom";
+    var which = b.getAttribute("data-sub"), wraps = {main: "ledgerMainWrap", aom: "aomWrap", mc: "mcWrap"};
+    Object.keys(wraps).forEach(function(k){ var w = document.getElementById(wraps[k]); if(w) w.hidden = which !== k; });
     document.querySelectorAll(".aom-sub").forEach(function(x){ x.classList.toggle("active", x === b); });
     if(which === "aom"){ if(S.ao){ S.res = C.compare(S.ao, registerFigures()); S.ledger = ledgerTotals(S.ao.fy); } render(); }
   }); });
   render();
   window.__brAoMatch = {state: S, render: render, registerFigures: registerFigures, ledgerTotals: ledgerTotals, load: function(rows){ S.ao = C.parseAO(rows); S.res = C.compare(S.ao, registerFigures()); S.ledger = ledgerTotals(S.ao.fy); render(); return S.res; }};
+})();
+
+
+/* ================= MONTH-END CHECKLIST — Ledger & Budget sub-tab (read-only) =================
+   Pick a month and see, in one place: bills with something missing, bills whose deductions look wrong, repeated bills,
+   and — head by head — the bills' net amount against what the Cash Book paid for that head in the month.
+   Each head with bills has a button that opens the TR-30 part with that head and month already chosen.
+   Nothing here is ever saved. */
+(function(){
+  "use strict";
+  var panel = document.getElementById("panel-mclose"), body = document.getElementById("mcBody");
+  if(!panel || !body) return;
+  var MS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  function num(v){ return Number(v) || 0; }
+  function T(en, ur){ return "<span class='en'>" + en + "</span><span class='ur'>" + ur + "</span>"; }
+  function T0(en, ur){ return (document.body.classList.contains("lang-ur") || document.documentElement.getAttribute("lang") === "ur") ? ur : en; }
+  function money(n){ n = Math.round(num(n)); return (n < 0 ? "-" : "") + String(Math.abs(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+  function signed(n){ n = Math.round(n); return n === 0 ? "0" : (n > 0 ? "+" : "") + money(n); }
+  function mLabel(m){ var a = String(m || "").split("-"); return a.length === 2 ? MS[+a[1] - 1] + " " + a[0] : ""; }
+  function ded(b){ return num(b.it) + num(b.gst) + num(b.pst) + num(b.other) + num(b.comm); }
+  function norm(s){ return String(s == null ? "" : s).trim().toLowerCase().replace(/\s+/g, " "); }
+  function codeOf(label){ return String(label || "").split("-")[0].trim().toUpperCase(); }
+  function isSal(label){ return /^A01/.test(codeOf(label)); }
+  function monthOf(d){ return String(d || "").slice(0, 7); }
+
+  var S = {month: ""};
+
+  function months(){
+    var set = {};
+    (STATE.bills || []).forEach(function(b){ if(/^\d{4}-\d{2}/.test(b.date || "")) set[monthOf(b.date)] = 1; });
+    (STATE.cash || []).forEach(function(c){ if(/^\d{4}-\d{2}/.test(c.date || "")) set[monthOf(c.date)] = 1; });
+    return Object.keys(set).sort().reverse();
+  }
+
+  /* ---- the checks for one month ---- */
+  function compute(m){
+    var all = STATE.bills || [], fy = fyOfDate(m + "-01");
+    var inM = all.filter(function(b){ return monthOf(b.date) === m; });
+    var res = {month: m, fy: fy, bills: inM, incomplete: [], dedBad: [], dedSoft: [], dups: [], noDate: all.filter(function(b){ return !/^\d{4}-\d{2}-\d{2}/.test(b.date || ""); }).length, heads: [], cashNoHead: {n: 0, amt: 0}};
+
+    inM.forEach(function(b){
+      var miss = [], g = num(b.gross);
+      if(!String(b.billNo || "").trim()) miss.push(T0("bill number", "بل نمبر"));
+      if(!String(b.vendorName || "").trim()) miss.push(T0("party name", "پارٹی کا نام"));
+      if(!String(b.head || "").trim()) miss.push(T0("head", "ہیڈ"));
+      if(g <= 0) miss.push(T0("amount", "رقم"));
+      if(miss.length) res.incomplete.push({b: b, why: miss.join(T0(", ", "، "))});
+
+      var bad = [], d = ded(b);
+      if(g > 0 && d > g) bad.push(T0("deductions are more than the bill amount", "کٹوتیاں بل کی رقم سے زیادہ ہیں"));
+      ["it", "gst", "pst", "other", "comm"].forEach(function(k){ if(num(b[k]) < 0) bad.push(T0("a deduction is negative", "کوئی کٹوتی منفی ہے")); });
+      if(g > 0 && num(b.it) + num(b.gst) + num(b.pst) > g * 0.5 && d <= g) bad.push(T0("tax deductions are over half of the bill", "ٹیکس کی کٹوتیاں بل کے آدھے سے زیادہ ہیں"));
+      if(bad.length) res.dedBad.push({b: b, why: Array.from(new Set(bad)).join(T0(", ", "، "))});
+      else if(g > 0 && d === 0 && b.ao === "Yes" && String(b.vendorName || "").trim()) res.dedSoft.push({b: b, why: T0("no deduction taken although “A.O. deduction allowed” is Yes", "کوئی کٹوتی نہیں لگی جبکہ “A.O. deduction allowed” ہاں ہے")});
+    });
+
+    /* repeated bills: same party + same bill number in the year, or (no bill number) same date, head, party and amount */
+    var seen = {};
+    all.forEach(function(b){
+      if(fyOfDate(b.date) !== fy) return;
+      var bn = norm(b.billNo), vn = norm(b.vendorName), key = bn ? "n|" + vn + "|" + bn : "x|" + (b.date || "") + "|" + norm(b.head) + "|" + vn + "|" + num(b.gross);
+      (seen[key] = seen[key] || []).push(b);
+    });
+    Object.keys(seen).forEach(function(k){
+      var arr = seen[k]; if(arr.length < 2) return;
+      if(!arr.some(function(b){ return monthOf(b.date) === m; })) return;
+      res.dups.push({list: arr, byNo: k.charAt(0) === "n"});
+    });
+
+    /* heads: the bills' net against the Cash Book payments entered for that head in the month */
+    var byHead = {};
+    function row(h){ return byHead[h] = byHead[h] || {head: h, n: 0, gross: 0, net: 0, cash: 0, cashN: 0}; }
+    inM.forEach(function(b){ if(!b.head || isSal(b.head)) return; var r = row(b.head); r.n++; r.gross += num(b.gross); r.net += num(b.gross) - ded(b); });
+    (STATE.cash || []).forEach(function(c){
+      if(monthOf(c.date) !== m || !num(c.payment)) return;
+      if(!c.head){ res.cashNoHead.n++; res.cashNoHead.amt += num(c.payment); return; }
+      if(isSal(c.head)) return;
+      var r = row(c.head); r.cash += num(c.payment); r.cashN++;
+    });
+    res.heads = Object.keys(byHead).sort().map(function(h){ var r = byHead[h]; r.diff = Math.round(r.cash) - Math.round(r.net); return r; });
+    res.headsWithDiff = res.heads.filter(function(r){ return r.diff !== 0; }).length;
+    return res;
+  }
+
+  /* ---- drawing ---- */
+  function billRows(list, extra){
+    return list.map(function(x){ var b = x.b;
+      return "<tr><td class='h'>" + esc(b.date || "") + "</td><td class='h'>" + esc(b.billNo || "—") + "</td><td class='h'>" + esc(b.vendorName || "—") + "</td><td class='h'>" + esc(b.head || "—") + "</td><td class='n'>" + money(b.gross) + "</td><td class='n'>" + money(ded(b)) + "</td><td class='h mc-why'>" + x.why + "</td></tr>";
+    }).join("");
+  }
+  function billTable(list){
+    return "<div class='aom-wrap'><table class='aom-tbl mc-tbl'><thead><tr><th>" + T("Date", "تاریخ") + "</th><th>" + T("Bill no.", "بل نمبر") + "</th><th>" + T("Party", "پارٹی") + "</th><th>" + T("Head", "ہیڈ") + "</th><th class='n'>" + T("Amount", "رقم") + "</th><th class='n'>" + T("Deductions", "کٹوتیاں") + "</th><th>" + T("What to look at", "کیا دیکھنا ہے") + "</th></tr></thead><tbody>" + billRows(list) + "</tbody></table></div>";
+  }
+  function section(title, count, okText, inner, soft){
+    return "<h4 class='aom-h'>" + title + " <span class='mc-badge " + (count ? (soft ? "soft" : "bad") : "ok") + "'>" + (count || "✓") + "</span></h4>" + (count ? inner : "<div class='aom-banner good'>" + okText + "</div>");
+  }
+  function draw(r){
+    var h = "", total = r.bills.length;
+    h += "<div class='aom-cards'>" +
+      "<div class='aom-card'><span>" + T("Month", "مہینہ") + "</span><b>" + esc(mLabel(r.month)) + "</b></div>" +
+      "<div class='aom-card'><span>" + T("Bills in the month", "مہینے کے بل") + "</span><b>" + total + "</b></div>" +
+      "<div class='aom-card'><span>" + T("With something missing", "جن میں کچھ خالی ہے") + "</span><b class='" + (r.incomplete.length ? "neg" : "") + "'>" + r.incomplete.length + "</b></div>" +
+      "<div class='aom-card'><span>" + T("Deductions look wrong", "کٹوتیاں مشکوک") + "</span><b class='" + (r.dedBad.length ? "neg" : "") + "'>" + r.dedBad.length + "</b></div>" +
+      "<div class='aom-card'><span>" + T("Repeated bills", "دہرائے ہوئے بل") + "</span><b class='" + (r.dups.length ? "neg" : "") + "'>" + r.dups.length + "</b></div>" +
+      "<div class='aom-card'><span>" + T("Heads where Cash Book differs", "جن ہیڈز میں کیش بک مختلف") + "</span><b class='" + (r.headsWithDiff ? "neg" : "") + "'>" + r.headsWithDiff + "</b></div></div>";
+    if(!total) h += "<div class='aom-banner info'>" + T("No bills are entered for this month.", "اس مہینے کا کوئی بل درج نہیں۔") + "</div>";
+    if(r.noDate) h += "<div class='aom-note'>" + T(r.noDate + " bill(s) in the register have no usable date, so they cannot appear under any month.", "رجسٹر میں " + r.noDate + " بل کی تاریخ درست نہیں، اس لیے وہ کسی مہینے میں نہیں آ سکتے۔") + "</div>";
+
+    h += section(T("1. Bills with something missing", "۱۔ ادھورے بل"), r.incomplete.length, T("Every bill of the month has its number, party, head and amount.", "مہینے کے ہر بل میں نمبر، پارٹی، ہیڈ اور رقم موجود ہے۔"), billTable(r.incomplete));
+    h += section(T("2. Deductions that look wrong", "۲۔ مشکوک کٹوتیاں"), r.dedBad.length, T("No bill has deductions above its amount or a negative deduction.", "کسی بل میں کٹوتی رقم سے زیادہ یا منفی نہیں۔"), billTable(r.dedBad));
+    if(r.dedSoft.length) h += section(T("2b. Worth a look: no deduction taken", "۲ب۔ دیکھنے کے لائق: کٹوتی نہیں لگی"), r.dedSoft.length, "", billTable(r.dedSoft), true);
+    var dupInner = "<div class='aom-wrap'><table class='aom-tbl mc-tbl'><thead><tr><th>" + T("Same on", "ایک جیسا") + "</th><th>" + T("Date", "تاریخ") + "</th><th>" + T("Bill no.", "بل نمبر") + "</th><th>" + T("Party", "پارٹی") + "</th><th>" + T("Head", "ہیڈ") + "</th><th class='n'>" + T("Amount", "رقم") + "</th></tr></thead><tbody>" +
+      r.dups.map(function(d){ return d.list.map(function(b, i){ return "<tr><td class='h'>" + (i === 0 ? (d.byNo ? T0("party + bill no.", "پارٹی + بل نمبر") : T0("date, head, party, amount", "تاریخ، ہیڈ، پارٹی، رقم")) + " ×" + d.list.length : "") + "</td><td class='h'>" + esc(b.date || "") + "</td><td class='h'>" + esc(b.billNo || "—") + "</td><td class='h'>" + esc(b.vendorName || "—") + "</td><td class='h'>" + esc(b.head || "—") + "</td><td class='n'>" + money(b.gross) + "</td></tr>"; }).join(""); }).join("") + "</tbody></table></div>";
+    h += section(T("3. Repeated bills", "۳۔ دہرائے ہوئے بل"), r.dups.length, T("No bill appears twice in this financial year.", "اس مالی سال میں کوئی بل دو بار نہیں آیا۔"), dupInner);
+
+    /* heads: net of the bills against Cash Book payments */
+    var tn = 0, tc = 0; r.heads.forEach(function(x){ tn += x.net; tc += x.cash; });
+    h += "<h4 class='aom-h'>" + T("4. Heads: bills (net) against Cash Book payments", "۴۔ ہیڈز: بل (نیٹ) بمقابلہ کیش بک کی ادائیگیاں") + " <span class='mc-badge " + (r.headsWithDiff ? "bad" : "ok") + "'>" + (r.headsWithDiff || "✓") + "</span></h4>";
+    h += "<p class='aom-hint'>" + T("Net = bill amount minus its deductions. Cash Book = payments entered against the same head in the same month. A red difference means the Cash Book paid more (+) or less (−) than the bills ask for.", "نیٹ = بل کی رقم منفی اس کی کٹوتیاں۔ کیش بک = اسی مہینے اسی ہیڈ کے سامنے درج ادائیگیاں۔ سرخ فرق کا مطلب کیش بک نے بلوں کے مقابلے میں زیادہ (+) یا کم (−) ادا کیا۔") + "</p>";
+    if(r.cashNoHead.n) h += "<div class='aom-note'>" + T(r.cashNoHead.n + " Cash Book payment(s) of this month, " + money(r.cashNoHead.amt) + " in all, have no head, so they could not be counted against any head.", "اس مہینے کی کیش بک کی " + r.cashNoHead.n + " ادائیگیوں (کل " + money(r.cashNoHead.amt) + ") کا ہیڈ خالی ہے، اس لیے وہ کسی ہیڈ کے مقابل نہیں گنی گئیں۔") + "</div>";
+    if(!r.heads.length) h += "<div class='aom-banner info'>" + T("No contingent bills or head-wise cash payments in this month.", "اس مہینے کنٹنجنٹ بل یا ہیڈ والی کیش ادائیگیاں نہیں۔") + "</div>";
+    else{
+      h += "<div class='aom-wrap'><table class='aom-tbl mc-tbl'><thead><tr><th>" + T("Head", "ہیڈ") + "</th><th class='n'>" + T("Bills", "بل") + "</th><th class='n'>" + T("Gross", "کل رقم") + "</th><th class='n'>" + T("Net", "نیٹ") + "</th><th class='n'>" + T("Cash Book paid", "کیش بک کی ادائیگی") + "</th><th class='n'>" + T("Difference", "فرق") + "</th><th>TR-30</th></tr></thead><tbody>" +
+        r.heads.map(function(x){ return "<tr><td class='h'>" + esc(x.head) + "</td><td class='n'>" + x.n + "</td><td class='n'>" + money(x.gross) + "</td><td class='n'>" + money(x.net) + "</td><td class='n'>" + money(x.cash) + "</td><td class='n " + (x.diff ? "aom-bad " + (x.diff > 0 ? "pos" : "neg") : "aom-ok") + "'>" + (x.diff ? signed(x.diff) : "✓") + "</td><td class='h'>" + (x.n ? "<button type='button' class='btn secondary small mc-t30' data-head='" + esc(x.head) + "'>" + T("Open TR-30", "TR-30 کھولیں") + "</button>" : "—") + "</td></tr>"; }).join("") +
+        "</tbody><tfoot><tr class='aom-tot'><td class='h'>" + T("All heads", "تمام ہیڈز") + "</td><td class='n'>" + r.heads.reduce(function(a, x){ return a + x.n; }, 0) + "</td><td class='n'>" + money(r.heads.reduce(function(a, x){ return a + x.gross; }, 0)) + "</td><td class='n'>" + money(tn) + "</td><td class='n'>" + money(tc) + "</td><td class='n'>" + signed(Math.round(tc) - Math.round(tn)) + "</td><td></td></tr></tfoot></table></div>";
+    }
+    return h;
+  }
+
+  function render(){
+    var ms = months();
+    if(!S.month || ms.indexOf(S.month) < 0){
+      var withBills = (STATE.bills || []).map(function(b){ return monthOf(b.date); }).filter(function(x){ return /^\d{4}-\d{2}$/.test(x); }).sort().reverse()[0];
+      S.month = withBills || ms[0] || "";
+    }
+    var h = "<div class='aom-bar'><label>" + T("Month", "مہینہ") + " <select id='mc_month'>" + ms.map(function(m){ return "<option value='" + m + "'" + (m === S.month ? " selected" : "") + ">" + esc(mLabel(m)) + "</option>"; }).join("") + "</select></label></div>";
+    h += S.month ? draw(compute(S.month)) : "<p class='aom-hint'>" + T("There are no bills or cash entries yet.", "ابھی کوئی بل یا کیش اندراج نہیں۔") + "</p>";
+    body.innerHTML = h;
+  }
+
+  /* open the TR-30 part with this head and month already chosen */
+  function openTr30(head){
+    var tabBtn = document.querySelector(".tab-btn[data-tab='bill']"); if(tabBtn) tabBtn.click();
+    var sub = document.querySelector(".t30-sub[data-sub='tr30']"); if(sub) sub.click();
+    setTimeout(function(){
+      var T30 = window.__brTr30; if(!T30) return;
+      T30.state.head = head; T30.state.month = S.month; T30.state.vendor = ""; T30.state.tickFor = "";
+      T30.render();
+    }, 60);
+  }
+
+  panel.addEventListener("change", function(e){ if(e.target.id === "mc_month"){ S.month = e.target.value; render(); } });
+  panel.addEventListener("click", function(e){
+    var b = e.target.closest ? e.target.closest(".mc-t30") : null; if(b) openTr30(b.getAttribute("data-head"));
+  });
+  document.querySelectorAll(".aom-sub[data-sub='mc']").forEach(function(b){ b.addEventListener("click", render); });
+  window.__brMonthClose = {compute: compute, render: render, state: S};
 })();
 
 
