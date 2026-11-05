@@ -1422,46 +1422,61 @@ body.lang-ur .br-part{ font-size:17px; }
 .aom-subtabs{ display:flex; gap:8px; flex-wrap:wrap; margin:0 0 14px; }
 .aom-sub{ background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:8px 16px; font:inherit; font-weight:600; cursor:pointer; }
 .aom-sub.active{ background:var(--navy); color:#fff; border-color:var(--navy); }
-:is(#panel-aomatch,#panel-mclose) .aom-pick{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:0 0 12px; }
-:is(#panel-aomatch,#panel-mclose) .aom-file{ display:inline-flex; flex-direction:column; gap:6px; font-weight:600; font-size:13px; }
-:is(#panel-aomatch,#panel-mclose) .aom-fn{ color:var(--muted); font-size:12.5px; word-break:break-all; }
-:is(#panel-aomatch,#panel-mclose) .aom-banner{ padding:9px 12px; border-radius:var(--radius); margin:0 0 10px; font-size:13px; border:1px solid var(--border); background:rgba(127,127,127,.10); }
-:is(#panel-aomatch,#panel-mclose) .aom-banner.good{ background:rgba(46,160,90,.14); border-color:rgba(46,160,90,.55); }
-:is(#panel-aomatch,#panel-mclose) .aom-banner.warn{ background:rgba(232,176,74,.18); border-color:rgba(232,176,74,.7); }
-:is(#panel-aomatch,#panel-mclose) .aom-banner.bad{ background:rgba(205,60,60,.14); border-color:rgba(205,60,60,.6); }
-:is(#panel-aomatch,#panel-mclose) .aom-note{ padding:7px 12px; border-radius:var(--radius); margin:0 0 10px; font-size:12.5px; color:var(--muted); border:1px dashed var(--border); }
-:is(#panel-aomatch,#panel-mclose) .aom-cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin:0 0 12px; }
-:is(#panel-aomatch,#panel-mclose) .aom-card{ border:1px solid var(--border); border-radius:var(--radius); padding:8px 12px; background:var(--surface); display:flex; flex-direction:column; gap:2px; }
-:is(#panel-aomatch,#panel-mclose) .aom-card span{ font-size:12px; color:var(--muted); }
-:is(#panel-aomatch,#panel-mclose) .aom-card b{ font-size:18px; font-variant-numeric:tabular-nums; }
-:is(#panel-aomatch,#panel-mclose) .aom-card b.neg{ color:#c0392b; }
-:is(#panel-aomatch,#panel-mclose) .aom-bar{ display:flex; gap:12px; align-items:end; flex-wrap:wrap; margin:0 0 10px; }
-:is(#panel-aomatch,#panel-mclose) .aom-bar label{ display:flex; flex-direction:column; gap:3px; font-size:12px; font-weight:600; }
-:is(#panel-aomatch,#panel-mclose) .aom-h{ margin:16px 0 6px; }
-:is(#panel-aomatch,#panel-mclose) .aom-hint{ color:var(--muted); font-size:12.5px; margin:0 0 8px; max-width:820px; }
-:is(#panel-aomatch,#panel-mclose) .aom-wrap{ overflow-x:auto; max-width:100%; border:1px solid var(--border); border-radius:var(--radius); margin:0 0 12px; }
-:is(#panel-aomatch,#panel-mclose) .aom-tbl{ border-collapse:collapse; width:100%; font-size:12.5px; font-variant-numeric:tabular-nums; }
-:is(#panel-aomatch,#panel-mclose) .aom-tbl th, :is(#panel-aomatch,#panel-mclose) .aom-tbl td{ padding:5px 8px; border-bottom:1px solid var(--border); white-space:nowrap; text-align:right; }
-:is(#panel-aomatch,#panel-mclose) .aom-tbl th{ background:var(--navy); color:#fff; position:sticky; top:0; }
-:is(#panel-aomatch,#panel-mclose) .aom-tbl td.h, :is(#panel-aomatch,#panel-mclose) .aom-tbl th:first-child{ text-align:left; white-space:normal; }
-:is(#panel-aomatch,#panel-mclose) .aom-tbl td.h:first-child, :is(#panel-aomatch,#panel-mclose) .aom-tbl th:first-child{ min-width:230px; }
+:is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-pick{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:0 0 12px; }
+:is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-file{ display:inline-flex; flex-direction:column; gap:6px; font-weight:600; font-size:13px; }
+:is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-fn{ color:var(--muted); font-size:12.5px; word-break:break-all; }
+:is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-banner{ padding:9px 12px; border-radius:var(--radius); margin:0 0 10px; font-size:13px; border:1px solid var(--border); background:rgba(127,127,127,.10); }
+:is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-banner.good{ background:rgba(46,160,90,.14); border-color:rgba(46,160,90,.55); }
+:is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-banner.warn{ background:rgba(232,176,74,.18); border-color:rgba(232,176,74,.7); }
+:is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-banner.bad{ background:rgba(205,60,60,.14); border-color:rgba(205,60,60,.6); }
+:is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-note{ padding:7px 12px; border-radius:var(--radius); margin:0 0 10px; font-size:12.5px; color:var(--muted); border:1px dashed var(--border); }
+:is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin:0 0 12px; }
+:is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-card{ border:1px solid var(--border); border-radius:var(--radius); padding:8px 12px; background:var(--surface); display:flex; flex-direction:column; gap:2px; }
+:is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-card span{ font-size:12px; color:var(--muted); }
+:is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-card b{ font-size:18px; font-variant-numeric:tabular-nums; }
+:is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-card b.neg{ color:#c0392b; }
+:is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-bar{ display:flex; gap:12px; align-items:end; flex-wrap:wrap; margin:0 0 10px; }
+:is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-bar label{ display:flex; flex-direction:column; gap:3px; font-size:12px; font-weight:600; }
+:is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-h{ margin:16px 0 6px; }
+:is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-hint{ color:var(--muted); font-size:12.5px; margin:0 0 8px; max-width:820px; }
+:is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-wrap{ overflow-x:auto; max-width:100%; border:1px solid var(--border); border-radius:var(--radius); margin:0 0 12px; }
+:is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-tbl{ border-collapse:collapse; width:100%; font-size:12.5px; font-variant-numeric:tabular-nums; }
+:is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-tbl th, :is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-tbl td{ padding:5px 8px; border-bottom:1px solid var(--border); white-space:nowrap; text-align:right; }
+:is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-tbl th{ background:var(--navy); color:#fff; position:sticky; top:0; }
+:is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-tbl td.h, :is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-tbl th:first-child{ text-align:left; white-space:normal; }
+:is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-tbl td.h:first-child, :is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-tbl th:first-child{ min-width:230px; }
 #panel-mclose .aom-tbl th{ text-align:left; } #panel-mclose .aom-tbl th.n{ text-align:right; }
 #panel-mclose .mc-tbl td.h:first-child, #panel-mclose .mc-tbl th:first-child{ min-width:0; }
-:is(#panel-aomatch,#panel-mclose) .aom-tbl th.m, :is(#panel-aomatch,#panel-mclose) .aom-tbl td.aom-ok, :is(#panel-aomatch,#panel-mclose) .aom-tbl td.aom-na{ text-align:center; }
-:is(#panel-aomatch,#panel-mclose) .aom-tbl small{ font-weight:400; opacity:.8; }
-:is(#panel-aomatch,#panel-mclose) .aom-ok{ color:#1e8449; }
-:is(#panel-aomatch,#panel-mclose) .aom-na{ color:var(--muted); }
-:is(#panel-aomatch,#panel-mclose) .aom-bad{ font-weight:700; }
-:is(#panel-aomatch,#panel-mclose) .aom-bad.pos, :is(#panel-aomatch,#panel-mclose) .aom-bad.neg, #panel-aomatch td.neg{ color:#c0392b; }
-:is(#panel-aomatch,#panel-mclose) .aom-tot td{ font-weight:700; background:rgba(127,127,127,.12); }
-:is(#panel-aomatch,#panel-mclose) .aom-tag{ background:rgba(232,176,74,.25); border-radius:4px; padding:1px 5px; margin-left:4px; }
+:is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-tbl th.m, :is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-tbl td.aom-ok, :is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-tbl td.aom-na{ text-align:center; }
+:is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-tbl small{ font-weight:400; opacity:.8; }
+:is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-ok{ color:#1e8449; }
+:is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-na{ color:var(--muted); }
+:is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-bad{ font-weight:700; }
+:is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-bad.pos, :is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-bad.neg, #panel-aomatch td.neg{ color:#c0392b; }
+:is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-tot td{ font-weight:700; background:rgba(127,127,127,.12); }
+:is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-tag{ background:rgba(232,176,74,.25); border-radius:4px; padding:1px 5px; margin-left:4px; }
 #panel-mclose .aom-bar, #panel-mclose .aom-cards, #panel-mclose .aom-banner, #panel-mclose .aom-note, #panel-mclose .aom-wrap, #panel-mclose .aom-tbl, #panel-mclose .aom-hint{ }
 #panel-mclose .mc-badge{ display:inline-block; min-width:22px; text-align:center; padding:1px 8px; border-radius:11px; font-size:12px; font-weight:700; margin-left:6px; vertical-align:middle; }
 #panel-mclose .mc-badge.ok{ background:rgba(46,160,90,.18); color:#1e8449; }
 #panel-mclose .mc-badge.bad{ background:rgba(205,60,60,.18); color:#c0392b; }
 #panel-mclose .mc-badge.soft{ background:rgba(232,176,74,.3); }
 #panel-mclose .mc-why{ white-space:normal; min-width:200px; }
-:is(#panel-aomatch,#panel-mclose) .aom-empty{ text-align:center !important; color:var(--muted); padding:16px; }
+:is(#panel-aomatch,#panel-mclose,#panel-yclose) .aom-empty{ text-align:center !important; color:var(--muted); padding:16px; }
+.bw-pill{ display:inline-block; padding:1px 8px; border-radius:10px; font-weight:700; font-size:12px; }
+.bw-amber{ background:#ffe9a8; color:#6b4300; }
+.bw-red{ background:#f7c6c6; color:#8a1c1c; }
+[data-theme="night"] .bw-amber{ background:#5c4a12; color:#ffe9a8; } [data-theme="night"] .bw-red{ background:#6b2222; color:#ffd0d0; }
+#bwHint{ margin-top:6px; padding:6px 10px; border-radius:8px; font-size:12.5px; font-weight:600; }
+#bwHint.bw-amber, #bwHint.bw-red{ display:block; }
+#panel-yclose .yc-list{ margin:0 0 10px; padding-left:20px; font-size:13px; } #panel-yclose .yc-list li{ margin:2px 0; }
+.br-read{ display:flex; flex-wrap:wrap; gap:8px 12px; align-items:center; margin:0 0 12px; padding:8px 10px; border:1px dashed var(--border); border-radius:var(--radius); }
+.br-read .br-read-btn{ cursor:pointer; margin:0; }
+.br-read .br-read-ur{ font-size:12.5px; display:inline-flex; gap:5px; align-items:center; }
+.br-read .br-read-info{ font-size:12.5px; flex:1 1 260px; min-width:0; }
+.br-read .br-read-info.good{ color:#1e8449; } .br-read .br-read-info.warn{ color:#8a5a00; } .br-read .br-read-info.bad{ color:#c0392b; }
+.br-read details{ flex:1 1 100%; font-size:12px; } .br-read pre{ white-space:pre-wrap; max-height:160px; overflow:auto; margin:4px 0 0; background:rgba(127,127,127,.1); padding:6px 8px; border-radius:6px; }
+.br-read-hl{ background:#fff3b0 !important; box-shadow:0 0 0 2px #e8c84a; }
+[data-theme="night"] .br-read-hl{ background:#5c4a12 !important; }
 #panel-tr30 .t30-intro{ margin:0 0 10px; color:var(--muted); font-size:12.5px; max-width:720px; }
 
 /* TR-30 bill tab */
@@ -1727,6 +1742,13 @@ body.lang-ur .br-part{ font-size:17px; }
 
       <div class="card entry-form" id="billFormCard">
         <h3 id="billFormTitle" data-i18n="bill_addBill">Add a bill</h3>
+        <div class="br-read" id="brRead">
+          <label class="btn secondary small br-read-btn"><span class="en">📷 Read from bill photo / PDF</span><span class="ur">📷 بل کی تصویر / PDF سے پڑھیں</span><input type="file" id="brReadFile" accept="image/*,.pdf,application/pdf" hidden></label>
+          <label class="br-read-ur"><input type="checkbox" id="brReadUr"> <span class="en">Bill has Urdu writing</span><span class="ur">بل پر اردو لکھی ہے</span></label>
+          <button type="button" class="btn secondary small" id="brReadAi" hidden><span class="en">✨ Ask AI to read it</span><span class="ur">✨ AI سے پڑھوائیں</span></button>
+          <span class="br-read-info" id="brReadInfo"></span>
+          <details id="brReadText" hidden><summary><span class="en">What was read</span><span class="ur">کیا پڑھا گیا</span></summary><pre id="brReadPre"></pre></details>
+        </div>
         <div class="grid cols-4">
           <div class="field"><label data-i18n="lbl_date">Date</label><input type="date" id="b_date"></div>
           <div class="field"><label data-i18n="lbl_billNo">Bill No</label><input type="text" id="b_billNo" placeholder="B-001"></div>
@@ -2096,7 +2118,7 @@ body.lang-ur .br-part{ font-size:17px; }
         <span class="count-chip" id="ledgerCount">41 heads</span>
       </div>
 
-      <div class="aom-subtabs"><button type="button" class="aom-sub active" data-sub="main"><span class="en">Ledger &amp; Budget</span><span class="ur">لیجر اور بجٹ</span></button><button type="button" class="aom-sub" data-sub="aom"><span class="en">Account Office match</span><span class="ur">اکاؤنٹس آفس سے ملاپ</span></button><button type="button" class="aom-sub" data-sub="mc"><span class="en">Month-end checklist</span><span class="ur">مہینہ بند کرنے کی چیک لسٹ</span></button></div>
+      <div class="aom-subtabs"><button type="button" class="aom-sub active" data-sub="main"><span class="en">Ledger &amp; Budget</span><span class="ur">لیجر اور بجٹ</span></button><button type="button" class="aom-sub" data-sub="aom"><span class="en">Account Office match</span><span class="ur">اکاؤنٹس آفس سے ملاپ</span></button><button type="button" class="aom-sub" data-sub="mc"><span class="en">Month-end checklist</span><span class="ur">مہینہ بند کرنے کی چیک لسٹ</span></button><button type="button" class="aom-sub" data-sub="yc" style="display:none"><span class="en">Year closing</span><span class="ur">مالی سال کا اختتام</span></button></div>
 
       <div id="ledgerMainWrap">
 
@@ -2145,6 +2167,10 @@ body.lang-ur .br-part{ font-size:17px; }
       <div id="mcWrap" hidden>
         <p class="field-hint" style="margin:0 0 10px;"><span class="en">Pick a month to see what still needs attention before closing it: bills with something missing, doubtful deductions, repeated bills, and each head against the Cash Book. Read-only: nothing is saved or changed.</span><span class="ur">مہینہ چنیں تو بند کرنے سے پہلے کیا دیکھنا باقی ہے سامنے آ جائے گا: ادھورے بل، مشکوک کٹوتیاں، دہرائے ہوئے بل، اور ہر ہیڈ کا کیش بک سے ملاپ۔ صرف دیکھنے کے لیے: کچھ بھی محفوظ یا تبدیل نہیں ہوتا۔</span></p>
         <div id="panel-mclose"><div id="mcBody"></div></div>
+      </div>
+      <div id="ycWrap" hidden>
+        <p class="field-hint" style="margin:0 0 10px;"><span class="en">Super Admin only: copy this year's budget to the next year and lock the closed year.</span><span class="ur">صرف سپر ایڈمن: اس سال کا بجٹ اگلے سال میں کاپی کریں اور بند ہونے والے سال کو مقفل کریں۔</span></p>
+        <div id="panel-yclose"><div id="ycBody"></div></div>
       </div>
     </section>
 
@@ -4098,7 +4124,15 @@ function updateHeadHint(){
   if(!h){ hint.textContent=""; return; }
   var spent = getHeadSpend(label, fy) + h.prior;
   var remaining = h.finalBudget - spent;
-  hint.innerHTML = "FY "+fy+" &nbsp;|&nbsp; Final budget: <b>"+fmt(h.finalBudget)+"</b> &nbsp;|&nbsp; Remaining: <b class=\""+(remaining<0?'neg':'pos')+"\">"+fmt(remaining)+"</b>";
+  /* what this bill will do to the budget: the amount typed now, without counting the bill twice when editing it */
+  var typed = Number(document.getElementById("b_gross").value) || 0, old = 0;
+  if(billEditId){ var ob = STATE.bills.find(function(x){ return x.id===billEditId; }); if(ob && ob.head===label && fyOfDate(ob.date)===fy) old = Number(ob.gross) || 0; }
+  var after = spent - old + typed, pct = h.finalBudget > 0 ? after / h.finalBudget * 100 : 0;
+  var lockTxt = fyLockInfo(fy) ? " &nbsp;|&nbsp; <b class=\"neg\">🔒 closed year</b>" : "";
+  var warn = "";
+  if(h.finalBudget > 0 && pct >= 100) warn = "<div id=\"bwHint\" class=\"bw-red\">⛔ Over budget" + (typed ? " with this bill" : "") + " by <b>" + fmt(after - h.finalBudget) + "</b> (" + Math.round(pct) + "% used) / بجٹ سے " + fmt(after - h.finalBudget) + " زیادہ</div>";
+  else if(h.finalBudget > 0 && pct >= 90) warn = "<div id=\"bwHint\" class=\"bw-amber\">⚠ " + Math.round(pct) + "% of the budget " + (typed ? "will be" : "is") + " used — only <b>" + fmt(h.finalBudget - after) + "</b> left / بجٹ کا " + Math.round(pct) + " فیصد خرچ، باقی " + fmt(h.finalBudget - after) + "</div>";
+  hint.innerHTML = "FY "+fy+" &nbsp;|&nbsp; Final budget: <b>"+fmt(h.finalBudget)+"</b> &nbsp;|&nbsp; Remaining: <b class=\""+(remaining<0?'neg':'pos')+"\">"+fmt(remaining)+"</b>" + lockTxt + warn;
 }
 /* Expenditure against a head is the full gross amount of each bill (deductions are credited elsewhere), counted in the bill's financial year. */
 function getHeadSpend(label, fy){
@@ -4220,6 +4254,7 @@ function resetBillForm(){
 
 document.getElementById("b_saveBtn").addEventListener("click", function(){
   if(!tabOK("bl")) return;
+  if(lockGuard(document.getElementById("b_date").value, billEditId && (STATE.bills.find(function(x){ return x.id===billEditId; })||{}).date)) return;
   var billNo = document.getElementById("b_billNo").value.trim();
   var gross = document.getElementById("b_gross").value;
   var vendorNo = getSelectOrAddValue("b_vendorNo","b_vendorNo_new");
@@ -4264,6 +4299,7 @@ function editBill(id){
   if(!tabOK("bl")) return;
   var b = STATE.bills.find(function(x){ return x.id===id; });
   if(!b) return;
+  if(lockGuard(b.date)) return;
   billEditId = id;
   document.getElementById("billFormTitle").textContent = t("form_editBillPrefix")+b.billNo;
   document.getElementById("b_saveBtn").textContent = "Update bill";
@@ -4290,6 +4326,7 @@ function editBill(id){
 }
 function deleteBill(id){
   if(!tabOK("bl")) return;
+  if(lockGuard((STATE.bills.find(function(x){ return x.id===id; })||{}).date)) return;
   if(!confirm("Delete this bill? This cannot be undone.")) return;
   STATE.bills = STATE.bills.filter(function(x){ return x.id!==id; });
   saveData({bills:[id]});
@@ -4728,6 +4765,7 @@ updateCashPreview();
 
 document.getElementById("c_saveBtn").addEventListener("click", function(){
   if(!tabOK("ca")) return;
+  if(lockGuard(document.getElementById("c_date").value, cashEditId && (STATE.cash.find(function(x){ return x.id===cashEditId; })||{}).date)) return;
   var particulars = getSelectOrAddValue("c_particulars","c_particulars_new");
   if(!particulars){ toast("Particulars is required."); return; }
   var rec = {
@@ -4760,6 +4798,7 @@ function editCash(id){
   if(!tabOK("ca")) return;
   var c = STATE.cash.find(function(x){ return x.id===id; });
   if(!c) return;
+  if(lockGuard(c.date)) return;
   cashEditId = id;
   document.getElementById("cashFormTitle").textContent = t("form_editEntry");
   document.getElementById("c_saveBtn").textContent = "Update entry";
@@ -4779,6 +4818,7 @@ function editCash(id){
 }
 function deleteCash(id){
   if(!tabOK("ca")) return;
+  if(lockGuard((STATE.cash.find(function(x){ return x.id===id; })||{}).date)) return;
   if(!confirm("Delete this cash book entry?")) return;
   STATE.cash = STATE.cash.filter(function(x){ return x.id!==id; });
   saveData({cash:[id]});
@@ -5094,6 +5134,7 @@ function resetStockForm(){
 }
 document.getElementById("s_saveBtn").addEventListener("click", function(){
   if(!tabOK("st")) return;
+  if(lockGuard(document.getElementById("s_date").value, stockEditId && (STATE.stock.find(function(x){ return x.id===stockEditId; })||{}).date)) return;
   var item = currentStockItemValue();
   var category = document.getElementById("s_category").value;
   if(!item){ toast("Pick an item, or choose \"+ Add a new item…\" and type its name."); return; }
@@ -5143,6 +5184,7 @@ function editStock(id){
   if(!tabOK("st")) return;
   var s = STATE.stock.find(function(x){ return x.id===id; });
   if(!s) return;
+  if(lockGuard(s.date)) return;
   stockEditId = id;
   document.getElementById("stockFormTitle").textContent = t("form_editMovement");
   document.getElementById("s_saveBtn").textContent = "Update movement";
@@ -5179,6 +5221,7 @@ function editStock(id){
 }
 function deleteStock(id){
   if(!tabOK("st")) return;
+  if(lockGuard((STATE.stock.find(function(x){ return x.id===id; })||{}).date)) return;
   if(!confirm("Delete this stock movement?")) return;
   STATE.stock = STATE.stock.filter(function(x){ return x.id!==id; });
   saveData({stock:[id]});
@@ -5553,7 +5596,7 @@ function renderLedger(){
       "<td class='num editable' data-col='finalBudget' data-field='finalBudget' data-head=\""+esc(r.label)+"\" title='Click to edit'>"+fmt(r.finalBudget)+"</td>"+
       "<td class='num editable' data-col='priorExp' data-field='prior' data-head=\""+esc(r.label)+"\" title='Click to edit'>"+fmt(r.prior)+"</td>"+
       "<td class='num' data-col='totalExp'>"+fmt(r.totalExp)+"</td>"+
-      "<td class='num "+(r.remaining<0?'neg':'')+"' data-col='remainingBudget'>"+fmt(r.remaining)+"</td>"+
+      "<td class='num "+(r.remaining<0?'neg':'')+"' data-col='remainingBudget'>"+fmt(r.remaining)+(r.finalBudget>0 && r.totalExp>=r.finalBudget*0.9 ? " <span class='bw-pill "+(r.totalExp>=r.finalBudget?'bw-red':'bw-amber')+"' title='Budget used / بجٹ خرچ'>"+Math.round(r.totalExp/r.finalBudget*100)+"%</span>" : "")+"</td>"+
       customDefs.map(function(f){ return ledgerCustomFieldTd(f, r); }).join("");
     body.appendChild(tr);
   });
@@ -5568,6 +5611,7 @@ function renderLedger(){
       val = Number(val);
       if(isNaN(val)){ toast("Please enter a number."); return; }
       var head = td.dataset.head, field = td.dataset.field;
+      if(fyLockInfo(currentLedgerFY()) && !isSuperAdmin()){ toast("This financial year is closed (locked) — only a Super Admin can change its figures. / یہ مالی سال بند ہے — اس کے اعداد صرف سپر ایڈمن بدل سکتا ہے۔"); return; }
       STATE.headOverrides[head] = STATE.headOverrides[head] || {};
       var editFY = currentLedgerFY();
       if(editFY===baseFY()){
@@ -6698,6 +6742,19 @@ function isAdmin(){ return !!(CURRENT_USER && CURRENT_USER.role==="admin"); }
    (adding/renaming/deleting custom data-entry fields). Every Super Admin is also an
    Admin, but not every Admin is a Super Admin. */
 function isSuperAdmin(){ return !!(CURRENT_USER && CURRENT_USER.role==="admin" && CURRENT_USER.isSuperAdmin===true); }
+/* ---- closed financial years: only a Super Admin may add / change / delete bills, cash entries or stock movements dated in them ---- */
+function fyLockInfo(fy){ var s = STATE && STATE.stmtData; return (s && s.fyLock && s.fyLock[fy]) || null; }
+function lockGuard(){
+  for(var i = 0; i < arguments.length; i++){
+    var d = arguments[i]; if(!d) continue;
+    var fy = fyOfDate(d);
+    if(fyLockInfo(fy) && !isSuperAdmin()){
+      toast("Financial year " + fy + " is closed (locked) — only a Super Admin can add, change or delete entries dated in it. / مالی سال " + fy + " بند ہے — اس کی تاریخ والے اندراج صرف سپر ایڈمن کر سکتا ہے۔");
+      return true;
+    }
+  }
+  return false;
+}
 
 /* ===== per-user ticks for this page (key "bill") =====
    v = open the Bill Register at all.  bl = Contingent Bill tab, ca = Cash Book, st = Stock Book, em = Employees + Pay Slips,
@@ -10816,7 +10873,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   });
   /* the two parts of Ledger & Budget */
   document.querySelectorAll(".aom-sub").forEach(function(b){ b.addEventListener("click", function(){
-    var which = b.getAttribute("data-sub"), wraps = {main: "ledgerMainWrap", aom: "aomWrap", mc: "mcWrap"};
+    var which = b.getAttribute("data-sub"), wraps = {main: "ledgerMainWrap", aom: "aomWrap", mc: "mcWrap", yc: "ycWrap"};
     Object.keys(wraps).forEach(function(k){ var w = document.getElementById(wraps[k]); if(w) w.hidden = which !== k; });
     document.querySelectorAll(".aom-sub").forEach(function(x){ x.classList.toggle("active", x === b); });
     if(which === "aom"){ if(S.ao){ S.res = C.compare(S.ao, registerFigures()); S.ledger = ledgerTotals(S.ao.fy); } render(); }
@@ -10904,6 +10961,18 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     });
     res.heads = Object.keys(byHead).sort().map(function(h){ var r = byHead[h]; r.diff = Math.round(r.cash) - Math.round(r.net); return r; });
     res.headsWithDiff = res.heads.filter(function(r){ return r.diff !== 0; }).length;
+    /* budget: heads that have used 90% or more of their Final Budget in this financial year (up to the end of the chosen month) */
+    res.budget = [];
+    try{
+      var last = m + "-31";
+      getHeads(fy).forEach(function(hd){
+        if(isSal(hd.label) || !(num(hd.finalBudget) > 0)) return;
+        var g = 0; all.forEach(function(b){ if(b.head === hd.label && fyOfDate(b.date) === fy && String(b.date || "") <= last) g += num(b.gross); });
+        var used = num(hd.prior) + g, pct = used / num(hd.finalBudget) * 100;
+        if(pct >= 90) res.budget.push({head: hd.label, budget: num(hd.finalBudget), used: used, pct: pct, left: num(hd.finalBudget) - used});
+      });
+      res.budget.sort(function(a, b){ return b.pct - a.pct; });
+    }catch(e){}
     return res;
   }
 
@@ -10927,7 +10996,8 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       "<div class='aom-card'><span>" + T("With something missing", "جن میں کچھ خالی ہے") + "</span><b class='" + (r.incomplete.length ? "neg" : "") + "'>" + r.incomplete.length + "</b></div>" +
       "<div class='aom-card'><span>" + T("Deductions look wrong", "کٹوتیاں مشکوک") + "</span><b class='" + (r.dedBad.length ? "neg" : "") + "'>" + r.dedBad.length + "</b></div>" +
       "<div class='aom-card'><span>" + T("Repeated bills", "دہرائے ہوئے بل") + "</span><b class='" + (r.dups.length ? "neg" : "") + "'>" + r.dups.length + "</b></div>" +
-      "<div class='aom-card'><span>" + T("Heads where Cash Book differs", "جن ہیڈز میں کیش بک مختلف") + "</span><b class='" + (r.headsWithDiff ? "neg" : "") + "'>" + r.headsWithDiff + "</b></div></div>";
+      "<div class='aom-card'><span>" + T("Heads where Cash Book differs", "جن ہیڈز میں کیش بک مختلف") + "</span><b class='" + (r.headsWithDiff ? "neg" : "") + "'>" + r.headsWithDiff + "</b></div>" +
+      "<div class='aom-card'><span>" + T("Budget 90%+ used", "بجٹ 90%+ خرچ") + "</span><b class='" + (r.budget.length ? "neg" : "") + "'>" + r.budget.length + "</b></div></div>";
     if(!total) h += "<div class='aom-banner info'>" + T("No bills are entered for this month.", "اس مہینے کا کوئی بل درج نہیں۔") + "</div>";
     if(r.noDate) h += "<div class='aom-note'>" + T(r.noDate + " bill(s) in the register have no usable date, so they cannot appear under any month.", "رجسٹر میں " + r.noDate + " بل کی تاریخ درست نہیں، اس لیے وہ کسی مہینے میں نہیں آ سکتے۔") + "</div>";
 
@@ -10938,9 +11008,13 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       r.dups.map(function(d){ return d.list.map(function(b, i){ return "<tr><td class='h'>" + (i === 0 ? (d.byNo ? T0("party + bill no.", "پارٹی + بل نمبر") : T0("date, head, party, amount", "تاریخ، ہیڈ، پارٹی، رقم")) + " ×" + d.list.length : "") + "</td><td class='h'>" + esc(b.date || "") + "</td><td class='h'>" + esc(b.billNo || "—") + "</td><td class='h'>" + esc(b.vendorName || "—") + "</td><td class='h'>" + esc(b.head || "—") + "</td><td class='n'>" + money(b.gross) + "</td></tr>"; }).join(""); }).join("") + "</tbody></table></div>";
     h += section(T("3. Repeated bills", "۳۔ دہرائے ہوئے بل"), r.dups.length, T("No bill appears twice in this financial year.", "اس مالی سال میں کوئی بل دو بار نہیں آیا۔"), dupInner);
 
+    var bwInner = "<div class='aom-wrap'><table class='aom-tbl mc-tbl'><thead><tr><th>" + T("Head", "ہیڈ") + "</th><th class='n'>" + T("Final budget", "فائنل بجٹ") + "</th><th class='n'>" + T("Used", "خرچ") + "</th><th class='n'>%</th><th class='n'>" + T("Left", "باقی") + "</th></tr></thead><tbody>" +
+      r.budget.map(function(x){ return "<tr><td class='h'>" + esc(x.head) + "</td><td class='n'>" + money(x.budget) + "</td><td class='n'>" + money(x.used) + "</td><td class='n'><span class='bw-pill " + (x.pct >= 100 ? "bw-red" : "bw-amber") + "'>" + Math.round(x.pct) + "%</span></td><td class='n " + (x.left < 0 ? "aom-bad neg" : "") + "'>" + money(x.left) + "</td></tr>"; }).join("") + "</tbody></table></div>";
+    h += section(T("4. Budget used 90% or more (FY " + r.fy + ", up to this month)", "۴۔ بجٹ 90 فیصد یا زیادہ خرچ (مالی سال " + r.fy + "، اس مہینے تک)"), r.budget.length, T("No head has used 90% of its budget.", "کسی ہیڈ نے بجٹ کا 90 فیصد خرچ نہیں کیا۔"), bwInner, r.budget.every(function(x){ return x.pct < 100; }));
+
     /* heads: net of the bills against Cash Book payments */
     var tn = 0, tc = 0; r.heads.forEach(function(x){ tn += x.net; tc += x.cash; });
-    h += "<h4 class='aom-h'>" + T("4. Heads: bills (net) against Cash Book payments", "۴۔ ہیڈز: بل (نیٹ) بمقابلہ کیش بک کی ادائیگیاں") + " <span class='mc-badge " + (r.headsWithDiff ? "bad" : "ok") + "'>" + (r.headsWithDiff || "✓") + "</span></h4>";
+    h += "<h4 class='aom-h'>" + T("5. Heads: bills (net) against Cash Book payments", "۵۔ ہیڈز: بل (نیٹ) بمقابلہ کیش بک کی ادائیگیاں") + " <span class='mc-badge " + (r.headsWithDiff ? "bad" : "ok") + "'>" + (r.headsWithDiff || "✓") + "</span></h4>";
     h += "<p class='aom-hint'>" + T("Net = bill amount minus its deductions. Cash Book = payments entered against the same head in the same month. A red difference means the Cash Book paid more (+) or less (−) than the bills ask for.", "نیٹ = بل کی رقم منفی اس کی کٹوتیاں۔ کیش بک = اسی مہینے اسی ہیڈ کے سامنے درج ادائیگیاں۔ سرخ فرق کا مطلب کیش بک نے بلوں کے مقابلے میں زیادہ (+) یا کم (−) ادا کیا۔") + "</p>";
     if(r.cashNoHead.n) h += "<div class='aom-note'>" + T(r.cashNoHead.n + " Cash Book payment(s) of this month, " + money(r.cashNoHead.amt) + " in all, have no head, so they could not be counted against any head.", "اس مہینے کی کیش بک کی " + r.cashNoHead.n + " ادائیگیوں (کل " + money(r.cashNoHead.amt) + ") کا ہیڈ خالی ہے، اس لیے وہ کسی ہیڈ کے مقابل نہیں گنی گئیں۔") + "</div>";
     if(!r.heads.length) h += "<div class='aom-banner info'>" + T("No contingent bills or head-wise cash payments in this month.", "اس مہینے کنٹنجنٹ بل یا ہیڈ والی کیش ادائیگیاں نہیں۔") + "</div>";
@@ -10980,6 +11054,408 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   });
   document.querySelectorAll(".aom-sub[data-sub='mc']").forEach(function(b){ b.addEventListener("click", render); });
   window.__brMonthClose = {compute: compute, render: render, state: S};
+})();
+
+
+/* ================= FINANCIAL-YEAR CLOSING — Ledger & Budget sub-tab (Super Admin only) =================
+   1. Copy this year's Final Budget of every head to the next year (nothing already filled in is overwritten unless asked).
+   2. Lock the year: after that, adding, changing or deleting a bill, cash entry or stock movement dated in the year is stopped
+      for everyone except a Super Admin, who can still do it (and can re-open the year).
+   The lock list is kept in STATE.stmtData.fyLock; the copy writes the next year's figures exactly like the Ledger's own editing. */
+(function(){
+  "use strict";
+  var panel = document.getElementById("panel-yclose"), body = document.getElementById("ycBody"), btn = document.querySelector(".aom-sub[data-sub='yc']");
+  if(!panel || !body) return;
+  var MN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  function num(v){ return Number(v) || 0; }
+  function T(en, ur){ return "<span class='en'>" + en + "</span><span class='ur'>" + ur + "</span>"; }
+  function T0(en, ur){ return (document.body.classList.contains("lang-ur") || document.documentElement.getAttribute("lang") === "ur") ? ur : en; }
+  function money(n){ n = Math.round(num(n)); return (n < 0 ? "-" : "") + String(Math.abs(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+  function nextFY(fy){ var y = parseInt(fy, 10) + 1; return y + "-" + String((y + 1) % 100).padStart(2, "0"); }
+  function fyRange(fy){ var y = parseInt(fy, 10); return [y + "-07-01", (y + 1) + "-06-30"]; }
+  function inFY(d, fy){ var r = fyRange(fy); return /^\d{4}-\d{2}-\d{2}/.test(d || "") && d >= r[0] && d <= r[1] + "~"; }
+  function isSal(label){ return /^A01/i.test(String(label || "").split("-")[0].trim()); }
+  function locks(){ var s = STATE.stmtData; return (s && s.fyLock) || {}; }
+
+  var S = {fy: "", overwrite: false};
+
+  function defaultFY(){
+    var list = ledgerFYList(), cur = fyOfDate(todayStr());
+    var older = list.filter(function(f){ return f < cur; });
+    return older[0] || list[0] || cur;
+  }
+  function stats(fy){
+    var bills = (STATE.bills || []).filter(function(b){ return fyOfDate(b.date) === fy; });
+    var cash = (STATE.cash || []).filter(function(c){ return inFY(c.date, fy); });
+    var heads = getHeads(fy), budget = 0, spent = 0, over = 0;
+    heads.forEach(function(h){
+      var g = 0; bills.forEach(function(b){ if(b.head === h.label) g += num(b.gross); });
+      var tot = num(h.prior) + g; budget += num(h.finalBudget); spent += tot;
+      if(num(h.finalBudget) > 0 && tot > num(h.finalBudget)) over++;
+    });
+    var seen = {}, dup = 0;
+    bills.forEach(function(b){ var k = [String(b.billNo || "").trim().toLowerCase(), String(b.vendorName || "").trim().toLowerCase(), b.date, num(b.gross), b.head].join("|"); if(seen[k]) dup++; seen[k] = 1; });
+    return {
+      bills: bills.length, gross: bills.reduce(function(a, b){ return a + num(b.gross); }, 0),
+      budget: budget, spent: spent, over: over,
+      missing: bills.filter(function(b){ return !String(b.billNo || "").trim() || !String(b.vendorName || "").trim() || !b.head || num(b.gross) <= 0; }).length,
+      dup: dup, cashN: cash.length, rec: cash.reduce(function(a, c){ return a + num(c.receipt); }, 0), pay: cash.reduce(function(a, c){ return a + num(c.payment); }, 0),
+      cashNoHead: cash.filter(function(c){ return num(c.payment) && !c.head; }).length,
+      stockN: (STATE.stock || []).filter(function(s){ return inFY(s.date, fy); }).length
+    };
+  }
+  function plan(fy){
+    var nx = nextFY(fy), cur = getHeads(fy), nxt = {}; getHeads(nx).forEach(function(h){ nxt[h.label] = h; });
+    return cur.map(function(h){
+      var from = num(h.finalBudget), now = nxt[h.label] ? num(nxt[h.label].finalBudget) : 0;
+      var after = (from > 0 && (now === 0 || S.overwrite)) ? from : now;
+      return {label: h.label, from: from, now: now, after: after, change: after !== now};
+    }).filter(function(r){ return r.from > 0 || r.now > 0; });
+  }
+
+  function draw(){
+    var fy = S.fy, nx = nextFY(fy), st = stats(fy), lk = locks()[fy], pl = plan(fy), nChange = pl.filter(function(r){ return r.change; }).length;
+    var h = "<div class='aom-bar'><label>" + T("Financial year to close", "بند کیا جانے والا مالی سال") + " <select id='yc_fy'>" +
+      ledgerFYList().map(function(f){ return "<option value='" + f + "'" + (f === fy ? " selected" : "") + ">" + f + (locks()[f] ? " 🔒" : "") + "</option>"; }).join("") + "</select></label></div>";
+    h += "<div class='aom-banner " + (lk ? "warn" : "info") + "'>" + (lk
+      ? T("FY " + fy + " is CLOSED (locked on " + esc(String(lk.at || "").slice(0, 10)) + (lk.by ? " by " + esc(lk.by) : "") + "). Only a Super Admin can add, change or delete bills, cash entries and stock movements dated in it.", "مالی سال " + fy + " بند (مقفل) ہے (" + esc(String(lk.at || "").slice(0, 10)) + (lk.by ? "، " + esc(lk.by) : "") + ")۔ اس سال کی تاریخ والے بل، کیش اور اسٹاک میں اندراج، تبدیلی یا حذف صرف سپر ایڈمن کر سکتا ہے۔")
+      : T("FY " + fy + " is open.", "مالی سال " + fy + " کھلا ہے۔")) + "</div>";
+    h += "<div class='aom-cards'>" +
+      "<div class='aom-card'><span>" + T("Bills", "بل") + "</span><b>" + st.bills + "</b></div>" +
+      "<div class='aom-card'><span>" + T("Bills gross", "بلوں کی کل رقم") + "</span><b>" + money(st.gross) + "</b></div>" +
+      "<div class='aom-card'><span>" + T("Final budget (all heads)", "فائنل بجٹ (تمام ہیڈز)") + "</span><b>" + money(st.budget) + "</b></div>" +
+      "<div class='aom-card'><span>" + T("Total expenditure", "کل خرچ") + "</span><b>" + money(st.spent) + "</b></div>" +
+      "<div class='aom-card'><span>" + T("Cash Book: received − paid", "کیش بک: وصول − ادا") + "</span><b>" + money(st.rec - st.pay) + "</b></div></div>";
+
+    h += "<h4 class='aom-h'>" + T("Before closing — look at these", "بند کرنے سے پہلے یہ دیکھ لیں") + "</h4>";
+    var notes = [];
+    if(st.missing) notes.push(T(st.missing + " bill(s) have something missing (bill no., party, head or amount).", st.missing + " بل ادھورے ہیں (بل نمبر، پارٹی، ہیڈ یا رقم)۔"));
+    if(st.dup) notes.push(T(st.dup + " bill(s) look repeated.", st.dup + " بل دہرائے ہوئے لگتے ہیں۔"));
+    if(st.over) notes.push(T(st.over + " head(s) went over budget.", st.over + " ہیڈز بجٹ سے اوپر گئے۔"));
+    if(st.cashNoHead) notes.push(T(st.cashNoHead + " Cash Book payment(s) have no head.", "کیش بک کی " + st.cashNoHead + " ادائیگیوں کا ہیڈ خالی ہے۔"));
+    notes.push(T("Tip: use “Account Office match” with the Account Office file of this year, and the Month-end checklist, before closing.", "مشورہ: بند کرنے سے پہلے اس سال کی اکاؤنٹس آفس فائل سے “اکاؤنٹس آفس سے ملاپ” اور “مہینہ بند کرنے کی چیک لسٹ” دیکھ لیں۔"));
+    h += "<ul class='yc-list'>" + notes.map(function(n){ return "<li>" + n + "</li>"; }).join("") + "</ul>";
+
+    h += "<h4 class='aom-h'>" + T("Step 1 — copy the budget to FY " + nx, "مرحلہ ۱ — بجٹ مالی سال " + nx + " میں کاپی کریں") + "</h4>";
+    h += "<p class='aom-hint'>" + T("Each head's Final Budget of FY " + fy + " becomes the starting Final Budget of FY " + nx + " (you can still change any figure in Ledger & Budget). Prior Expenditure of the new year is not touched.", "مالی سال " + fy + " میں ہر ہیڈ کا فائنل بجٹ مالی سال " + nx + " کا ابتدائی فائنل بجٹ بن جائے گا (لیجر اور بجٹ میں ہر عدد بعد میں بدل سکتے ہیں)۔ نئے سال کا پچھلا خرچ نہیں چھیڑا جاتا۔") + "</p>";
+    h += "<div class='aom-bar'><label style='flex-direction:row;align-items:center;gap:6px;font-weight:400'><input type='checkbox' id='yc_over'" + (S.overwrite ? " checked" : "") + "> " + T("Also replace figures already filled in for FY " + nx, "مالی سال " + nx + " میں پہلے سے بھرے اعداد بھی بدل دیں") + "</label>" +
+      "<button type='button' class='btn' id='yc_copy'" + (nChange ? "" : " disabled") + ">" + T("Copy budget now (" + nChange + " heads change)", "بجٹ ابھی کاپی کریں (" + nChange + " ہیڈز بدلیں گے)") + "</button></div>";
+    h += "<div class='aom-wrap'><table class='aom-tbl'><thead><tr><th>" + T("Head", "ہیڈ") + "</th><th class='n'>FY " + fy + " " + T("Final budget", "فائنل بجٹ") + "</th><th class='n'>FY " + nx + " " + T("now", "ابھی") + "</th><th class='n'>FY " + nx + " " + T("after copy", "کاپی کے بعد") + "</th></tr></thead><tbody>" +
+      (pl.length ? pl.map(function(r){ return "<tr><td class='h'>" + esc(r.label) + "</td><td class='n'>" + money(r.from) + "</td><td class='n'>" + money(r.now) + "</td><td class='n " + (r.change ? "aom-bad pos" : "") + "'>" + money(r.after) + "</td></tr>"; }).join("") : "<tr><td colspan='4' class='aom-empty'>" + T("No head has a budget.", "کسی ہیڈ کا بجٹ نہیں۔") + "</td></tr>") + "</tbody></table></div>";
+
+    h += "<h4 class='aom-h'>" + T("Step 2 — " + (lk ? "re-open the year" : "close (lock) the year"), "مرحلہ ۲ — سال " + (lk ? "دوبارہ کھولیں" : "بند (مقفل) کریں")) + "</h4>";
+    h += "<p class='aom-hint'>" + T("Locking only stops other users; it does not delete or change any data. A Super Admin can always re-open the year.", "لاک صرف دوسرے صارفین کو روکتا ہے؛ کوئی ڈیٹا نہیں مٹتا یا بدلتا۔ سپر ایڈمن سال کو کبھی بھی دوبارہ کھول سکتا ہے۔") + "</p>";
+    h += lk ? "<button type='button' class='btn secondary' id='yc_unlock'>" + T("Re-open FY " + fy, "مالی سال " + fy + " دوبارہ کھولیں") + "</button>"
+            : "<button type='button' class='btn' id='yc_lock'>" + T("Close (lock) FY " + fy, "مالی سال " + fy + " بند (مقفل) کریں") + "</button>";
+    return h;
+  }
+  function render(){
+    if(!S.fy) S.fy = defaultFY();
+    if(!isSuperAdmin()){ body.innerHTML = "<div class='aom-banner warn'>" + T("Only a Super Admin can use this page.", "یہ صفحہ صرف سپر ایڈمن استعمال کر سکتا ہے۔") + "</div>"; return; }
+    body.innerHTML = draw();
+  }
+  function need(){ if(isSuperAdmin()) return true; toast(T0("Only a Super Admin can do this.", "یہ کام صرف سپر ایڈمن کر سکتا ہے۔")); return false; }
+  function setBudget(head, fy, val){
+    STATE.headOverrides[head] = STATE.headOverrides[head] || {};
+    if(fy === baseFY()){ STATE.headOverrides[head].finalBudget = val; }
+    else { var o = STATE.headOverrides[head]; o.byFY = o.byFY || {}; o.byFY[fy] = o.byFY[fy] || {}; o.byFY[fy].finalBudget = val; }
+  }
+  panel.addEventListener("change", function(e){
+    if(e.target.id === "yc_fy"){ S.fy = e.target.value; render(); }
+    else if(e.target.id === "yc_over"){ S.overwrite = e.target.checked; render(); }
+  });
+  panel.addEventListener("click", function(e){
+    var b = e.target.closest ? e.target.closest("button") : null; if(!b) return;
+    if(b.id === "yc_copy"){
+      if(!need()) return;
+      var fy = S.fy, nx = nextFY(fy), ch = plan(fy).filter(function(r){ return r.change; });
+      if(!ch.length) return;
+      if(!confirm(T0("Copy the Final Budget of " + ch.length + " heads from FY " + fy + " to FY " + nx + "?", fy + " سے " + nx + " میں " + ch.length + " ہیڈز کا فائنل بجٹ کاپی کریں؟"))) return;
+      ch.forEach(function(r){ setBudget(r.label, nx, r.after); });
+      saveData(); try{ renderLedger(); updateHeadHint(); }catch(x){}
+      toast(T0(ch.length + " heads copied to FY " + nx + ".", ch.length + " ہیڈز مالی سال " + nx + " میں کاپی ہو گئے۔")); render();
+    } else if(b.id === "yc_lock"){
+      if(!need()) return;
+      if(!confirm(T0("Close (lock) FY " + S.fy + "? After this only a Super Admin can add, change or delete bills, cash entries and stock movements dated in it.", "مالی سال " + S.fy + " بند (مقفل) کریں؟ اس کے بعد اس کی تاریخ والے بل، کیش اور اسٹاک میں اندراج، تبدیلی یا حذف صرف سپر ایڈمن کر سکے گا۔"))) return;
+      STATE.stmtData = STATE.stmtData || {}; STATE.stmtData.fyLock = Object.assign({}, STATE.stmtData.fyLock || {});
+      STATE.stmtData.fyLock[S.fy] = {at: new Date().toISOString(), by: (CURRENT_USER && CURRENT_USER.username) || ""};
+      saveData(); toast(T0("FY " + S.fy + " is now closed.", "مالی سال " + S.fy + " اب بند ہے۔")); render();
+    } else if(b.id === "yc_unlock"){
+      if(!need()) return;
+      if(!confirm(T0("Re-open FY " + S.fy + "?", "مالی سال " + S.fy + " دوبارہ کھولیں؟"))) return;
+      STATE.stmtData = STATE.stmtData || {}; var m = Object.assign({}, STATE.stmtData.fyLock || {}); delete m[S.fy]; STATE.stmtData.fyLock = m;
+      saveData(); toast(T0("FY " + S.fy + " is open again.", "مالی سال " + S.fy + " دوبارہ کھل گیا۔")); render();
+    }
+  });
+  if(btn){
+    btn.addEventListener("click", render);
+    var showBtn = function(){ btn.style.display = isSuperAdmin() ? "" : "none"; };
+    showBtn(); setInterval(showBtn, 1500);
+  }
+  window.__brYearClose = {render: render, state: S, stats: stats, plan: plan};
+})();
+
+
+/* ================= BILL READER — fill the Add-a-bill form from a photo or PDF of the bill =================
+   The picture / PDF is read right here in the browser (free OCR); optionally the AI assistant can read the text instead.
+   Only date, bill number, party and amount are filled — in yellow — and nothing is saved until the clerk presses "Save bill".
+   The picture itself is not kept. ================= */
+(function(){
+  "use strict";
+  var fileEl = document.getElementById("brReadFile"), info = document.getElementById("brReadInfo");
+  if(!fileEl || !info) return;
+  var P = window.__brBillParse;
+  /* Bill reader — pure text parser (no DOM). Takes the text of a bill / invoice (from OCR or the PDF's own text) and picks out
+   date, bill number, party name and amount. Everything is only a SUGGESTION: the clerk checks each field before saving. */
+(function(root){
+  "use strict";
+  var MON = {jan:1, feb:2, mar:3, apr:4, may:5, jun:6, jul:7, aug:8, sep:9, sept:9, oct:10, nov:11, dec:12,
+    january:1, february:2, march:3, april:4, june:6, july:7, august:8, september:9, october:10, november:11, december:12};
+  function pad(n){ return (n < 10 ? "0" : "") + n; }
+  function okDate(y, m, d){
+    if(y < 100) y += 2000;
+    if(y < 2000 || y > 2100 || m < 1 || m > 12 || d < 1 || d > 31) return null;
+    var dt = new Date(Date.UTC(y, m - 1, d)); if(dt.getUTCMonth() !== m - 1) return null;
+    return y + "-" + pad(m) + "-" + pad(d);
+  }
+  /* every date found in a line: [{iso, idx}] */
+  function datesIn(line){
+    var out = [], m, re;
+    re = /(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/g;
+    while((m = re.exec(line))){ var a = okDate(+m[1], +m[2], +m[3]); if(a) out.push({iso: a, idx: m.index}); }
+    re = /(?<![\d\/\-.])(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4}|\d{2})(?![\d\/\-.])/g;
+    while((m = re.exec(line))){ var b = okDate(+m[3], +m[2], +m[1]); if(b) out.push({iso: b, idx: m.index}); }   /* day first, as written in Pakistan */
+    re = /(\d{1,2})(?:st|nd|rd|th)?[\s\-.,]+([A-Za-z]{3,9})[\s\-.,]+(\d{4})/g;
+    while((m = re.exec(line))){ var mo = MON[m[2].toLowerCase()]; if(mo){ var c = okDate(+m[3], mo, +m[1]); if(c) out.push({iso: c, idx: m.index}); } }
+    re = /([A-Za-z]{3,9})[\s\-.]+(\d{1,2})(?:st|nd|rd|th)?,?\s+(\d{4})/g;
+    while((m = re.exec(line))){ var mo2 = MON[m[1].toLowerCase()]; if(mo2){ var d2 = okDate(+m[3], mo2, +m[2]); if(d2) out.push({iso: d2, idx: m.index}); } }
+    return out;
+  }
+  function pickDate(lines){
+    var labelled = null, first = null;
+    lines.forEach(function(l){
+      var ds = datesIn(l); if(!ds.length) return;
+      if(!first) first = ds[0].iso;
+      if(!labelled && /\b(date|dated|dt)\b/i.test(l) && !/due|expiry|valid|delivery/i.test(l)) labelled = ds[0].iso;
+    });
+    return labelled || first || "";
+  }
+  function pickBillNo(lines){
+    var pats = [
+      /(?:tax\s+)?invoice\s*(?:no|number|num|#)\.?\s*[:#\-]?\s*([A-Za-z0-9][A-Za-z0-9\-\/]*)/i,
+      /bill\s*(?:no|number|num|#)\.?\s*[:#\-]?\s*([A-Za-z0-9][A-Za-z0-9\-\/]*)/i,
+      /\b(?:inv|invoice)\s*[:#]\s*([A-Za-z0-9][A-Za-z0-9\-\/]*)/i,
+      /(?:cash\s*memo|memo|receipt|voucher|challan|quotation|ref)\s*(?:no|number|#)\.?\s*[:#\-]?\s*([A-Za-z0-9][A-Za-z0-9\-\/]*)/i,
+      /\b(?:no|#)\s*[:.#]\s*([A-Za-z0-9\-\/]*\d[A-Za-z0-9\-\/]*)/i
+    ];
+    for(var p = 0; p < pats.length; p++){
+      for(var i = 0; i < lines.length; i++){
+        var m = pats[p].exec(lines[i]);
+        if(m && /\d/.test(m[1]) && !/^(date|dated)$/i.test(m[1])) return m[1].replace(/[\-\/]+$/, "");
+      }
+    }
+    return "";
+  }
+  function numbersIn(line){
+    var out = [], re = /(?<![\d.])(\d{1,3}(?:,\d{3})+(?:\.\d{1,2})?|\d+(?:\.\d{1,2})?)(?![\d])/g, m;
+    while((m = re.exec(line))){ var v = parseFloat(m[1].replace(/,/g, "")); if(isFinite(v)) out.push({v: v, raw: m[1]}); }
+    return out;
+  }
+  var AMT_TIERS = [
+    /grand\s*total|net\s*payable|total\s*payable|amount\s*payable|net\s*amount|amount\s*due|balance\s*due|total\s*amount|total\s*bill/i,
+    /\btotal\b|gross\s*amount|invoice\s*amount|bill\s*amount|\bamount\b/i
+  ];
+  function pickAmount(lines){
+    for(var t = 0; t < AMT_TIERS.length; t++){
+      var best = null;
+      lines.forEach(function(l){
+        if(!AMT_TIERS[t].test(l)) return;
+        if(/sub\s*total|tax|gst|discount|qty|quantity|rate|received|paid/i.test(l) && t === 1) return;
+        var ns = numbersIn(l.replace(/(?:rs|pkr)\.?/ig, " ")).filter(function(n){ return n.v >= 1 && String(Math.floor(n.v)).length <= 9; });
+        if(ns.length){ var last = ns[ns.length - 1]; if(!best || last.v > best) best = last.v; }
+      });
+      if(best != null) return best;
+    }
+    var all = [];
+    lines.forEach(function(l){
+      if(datesIn(l).length || /phone|tel|mobile|cell|ntn|strn|cnic|fax|account|a\/c|iban|\bno\b/i.test(l)) return;
+      numbersIn(l).forEach(function(n){ if((/[.,]/.test(n.raw) && n.v >= 10 && String(Math.floor(n.v)).length <= 8) || (n.v >= 100 && n.raw.length <= 7)) all.push(n.v); });
+    });
+    return all.length ? Math.max.apply(null, all) : 0;
+  }
+  function norm(s){ return String(s || "").toLowerCase().replace(/[^a-z0-9؀-ۿ ]+/g, " ").replace(/\s+/g, " ").trim(); }
+  var GENERIC = /^(tax\s+)?(invoice|bill|receipt|cash\s*memo|memo|quotation|estimate|original|duplicate|customer copy|office copy|sales tax invoice|statement|page|proprietor|prop|ntn|strn|date|no|to|from|bill to|ship to)\b/i;
+  function pickVendor(lines, known){
+    var text = norm(lines.join(" ")), hit = "", hitLen = 0;
+    (known || []).forEach(function(v){
+      var n = norm(v); if(n.length >= 4 && text.indexOf(n) >= 0 && n.length > hitLen){ hit = v; hitLen = n.length; }
+    });
+    if(hit) return {name: hit, known: true};
+    for(var i = 0; i < Math.min(lines.length, 12); i++){
+      var l = lines[i].trim();
+      if(l.length < 3 || l.length > 60) continue;
+      if(!/[A-Za-z؀-ۿ]{3}/.test(l)) continue;
+      if(GENERIC.test(l) || datesIn(l).length || /\d{4,}/.test(l) || /@|www\.|http|phone|tel|mob|address|road|street|lahore|karachi|islamabad|rawalpindi/i.test(l)) continue;
+      return {name: l.replace(/[|_*~]+/g, " ").replace(/\s+/g, " ").trim(), known: false};
+    }
+    return {name: "", known: false};
+  }
+  function parseBill(text, knownVendors){
+    var lines = String(text || "").split(/\r?\n/).map(function(l){ return l.replace(/\s+/g, " ").trim(); }).filter(Boolean);
+    var v = pickVendor(lines, knownVendors);
+    return {date: pickDate(lines), billNo: pickBillNo(lines), vendor: v.name, vendorKnown: v.known, amount: pickAmount(lines), lines: lines.length};
+  }
+  var api = {parseBill: parseBill, datesIn: datesIn, pickAmount: pickAmount, pickBillNo: pickBillNo, pickDate: pickDate, pickVendor: pickVendor};
+  if(typeof module !== "undefined" && module.exports) module.exports = api; else root.__brBillParse = api;
+})(typeof window !== "undefined" ? window : this);
+
+  P = P || window.__brBillParse;
+  var aiBtn = document.getElementById("brReadAi"), urEl = document.getElementById("brReadUr"), det = document.getElementById("brReadText"), pre = document.getElementById("brReadPre");
+  var busy = false, lastText = "", aiConsent = false;
+  var TESS = ["https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js", "https://unpkg.com/tesseract.js@5.1.1/dist/tesseract.min.js"];
+  var PDFJS = ["https://cdn.jsdelivr.net/npm/pdfjs-dist@6.2.108/build/", "https://unpkg.com/pdfjs-dist@6.2.108/build/"];
+  var AI_URL = "https://askassistant-ocr2hbwqvq-uc.a.run.app";
+
+  function T0(en, ur){ return (document.body.classList.contains("lang-ur") || document.documentElement.getAttribute("lang") === "ur") ? ur : en; }
+  function say(en, ur, cls){ info.className = "br-read-info" + (cls ? " " + cls : ""); info.textContent = T0(en, ur); }
+  function addScript(src){ return new Promise(function(res, rej){ var s = document.createElement("script"); s.src = src; s.onload = res; s.onerror = function(){ rej(new Error("load " + src)); }; document.head.appendChild(s); }); }
+  async function loadTess(){
+    if(window.Tesseract) return;
+    var err = null;
+    for(var i = 0; i < TESS.length; i++){ try{ await addScript(TESS[i]); if(window.Tesseract) return; }catch(e){ err = e; } }
+    throw err || new Error("OCR library");
+  }
+  async function loadPdfjs(){
+    if(window.__pdfjsModBill) return window.__pdfjsModBill;
+    var err = null;
+    for(var i = 0; i < PDFJS.length; i++){
+      try{
+        var mod = await import(PDFJS[i] + "pdf.min.mjs");
+        var txt = await (await fetch(PDFJS[i] + "pdf.worker.min.mjs")).text();
+        mod.GlobalWorkerOptions.workerSrc = URL.createObjectURL(new Blob([txt], {type: "text/javascript"}));
+        window.__pdfjsModBill = mod; return mod;
+      }catch(e){ err = e; }
+    }
+    throw err || new Error("pdf.js");
+  }
+  function imageToCanvas(file){
+    return new Promise(function(res, rej){
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onload = function(){
+        var max = 2400, k = Math.min(1, max / Math.max(img.width, img.height)), c = document.createElement("canvas");
+        c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+        var g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url); res(c);
+      };
+      img.onerror = function(){ URL.revokeObjectURL(url); rej(new Error("image")); };
+      img.src = url;
+    });
+  }
+  async function readFile(file){
+    var canvases = [], text = "";
+    var isPdf = /pdf$/i.test(file.type) || /\.pdf$/i.test(file.name);
+    if(isPdf){
+      say("Opening the PDF…", "PDF کھول رہا ہوں…");
+      var pdfjs = await loadPdfjs(), doc = await pdfjs.getDocument({data: new Uint8Array(await file.arrayBuffer())}).promise, n = Math.min(doc.numPages, 3);
+      for(var i = 1; i <= n; i++){
+        var pg = await doc.getPage(i), tc = await pg.getTextContent(), t = tc.items.map(function(x){ return x.str + (x.hasEOL ? "\n" : " "); }).join("");
+        if(t.replace(/\s+/g, "").length > 40){ text += t + "\n"; continue; }
+        var vp = pg.getViewport({scale: 2.4}), c = document.createElement("canvas");
+        c.width = Math.round(vp.width); c.height = Math.round(vp.height);
+        await pg.render({canvasContext: c.getContext("2d"), viewport: vp}).promise; canvases.push(c);
+      }
+    } else {
+      canvases.push(await imageToCanvas(file));
+    }
+    if(canvases.length){
+      say("Loading the reading engine (the first time takes a minute)…", "پڑھنے کا انجن لوڈ ہو رہا ہے (پہلی بار ایک منٹ لگتا ہے)…");
+      await loadTess();
+      var worker = await window.Tesseract.createWorker(urEl && urEl.checked ? "eng+urd" : "eng", 1, {});
+      try{
+        for(var k = 0; k < canvases.length; k++){
+          say("Reading page " + (k + 1) + " of " + canvases.length + "…", "صفحہ " + (k + 1) + " از " + canvases.length + " پڑھ رہا ہوں…");
+          var r = await worker.recognize(canvases[k]); text += (r && r.data && r.data.text || "") + "\n";
+        }
+      } finally { try{ await worker.terminate(); }catch(e){} }
+    }
+    return text;
+  }
+
+  /* ---- put the answer into the form (yellow = please check) ---- */
+  function mark(el){
+    if(!el) return; el.classList.add("br-read-hl");
+    var off = function(){ el.classList.remove("br-read-hl"); el.removeEventListener("input", off); el.removeEventListener("change", off); };
+    el.addEventListener("input", off); el.addEventListener("change", off);
+  }
+  function ev(el, name){ try{ el.dispatchEvent(new Event(name, {bubbles: true})); }catch(e){} }
+  function fill(r){
+    var got = [];
+    if(r.date){ var d = document.getElementById("b_date"); d.value = r.date; ev(d, "input"); ev(d, "change"); mark(d); got.push(T0("date", "تاریخ")); }
+    if(r.billNo){ var b = document.getElementById("b_billNo"); b.value = r.billNo; ev(b, "input"); mark(b); got.push(T0("bill no.", "بل نمبر")); }
+    if(r.vendor){
+      setSelectOrAddValue("b_vendorName", "b_vendorName_new", r.vendor);
+      var vs = document.getElementById("b_vendorName"); ev(vs, "change"); mark(vs);
+      var vn = document.getElementById("b_vendorName_new"); if(vn && vn.style.display !== "none") mark(vn);
+      got.push(T0("party", "پارٹی"));
+    }
+    if(r.amount){ var g = document.getElementById("b_gross"); g.value = String(r.amount); ev(g, "input"); mark(g); got.push(T0("amount", "رقم")); }
+    return got;
+  }
+  function knownVendors(){
+    var set = {}, out = [];
+    (STATE.bills || []).forEach(function(b){ var n = String(b.vendorName || "").trim(); if(n && !set[n]){ set[n] = 1; out.push(n); } });
+    return out;
+  }
+  function show(text){
+    lastText = text; pre.textContent = text.trim() || T0("(nothing could be read)", "(کچھ پڑھا نہیں جا سکا)"); det.hidden = false;
+    aiBtn.hidden = !text.trim();
+  }
+  function finish(r, src){
+    var got = fill(r);
+    if(!got.length){ say("Nothing usable was found in this picture. Try a clearer photo, tick “Bill has Urdu writing”, or press “Ask AI to read it”.", "اس تصویر سے کچھ کام کا نہیں ملا۔ صاف تصویر لیں، “بل پر اردو لکھی ہے” پر نشان لگائیں، یا “AI سے پڑھوائیں” دبائیں۔", "warn"); return; }
+    var miss = []; if(!r.date) miss.push(T0("date", "تاریخ")); if(!r.billNo) miss.push(T0("bill no.", "بل نمبر")); if(!r.vendor) miss.push(T0("party", "پارٹی")); if(!r.amount) miss.push(T0("amount", "رقم"));
+    say((src === "ai" ? "AI read: " : "Read: ") + got.join(", ") + ". " + (miss.length ? "Not found: " + miss.join(", ") + ". " : "") + "Check the yellow fields, choose the head, then Save.",
+        (src === "ai" ? "AI نے پڑھا: " : "پڑھا گیا: ") + got.join("، ") + "۔ " + (miss.length ? "نہیں ملا: " + miss.join("، ") + "۔ " : "") + "پیلے خانے دیکھیں، ہیڈ چنیں، پھر محفوظ کریں۔", miss.length ? "warn" : "good");
+  }
+
+  fileEl.addEventListener("change", async function(){
+    var f = fileEl.files && fileEl.files[0]; fileEl.value = "";
+    if(!f || busy) return;
+    if(typeof billEditId !== "undefined" && billEditId){ say("Finish or cancel the bill you are editing first.", "پہلے جو بل ایڈٹ ہو رہا ہے اسے مکمل یا منسوخ کریں۔", "warn"); return; }
+    busy = true; aiBtn.hidden = true; det.hidden = true;
+    try{
+      var text = await readFile(f); show(text);
+      finish(P.parseBill(text, knownVendors()), "ocr");
+    }catch(e){
+      console.error(e); say("Could not read this file (" + (e.message || e) + "). Check the internet and try again, or type the bill by hand.", "یہ فائل پڑھی نہیں جا سکی (" + (e.message || e) + ")۔ انٹرنیٹ دیکھیں اور دوبارہ کوشش کریں، یا بل ہاتھ سے لکھیں۔", "bad");
+    }
+    busy = false;
+  });
+
+  aiBtn.addEventListener("click", async function(){
+    if(busy || !lastText.trim()) return;
+    if(!aiConsent){
+      if(!confirm(T0("The text read from this bill (nothing else) will be sent to the AI assistant, a free Google service that may use text to improve its products. Continue?", "اس بل سے پڑھا ہوا متن (اور کچھ نہیں) AI اسسٹنٹ کو بھیجا جائے گا، جو گوگل کی مفت سروس ہے اور متن اپنی مصنوعات بہتر بنانے میں استعمال کر سکتی ہے۔ جاری رکھیں؟"))) return;
+      aiConsent = true;
+    }
+    busy = true; aiBtn.disabled = true; say("Asking the AI assistant…", "AI اسسٹنٹ سے پوچھ رہا ہوں…");
+    try{
+      var tok = await firebase.auth().currentUser.getIdToken();
+      var q = "Below is the OCR text of a supplier's bill or invoice in Pakistan (it may contain mistakes). Extract: the bill date as YYYY-MM-DD (a date written 03/08/2026 means 3 August 2026, day first), the bill or invoice number, the supplier (party) name, and the total amount payable as a plain number. " +
+        "Use only what is in the text; never invent anything; use an empty string (or 0 for the amount) when something is not there. Reply with ONLY this JSON and nothing else: {\"date\":\"\",\"billNo\":\"\",\"party\":\"\",\"amount\":0}\n\nBILL TEXT:\n\"\"\"\n" + lastText.slice(0, 6000) + "\n\"\"\"";
+      var resp = await fetch(AI_URL, {method: "POST", headers: {"Content-Type": "application/json", "Authorization": "Bearer " + tok}, body: JSON.stringify({question: q})});
+      var j = {}; try{ j = await resp.json(); }catch(e){}
+      if(!resp.ok) throw new Error(j.error || ("HTTP " + resp.status));
+      var m = /\{[\s\S]*\}/.exec(j.answer || ""); if(!m) throw new Error(T0("the answer was not understood", "جواب سمجھ نہیں آیا"));
+      var o = JSON.parse(m[0]), dm = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(o.date || ""));
+      var amt = Number(String(o.amount || "").replace(/,/g, "")) || 0;
+      finish({date: dm ? o.date : "", billNo: String(o.billNo || "").trim().slice(0, 40), vendor: String(o.party || "").trim().slice(0, 80), amount: amt > 0 && amt < 1e9 ? amt : 0}, "ai");
+    }catch(e){
+      console.error(e); say("The AI assistant could not help (" + (e.message || e) + "). You can type the bill by hand.", "AI اسسٹنٹ مدد نہیں کر سکا (" + (e.message || e) + ")۔ آپ بل ہاتھ سے لکھ سکتے ہیں۔", "bad");
+    }
+    busy = false; aiBtn.disabled = false;
+  });
+  window.__brBillReader = {read: readFile, fill: fill, parse: function(t){ return P.parseBill(t, knownVendors()); }};
 })();
 
 
