@@ -20,14 +20,53 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
-<script src="lib/xlsx.full.min.js" onerror="var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';document.head.appendChild(s)"></script>
+<script>
+/* Speed (8 Nov 2026): the Excel and PDF helper libraries (about a third of the scripts) no longer hold up the first screen.
+   - Excel (SheetJS): starts loading by itself in the background as soon as the page has been read (not before),
+     trying this site's own copy first, then two public copies. Every Excel button works as before once it is there.
+   - PDF (html2canvas + jsPDF): loaded only when a PDF is actually made (see buildPdfFromElement).
+   window.__brLoadXlsx() and window.__brLoadPdfLibs() return a Promise that resolves true when ready. */
+(function(){
+  var XSRC = ["lib/xlsx.full.min.js", "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js", "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"];
+  var H2C = ["https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js", "https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"];
+  var PDF = ["https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js", "https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"];
+  var P = {};
+  function add(src){
+    return new Promise(function(res, rej){
+      var s = document.createElement("script"); s.src = src; s.async = true;
+      s.onload = function(){ res(); }; s.onerror = function(){ try{ s.remove(); }catch(e){} rej(new Error("load failed")); };
+      document.head.appendChild(s);
+    });
+  }
+  function firstOk(srcs, ok){
+    return new Promise(function(res){
+      var i = 0;
+      (function next(){
+        if(ok()) return res(true);
+        if(i >= srcs.length) return res(false);
+        add(srcs[i++]).then(function(){ if(ok()) res(true); else next(); }, next);
+      })();
+    });
+  }
+  function once(key, srcs, ok){
+    if(ok()) return Promise.resolve(true);
+    if(!P[key]) P[key] = firstOk(srcs, ok).then(function(v){ if(!v) P[key] = null; return v; });
+    return P[key];
+  }
+  var okX = function(){ return !!(window.XLSX && window.XLSX.utils); };
+  var okH = function(){ return typeof window.html2canvas === "function"; };
+  var okP = function(){ return !!((window.jspdf && window.jspdf.jsPDF) || window.jsPDF); };
+  window.__brLoadXlsx = function(){ return once("x", XSRC, okX); };
+  window.__brLoadPdfLibs = function(){ return Promise.all([once("h", H2C, okH), once("p", PDF, okP)]).then(function(a){ return a[0] && a[1]; }); };
+  function startX(){ window.__brLoadXlsx(); }
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", startX); else startX();
+})();
+</script>
 <!-- html2pdf.js 0.10.1 has a bug in this app's environment: its internal wrapper around
      html2canvas comes back with a 0-height canvas, so every PDF it builds is a blank page
      (confirmed by direct testing on cmpofficepgp.org — see case-entry.html / downloadCurrentViewAsPdf
      for the full diagnosis). html2canvas and jsPDF loaded separately here and combined by hand
      in downloadCurrentViewAsPdf() instead. -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><script src="https://cmpofficepgp.org/camp-office-suite/camp-activity.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-check-compat.js"></script><script src="/app-check.js"></script><!-- Sends the super-admin security code by email (see "Super Admin Email OTP Gate" below) -->
@@ -7581,6 +7620,13 @@ function fixUnsupportedColors(doc){
   }
 }
 function buildPdfFromElement(target, filename, marginMm, jsPdfFormat, jsPdfOrientation, html2canvasOpts){
+  /* the PDF libraries are loaded on first use (8 Nov 2026), not at page start */
+  if(typeof window.html2canvas !== "function" || !((window.jspdf && window.jspdf.jsPDF) || window.jsPDF)){
+    return window.__brLoadPdfLibs().then(function(ok){
+      if(!ok) throw new Error("The PDF helper could not be loaded. Check the internet connection and try again.");
+      return buildPdfFromElement(target, filename, marginMm, jsPdfFormat, jsPdfOrientation, html2canvasOpts);
+    });
+  }
   var opts = Object.assign({scale:2, useCORS:true, logging:false, onclone:function(d){ try{ fixUnsupportedColors(d); }catch(e){ console.warn("colour fix skipped:", e); } }}, html2canvasOpts || {});
   return html2canvas(target, opts).then(function(canvas){
     var JsPDFCtor = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
