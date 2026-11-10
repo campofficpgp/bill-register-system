@@ -12308,7 +12308,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(!bs.length){ toast("Tick the bills first"); return; }
     if(!window.__brExportTables){ toast("The export tools are not ready — reload the page"); return; }
     var one = bs.length === 1, base = "ArrearsStatement_" + (one ? String(bs[0].name || "").replace(/[^A-Za-z0-9]+/g, "-") : bs.length + "-employees");
-    await window.__brExportTables(kind, stmtTables(bs), {title: "Statement of Due and Drawn (Arrears)", sub: bs.map(function(b){ return b.name; }).join(", "), base: base, landscape: true, office: "", paper: ((document.getElementById("globalPaperSize") || {}).value === "A4" ? "Legal" : (document.getElementById("globalPaperSize") || {}).value) || "Legal"});
+    await window.__brExportTables(kind, stmtTables(bs), {title: "Statement of Due and Drawn (Arrears)", sub: bs.map(function(b){ return b.name; }).join(", "), base: base, landscape: true, office: "", paper: "A4"});
   }
 
   /* ---------- the covering letter (Word / PDF) ---------- */
@@ -12663,7 +12663,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   async function exportRec(kind){
     if(!window.__brExportTables){ toast("The export tools are not ready — reload the page"); return; }
     var gp = document.getElementById("globalPaperSize") || {};
-    await window.__brExportTables(kind, tables(), {title: "Option Record — Basic Pay Scales 2022 / 2026", sub: "Last date for the option: " + dLabel(lastDay()), base: "OptionRecord_PayScales2026", landscape: true, office: "", paper: (gp.value === "A4" ? "Legal" : gp.value) || "Legal"});
+    await window.__brExportTables(kind, tables(), {title: "Option Record — Basic Pay Scales 2022 / 2026", sub: "Last date for the option: " + dLabel(lastDay()), base: "OptionRecord_PayScales2026", landscape: true, office: "", paper: "A4"});
   }
 
   function setRec(id, f, v){
@@ -13098,7 +13098,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   }
   function sheetsOf(fs){ var out = []; fs.forEach(function(f){ fill(f); out = out.concat(allSheets(f, false)); }); return out; }
   function docHtml(sheets, word, paperKey){
-    var css = PAPER_CSS + "body{ margin:0; background:#fff; } .pg{ page-break-after:always; } .pg:last-child{ page-break-after:auto; } .pp{ margin:0; } @page{ size:" + (paperKey === "Legal" ? "legal landscape" : "A4 landscape") + "; margin:3mm; } @media print{ .pp{ zoom:" + (paperKey === "Legal" ? "1.0" : "0.97") + "; } }";
+    var css = PAPER_CSS + "body{ margin:0; background:#fff; } .pg{ page-break-after:always; } .pg:last-child{ page-break-after:auto; } .pp{ margin:0 auto; } @page{ size:" + (paperKey === "Legal" ? "legal landscape" : "A4 landscape") + "; margin:6mm; } @media print{ .pp{ zoom:" + (paperKey === "Legal" ? "1.0" : "0.93") + "; } }";
     return "<!doctype html><html><head><meta charset='utf-8'><title>PAY02</title><style>" + css + "</style></head><body>" + sheets.map(function(s){ return "<div class='pg'>" + s + "</div>"; }).join("") + "</body></html>";
   }
   function dlBlob(blob, name){ var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 1500); }
@@ -13196,7 +13196,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var doc = new D.Document({creator: "", title: "PAY02 Amendment Form", sections: [{properties: {page: {size: {width: PWd[0], height: PWd[1], orientation: D.PageOrientation.LANDSCAPE}, margin: {top: MG, bottom: MG, left: MG, right: MG}}}, children: children}]});
     return await D.Packer.toBlob(doc);
   }
-  function paperKey(){ var gp = document.getElementById("globalPaperSize") || {}; return gp.value === "Legal" ? "Legal" : "A4"; }
+  function paperKey(){ return "A4"; } /* the PAY02 form is drawn for an A4 landscape sheet; a Legal-size file printed on A4 paper was cut off at the edge */
   async function exportForms(kind){
     var fs = view === "edit" && forms()[cur] ? [forms()[cur]] : Object.keys(sel).filter(function(k){ return sel[k] && forms()[k]; }).map(function(k){ return forms()[k]; });
     if(!fs.length){ toast("Tick the forms first"); return; }
@@ -13207,7 +13207,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       if(kind === "pdf"){ dlBlob(new Blob([await pdfSheets(fs, paperKey())], {type: "application/pdf"}), base + ".pdf"); return; }
       if(kind === "excel"){
         if(!window.__brExportTables){ toast("The export tools are not ready — reload the page"); return; }
-        await window.__brExportTables("excel", tables(fs), {title: "Payroll System Amendment Form — PAY02", sub: fs.map(function(f){ return f.name; }).join(", "), base: base.replace(/_\d{4}-\d{2}-\d{2}$/, ""), landscape: true, office: "", paper: "Legal"});
+        await window.__brExportTables("excel", tables(fs), {title: "Payroll System Amendment Form — PAY02", sub: fs.map(function(f){ return f.name; }).join(", "), base: base.replace(/_\d{4}-\d{2}-\d{2}$/, ""), landscape: true, office: "", paper: "A4"});
       }
     }catch(err){ console.error(err); toast("Could not make the file: " + (err && err.message || err)); }
   }
@@ -13445,7 +13445,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
 
   /* ---------- preview / print ---------- */
   function htmlTables(tables, title, sub, land){
-    var h = "<!doctype html><html><head><meta charset='utf-8'><style>body{font:12px Arial,sans-serif;margin:14px;color:#000}h1{font-size:16px;margin:0 0 2px}.sub{color:#444;margin:0 0 8px}h2{font-size:13px;margin:14px 0 4px}table{border-collapse:collapse;width:100%;margin-bottom:6px}th,td{border:1px solid #444;padding:3px 6px;vertical-align:top}th{background:#e8edf3}td.n{text-align:right}tfoot td{font-weight:bold;background:#f3f3f3}.pb{page-break-before:always}@page{size:" + (land ? "legal landscape" : "A4") + ";margin:8mm}</style></head><body><h1>" + esc(title) + "</h1><div class='sub'>" + esc(sub || "") + "</div>";
+    var h = "<!doctype html><html><head><meta charset='utf-8'><style>body{font:12px Arial,sans-serif;margin:14px;color:#000}h1{font-size:16px;margin:0 0 2px}.sub{color:#444;margin:0 0 8px}h2{font-size:13px;margin:14px 0 4px}table{border-collapse:collapse;width:100%;margin-bottom:6px}th,td{border:1px solid #444;padding:3px 6px;vertical-align:top}th{background:#e8edf3}td.n{text-align:right}tfoot td{font-weight:bold;background:#f3f3f3}.pb{page-break-before:always}@page{size:" + (land ? "A4 landscape" : "A4") + ";margin:10mm}</style></head><body><h1>" + esc(title) + "</h1><div class='sub'>" + esc(sub || "") + "</div>";
     tables.forEach(function(t, ti){
       h += ((t.title || t.sheet) === title ? "" : "<h2" + (t.pageBreak && ti ? " class='pb'" : "") + ">" + esc(t.title || t.sheet || "") + "</h2>") + "<table><thead><tr>" + t.heads.map(function(x, i){ return "<th" + (t.num && t.num[i] ? " style='text-align:right'" : "") + ">" + esc(x) + "</th>"; }).join("") + "</tr></thead><tbody>";
       var row = function(r){ return "<tr>" + r.cells.map(function(c, i){ return "<td" + ((r.nums || t.num || [])[i] ? " class='n'" : "") + ">" + esc(c) + "</td>"; }).join("") + "</tr>"; };
@@ -14943,7 +14943,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var m = lastModel; if(!m || m.empty){ toast("Nothing to export yet"); return; }
     if(!window.__brExportTables){ toast("The export tools are not ready — reload the page"); return; }
     var x = expTables(m);
-    await window.__brExportTables(kind, x.tables, {title: x.title, sub: x.sub, base: x.base, landscape: true, office: "", paper: ((document.getElementById("globalPaperSize") || {}).value === "A4" ? "Legal" : (document.getElementById("globalPaperSize") || {}).value) || "Legal"});
+    await window.__brExportTables(kind, x.tables, {title: x.title, sub: x.sub, base: x.base, landscape: true, office: "", paper: "A4"});
   }
 
   /* ---------- edit actions ---------- */
