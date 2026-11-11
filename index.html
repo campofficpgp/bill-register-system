@@ -7558,7 +7558,7 @@ function printCurrentView(){
   // whole month fits on the page width, regardless of the paper size chosen above. Other
   // panels are unaffected (orientation style is cleared for them).
   ensureAttPrintOrientationStyleEl().textContent =
-    (!payslipOpen && ["attendance","employees","bill","cash","stock","ledger"].indexOf(currentPanelKey())!==-1) ? "@media print{ @page{ size: landscape; } }" : "";
+    (!payslipOpen && ["attendance","employees","bill","cash","stock","ledger"].indexOf(currentPanelKey())!==-1) ? "@media print{ @page{ size: " + ({Legal:"14in 8.5in", Foolscap:"13in 8.5in"}[window.brBoxPaper()] || "A4 landscape") + "; } }" : "";
   window.print();
 }
 window.addEventListener("afterprint", function(){ document.body.classList.remove("payslip-mode"); });
@@ -13134,7 +13134,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   }
   function sheetsOf(fs){ var out = []; fs.forEach(function(f){ fill(f); out = out.concat(allSheets(f, false)); }); return out; }
   function docHtml(sheets, word, paperKey){
-    var css = PAPER_CSS + "body{ margin:0; background:#fff; } .pg{ page-break-after:always; } .pg:last-child{ page-break-after:auto; } .pp{ margin:0 auto; } @page{ size:" + (paperKey === "Legal" ? "14in 8.5in" : paperKey === "Foolscap" ? "13in 8.5in" : "A4 landscape") + "; margin:6mm; } @media print{ .pp{ zoom:" + (paperKey === "Legal" ? "0.98" : paperKey === "Foolscap" ? "0.96" : "0.93") + "; } }";
+    var css = PAPER_CSS + "body{ margin:0; background:#fff; } .pg{ page-break-after:always; } .pg:last-child{ page-break-after:auto; } .pp{ margin:0 auto; } @page{ size:" + (paperKey === "Legal" ? "14in 8.5in" : paperKey === "Foolscap" ? "13in 8.5in" : "A4 landscape") + "; margin:8mm; } @media print{ .pp{ zoom:" + (paperKey === "Legal" ? "0.98" : paperKey === "Foolscap" ? "0.96" : "0.93") + "; } }";
     return "<!doctype html><html><head><meta charset='utf-8'><title>PAY02</title><style>" + css + "</style></head><body>" + sheets.map(function(s){ return "<div class='pg'>" + s + "</div>"; }).join("") + "</body></html>";
   }
   function dlBlob(blob, name){ var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 1500); }
@@ -13492,7 +13492,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   }
   function htmlBlocks(B, rtl){
     var fam = rtl ? "'Noto Nastaliq Urdu','Jameel Noori Nastaleeq','Urdu Typesetting','Segoe UI',serif" : "'Times New Roman',serif";
-    var h = "<!doctype html><html dir='" + (rtl ? "rtl" : "ltr") + "'><head><meta charset='utf-8'><style>body{font:14px/1.6 " + fam + ";margin:0;padding:22mm 20mm;color:#000}p{margin:0 0 8px;white-space:pre-wrap}table{border-collapse:collapse;width:100%;margin:8px 0}th,td{border:1px solid #333;padding:4px 6px}th{background:#eee}tfoot td{font-weight:bold}.hl{background:#ff0}@page{size:A4;margin:0}</style></head><body>";
+    var h = "<!doctype html><html dir='" + (rtl ? "rtl" : "ltr") + "'><head><meta charset='utf-8'><style>body{font:14px/1.6 " + fam + ";margin:0;padding:22mm 20mm;color:#000}p{margin:0 0 8px;white-space:pre-wrap}table{border-collapse:collapse;width:100%;margin:8px 0}th,td{border:1px solid #333;padding:4px 6px}th{background:#eee}tfoot td{font-weight:bold}.hl{background:#ff0}@page{size:" + ({Legal: "8.5in 14in", Foolscap: "8.5in 13in"}[window.brBoxPaper()] || "A4") + ";margin:0}</style></head><body>";
     B.forEach(function(b){
       if(b.t === "p"){
         var st = "text-align:" + (b.al || "justify") + ";"; if(b.after != null) st += "margin-bottom:" + Math.round(b.after / 15) + "px;"; if(b.before) st += "margin-top:" + Math.round(b.before / 15) + "px;"; if(b.ind) st += (rtl ? "margin-right:" : "margin-left:") + Math.round(b.ind / 15) + "px;";
