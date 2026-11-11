@@ -7690,7 +7690,7 @@ function downloadCurrentViewAsPdf(paperSizeKey){
     btns.forEach(function(b){ b.disabled = false; });
   });
 }
-document.getElementById("globalPaperSize").addEventListener("change", function(){ setPageSize(this.value); try{ localStorage.setItem("br_paper", this.value); }catch(e){} });
+document.getElementById("globalPaperSize").addEventListener("change", function(){ setPageSize(this.value); try{ localStorage.setItem("br_paper", this.value); localStorage.setItem("br_paper2", this.value); }catch(e){} });
 document.getElementById("globalPrintBtn").addEventListener("click", printCurrentView);
 document.getElementById("globalPdfBtn").addEventListener("click", function(){
   downloadCurrentViewAsPdf(document.getElementById("globalPaperSize").value);
@@ -7853,7 +7853,7 @@ document.getElementById("repHeadsSaveBtn").addEventListener("click", function(){
 });
 
 document.getElementById("uiLangSelect").addEventListener("change", function(){ applyUILang(this.value); });
-(function(){ var pv = "A4"; try{ pv = localStorage.getItem("br_paper") || "A4"; }catch(e){} if(pv !== "A4" && pv !== "Legal" && pv !== "Foolscap") pv = "A4"; var gs = document.getElementById("globalPaperSize"); if(gs) gs.value = pv; setPageSize(pv); })();
+(function(){ var pv = "Legal"; try{ pv = localStorage.getItem("br_paper2") || "Legal"; }catch(e){} if(pv !== "A4" && pv !== "Legal" && pv !== "Foolscap") pv = "Legal"; var gs = document.getElementById("globalPaperSize"); if(gs) gs.value = pv; setPageSize(pv); })();
 
 /* ================= PAY SLIP ================= */
 var I18N = {
