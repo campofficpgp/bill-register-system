@@ -1609,6 +1609,7 @@ body.lang-ur .br-part{ font-size:17px; }
         <select id="ps_mode"><option value="single" data-i18n="ps_singleMonth">Single month</option><option value="year" data-i18n="ps_fullFY">Full financial year</option></select>
       </div>
       <div class="field" id="ps_monthField"><label data-i18n="ps_month">Month</label><input type="month" id="ps_month"></div>
+      <div id="ps_slipFields" style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;"><div class="field" style="width:112px;"><label>DDO code · ڈی ڈی او کوڈ</label><input type="text" id="ps_slipDdo" placeholder="RI004720" maxlength="12" title="Leave empty for RI004720. Any other code keeps this slip out of the RI004720 totals (BM-26, monthly statement, ledger match)."></div><div class="field" style="width:64px;"><label>BPS</label><input type="text" id="ps_slipBps" maxlength="2" title="Leave empty to use the employee record"></div><div class="field" style="width:150px;"><label>Designation · عہدہ</label><input type="text" id="ps_slipDesig" title="Leave empty to use the employee record"></div></div>
       <div class="field" id="ps_fyField" style="display:none;"><label data-i18n="ps_financialYear">Financial Year</label><select id="ps_fy"></select></div>
       <div class="field" id="ps_incField" style="display:none;width:130px;"><label data-i18n="ps_annualIncrement">Annual increment %</label><input type="number" step="0.01" id="ps_incPercent" value="0"></div>
       <div class="field" id="ps_incMonthField" style="display:none;"><label data-i18n="ps_incrementFrom">Increment effective from</label><select id="ps_incMonth"></select></div>
@@ -8032,6 +8033,8 @@ var SLIP_LABELS = {
       rupees:"* تمام رقوم پاکستانی روپوں میں ہیں"}
 };
 var SLIP_DDO = "RI004720";
+/* a slip whose own DDO code is not RI004720 (e.g. a month drawn on RI004369) is kept in the record but stays out of every RI004720 total */
+function slipIsMain(sl){ return !sl || !sl.ddo || String(sl.ddo).toUpperCase().replace(/[^A-Z0-9]/g, "").replace(/^RI0*/, "") === "4720"; }
 function stmtTable(rows, section, e, monthVal, t, L){
   var addTxt = section==="earnings"? "+ Add earnings row" : "+ Add deduction row";
   return "<table class='payslip-table stmt'><thead><tr><th colspan='2'>"+L.wage+"</th><th class='num'>"+t.amount+"</th><th colspan='2'>"+L.wage+"</th><th class='num'>"+t.amount+"</th></tr></thead>"+
@@ -8057,9 +8060,9 @@ function buildEditableSlipHtml(e, monthVal, lang, incPercent, incFromVal){
     "<div class='ps-row'><span>"+L.persNo+": "+v("persNo", e.persNo)+"</span><span>"+L.cnic+": "+esc(cnicDisplay)+"</span></div>"+
     "<div class='ps-row'><span>"+L.dob+": "+esc(e.dob)+"</span><span>"+L.los+": "+esc(e.serviceLength)+"</span></div>"+
     "<div class='ps-sec'>"+L.empCat+": "+esc(e.status)+"</div>"+
-    "<div class='ps-row'><span>"+L.desig+": "+v("desig", e.designation)+"</span><span>"+esc(e.department)+"</span></div>"+
-    "<div class='ps-row'><span>"+L.ddo+": "+SLIP_DDO+"</span></div>"+
-    "<div class='ps-row'><span>"+L.gpf+": "+esc(e.gpf)+"</span><span>"+L.bps+": "+v("bps", e.bps)+"</span></div>"+
+    "<div class='ps-row'><span>"+L.desig+": "+v("desig", slip.desig || e.designation)+"</span><span>"+esc(e.department)+"</span></div>"+
+    "<div class='ps-row'><span>"+L.ddo+": "+esc(slip.ddo || SLIP_DDO)+"</span></div>"+
+    "<div class='ps-row'><span>"+L.gpf+": "+esc(e.gpf)+"</span><span>"+L.bps+": "+v("bps", slip.bps || e.bps)+"</span></div>"+
     "<div class='ps-sec'>"+L.payAllow+"</div>"+
     stmtTable(slip.earnings, "earnings", e, monthVal, t, L)+
     "<div class='ps-sec'>"+L.dedGen+"</div>"+
@@ -8095,6 +8098,14 @@ function renderPaySlip(){
   }
   paper.className = "payslip-paper" + (rtl? " rtl":"");
   paper.setAttribute("dir", rtl? "rtl":"ltr");
+  var sf = document.getElementById("ps_slipFields");
+  if(sf){
+    sf.style.display = mode==="year"? "none" : "flex";
+    if(mode!=="year"){
+      var cs = (STATE.payslipData[e.id] || {})[document.getElementById("ps_month").value] || {};
+      document.getElementById("ps_slipDdo").value = cs.ddo || ""; document.getElementById("ps_slipBps").value = cs.bps || ""; document.getElementById("ps_slipDesig").value = cs.desig || "";
+    }
+  }
 }
 
 /* live edits: update the data model + on-screen totals without rebuilding the whole page (keeps focus/cursor in place) */
@@ -8185,6 +8196,17 @@ document.getElementById("ps_fy").addEventListener("change", function(){ populate
 document.getElementById("ps_incPercent").addEventListener("change", renderPaySlip);
 document.getElementById("ps_incMonth").addEventListener("change", renderPaySlip);
 document.getElementById("ps_month").addEventListener("change", renderPaySlip);
+["ps_slipDdo", "ps_slipBps", "ps_slipDesig"].forEach(function(fid){
+  document.getElementById(fid).addEventListener("change", function(){
+    if(!tabOK("em")){ renderPaySlip(); return; }
+    var overlay = document.getElementById("payslipOverlay"), e = STATE.employees.find(function(x){ return x.id===overlay.dataset.empId; }), mv = document.getElementById("ps_month").value;
+    if(!e || !mv) return;
+    var slip = ensureSlipData(e.id, mv, e.bps, 0, null), k = fid==="ps_slipDdo"? "ddo" : fid==="ps_slipBps"? "bps" : "desig", val = this.value.trim();
+    if(k==="ddo") val = val.toUpperCase().replace(/\s+/g, "");
+    if(val) slip[k] = val; else delete slip[k];
+    saveData(); renderPaySlip(); toast("Saved for this slip.");
+  });
+});
 document.getElementById("ps_lang").addEventListener("change", renderPaySlip);
 document.getElementById("ps_paperSize").addEventListener("change", function(){ setPageSize(this.value); });
 document.getElementById("ps_printBtn").addEventListener("click", function(){
@@ -9455,7 +9477,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   function isSalaryHead(label){ return /^A01/.test(label || ""); }
   function slipMonthsSet(){
     var set = {}, ps = (STATE.payslipData || {});
-    Object.keys(ps).forEach(function(id){ Object.keys(ps[id] || {}).forEach(function(m){ var sl = ps[id][m]; if(sl && ((sl.earnings || []).length)) set[m] = 1; }); });
+    Object.keys(ps).forEach(function(id){ Object.keys(ps[id] || {}).forEach(function(m){ var sl = ps[id][m]; if(sl && ((sl.earnings || []).length) && slipIsMain(sl)) set[m] = 1; }); });
     return set;
   }
   function fyStartYm(fy){ return fy.slice(0, 4) + "-07"; }
@@ -9495,7 +9517,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     Object.keys(ps).forEach(function(id){
       var e = empById[id] || {id:id, name:"(unknown employee)", bps:"", designation:"", persNo:""};
       Object.keys(ps[id] || {}).forEach(function(ymk){
-        var sl = ps[id][ymk]; if(!sl || ymk < fyStart || ymk > mk) return;
+        var sl = ps[id][ymk]; if(!sl || ymk < fyStart || ymk > mk || !slipIsMain(sl)) return;
         (sl.earnings || []).forEach(function(x){
           var code = slipCode(x.desc, e.bps), lab = code ? headByCode(heads, code) : null;
           if(!lab){ lab = "(Unmapped: " + x.desc + ")"; unmapped[lab] = 1; }
@@ -10754,7 +10776,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     Object.keys(ps).forEach(function(id){
       var e = emps[id] || {};
       Object.keys(ps[id] || {}).forEach(function(mk){
-        var sl = ps[id][mk]; if(!sl || !(sl.earnings || []).length) return;
+        var sl = ps[id][mk]; if(!sl || !(sl.earnings || []).length || !slipIsMain(sl)) return;
         slipSet[mk] = 1; reg.salMonthHasData[mk] = true;
         (sl.earnings || []).forEach(function(x){
           var code = slipCode(x.desc, e.bps);
@@ -13803,10 +13825,10 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
 
   /* ---------- state of the screen ---------- */
   var month = "", editing = false, work = null, hist = [], redoS = [], dirty = false, resetArm = 0, showSens = false, lastModel = null, lastState = null;
-  function slipOf(e, mk){ var p = STATE.payslipData && STATE.payslipData[e.id]; return p && p[mk]; }
+  function slipOf(e, mk){ var p = STATE.payslipData && STATE.payslipData[e.id], sl = p && p[mk]; return slipIsMain(sl) ? sl : undefined; }
   function months(){
     var set = {}, ps = STATE.payslipData || {};
-    Object.keys(ps).forEach(function(id){ Object.keys(ps[id] || {}).forEach(function(m){ if(/^\d{4}-\d{2}$/.test(m) && ps[id][m] && (ps[id][m].earnings || []).length) set[m] = (set[m] || 0) + 1; }); });
+    Object.keys(ps).forEach(function(id){ Object.keys(ps[id] || {}).forEach(function(m){ if(/^\d{4}-\d{2}$/.test(m) && ps[id][m] && (ps[id][m].earnings || []).length && slipIsMain(ps[id][m])) set[m] = (set[m] || 0) + 1; }); });
     return set;
   }
   function pickMonth(){
