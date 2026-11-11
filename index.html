@@ -1610,6 +1610,7 @@ body.lang-ur .br-part{ font-size:17px; }
       </div>
       <div class="field" id="ps_monthField"><label data-i18n="ps_month">Month</label><input type="month" id="ps_month"></div>
       <div id="ps_slipFields" style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;"><div class="field" style="width:112px;"><label>DDO code · ڈی ڈی او کوڈ</label><input type="text" id="ps_slipDdo" placeholder="RI004720" maxlength="12" title="Leave empty for RI004720. Any other code keeps this slip out of the RI004720 totals (BM-26, monthly statement, ledger match)."></div><div class="field" style="width:64px;"><label>BPS</label><input type="text" id="ps_slipBps" maxlength="2" title="Leave empty to use the employee record"></div><div class="field" style="width:150px;"><label>Designation · عہدہ</label><input type="text" id="ps_slipDesig" title="Leave empty to use the employee record"></div></div>
+      <div class="field" style="justify-content:flex-end;"><label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;white-space:nowrap;"><input type="checkbox" id="ps_showStage"> Pay stage · پے اسٹیج</label></div>
       <div class="field" id="ps_fyField" style="display:none;"><label data-i18n="ps_financialYear">Financial Year</label><select id="ps_fy"></select></div>
       <div class="field" id="ps_incField" style="display:none;width:130px;"><label data-i18n="ps_annualIncrement">Annual increment %</label><input type="number" step="0.01" id="ps_incPercent" value="0"></div>
       <div class="field" id="ps_incMonthField" style="display:none;"><label data-i18n="ps_incrementFrom">Increment effective from</label><select id="ps_incMonth"></select></div>
@@ -8047,6 +8048,13 @@ function buildEditableSlipHtml(e, monthVal, lang, incPercent, incFromVal){
   var monthTitle = lang==="ur"? monthLabel : monthLabel.replace(/\s+/g, "-");
   var slip = ensureSlipData(e.id, monthVal, e.bps, incPercent, incFromVal);
   var totals = slipTotals(slip);
+  var stageTxt = "", stBox = document.getElementById("ps_showStage");
+  if(stBox && stBox.checked && window.__brPayFix && window.__brPayFix.stageOf){
+    var bn = parseInt(String(slip.bps || e.bps || "").replace(/\D/g, ""), 10), basicAmt = 0;
+    (slip.earnings || []).forEach(function(r){ if(/^basic pay/i.test(String(r.desc || "").trim())) basicAmt += Number(r.amount) || 0; });
+    var stg = (bn && basicAmt) ? window.__brPayFix.stageOf(bn, basicAmt, monthVal >= "2026-07") : null;
+    stageTxt = " &nbsp;·&nbsp; " + (lang==="ur"? "اسٹیج" : "Pay Stage") + ": " + (stg == null? "—" : stg);
+  }
 
   var showSensitive = isSuperAdmin() && document.getElementById("ef_showSensitive") && document.getElementById("ef_showSensitive").checked;
   var cnicDisplay = showSensitive? empCnic(e) : maskValue(empCnic(e));
@@ -8062,7 +8070,7 @@ function buildEditableSlipHtml(e, monthVal, lang, incPercent, incFromVal){
     "<div class='ps-sec'>"+L.empCat+": "+esc(e.status)+"</div>"+
     "<div class='ps-row'><span>"+L.desig+": "+v("desig", slip.desig || e.designation)+"</span><span>"+esc(e.department)+"</span></div>"+
     "<div class='ps-row'><span>"+L.ddo+": "+esc(slip.ddo || SLIP_DDO)+"</span></div>"+
-    "<div class='ps-row'><span>"+L.gpf+": "+esc(e.gpf)+"</span><span>"+L.bps+": "+v("bps", slip.bps || e.bps)+"</span></div>"+
+    "<div class='ps-row'><span>"+L.gpf+": "+esc(e.gpf)+"</span><span>"+L.bps+": "+v("bps", slip.bps || e.bps)+stageTxt+"</span></div>"+
     "<div class='ps-sec'>"+L.payAllow+"</div>"+
     stmtTable(slip.earnings, "earnings", e, monthVal, t, L)+
     "<div class='ps-sec'>"+L.dedGen+"</div>"+
@@ -8196,6 +8204,11 @@ document.getElementById("ps_fy").addEventListener("change", function(){ populate
 document.getElementById("ps_incPercent").addEventListener("change", renderPaySlip);
 document.getElementById("ps_incMonth").addEventListener("change", renderPaySlip);
 document.getElementById("ps_month").addEventListener("change", renderPaySlip);
+(function(){
+  var c = document.getElementById("ps_showStage"); if(!c) return;
+  try{ c.checked = localStorage.getItem("br_ps_stage") === "1"; }catch(e){}
+  c.addEventListener("change", function(){ try{ localStorage.setItem("br_ps_stage", c.checked? "1" : "0"); }catch(e){} renderPaySlip(); });
+})();
 ["ps_slipDdo", "ps_slipBps", "ps_slipDesig"].forEach(function(fid){
   document.getElementById(fid).addEventListener("change", function(){
     if(!tabOK("em")){ renderPaySlip(); return; }
