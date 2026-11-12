@@ -9612,7 +9612,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   function histOf(m){ var h = STATE.stmtData && STATE.stmtData.hist; return (h && h[m]) || null; }
 
   /* ---- the numbers ---- */
-  function compute(mk){
+  function compute(mk, opt){
     var start = mk + "-01", end = mk + "-31", fy = fyOfDate(start), fyStart = fyStartYm(fy), prevMk = shiftYm(mk, -1);
     var heads = getHeads(fy);
     var billsAll = STATE.bills || [], cashAll = STATE.cash || [];
@@ -9678,6 +9678,24 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       var g = num(b.gross);
       if(b.date < start) row(hd).upto += g; else if(b.date <= end) row(hd).month += g;
     });
+    /* Monthly Report only (opt.ao): once the Account Office figures of this month are saved, the contingent heads follow the Account Office month and
+       progressive figures (the Account Office counts a bill in the month it passes it). The bills themselves are never changed. */
+    var aoBasis = false;
+    if(opt && opt.ao){
+      var aoR = STATE.stmtData && STATE.stmtData.months && STATE.stmtData.months[mk], aoM = aoR && aoR.ao;
+      var aoCodes = aoM ? Object.keys(aoM).filter(function(c){ var a = aoM[c] || {}; return !/^A01/.test(c) && ((a.month != null && a.month !== "") || (a.prog != null && a.prog !== "")); }) : [];
+      if(aoCodes.length){
+        aoBasis = true;
+        Object.keys(rowsBy).forEach(function(h){ rowsBy[h].billMonth = rowsBy[h].month; });
+        aoCodes.forEach(function(c){
+          var lab = headByCode(heads, c); if(!lab) return;
+          var r = row(lab), a = aoM[c], hasM = a.month != null && a.month !== "", hasP = a.prog != null && a.prog !== "";
+          if(r.billMonth == null) r.billMonth = r.month;
+          var mo = hasM ? num(a.month) : r.month;
+          r.month = mo; if(hasP) r.upto = num(a.prog) - mo;
+        });
+      }
+    }
     var bud = order.map(function(h){
       var r = rowsBy[h]; r.total = r.upto + r.month; r.remain = r.budget - r.total;
       r.pct = r.budget > 0 ? (r.total / r.budget * 100) : null; return r;
@@ -9706,7 +9724,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       r.rec += num(c.receipt); r.pay += num(c.payment); rec += num(c.receipt); pay += num(c.payment);
     });
     return {mk:mk, start:start, fy:fy, sal:sal, empRows:empRows, dedBy:dedBy, uptoOK:uptoOK, haveMonth:haveMonth, fromHist:fromHist, histMonths:histMonths, unmapped:Object.keys(unmapped),
-      bud:bud, billsM:billsM, byHead:byHead, byVendor:byVendor,
+      aoBasis:aoBasis, bud:bud, billsM:billsM, byHead:byHead, byVendor:byVendor,
       opening:opening, closing:opening + rec - pay, rec:rec, pay:pay, cashRows:cashRows, cashByHead:cashByHead};
   }
 
@@ -9728,32 +9746,37 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   function render(){
     var host = $("monthlyBody"); if(!host) return;
     var sel = $("m_month"), mk = sel && sel.value; if(!mk) return;
-    var d = compute(mk), html = "", L = ymLabel(mk);
+    var d = compute(mk, {ao:true}), html = "", L = ymLabel(mk);
     var billCount = d.billsM.length, gross = 0, ded = 0, net = 0;
     d.billsM.forEach(function(b){ gross += num(b.gross); ded += totalDed(b); net += netPayment(b); });
-    var sT = sumBud(d.sal), cT = sumBud(d.bud);
+    var sT = sumBud(d.sal), cT = sumBud(d.bud), histOnly = !d.empRows.length && d.fromHist;
     var eT = d.empRows.reduce(function(s, r){ return {gross:s.gross + r.gross, gpf:s.gpf + r.gpf, tax:s.tax + r.tax, other:s.other + r.other, ded:s.ded + r.ded, net:s.net + r.net}; }, {gross:0, gpf:0, tax:0, other:0, ded:0, net:0});
 
     $("monthlyChip").textContent = L + "  |  FY " + d.fy;
     $("monthlyStats").innerHTML =
-      statCardHtml("Salary (gross) — " + d.empRows.length + " employees", "Rs " + fmt(eT.gross)) +
-      statCardHtml("Salary net payable", "Rs " + fmt(eT.net)) +
-      statCardHtml("Contingent bills — " + billCount + " bills", "Rs " + fmt(gross)) +
-      statCardHtml("Contingent net paid to vendors", "Rs " + fmt(net)) +
+      (histOnly ? statCardHtml("Salary (gross) — as per Account Office", "Rs " + fmt(sT.month)) + statCardHtml("Salary net payable", "—")
+        : statCardHtml("Salary (gross) — " + d.empRows.length + " employees", "Rs " + fmt(eT.gross)) + statCardHtml("Salary net payable", "Rs " + fmt(eT.net))) +
+      (d.aoBasis ? statCardHtml("Contingent — Account Office figure of the month", "Rs " + fmt(cT.month)) : statCardHtml("Contingent bills — " + billCount + " bills", "Rs " + fmt(gross))) +
+      statCardHtml(d.aoBasis ? "Net paid to vendors (bills dated this month)" : "Contingent net paid to vendors", "Rs " + fmt(net)) +
       statCardHtml("Cash closing balance", "Rs " + fmt(d.closing), d.closing < 0) +
       statCardHtml("Contingent budget remaining", "Rs " + fmt(cT.remain), cT.remain < 0);
 
     /* summary */
     var sum = [
       ["Month", L], ["Financial year", d.fy],
-      ["PART 1 — SALARY: employees paid", d.empRows.length], ["Salary gross", eT.gross], ["Salary deductions (GPF, income tax, funds, loans)", eT.ded], ["Salary net payable", eT.net],
-      ["PART 2 — CONTINGENT: number of bills", billCount], ["Bills gross", gross], ["Bills deductions (IT, GST, PST, other)", ded], ["Net paid to vendors", net],
+      ["PART 1 — SALARY: employees paid", histOnly ? "—" : d.empRows.length], [histOnly ? "Salary gross (Account Office)" : "Salary gross", histOnly ? sT.month : eT.gross], ["Salary deductions (GPF, income tax, funds, loans)", histOnly ? "—" : eT.ded], ["Salary net payable", histOnly ? "—" : eT.net],
+    ].concat((d.aoBasis ? [
+        ["PART 2 — CONTINGENT: gross as per Account Office (this month)", cT.month], ["Bills dated in this month: number", billCount], ["Bills dated in this month: gross", gross],
+        ["Bills dated in this month: deductions (IT, GST, PST, other)", ded], ["Bills dated in this month: net paid to vendors", net]
+      ] : [
+        ["PART 2 — CONTINGENT: number of bills", billCount], ["Bills gross", gross], ["Bills deductions (IT, GST, PST, other)", ded], ["Net paid to vendors", net]
+      ]), [
       ["Cash book: opening balance on 1st of month (this financial year only)", d.opening], ["Cash book: receipts in month", d.rec], ["Cash book: payments in month", d.pay], ["Cash book: closing balance", d.closing],
       ["Salary heads: budget / spent to date", d.uptoOK ? fmt(sT.budget) + " / " + fmt(sT.total) : fmt(sT.budget) + " / —"],
       ["Contingent heads: budget / spent to date", fmt(cT.budget) + " / " + fmt(cT.total)],
       ["Contingent heads: budget remaining", cT.remain]
-    ];
-    html += card("Summary of the Month", "<span class='en'>All figures in Rs. Bills are counted by bill date; salary by pay-slip month.</span><span class='ur'>تمام رقوم روپوں میں۔ بل، بل کی تاریخ سے اور تنخواہ، پے سلپ کے مہینے سے شمار ہوتی ہے۔</span>",
+    ]);
+    html += card("Summary of the Month", "<span class='en'>All figures in Rs. Bills are counted by bill date; salary by pay-slip month.</span>"+(d.aoBasis ? "<span class='en'> <b>Contingent heads follow the Account Office figures of this month</b> (the Account Office counts a bill in the month it passes it); the bills themselves are not changed.</span>" : "")+"<span class='ur'>تمام رقوم روپوں میں۔ بل، بل کی تاریخ سے اور تنخواہ، پے سلپ کے مہینے سے شمار ہوتی ہے۔</span>",
       tbl(["Item", "Value"], [1], sum.map(function(r){ return "<tr>" + td(r[0]) + td(r[1], true) + "</tr>"; }).join("")));
 
     /* ================= PART 1 ================= */
@@ -9780,7 +9803,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     /* ================= PART 2 ================= */
     html += part("PART 2 — CONTINGENT EXPENSES (from vendors' bills, head-wise)", "حصہ 2 — کنٹنجنٹ اخراجات (وینڈرز کے بلوں سے، ہیڈ وار)");
     html += card("Part 2 — Contingent Heads: Budget vs Expenditure up to end of " + L,
-      "<span class='en'>Spent = gross of the bills dated July to this month. Ledger “Prior” figures are not used here.</span><span class='ur'>خرچ = جولائی سے اس مہینے تک کی تاریخ والے بلوں کی گراس رقم۔ لیجر کا Prior یہاں استعمال نہیں ہوتا۔</span>",
+      ""+(d.aoBasis ? "<span class='en'>Figures are those of the Account Office for this month and up to this month (bills are not changed). Bills dated in this month are listed below.</span><span class='ur'>اعداد اکاؤنٹ آفس کے ہیں (بل جوں کے توں ہیں)۔ اس مہینے کی تاریخ والے بل نیچے درج ہیں۔</span>" : "<span class='en'>Spent = gross of the bills dated July to this month. Ledger “Prior” figures are not used here.</span><span class='ur'>خرچ = جولائی سے اس مہینے تک کی تاریخ والے بلوں کی گراس رقم۔ لیجر کا Prior یہاں استعمال نہیں ہوتا۔</span>"),
       budTable(d.bud, cT, false, "No contingent budget or bills for this year."));
 
     /* bills head-wise with vendor detail and head subtotals */
