@@ -1325,15 +1325,13 @@ body.lang-ur .br-part{ font-size:17px; }
   #panel-statement .st-card .table-wrap{ overflow:visible !important; }
   #panel-statement .st-tbl{ width:100% !important; table-layout:fixed; border-collapse:collapse; line-height:1.15; font-family:"Book Antiqua",Palatino,"Palatino Linotype",serif; }
   #panel-statement .st-tbl td, #panel-statement .st-tbl th{ padding:2px 4px !important; height:auto !important; border:1px solid #000 !important; word-wrap:break-word; overflow-wrap:anywhere; }
+  #panel-statement .st-tbl td.c{ text-align:center; }
+  #panel-statement .st-tbl td:not(.num):not(.c){ text-align:left; }
   #panel-statement .st-tbl thead th{ background:#fff !important; color:#000 !important; font-weight:700; text-align:center; }
-  #panel-statement .st-tbl td.c{ width:6%; text-align:center; }
   #panel-statement .st-a{ font-size:10.5px !important; } #panel-statement .st-a thead th{ font-size:10px !important; }
-  #panel-statement .st-a td:nth-child(2){ width:34%; text-align:left; }
   #panel-statement .st-c{ font-size:8.6px !important; } #panel-statement .st-c thead th{ font-size:8px !important; }
-  #panel-statement .st-c td:nth-child(2){ width:24%; text-align:left; }
-  #panel-statement .st-c td.rem, #panel-statement .st-c th:last-child{ width:9%; }
-  #panel-statement .st-c td:nth-child(n+3):nth-child(-n+9), #panel-statement .st-c th:nth-child(n+3):nth-child(-n+9){ width:8.4%; }
   #panel-statement tr.st-sub td, #panel-statement tr.st-grand td{ background:#fff !important; font-weight:700; }
+  #panel-statement .st-a tr.st-grand td{ font-size:11.5px !important; } #panel-statement .st-c tr.st-grand td{ font-size:9.2px !important; }
   #panel-statement .st-sigrow{ margin-top:30px; }
   #panel-statement .st-sigline{ border-bottom:1px solid #000; }
   #panel-statement .st-cert{ margin:8px 0 2px; font-size:10px; font-weight:700; }
@@ -9916,7 +9914,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     }, function(r, n){
       return "<tr><td class='c'>" + n + "</td><td>" + esc(titleName(r.label)) + "</td>" + tdn(r.budget) + tdn(r.upto) + tdn(r.month) + tdn(r.total) + tdn(r.budget - num(r.total)) + "</tr>";
     });
-    var tableA = "<div class='table-wrap'><table class='st-tbl st-a'><thead><tr><th>S#</th><th>Name of Heads</th><th class='num'>Budget Allocated</th><th class='num'>Previous Expend</th><th class='num'>Present Expend</th><th class='num'>Total Expend</th><th class='num'>Balance</th></tr></thead><tbody>" + A.html + "</tbody></table></div>";
+    var tableA = "<div class='table-wrap'><table class='st-tbl st-a'><colgroup><col style='width:5%'><col style='width:35%'><col style='width:12%'><col style='width:12%'><col style='width:12%'><col style='width:12%'><col style='width:12%'></colgroup><thead><tr><th>S#</th><th>Name of Heads</th><th class='num'>Budget Allocated</th><th class='num'>Previous Expend</th><th class='num'>Present Expend</th><th class='num'>Total Expend</th><th class='num'>Balance</th></tr></thead><tbody>" + A.html + "</tbody></table></div>";
     var cardA = "<div class='card st-card st-copy st-first'>" + head(mk, "OFFICE RECORD COPY", true, B.fy) + tableA + "<p class='st-cert'>" + certText(A.grand.month) + "</p>" + sigBlock(false) + "</div>";
 
     /* C. Account Office Copy — our figures, then the Account Office's own (SAP) month / progressive, variation and remarks (as in the office sample) */
@@ -9940,7 +9938,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       var rem = a.rem ? esc(a.rem) : (x.res === "Check" ? "Variation" : "");
       return "<tr><td class='c'>" + n + "</td><td>" + esc(titleName(r.label)) + "</td>" + tdn(r.budget) + tdn(r.upto) + tdn(r.month) + tdn(r.total) + tdo(q.m) + tdo(q.p) + tdo(q.v) + "<td class='rem'>" + rem + "</td></tr>";
     });
-    var tableC = "<div class='table-wrap'><table class='st-tbl st-c'><thead><tr><th>S#</th><th>Name of Heads</th><th class='num'>Budget Allocated</th><th class='num'>Previous Expend</th><th class='num'>Exp-During The Month</th><th class='num'>Progressive</th><th class='num'>Exp-During The Month <small>(Account Office)</small></th><th class='num'>Progressive <small>(Account Office)</small></th><th class='num'>Variation</th><th>Remarks</th></tr></thead><tbody>" + C.html + "</tbody></table></div>";
+    var tableC = "<div class='table-wrap'><table class='st-tbl st-c'><colgroup><col style='width:4%'><col style='width:21%'><col style='width:9.5%'><col style='width:9.5%'><col style='width:9.5%'><col style='width:9.5%'><col style='width:9.5%'><col style='width:9.5%'><col style='width:8.5%'><col style='width:9.5%'></colgroup><thead><tr><th>S#</th><th>Name of Heads</th><th class='num'>Budget Allocated</th><th class='num'>Previous Expend</th><th class='num'>Exp-During The Month</th><th class='num'>Progressive</th><th class='num'>Exp-During The Month <small>(Account Office)</small></th><th class='num'>Progressive <small>(Account Office)</small></th><th class='num'>Variation</th><th>Remarks</th></tr></thead><tbody>" + C.html + "</tbody></table></div>";
     var cardC = "<div class='card st-card st-copy'>" + head(mk, "ACCOUNT OFFICE COPY", false, B.fy) + tableC + "<p class='st-cert'>" + certText(C.grand.month) + "</p>" + sigBlock(true) + "</div>";
 
     /* B. verification workings (on screen only) */
