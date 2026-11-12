@@ -8719,33 +8719,47 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     }
     function layout(t){
       var n = t.heads.length, fs = t.dense ? 7 : (n > 12 ? 8 : (n > 8 ? 8.5 : 9)), w, FLOOR = t.dense ? 4.4 : 6.2;
-      for(;;){
-        var nat = [], mn = [], padd = t.dense ? 3.5 : 8;
+      var wide = n > 8 && !t.dense;   /* many columns: long headings wrap onto up to 4 lines instead of widening the column */
+      var padd0 = t.dense ? 3.5 : 8;
+      function measure(fs){
+        var nat = [], mn = [], padd = padd0;
         for(var i = 0; i < n; i++){
-          var hd = heading(t, i), maxw = FB.widthOfTextAtSize(hd, fs) + padd, lw = 0;
+          var hd = heading(t, i), full = FB.widthOfTextAtSize(hd, fs) + padd, maxw = wide ? 0 : full, lw = 0;
           hd.split(/\s+/).forEach(function(x){ lw = Math.max(lw, FB.widthOfTextAtSize(x, fs)); });
           var minw = (t.dense ? Math.min(lw, 29) : lw) + padd;
-          var rowsAll = t.rows.concat(t.foot);
+          if(wide) maxw = Math.max(minw, full / 3);
+          var rowsAll = t.rows.concat(t.foot), wl = [];
           for(var r = 0; r < rowsAll.length; r++){
             var c = rowsAll[r].cells; if(!c) continue;
             var tx = san(c[i]); var ww = F.widthOfTextAtSize(tx, fs) + padd;
-            maxw = Math.max(maxw, Math.min(ww, 230));
+            if(wide && !t.num[i] && r < t.rows.length) wl.push(Math.min(ww, 230)); else maxw = Math.max(maxw, Math.min(ww, 230));
             tx.split(/\s+/).forEach(function(x){ minw = Math.max(minw, Math.min(F.widthOfTextAtSize(x, fs) + padd, 90)); });
             if(t.num[i]) minw = Math.max(minw, Math.min(ww, 120));
           }
+          if(wl.length){ wl.sort(function(a, b){ return a - b; }); maxw = Math.max(maxw, wl[Math.floor(.93 * (wl.length - 1))]); }   /* a few long entries may wrap; the rest stay on one line */
           nat.push(Math.max(maxw, minw)); mn.push(Math.min(minw, Math.max(maxw, minw)));
         }
-        var sumN = nat.reduce(function(a, b){ return a + b; }, 0);
+        return {nat:nat, mn:mn};
+      }
+      function sum(a){ return a.reduce(function(x, y){ return x + y; }, 0); }
+      if(wide){   /* the biggest type size at which nothing has to wrap and the table still fits the page width */
+        for(var f = fs; f >= 6.8; f -= .2){
+          var q = measure(f), sN = sum(q.nat);
+          if(sN <= usable){ var kk = usable / sN; return {w:q.nat.map(function(x){ return x * kk; }), fs:f}; }
+        }
+      }
+      for(;;){
+        var q2 = measure(fs), nat = q2.nat, mn = q2.mn, sumN = sum(nat);
         if(sumN <= usable){ var k = usable / sumN; w = nat.map(function(x){ return x * k; }); break; }
-        var flex = nat.map(function(x, i){ return x - mn[i]; }), sumF = flex.reduce(function(a, b){ return a + b; }, 0), need = sumN - usable;
+        var flex = nat.map(function(x, i){ return x - mn[i]; }), sumF = sum(flex), need = sumN - usable;
         if(sumF >= need){ w = nat.map(function(x, i){ return x - flex[i] * need / sumF; }); break; }
         if(fs > FLOOR){ fs -= .4; continue; }
-        var k2 = usable / mn.reduce(function(a, b){ return a + b; }, 0); w = mn.map(function(x){ return x * k2; }); break;
+        var k2 = usable / sum(mn); w = mn.map(function(x){ return x * k2; }); break;
       }
       return {w:w, fs:fs};
     }
     function drawHeader(t, lay){
-      var hl = 1, x = M, hs = t.heads.map(function(_, i){ var ls = wrap(heading(t, i), FB, lay.fs, lay.w[i] - (t.dense ? 3 : 6)).slice(0, t.dense ? 6 : 2); hl = Math.max(hl, ls.length); return ls; });
+      var hl = 1, x = M, hs = t.heads.map(function(_, i){ var ls = wrap(heading(t, i), FB, lay.fs, lay.w[i] - (t.dense ? 3 : 6)).slice(0, t.dense ? 6 : (t.heads.length > 8 ? 4 : 2)); hl = Math.max(hl, ls.length); return ls; });
       var h = hl * (lay.fs + 1.5) + 9;
       if(y - h - 30 < M + FOOT){ newPage(); }
       page.drawRectangle({x:M, y:y - h, width:usable, height:h, color:navy});
@@ -8768,7 +8782,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
         if(i > 0 && i < sp){ cols.push([]); continue; }
         var ls = wrap(r.cells[i], font, fs, (i === 0 ? spW : lay.w[i]) - (t.dense ? 3 : 6)); cols.push(ls); hh = Math.max(hh, ls.length * lh);
       }
-      var rh = t.dense ? Math.max(hh + 4, fs + 6) : Math.max(hh + 6, fs + 10);
+      var rh = t.dense ? Math.max(hh + 4, fs + 6) : (n > 8 ? Math.max(hh + 3.5, fs + 6) : Math.max(hh + 6, fs + 10));
       if(y - rh < M + FOOT){ newPage(); drawHeader(t, lay); }
       if(kind === "foot") page.drawRectangle({x:M, y:y - rh, width:usable, height:rh, color:tot});
       else if(idx % 2) page.drawRectangle({x:M, y:y - rh, width:usable, height:rh, color:zebra});
@@ -8806,11 +8820,11 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     y = top - 46;
     page.drawLine({start:{x:M, y:y}, end:{x:PW - M, y:y}, thickness:2.2, color:goldL});
     page.drawLine({start:{x:M, y:y - 3.6}, end:{x:PW - M, y:y - 3.6}, thickness:.7, color:navy});
-    y -= 18;
+    y -= 12;
     var tt = san(m.title);
     page.drawText(tt, {x:(PW - FB.widthOfTextAtSize(tt, 14)) / 2, y:y - 14, size:14, font:FB, color:navy}); y -= 21;
     var st = san(m.sub);
-    page.drawText(st, {x:(PW - F.widthOfTextAtSize(st, 8.5)) / 2, y:y - 9, size:8.5, font:F, color:grey}); y -= 20;
+    page.drawText(st, {x:(PW - F.widthOfTextAtSize(st, 8.5)) / 2, y:y - 9, size:8.5, font:F, color:grey}); y -= 16;
     tables.forEach(function(t, ti){
       var lay = layout(t);
       if(t.pageBreak && ti > 0) newPage();
@@ -8885,20 +8899,60 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     children.push(new D.Paragraph({children:[run(m.title, {size:28, bold:true, color:"1B3F63"})], alignment:D.AlignmentType.CENTER, spacing:{before:80, after:40},
       border:{top:{style:D.BorderStyle.SINGLE, size:14, color:"B8860B", space:6}}}));
     children.push(para([run(m.sub, {size:16, color:"666666"})], {align:D.AlignmentType.CENTER, after:160}));
+    /* ---- column widths and type size for a Word table ----
+       Text widths are estimated (Calibri-like) so the biggest readable size is chosen: first the largest size at which nothing wraps and the
+       table fits the page width; otherwise the largest size at which every column can be at least as wide as its longest word. */
+    function cw(str, bold, fs){
+      var em = 0; String(str == null ? "" : str).split("").forEach(function(ch){
+        em += /[mwMW@%]/.test(ch) ? .8 : /[0-9,.\-]/.test(ch) ? .51 : /[A-Z]/.test(ch) ? .6 : ch === " " ? .23 : /[()\/:;'|]/.test(ch) ? .32 : .49; });
+      return em * (bold ? 1.06 : 1) * fs * 10 * 1.04;
+    }
+    function docxPlan(t){
+      var n = t.heads.length, wide = n > 8, all = t.rows.concat(t.foot).filter(function(r){ return r.cells; });
+      var start = (n > 6 || t.dense) ? 18 : 20, floor = 12;
+      function measure(fs, cm){
+        var nat = [], mn = [];
+        t.heads.forEach(function(h, i){
+          var lw = 0, full = cw(h, true, fs); String(h).split(/\s+/).forEach(function(x){ lw = Math.max(lw, cw(x, true, fs)); });
+          var hn = wide ? Math.max(lw, full / 3) : full, mnw = lw, mx = hn;
+          var wl = [];
+          all.forEach(function(r){
+            var tx = String(r.cells[i] == null ? "" : r.cells[i]), ww = cw(tx, false, fs);
+            if(wide && !t.num[i] && t.rows.indexOf(r) >= 0) wl.push(Math.min(ww, 4600)); else mx = Math.max(mx, Math.min(ww, 4600));
+            tx.split(/\s+/).forEach(function(x){ mnw = Math.max(mnw, Math.min(cw(x, false, fs), 2000)); });
+            if(t.num[i]) mnw = Math.max(mnw, Math.min(ww, 2400));
+          });
+          if(wl.length){ wl.sort(function(a, b){ return a - b; }); mx = Math.max(mx, wl[Math.floor(.93 * (wl.length - 1))]); }
+          nat.push(Math.max(mx, mnw) + 2 * cm); mn.push(Math.min(mnw + 2 * cm, Math.max(mx, mnw) + 2 * cm));
+        });
+        return {nat:nat, mn:mn};
+      }
+      function sum(a){ return a.reduce(function(x, y){ return x + y; }, 0); }
+      function finish(w, fs, cm){
+        var W = w.map(function(x){ return Math.floor(x); }), d = usable - sum(W); W[W.reduce(function(bi, x, i){ return x > W[bi] ? i : bi; }, 0)] += d;
+        return {W:W, fs:fs, cm:cm, vm:fs <= 16 ? 25 : 45};
+      }
+      for(var fs = start; fs >= 14; fs--){
+        var cm = fs <= 16 ? 40 : 70, q = measure(fs, cm), sN = sum(q.nat);
+        if(sN <= usable) return finish(q.nat.map(function(x){ return x * usable / sN; }), fs, cm);
+      }
+      for(fs = start; fs >= floor; fs--){
+        cm = fs <= 16 ? 40 : 70; q = measure(fs, cm);
+        var sM = sum(q.mn);
+        if(sM <= usable || fs === floor){
+          var flex = q.nat.map(function(x, i){ return x - q.mn[i]; }), sF = sum(flex) || 1, extra = Math.max(0, usable - sM);
+          return finish(q.mn.map(function(x, i){ return sM <= usable ? x + flex[i] * Math.min(1, extra / sF) + (extra > sF ? (extra - sF) * x / sM : 0) : x * usable / sM; }), fs, cm);
+        }
+      }
+    }
     tables.forEach(function(t){
       if(t.pageBreak) children.push(new D.Paragraph({pageBreakBefore: true, spacing: {after: 0}, children: []}));
-      var n = t.heads.length, wt = t.heads.map(function(h, i){
-        var mx = t.dense ? Math.min(Math.max.apply(null, String(h).split(/\s+/).map(function(x){ return x.length; })), 11) : Math.max(h.length * 1.05, 5);
-        t.rows.concat(t.foot).forEach(function(r){ if(r.cells) mx = Math.max(mx, Math.min(String(r.cells[i] || "").length, t.dense ? (i < 3 ? 16 : 11) : 36)); });
-        return t.dense ? Math.max(mx + 1.5, 8.5) : Math.max(mx, t.num[i] ? 8 : 5);
-      }), sum = wt.reduce(function(a, b){ return a + b; }, 0);
-      var W = wt.map(function(x){ return Math.floor(usable * x / sum); });
-      var fs = t.dense ? 9 : n > 12 ? 13 : n > 9 ? 14 : n > 6 ? 16 : 18, cm = t.dense ? 25 : 70;
+      var n = t.heads.length, plan = docxPlan(t), W = plan.W, fs = plan.fs, cm = plan.cm, vm = plan.vm;
       function cell(text, i, o){
         o = o || {};
         return new D.TableCell({children:[para([run(text, {size:fs, bold:!!o.bold, color:o.color})], {align:(t.num[i] && !o.left) ? D.AlignmentType.RIGHT : undefined})],
           width:{size:W[i], type:D.WidthType.DXA}, verticalAlign:D.VerticalAlign.CENTER,
-          shading:o.fill ? {type:D.ShadingType.CLEAR, color:"auto", fill:o.fill} : undefined, margins:{top:t.dense ? 25 : 45, bottom:t.dense ? 25 : 45, left:cm, right:cm}});
+          shading:o.fill ? {type:D.ShadingType.CLEAR, color:"auto", fill:o.fill} : undefined, margins:{top:vm, bottom:vm, left:cm, right:cm}});
       }
       if(t.title) children.push(new D.Paragraph({children:[run(t.title, {size:20, bold:true, color:"1B3F63"})], shading:{type:D.ShadingType.CLEAR, color:"auto", fill:"F8EBC4"}, spacing:{before:160, after:60}, keepNext:true}));
       var trs = [new D.TableRow({tableHeader:true, cantSplit:true, children:t.heads.map(function(h, i){ return cell(h, i, {bold:true, color:"FFFFFF", fill:"1B3F63"}); })})], k = 0;
@@ -9019,16 +9073,21 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
         if(!t.num[i]) return false;
         return t.rows.concat(t.foot).some(function(x){ if(!x.cells) return false; var v = numOf(x.cells[i]); return v !== null && Math.abs(v - Math.round(v)) > 1e-9; });
       });
-      var widths = t.heads.map(function(h, i){
-        var mx = Math.min(h.length + 2, 24);
-        t.rows.concat(t.foot).forEach(function(x){ if(x.cells) mx = Math.max(mx, Math.min(String(x.cells[i] || "").length + 2, 46)); });
-        return Math.max(8, mx);
+      var wideX = n > 8, widths = t.heads.map(function(h, i){
+        var lw = 0; String(h).split(/\s+/).forEach(function(x){ lw = Math.max(lw, x.length); });
+        var mx = wideX ? Math.max(Math.min(lw + 2, 16), Math.min(String(h).length / 3 + 1, 14)) : Math.min(h.length + 2, 24);
+        t.rows.concat(t.foot).forEach(function(x){ if(x.cells) mx = Math.max(mx, Math.min(String(x.cells[i] || "").length + 2, wideX ? (t.num[i] ? 14 : 30) : 46)); });
+        return Math.max(wideX ? 7 : 8, mx);
       });
+      /* a narrow table (few columns) is stretched so the heading and signature rows are not cut short */
+      var totW = widths.reduce(function(a, b){ return a + b; }, 0);
+      if(n <= 4 && totW < 100){ var kx = 100 / totW; widths = widths.map(function(x){ return Math.round(x * kx * 10) / 10; }); }
       rows += '<row r="1" ht="22" customHeight="1">' + c("A1", m.office, 17) + "</row>"; merges.push("A1:" + last + "1");
       rows += '<row r="2" ht="26" customHeight="1">' + c("A2", m.title + (t.title ? " — " + t.title : ""), 1) + "</row>"; merges.push("A2:" + last + "2");
       rows += '<row r="3" ht="16" customHeight="1">' + c("A3", m.sub, 2) + "</row>"; merges.push("A3:" + last + "3");
       r = 4;
-      rows += '<row r="4" ht="30" customHeight="1">' + t.heads.map(function(h, i){ return c(colName(i) + "4", h, t.num[i] ? 4 : 3); }).join("") + "</row>";
+      var hl = 1; t.heads.forEach(function(h, i){ hl = Math.max(hl, lines(h, widths[i] * .9)); });
+      rows += '<row r="4" ht="' + Math.max(30, hl * 14 + 8) + '" customHeight="1">' + t.heads.map(function(h, i){ return c(colName(i) + "4", h, t.num[i] ? 4 : 3); }).join("") + "</row>";
       var k = 0, first = 5;
       function dataRow(x, foot){
         r++;
@@ -9039,7 +9098,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
           if(nv !== null){ var sid = foot ? (dec[i] ? 13 : 12) : (dec[i] ? 9 + z : 7 + z); return cn(colName(i) + r, nv, sid); }
           return c(colName(i) + r, v, foot ? 11 : (5 + z));
         }).join("");
-        rows += '<row r="' + r + '" ht="' + Math.max(17, mx * 13 + 4) + '" customHeight="1">' + cells + "</row>";
+        rows += '<row r="' + r + '" ht="' + Math.max(wideX && totW > 150 ? 20 : 17, mx * 13 + 4) + '" customHeight="1">' + cells + "</row>";
       }
       t.rows.forEach(function(x){
         if(x.banner){
@@ -9069,7 +9128,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
         '<sheetFormatPr defaultRowHeight="15"/><cols>' + widths.map(function(w, i){ return '<col min="' + (i + 1) + '" max="' + (i + 1) + '" width="' + w + '" customWidth="1"/>'; }).join("") + "</cols>" +
         "<sheetData>" + rows + '</sheetData><autoFilter ref="A4:' + last + (lastData < 5 ? 5 : lastData) + '"/><mergeCells count="' + merges.length + '">' + merges.map(function(x){ return '<mergeCell ref="' + x + '"/>'; }).join("") + "</mergeCells>" +
         '<printOptions horizontalCentered="1"/><pageMargins left="0.4" right="0.4" top="0.5" bottom="0.6" header="0.25" footer="0.3"/>' +
-        '<pageSetup paperSize="' + m.paper.code + '" orientation="' + (m.landscape ? "landscape" : "portrait") + '" fitToWidth="1" fitToHeight="0"/>' +
+        '<pageSetup paperSize="' + m.paper.code + '" orientation="' + (m.landscape ? "landscape" : "portrait") + '" fitToWidth="1" fitToHeight="' + (t.rows.length + t.foot.length <= 45 ? 1 : 0) + '"/>' +
         '<headerFooter><oddFooter>&amp;R&amp;8Page &amp;P of &amp;N</oddFooter></headerFooter>' + ((lg || pg) ? '<drawing r:id="rId1"/>' : '') + '</worksheet>';
       sheets.push({lastW:widths[n - 1], nCols:n, name:sheetName(t, ti), xml:xml, filterRef:"A4:" + last + (lastData < 5 ? 5 : lastData)});
     });
@@ -9190,6 +9249,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(!tables || !tables.length){ say("There are no records to export on this tab.", "اس ٹیب میں ایکسپورٹ کے لیے کوئی ریکارڈ نہیں ہے۔"); return; }
     if(!asked && window.__campAskStamp && window.__campAskStamp(function(){ window.__brExportTables(kind, tables, o, true); })){ return; }
     var maxCols = 0; tables.forEach(function(t){ maxCols = Math.max(maxCols, t.heads.length); });
+    tables.forEach(function(t, i){ if(i > 0 && t.pageBreak == null && t.heads.length > 8 && tables[i - 1].heads.length > 8) t.pageBreak = true; });   /* two wide tables: each starts on its own page */
     var m = {office:o.office || clean(STATE.officeName || "") || "", title:o.title, sub:(o.sub ? o.sub + "   |   " : "") + "Generated " + todayText(), landscape:o.landscape != null ? !!o.landscape : maxCols > 6, base:o.base + "_" + todayIso(), sign:signoff(), stamp:!!(window.__campStampOn && window.__campStampOn()), paper:o.paper ? paperFrom(o.paper) : paperSize()};
     say("Preparing the file…", "فائل تیار ہو رہی ہے…");
     try{
