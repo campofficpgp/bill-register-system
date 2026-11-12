@@ -9692,7 +9692,14 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
           var r = row(lab), a = aoM[c], hasM = a.month != null && a.month !== "", hasP = a.prog != null && a.prog !== "";
           if(r.billMonth == null) r.billMonth = r.month;
           var mo = hasM ? num(a.month) : r.month;
-          r.month = mo; if(hasP) r.upto = num(a.prog) - mo;
+          r.month = mo;
+          /* progressive = the Account Office months of this financial year added up (the first month of the year starts from zero); the saved progressive is used only when an earlier month is missing */
+          var cum = 0, allHave = hasM;
+          for(var cm = fyStart; allHave && cm <= mk; cm = shiftYm(cm, 1)){
+            var cr = STATE.stmtData.months[cm] && STATE.stmtData.months[cm].ao && STATE.stmtData.months[cm].ao[c];
+            if(cr && cr.month != null && cr.month !== "") cum += num(cr.month); else allHave = false;
+          }
+          if(allHave) r.upto = cum - mo; else if(hasP) r.upto = num(a.prog) - mo;
         });
       }
     }
