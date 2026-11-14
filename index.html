@@ -1538,6 +1538,12 @@ body.lang-ur .br-part{ font-size:17px; }
   #panel-es table.es-t tr{ page-break-inside:avoid; }
   #panel-es .es-pg{ margin:0; } #panel-es .es-sg{ break-inside:avoid; }
 }
+#panel-es .es-big{ font-weight:700; font-size:16px; margin:6px 0 6px; }
+#panel-es .es-help{ background:color-mix(in srgb, var(--navy, #1f3a5f) 6%, var(--surface, #fff)); border:1px solid var(--border, #ccc); border-radius:var(--radius, 8px); padding:8px 12px; margin:0 0 12px; font-size:13px; line-height:1.6; }
+#panel-es .es-q{ width:100%; box-sizing:border-box; border:1px solid var(--border, #bbb); background:var(--surface, #fff); color:inherit; font:inherit; padding:3px 4px; border-radius:4px; text-align:right; }
+#panel-es .es-q:focus{ outline:2px solid var(--navy, #1f3a5f); }
+#panel-es table.es-rt{ font-size:12.5px; }
+#panel-es table.es-rt th{ font-size:11px; }
 
 .t30-subtabs{ display:flex; gap:8px; flex-wrap:wrap; margin:0 0 14px; }
 .t30-sub{ background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:8px 16px; font:inherit; font-weight:600; cursor:pointer; }
@@ -14860,6 +14866,12 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(!r && create){ r = root().st[stKey()] = {ed: {}, upto: ""}; }
     return r || {ed: {}, upto: ""};
   }
+  /* quarterly budget releases: STATE.stmtData.es.rel["2026-27"][code] = {q1,q2,q3,q4} — one entry per financial year, shared by both statements */
+  function relAll(){ var r = STATE.stmtData && STATE.stmtData.es && STATE.stmtData.es.rel; return (r && r[S.fy]) || {}; }
+  function relOf(code){ return relAll()[code] || {}; }
+  function relHas(){ var a = relAll(); return Object.keys(a).some(function(c){ var q = a[c] || {}; return ["q1","q2","q3","q4"].some(function(k){ return q[k] != null && q[k] !== ""; }); }); }
+  function qDone(upto){ var mo = +upto.split("-")[1]; return mo >= 7 && mo <= 9 ? 1 : mo >= 10 ? 2 : mo <= 3 ? 3 : 4; }   /* quarters already released by the end of that month */
+  function cmpMode(){ var v = STATE.stmtData && STATE.stmtData.es && STATE.stmtData.es.hdr && STATE.stmtData.es.hdr.cmp; return v === "rel" ? "rel" : "tot"; }
   var saveT = null;
   function persist(){ clearTimeout(saveT); saveT = setTimeout(function(){ try{ saveData(); }catch(e){ console.error(e); } }, 500); }
 
@@ -14896,33 +14908,39 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
                                "مالی سال " + pfy + " کے کچھ مہینوں کی تنخواہ کے اعداد موجود نہیں، اس لیے تنخواہ کی مدوں کا کالم 6 غلط ہو سکتا ہے۔"));
     var byCode = {}, order = [];
     [cur, pAtEnd, pAtCut].forEach(function(t, i){ Object.keys(t.lab).forEach(function(c){ if(!byCode[c]){ byCode[c] = {code: c, desc: descOf(t.lab[c]) || c, budget: i === 0 ? num(t.bud[c]) : 0}; order.push(c); } }); });
-    var ed = rec.ed || {}, rows = [];
+    var ed = rec.ed || {}, rows = [], nQ = qDone(upto), cmp = cmpMode(), hasRel = relHas();
+    if(!hasRel) warn.push(T("The quarterly budget releases of FY " + fy + " are not entered yet, so the column \"Budget released\" is empty. Press \"Budget releases (quarters)\" to enter them.",
+                            "مالی سال " + fy + " کی سہ ماہی بجٹ ریلیز ابھی درج نہیں، اس لیے \"جاری شدہ بجٹ\" کا کالم خالی ہے۔ \"بجٹ ریلیز (سہ ماہی)\" کا بٹن دبا کر درج کریں۔"));
     order.forEach(function(c){
       var h = byCode[c], e = ed[c] || {};
       var a5 = num(cur.tot[c]), a6 = num(pAtEnd.tot[c]) - num(pAtCut.tot[c]);
       if(a6 < 0) a6 = 0;
       var proj = isSal(c) ? num(cur.month[c]) * nRest : a6, autoAnt = a5 + proj;
       var bud = (e.b != null && e.b !== "") ? num(e.b) : h.budget, ant = (e.a != null && e.a !== "") ? num(e.a) : autoAnt;
-      if(!bud && !a5 && !a6 && !ant && !e.r) return;
-      rows.push({code: c, desc: h.desc, sal: isSal(c), autoBud: h.budget, bud: bud, a5: a5, a6: a6, tot: a5 + a6, autoAnt: autoAnt, ant: ant,
-                 exc: Math.max(ant - bud, 0), sur: Math.max(bud - ant, 0), rem: e.r || "", edB: e.b != null && e.b !== "", edA: e.a != null && e.a !== ""});
+      var q = relOf(c), rel = 0; for(var qi = 1; qi <= nQ; qi++) rel += num(q["q" + qi]);
+      if(!bud && !a5 && !a6 && !ant && !e.r && !rel) return;
+      var base = cmp === "rel" ? rel : bud;
+      rows.push({code: c, desc: h.desc, sal: isSal(c), autoBud: h.budget, bud: bud, rel: rel, a5: a5, a6: a6, tot: a5 + a6, autoAnt: autoAnt, ant: ant,
+                 exc: Math.max(ant - base, 0), sur: Math.max(base - ant, 0), rem: e.r || "", edB: e.b != null && e.b !== "", edA: e.a != null && e.a !== ""});
     });
     rows.sort(function(a, b){ return (b.sal ? 1 : 0) - (a.sal ? 1 : 0) || (a.code < b.code ? -1 : a.code > b.code ? 1 : 0); });
-    function sum(list){ var t = {bud: 0, a5: 0, a6: 0, tot: 0, ant: 0, exc: 0, sur: 0}; list.forEach(function(r){ Object.keys(t).forEach(function(k){ t[k] += r[k]; }); }); return t; }
+    function sum(list){ var t = {bud: 0, rel: 0, a5: 0, a6: 0, tot: 0, ant: 0, exc: 0, sur: 0}; list.forEach(function(r){ Object.keys(t).forEach(function(k){ t[k] += r[k]; }); }); return t; }
     var nEd = 0; Object.keys(ed).forEach(function(c){ var e = ed[c] || {}; if((e.b != null && e.b !== "") || (e.a != null && e.a !== "") || e.r) nEd++; });
-    return {fy: fy, n: n, upto: upto, nCur: nCur, nRest: nRest, pfy: pfy, pFrom: pFrom, pEnd: pEnd, rows: rows, warn: warn, nEd: nEd,
+    return {nQ: nQ, cmp: cmp, hasRel: hasRel, fy: fy, n: n, upto: upto, nCur: nCur, nRest: nRest, pfy: pfy, pFrom: pFrom, pEnd: pEnd, rows: rows, warn: warn, nEd: nEd,
             tSal: sum(rows.filter(function(r){ return r.sal; })), tCon: sum(rows.filter(function(r){ return !r.sal; })), tAll: sum(rows)};
   }
 
   /* ---------- column titles (as in the office file) ---------- */
   function heads(m){
-    return ["Sr. No", "Object Head", "Description",
-      "Total Budget released till " + MN[+m.upto.split("-")[1] - 1] + " " + m.upto.split("-")[0],
+    var Q = ["", "1st quarter", "1st + 2nd quarters", "1st to 3rd quarters", "all 4 quarters"][m.nQ];
+    var b4 = m.cmp === "rel" ? "Col. 5" : "Col. 4";
+    return ["Sr. No", "Object Head", "Description", "Total Sanctioned Budget F.Y " + m.fy,
+      "Budget released till " + MN[+m.upto.split("-")[1] - 1] + " " + m.upto.split("-")[0] + " (" + Q + ")",
       "Expenditure first " + m.nCur + " months of FY " + m.fy + " (" + dmy1(fyStartYm(m.fy)) + " to " + dmyEnd(m.upto) + ")",
       "Expenditure last " + m.nRest + " months of FY " + m.pfy + " (" + dmy1(m.pFrom) + " to " + dmyEnd(m.pEnd) + ")",
-      "Total Actuals (Col. 5 + 6)", "Anticipated Expenditure for the current year " + m.fy, "Excess (+) (Col. 8 - 4)", "Surrender (-) (Col. 4 - 8)", "Remarks"];
+      "Total Actuals (Col. 6 + 7)", "Anticipated Expenditure for the current year " + m.fy, "Excess (+) (Col. 9 - " + b4.slice(5) + ")", "Surrender (-) (" + b4 + " - 9)", "Remarks"];
   }
-  var WID = [34, 66, 210, 96, 112, 112, 100, 108, 92, 92, 130];
+  var WID = [32, 62, 190, 92, 96, 104, 104, 96, 104, 88, 88, 118];
   function titleOf(m){ return (m.n === "1" ? hv("form1") : hv("form2")) + " — F.Y " + m.fy; }
 
   /* ---------- drawing ---------- */
@@ -14943,15 +14961,17 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     return "<td><span class='pv'>" + X(r.rem) + "</span><input class='es-in es-rm' data-c='" + X(r.code) + "' data-k='r' value='" + X(r.rem) + "'></td>";
   }
   function tRow(label, t, cls){
-    return "<tr class='" + cls + "'><td></td><td></td><td>" + label + "</td><td class='n'>" + sN(t.bud) + "</td><td class='n'>" + sN(t.a5) + "</td><td class='n'>" + sN(t.a6) + "</td><td class='n'>" + sN(t.tot) +
+    return "<tr class='" + cls + "'><td></td><td></td><td>" + label + "</td><td class='n'>" + sN(t.bud) + "</td><td class='n'>" + (lastHasRel ? sN(t.rel) : "") + "</td><td class='n'>" + sN(t.a5) + "</td><td class='n'>" + sN(t.a6) + "</td><td class='n'>" + sN(t.tot) +
       "</td><td class='n'>" + sN(t.ant) + "</td><td class='n'>" + nz(t.exc) + "</td><td class='n'>" + nz(t.sur) + "</td><td></td></tr>";
   }
+  var lastHasRel = false;
   function statementHtml(m){
+    lastHasRel = m.hasRel;
     var hs = heads(m), h = "<div class='es-pg'><div class='es-t1'>" + X(titleOf(m)) + "</div>" + hdrBlock();
     h += "<div class='table-wrap'><table class='es-t'><colgroup>" + WID.map(function(w){ return "<col style='width:" + w + "px'>"; }).join("") + "</colgroup><thead><tr>" +
       hs.map(function(x){ return "<th>" + X(x) + "</th>"; }).join("") + "</tr><tr class='cn'>" + hs.map(function(x, i){ return "<th>" + (i + 1) + "</th>"; }).join("") + "</tr></thead><tbody>";
     var i = 0, sal = m.rows.filter(function(r){ return r.sal; }), con = m.rows.filter(function(r){ return !r.sal; });
-    function line(r){ i++; return "<tr><td class='c'>" + i + "</td><td class='c'>" + X(r.code) + "</td><td>" + X(r.desc) + "</td>" + inp(r, "b") + "<td class='n'>" + nz(r.a5) + "</td><td class='n'>" + nz(r.a6) +
+    function line(r){ i++; return "<tr><td class='c'>" + i + "</td><td class='c'>" + X(r.code) + "</td><td>" + X(r.desc) + "</td>" + inp(r, "b") + "<td class='n rl'>" + (m.hasRel ? nz(r.rel) : "") + "</td><td class='n'>" + nz(r.a5) + "</td><td class='n'>" + nz(r.a6) +
       "</td><td class='n'>" + nz(r.tot) + "</td>" + inp(r, "a") + "<td class='n ex'>" + nz(r.exc) + "</td><td class='n su'>" + nz(r.sur) + "</td>" + remCell(r) + "</tr>"; }
     sal.forEach(function(r){ h += line(r); });
     if(sal.length && con.length) h += tRow("Total — Salary heads", m.tSal, "tt");
@@ -14971,11 +14991,35 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     h += "<div class='field'><label>" + T("Actuals up to (end of)", "اصل خرچ (مہینے کے آخر تک)") + "</label><select id='es_upto'" + (canEdit() ? "" : " disabled") + ">" + uptoChoices(S.fy).map(function(k){ return "<option value='" + k + "'" + (k === m.upto ? " selected" : "") + ">" + X(mShort(k)) + "</option>"; }).join("") + "</select></div>";
     h += "<div class='field'><label>" + T("Paper", "کاغذ") + "</label><select id='es_paper'>" + ["A4", "Legal", "Foolscap", "A3"].map(function(p){ return "<option" + (p === S.paper ? " selected" : "") + ">" + p + "</option>"; }).join("") + "</select></div></div>";
     h += "<div class='es-btns'><button type='button' class='btn small primary' id='es_print'>🖨 " + T("Print", "پرنٹ") + "</button><button type='button' class='btn small' id='es_pdf'>PDF</button><button type='button' class='btn small' id='es_doc'>Word</button><button type='button' class='btn small' id='es_xls'>Excel</button>" +
-      "<button type='button' class='btn small' id='es_hdrbtn'>" + T("Header & signatures", "ہیڈر اور دستخط") + "</button>" + (canEdit() && m.nEd ? "<button type='button' class='btn small' id='es_reset'>" + T("Clear all hand edits (" + m.nEd + ")", "ہاتھ کی تمام تبدیلیاں ختم (" + m.nEd + ")") + "</button>" : "") + "</div>";
+      "<button type='button' class='btn small' id='es_relbtn'>" + T("Budget releases (quarters)", "بجٹ ریلیز (سہ ماہی)") + "</button><button type='button' class='btn small' id='es_hdrbtn'>" + T("Header & signatures", "ہیڈر اور دستخط") + "</button>" + (canEdit() && m.nEd ? "<button type='button' class='btn small' id='es_reset'>" + T("Clear all hand edits (" + m.nEd + ")", "ہاتھ کی تمام تبدیلیاں ختم (" + m.nEd + ")") + "</button>" : "") + "</div>";
     h += "<div id='es_confirm'></div>";
     m.warn.forEach(function(w){ h += "<div class='es-warn'>" + w + "</div>"; });
-    h += "<p class='hint'>" + T("Column 5 = expenditure of this year up to the chosen month (salary from the pay slips / Account Office salary figures, other heads from the Account Office figures). Column 6 = the same remaining months of last year. Column 8 is worked out automatically (salary heads: column 5 + last month × " + m.nRest + " months; other heads: column 5 + column 6). Budget (col. 4), anticipated (col. 8) and remarks can be changed by hand — yellow = edited; clear the box to go back to the automatic figure. Saved online for every computer.",
-      "کالم 5 = اس سال منتخب مہینے تک کا خرچ (تنخواہ پے سلپ / اکاؤنٹ آفس اعداد سے، باقی مدیں اکاؤنٹ آفس اعداد سے)۔ کالم 6 = پچھلے سال کے باقی وہی مہینے۔ کالم 8 خود بنتا ہے (تنخواہ: کالم 5 + آخری مہینہ × " + m.nRest + " مہینے؛ باقی مدیں: کالم 5 + کالم 6)۔ بجٹ (کالم 4)، متوقع خرچ (کالم 8) اور ریمارکس ہاتھ سے بدلے جا سکتے ہیں — پیلا = تبدیل شدہ؛ خانہ خالی کریں تو خودکار عدد واپس۔ آن لائن محفوظ، ہر کمپیوٹر پر ایک جیسا۔") + "</p></div>";
+    h += "<div class='hint es-help'>" + T(
+      "<b>How it works:</b> Col. 4 = total budget sanctioned for the year. Col. 5 = budget released so far (from the quarterly releases you enter: 1st quarter Jul–Sep, 2nd Oct–Dec, 3rd Jan–Mar, 4th Apr–Jun). Col. 6 = this year's spending up to the chosen month. Col. 7 = last year's spending in the remaining months. Col. 9 = expected spending for the whole year (worked out automatically; you can change it). Excess / Surrender compare col. 9 with " + (m.cmp === "rel" ? "col. 5 (released)" : "col. 4 (total sanctioned)") + ". Yellow box = changed by hand; empty the box to go back.",
+      "<b>یہ کیسے کام کرتا ہے:</b> کالم 4 = سال کا کُل منظور شدہ بجٹ۔ کالم 5 = اب تک جاری شدہ بجٹ (آپ کی درج کی ہوئی سہ ماہی ریلیز سے: پہلی جولائی–ستمبر، دوسری اکتوبر–دسمبر، تیسری جنوری–مارچ، چوتھی اپریل–جون)۔ کالم 6 = اس سال منتخب مہینے تک خرچ۔ کالم 7 = پچھلے سال کے باقی مہینوں کا خرچ۔ کالم 9 = پورے سال کا متوقع خرچ (خود بنتا ہے، آپ بدل سکتے ہیں)۔ ایکسس / سرنڈر = کالم 9 کا موازنہ " + (m.cmp === "rel" ? "کالم 5 (جاری شدہ)" : "کالم 4 (کُل منظور شدہ)") + " سے۔ پیلا خانہ = ہاتھ سے بدلا ہوا؛ خانہ خالی کریں تو خودکار عدد واپس۔") + "</div></div>";
+    return h;
+  }
+  function relForm(){
+    var m = lastModel || build(), heads = {}, list = [];
+    m.rows.forEach(function(r){ heads[r.code] = r; });
+    Object.keys(relAll()).forEach(function(c){ if(!heads[c]) heads[c] = {code: c, desc: c, bud: 0, sal: isSal(c)}; });
+    Object.keys(heads).sort(function(a, b){ return (isSal(b) ? 1 : 0) - (isSal(a) ? 1 : 0) || (a < b ? -1 : 1); }).forEach(function(c){ list.push(heads[c]); });
+    var ro = canEdit() ? "" : " disabled", t = {bud: 0, q1: 0, q2: 0, q3: 0, q4: 0, all: 0};
+    var h = "<div class='es-ctl'><div class='es-btns'><button type='button' class='btn small primary' id='es_back'>← " + T("Back to the statement", "اسٹیٹمنٹ پر واپس") + "</button>" +
+      (canEdit() ? "<button type='button' class='btn small' id='es_fill25'>" + T("Fill empty boxes with 25% of the budget", "خالی خانوں میں بجٹ کا 25% بھر دیں") + "</button>" : "") + "</div>" +
+      "<div class='es-big'>" + T("Budget releases — F.Y " + X(S.fy), "بجٹ ریلیز — مالی سال " + X(S.fy)) + "</div>" +
+      "<div class='hint es-help'>" + T("Type the amount released in each quarter for each head (as in the release letter). 1st quarter = July–September, 2nd = October–December, 3rd = January–March, 4th = April–June. The statement adds up the quarters released up to its month. Saved online.",
+        "ہر مد کے سامنے ہر سہ ماہی میں جاری ہونے والی رقم لکھیں (جیسے ریلیز لیٹر میں ہے)۔ پہلی سہ ماہی = جولائی–ستمبر، دوسری = اکتوبر–دسمبر، تیسری = جنوری–مارچ، چوتھی = اپریل–جون۔ اسٹیٹمنٹ اپنے مہینے تک کی سہ ماہیاں خود جمع کرتی ہے۔ آن لائن محفوظ۔") + "</div>";
+    h += "<div class='es-bar'><div class='field'><label>" + T("Excess / Surrender worked out against", "ایکسس / سرنڈر کس بجٹ کے مقابلے میں") + "</label><select id='es_cmp'" + ro + "><option value='tot'" + (m.cmp === "tot" ? " selected" : "") + ">" + "Total sanctioned budget / کُل منظور شدہ بجٹ</option><option value='rel'" + (m.cmp === "rel" ? " selected" : "") + ">Budget released till date / اب تک جاری شدہ بجٹ</option></select></div></div></div>";
+    h += "<div class='table-wrap'><table class='es-t es-rt'><colgroup><col style='width:62px'><col style='width:200px'><col style='width:110px'><col style='width:104px'><col style='width:104px'><col style='width:104px'><col style='width:104px'><col style='width:110px'></colgroup><thead><tr><th>Object Head</th><th>Description</th><th>" + T("Total sanctioned budget", "کُل منظور شدہ بجٹ") + "</th><th>" + T("1st quarter<br>Jul–Sep", "پہلی سہ ماہی<br>جولائی–ستمبر") + "</th><th>" + T("2nd quarter<br>Oct–Dec", "دوسری سہ ماہی<br>اکتوبر–دسمبر") + "</th><th>" + T("3rd quarter<br>Jan–Mar", "تیسری سہ ماہی<br>جنوری–مارچ") + "</th><th>" + T("4th quarter<br>Apr–Jun", "چوتھی سہ ماہی<br>اپریل–جون") + "</th><th>" + T("Total released", "کُل جاری شدہ") + "</th></tr></thead><tbody>";
+    list.forEach(function(r){
+      var q = relOf(r.code), all = 0;
+      h += "<tr><td class='c'>" + X(r.code) + "</td><td>" + X(r.desc) + "</td><td class='n'>" + nz(r.bud) + "</td>";
+      ["q1", "q2", "q3", "q4"].forEach(function(k){ var v = q[k]; all += num(v); t[k] += num(v); h += "<td class='n'><input class='es-q' inputmode='numeric' data-c='" + X(r.code) + "' data-k='" + k + "' value='" + (v != null && v !== "" ? Math.round(num(v)) : "") + "'" + ro + "></td>"; });
+      t.bud += num(r.bud); t.all += all;
+      h += "<td class='n" + (all && r.bud && all > r.bud ? " ex" : "") + "'><b>" + nz(all) + "</b></td></tr>";
+    });
+    h += "<tr class='gt'><td></td><td>G. TOTAL</td><td class='n'>" + sN(t.bud) + "</td><td class='n'>" + sN(t.q1) + "</td><td class='n'>" + sN(t.q2) + "</td><td class='n'>" + sN(t.q3) + "</td><td class='n'>" + sN(t.q4) + "</td><td class='n'>" + sN(t.all) + "</td></tr></tbody></table></div>";
     return h;
   }
   function hdrForm(){
@@ -14990,6 +15034,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       if(!S.fy || fyChoices().indexOf(S.fy) < 0) S.fy = defFY();
       if(S.n !== "1" && S.n !== "2") S.n = defN();
       if(S.view === "hdr"){ body.innerHTML = hdrForm(); return; }
+      if(S.view === "rel"){ lastModel = build(); body.innerHTML = relForm(); return; }
       var m = lastModel = build();
       body.innerHTML = controls(m) + statementHtml(m);
     }catch(err){ body.innerHTML = "<div class='es-warn'>" + X(String(err && err.message || err)) + "</div>"; if(window.console) console.error(err); }
@@ -14997,10 +15042,10 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
 
   /* ---------- downloads (same exporter as the rest of the portal) ---------- */
   function exportTables(m){
-    var hs = heads(m), nm = hs.map(function(x, i){ return i >= 3 && i <= 9; }), rows = [], foot = [], i = 0;
+    var hs = heads(m), nm = hs.map(function(x, i){ return i >= 3 && i <= 10; }), rows = [], foot = [], i = 0;
     var sal = m.rows.filter(function(r){ return r.sal; }), con = m.rows.filter(function(r){ return !r.sal; });
-    function line(r){ i++; rows.push({cells: [String(i), r.code, r.desc, nz(r.bud), nz(r.a5), nz(r.a6), nz(r.tot), nz(r.ant), nz(r.exc), nz(r.sur), r.rem || ""], nums: nm}); }
-    function tl(label, t, arr){ arr.push({cells: ["", "", label, sN(t.bud), sN(t.a5), sN(t.a6), sN(t.tot), sN(t.ant), nz(t.exc), nz(t.sur), ""], nums: nm}); }
+    function line(r){ i++; rows.push({cells: [String(i), r.code, r.desc, nz(r.bud), m.hasRel ? nz(r.rel) : "", nz(r.a5), nz(r.a6), nz(r.tot), nz(r.ant), nz(r.exc), nz(r.sur), r.rem || ""], nums: nm}); }
+    function tl(label, t, arr){ arr.push({cells: ["", "", label, sN(t.bud), m.hasRel ? sN(t.rel) : "", sN(t.a5), sN(t.a6), sN(t.tot), sN(t.ant), nz(t.exc), nz(t.sur), ""], nums: nm}); }
     sal.forEach(line); if(sal.length && con.length) tl("Total — Salary heads", m.tSal, rows);
     con.forEach(line); if(sal.length && con.length) tl("Total — Non-salary heads", m.tCon, rows);
     tl("G. TOTAL", m.tAll, foot);
@@ -15037,6 +15082,19 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       if(key){ var nx = body.querySelector(".es-in[data-c='" + key[0] + "'][data-k='" + key[1] + "']"); if(nx){ nx.focus(); try{ nx.select(); }catch(e){} } }
     }, 0);
   }
+  function relRoot(){ var r = root(); if(!r.rel || typeof r.rel !== "object") r.rel = {}; if(!r.rel[S.fy] || typeof r.rel[S.fy] !== "object") r.rel[S.fy] = {}; return r.rel[S.fy]; }
+  function setRel(code, k, val){
+    if(!canEdit()) return;
+    var R = relRoot(), e = R[code] = Object.assign({}, R[code] || {}), t = String(val || "").replace(/[, ]/g, "");
+    if(t === "" || !isFinite(+t)) delete e[k]; else e[k] = Math.round(+t);
+    if(!Object.keys(e).length) delete R[code];
+    persist();
+    setTimeout(function(){
+      var a = document.activeElement, key = a && a.classList && a.classList.contains("es-q") ? [a.getAttribute("data-c"), a.getAttribute("data-k")] : null;
+      render();
+      if(key){ var nx = body.querySelector(".es-q[data-c='" + key[0] + "'][data-k='" + key[1] + "']"); if(nx){ nx.focus(); try{ nx.select(); }catch(e){} } }
+    }, 0);
+  }
   panel.addEventListener("change", function(ev){
     var t = ev.target, id = t && t.id;
     if(id === "es_fy"){ S.fy = t.value; ss("es_fy", S.fy); render(); }
@@ -15044,9 +15102,11 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     else if(id === "es_paper"){ S.paper = t.value; ss("es_paper", S.paper); }
     else if(id === "es_upto"){ if(!canEdit()) return; var r = stRec(true); r.upto = t.value; persist(); render(); }
     else if(t.classList && t.classList.contains("es-in")){ setEdit(t.getAttribute("data-c"), t.getAttribute("data-k"), t.value); }
+    else if(t.classList && t.classList.contains("es-q")){ setRel(t.getAttribute("data-c"), t.getAttribute("data-k"), t.value); }
+    else if(id === "es_cmp"){ if(!canEdit()) return; root().hdr.cmp = t.value; persist(); render(); }
     else if(t.getAttribute && t.getAttribute("data-h")){ if(!canEdit()) return; var k = t.getAttribute("data-h"), v = String(t.value || "").trim(); if(v) root().hdr[k] = v; else delete root().hdr[k]; persist(); }
   });
-  panel.addEventListener("keydown", function(ev){ var t = ev.target; if(ev.key === "Enter" && t.classList && t.classList.contains("es-in")){ ev.preventDefault(); t.blur(); } });
+  panel.addEventListener("keydown", function(ev){ var t = ev.target; if(ev.key === "Enter" && t.classList && (t.classList.contains("es-in") || t.classList.contains("es-q"))){ ev.preventDefault(); t.blur(); } });
   panel.addEventListener("click", function(ev){
     var b = ev.target.closest && ev.target.closest("button"); if(!b) return;
     if(b.id === "es_print"){ window.print(); }
@@ -15054,6 +15114,14 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     else if(b.id === "es_doc"){ runExport("word"); }
     else if(b.id === "es_xls"){ runExport("excel"); }
     else if(b.id === "es_hdrbtn"){ S.view = "hdr"; render(); }
+    else if(b.id === "es_relbtn"){ S.view = "rel"; render(); }
+    else if(b.id === "es_fill25"){
+      if(!canEdit() || !lastModel) return;
+      var R = relRoot();
+      lastModel.rows.forEach(function(r){ if(!r.bud) return; var e = R[r.code] = Object.assign({}, R[r.code] || {}), qa = Math.round(r.bud / 4);
+        ["q1", "q2", "q3", "q4"].forEach(function(k, i){ if(e[k] == null || e[k] === "") e[k] = i < 3 ? qa : r.bud - qa * 3; }); });
+      persist(); render();
+    }
     else if(b.id === "es_back"){ S.view = "st"; render(); }
     else if(b.id === "es_reset"){
       var c = document.getElementById("es_confirm"); if(!c) return;
