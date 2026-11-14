@@ -1497,6 +1497,48 @@ body.lang-ur .br-part{ font-size:17px; }
   #panel-bm26s .bms-sg{ break-inside:avoid; }
 }
 
+/* ===== Excess & Surrender tab (Admin / Super Admin) ===== */
+#panel-es .es-bar{ display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; margin:0 0 12px; }
+#panel-es .es-bar .field{ min-width:140px; flex:1 1 160px; max-width:240px; margin:0; }
+#panel-es .es-bar select{ width:100%; }
+#panel-es .es-btns{ display:flex; flex-wrap:wrap; gap:8px; margin:0 0 10px; }
+#panel-es .es-warn{ background:#fff4e0; border:1px solid #e8b04a; color:#6b4300; padding:8px 12px; border-radius:var(--radius); margin-bottom:10px; font-size:13px; }
+#panel-es .es-hform{ display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:10px 14px; margin:0 0 10px; }
+#panel-es .es-hform .field{ margin:0; } #panel-es .es-hform input{ width:100%; }
+#panel-es .es-pg{ margin:4px 0 22px; }
+#panel-es .es-t1{ text-align:center; font-weight:700; font-size:16px; margin:4px 0 10px; }
+#panel-es table.es-hd{ border-collapse:collapse; font-size:12.5px; margin:0 0 10px; min-width:min(560px, 100%); }
+#panel-es table.es-hd td{ border:1px solid #888; padding:3px 8px; background:var(--surface); }
+#panel-es table.es-hd td.c{ width:28px; text-align:center; } #panel-es table.es-hd td.v{ min-width:240px; font-weight:600; }
+#panel-es table.es-t{ table-layout:fixed; border-collapse:collapse; font-size:12px; }
+#panel-es table.es-t th, #panel-es table.es-t td{ border:1px solid #777; padding:3px 4px; overflow-wrap:anywhere; background:var(--surface); vertical-align:middle; }
+#panel-es table.es-t th{ overflow-wrap:normal; font-size:10px; font-weight:700; text-align:center; background:rgba(127,127,127,.18); }
+#panel-es table.es-t tr.cn th{ font-size:10px; padding:1px; }
+#panel-es table.es-t td.c{ text-align:center; } #panel-es table.es-t td.n{ text-align:right; font-variant-numeric:tabular-nums; }
+#panel-es table.es-t td.ex{ color:#9a1b1b; } #panel-es table.es-t td.su{ color:#14632f; }
+#panel-es table.es-t td.ed{ background:#fff3b0 !important; color:#222; }
+#panel-es table.es-t tr.tt td{ font-weight:700; background:rgba(127,127,127,.10); }
+#panel-es table.es-t tr.gt td{ font-weight:700; background:rgba(127,127,127,.22); }
+#panel-es .es-in{ width:100%; box-sizing:border-box; border:1px dashed var(--border, #bbb); background:transparent; color:inherit; font:inherit; padding:2px 3px; border-radius:4px; text-align:right; }
+#panel-es .es-in.es-rm{ text-align:left; }
+#panel-es .es-in::placeholder{ color:inherit; opacity:.85; }
+#panel-es .es-in:focus{ outline:2px solid var(--navy, #1f3a5f); background:var(--surface); }
+#panel-es td .pv{ display:none; }
+#panel-es .es-net{ margin:10px 0 0; font-size:13px; }
+#panel-es .es-sg{ display:flex; flex-wrap:wrap; justify-content:space-between; gap:24px 40px; margin-top:48px; font-size:13px; }
+#panel-es .es-sg .s{ min-width:min(260px, 100%); text-align:center; } #panel-es .es-sg .ln{ border-top:1px solid currentColor; margin-bottom:5px; } #panel-es .es-sg .nm{ font-weight:700; }
+@media print{
+  #panel-es .panel-head, #panel-es .es-ctl{ display:none !important; }
+  #panel-es .table-wrap{ overflow:visible !important; max-height:none !important; }
+  #panel-es .es-in{ display:none !important; } #panel-es td .pv{ display:inline !important; }
+  #panel-es table.es-t, #panel-es table.es-hd{ color:#000; }
+  #panel-es table.es-t th, #panel-es table.es-t td, #panel-es table.es-hd td{ border-color:#222; background:#fff !important; color:#000 !important; }
+  #panel-es table.es-t th{ background:#e4e4e4 !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  #panel-es table.es-t tr.tt td, #panel-es table.es-t tr.gt td{ background:#f1f1f1 !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  #panel-es table.es-t tr{ page-break-inside:avoid; }
+  #panel-es .es-pg{ margin:0; } #panel-es .es-sg{ break-inside:avoid; }
+}
+
 .t30-subtabs{ display:flex; gap:8px; flex-wrap:wrap; margin:0 0 14px; }
 .t30-sub{ background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:8px 16px; font:inherit; font-weight:600; cursor:pointer; }
 .t30-sub.active{ background:var(--navy); color:#fff; border-color:var(--navy); }
@@ -1786,6 +1828,7 @@ body.lang-ur .br-part{ font-size:17px; }
     <button class="tab-btn" data-tab="budget" id="bdTabBtn" style="display:none;"><span class="dot"></span> <span class="en">Budget Demand</span><span class="ur">بجٹ ڈیمانڈ</span></button>
     <button class="tab-btn" data-tab="bm26" id="bmTabBtn" style="display:none;"><span class="dot"></span> <span class="en">BM-26 Salary</span><span class="ur">BM-26 تنخواہ گوشوارہ</span></button>
     <button class="tab-btn" data-tab="bm26s" id="bmsTabBtn" style="display:none;"><span class="dot"></span> <span class="en">BM-26 Sample Style</span><span class="ur">BM-26 نمونہ انداز</span></button>
+    <button class="tab-btn" data-tab="es" id="esTabBtn" style="display:none;"><span class="dot"></span> <span class="en">Excess &amp; Surrender</span><span class="ur">ایکسس اور سرنڈر</span></button>
     <button class="tab-btn" data-tab="employees"><span class="dot"></span> <span data-i18n="nav_employees">Employees</span></button>
     <button class="tab-btn" data-tab="leave"><span class="dot"></span> <span data-i18n="nav_leave">Leave Register</span></button>
     <button class="tab-btn" data-tab="attendance"><span class="dot"></span> <span data-i18n="nav_attendance">Attendance Register</span></button>
@@ -2455,6 +2498,16 @@ body.lang-ur .br-part{ font-size:17px; }
         </div>
       </div>
       <div id="bmsBody"></div>
+    </section>
+
+    <section class="panel" id="panel-es">
+      <div class="panel-head">
+        <div>
+          <h2><span class="en">Excess &amp; Surrender — 1st / 2nd Statement</span><span class="ur">ایکسس اور سرنڈر — پہلی / دوسری اسٹیٹمنٹ</span></h2>
+          <p><span class="en">Head-wise statement of excess and surrender in the layout of the office files (Form BM-VII-A): budget, this year's actual expenditure, last year's same remaining months, anticipated expenditure, Excess (+) and Surrender (−). Figures come automatically; budget, anticipated and remarks can be changed by hand. Print, PDF, Word or Excel.</span><span class="ur">دفتر کی پرانی فائلوں کی ترتیب (فارم BM-VII-A) میں مد وار ایکسس اور سرنڈر: بجٹ، اس سال کا اصل خرچ، پچھلے سال کے باقی مہینوں کا خرچ، متوقع خرچ، ایکسس (+) اور سرنڈر (−)۔ اعداد خود آتے ہیں؛ بجٹ، متوقع خرچ اور ریمارکس ہاتھ سے بدلے جا سکتے ہیں۔ پرنٹ، PDF، Word یا Excel۔</span></p>
+        </div>
+      </div>
+      <div id="esBody"></div>
     </section>
 
     <!-- ================= EMPLOYEES ================= -->
@@ -14740,6 +14793,295 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     b.addEventListener("click", function(){ if(b.getAttribute("data-tab") === "bm26s") setTimeout(render, 0); });
   });
   setInterval(function(){ try{ syncTabButton(); }catch(e){} }, 1500);
+})();
+
+
+/* ================= EXCESS & SURRENDER — First / Second Statement (Admin / Super Admin) =================
+   Head-wise statement in the layout of the old office files (Form BM-VII-A): budget, actual expenditure of the
+   first months of this year, actual expenditure of the same last months of the previous year, total actuals,
+   anticipated expenditure of this year, Excess (+) and Surrender (-).  Figures come from the Monthly Report's
+   compute() (pay slips / Account Office salary figures + Account Office contingent figures) and are never changed
+   there.  Only the hand edits (budget, anticipated, remarks), the "actuals up to" month and the header lines are
+   saved, in STATE.stmtData.es, so every computer sees the same statement. */
+(function(){
+  "use strict";
+  var panel = document.getElementById("panel-es"), body = document.getElementById("esBody");
+  if(!panel || !body) return;
+  var MN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  var PAGES = {A4: ["A4 landscape", 1123], Legal: ["14in 8.5in", 1344], Foolscap: ["13in 8.5in", 1248], A3: ["A3 landscape", 1587]};
+  var HDR = [["form1", "Form line — 1st statement"], ["form2", "Form line — 2nd statement"], ["dept", "Department"], ["att", "Attached Department (where applicable)"],
+             ["grantNo", "Grant No"], ["grantName", "Grant Name"], ["fcName", "Funds Center Name"], ["ddo", "Funds Center Code (DDO Code)"], ["sdf", "Sub-Detailed Function"],
+             ["prepName", "Prepared by — name"], ["prepDesig", "Prepared by — designation"], ["ddoName", "DDO — name"], ["ddoDesig", "DDO — designation"]];
+  var HDR_UR = {form1:"فارم کی سطر — پہلی اسٹیٹمنٹ", form2:"فارم کی سطر — دوسری اسٹیٹمنٹ", dept:"محکمہ", att:"منسلک محکمہ (اگر ہو)", grantNo:"گرانٹ نمبر", grantName:"گرانٹ کا نام",
+                fcName:"فنڈز سینٹر کا نام", ddo:"فنڈز سینٹر کوڈ (DDO کوڈ)", sdf:"سب ڈیٹیلڈ فنکشن", prepName:"تیار کنندہ — نام", prepDesig:"تیار کنندہ — عہدہ", ddoName:"ڈی ڈی او — نام", ddoDesig:"ڈی ڈی او — عہدہ"};
+  var DEF = {form1: "First Statement of Excess & Surrenders", form2: "Form: BM-VII-A — Revised Estimates / Second Statement of Excess & Surrenders", ddo: "RI-4720"};
+
+  function allowed(){ try{ return isAdmin(); }catch(e){ return false; } }
+  function canEdit(){ try{ return allowed() && (typeof silentOK === "function" ? silentOK("cf") : true); }catch(e){ return false; } }
+  function num(v){ return Number(v) || 0; }
+  function sN(v){ v = Math.round(num(v)); return (v < 0 ? "-" : "") + String(Math.abs(v)).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+  function nz(v){ v = Math.round(num(v)); return v ? sN(v) : "-"; }
+  function T(en, ur){ return "<span class='en'>" + en + "</span><span class='ur'>" + ur + "</span>"; }
+  function X(s){ return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;"); }
+  function ls(k, d){ try{ var v = localStorage.getItem(k); return v == null ? d : v; }catch(e){ return d; } }
+  function ss(k, v){ try{ localStorage.setItem(k, v); }catch(e){} }
+  function p2(n){ return (n < 10 ? "0" : "") + n; }
+  function shiftYm(k, by){ var a = k.split("-"), t = (+a[0]) * 12 + (+a[1] - 1) + by; return Math.floor(t / 12) + "-" + p2(t % 12 + 1); }
+  function mShort(k){ var a = k.split("-"); return MN[+a[1] - 1].slice(0, 3) + " " + a[0]; }
+  function dmy1(k){ return "01-" + k.split("-")[1] + "-" + k.split("-")[0]; }
+  function dmyEnd(k){ var a = k.split("-"), d = new Date(+a[0], +a[1], 0).getDate(); return p2(d) + "-" + a[1] + "-" + a[0]; }
+  function codeOf(label){ return String(label || "").split("-")[0]; }
+  function descOf(label){ return String(label || "").split("-").slice(1).join("-").trim(); }
+  function isSal(code){ return /^A01/.test(code); }
+  function fyStartYm(fy){ return fy.slice(0, 4) + "-07"; }
+  function fyEndYm(fy){ return (+fy.slice(0, 4) + 1) + "-06"; }
+  function prevFY(fy){ var y = +fy.slice(0, 4) - 1; return y + "-" + String((y + 1) % 100).padStart(2, "0"); }
+  function curYm(){ var d = new Date(); return d.getFullYear() + "-" + p2(d.getMonth() + 1); }
+
+  /* ---------- stored data: STATE.stmtData.es ---------- */
+  function root(){
+    var s = STATE.stmtData; if(!s || typeof s !== "object") s = STATE.stmtData = {};
+    if(!s.es || typeof s.es !== "object") s.es = {};
+    if(!s.es.hdr || typeof s.es.hdr !== "object") s.es.hdr = {};
+    if(!s.es.st || typeof s.es.st !== "object") s.es.st = {};
+    return s.es;
+  }
+  function hv(k){
+    var v = (STATE.stmtData && STATE.stmtData.es && STATE.stmtData.es.hdr || {})[k];
+    if(v != null && v !== "") return v;
+    var sg = STATE.stmtData && STATE.stmtData.sign;
+    if(k === "ddoName" && sg && sg.ddoName) return sg.ddoName;
+    if(k === "ddoDesig" && sg && sg.ddoDesig) return sg.ddoDesig;
+    return DEF[k] || "";
+  }
+  function stKey(){ return S.fy + "|" + S.n; }
+  function stRec(create){
+    var all = (STATE.stmtData && STATE.stmtData.es && STATE.stmtData.es.st) || {}, r = all[stKey()];
+    if(!r && create){ r = root().st[stKey()] = {ed: {}, upto: ""}; }
+    return r || {ed: {}, upto: ""};
+  }
+  var saveT = null;
+  function persist(){ clearTimeout(saveT); saveT = setTimeout(function(){ try{ saveData(); }catch(e){ console.error(e); } }, 500); }
+
+  /* ---------- choices ---------- */
+  function fyChoices(){
+    var set = {}; set[typeof baseFY === "function" ? baseFY() : "2026-27"] = 1; set[fyOfDate(curYm() + "-01")] = 1;
+    (STATE.bills || []).forEach(function(b){ if(b.date) set[fyOfDate(b.date)] = 1; });
+    return Object.keys(set).sort().reverse();
+  }
+  function defFY(){ return fyOfDate(curYm() + "-01"); }
+  function defN(){ var m = +curYm().split("-")[1]; return (m >= 7 && m <= 12) ? "1" : "2"; }
+  function defUpto(fy, n){ return n === "1" ? fy.slice(0, 4) + "-10" : (+fy.slice(0, 4) + 1) + "-02"; }
+  function uptoChoices(fy){ var out = [], k = fyStartYm(fy), e = shiftYm(fyEndYm(fy), -1); while(k <= e){ out.push(k); k = shiftYm(k, 1); } return out; }
+  var S = {fy: ls("es_fy", ""), n: ls("es_n", ""), paper: ls("es_paper", "Legal"), view: "st"};
+  if(!PAGES[S.paper]) S.paper = "Legal";
+
+  /* ---------- the figures ---------- */
+  function totalsAt(mk){
+    var M = window.__brMonthly; if(!M) throw new Error("The Monthly Report is not ready yet — reload the page.");
+    var d = M.compute(mk, {ao: true}), out = {}, month = {}, bud = {}, lab = {}, ok = d.uptoOK !== false && d.haveMonth !== false;
+    function take(r){ var c = codeOf(r.head); if(!/^[A-Z0-9]{6}$/.test(c)) return; if(!lab[c]) lab[c] = r.head; bud[c] = (bud[c] || 0) + num(r.budget); out[c] = (out[c] || 0) + num(r.total == null ? 0 : r.total); month[c] = (month[c] || 0) + num(r.month); }
+    d.sal.forEach(function(r){ take(r); if(r.total == null) ok = false; });
+    d.bud.forEach(take);
+    return {tot: out, month: month, bud: bud, lab: lab, salOK: ok, haveMonth: !!d.haveMonth};
+  }
+  function build(){
+    var fy = S.fy, n = S.n, rec = stRec(false), upto = rec.upto && rec.upto >= fyStartYm(fy) && rec.upto < fyEndYm(fy) ? rec.upto : defUpto(fy, n);
+    var nCur = 0; for(var k = fyStartYm(fy); k <= upto; k = shiftYm(k, 1)) nCur++;
+    var nRest = 12 - nCur, pfy = prevFY(fy), pCut = shiftYm(upto, -12), pFrom = shiftYm(pCut, 1), pEnd = fyEndYm(pfy);
+    var cur = totalsAt(upto), pAtCut = totalsAt(pCut), pAtEnd = totalsAt(pEnd), warn = [];
+    if(!cur.salOK) warn.push(T("Salary figures of some months from July " + fy.slice(0, 4) + " to " + mShort(upto) + " are missing (no pay slips / Account Office figures), so column 5 of the salary heads is short.",
+                               "جولائی " + fy.slice(0, 4) + " سے " + mShort(upto) + " تک کچھ مہینوں کی تنخواہ کے اعداد موجود نہیں (پے سلپ / اکاؤنٹ آفس اعداد نہیں)، اس لیے تنخواہ کی مدوں کا کالم 5 کم ہے۔"));
+    if(!pAtCut.salOK || !pAtEnd.salOK) warn.push(T("Salary figures of some months of FY " + pfy + " are missing, so column 6 of the salary heads may be wrong.",
+                               "مالی سال " + pfy + " کے کچھ مہینوں کی تنخواہ کے اعداد موجود نہیں، اس لیے تنخواہ کی مدوں کا کالم 6 غلط ہو سکتا ہے۔"));
+    var byCode = {}, order = [];
+    [cur, pAtEnd, pAtCut].forEach(function(t, i){ Object.keys(t.lab).forEach(function(c){ if(!byCode[c]){ byCode[c] = {code: c, desc: descOf(t.lab[c]) || c, budget: i === 0 ? num(t.bud[c]) : 0}; order.push(c); } }); });
+    var ed = rec.ed || {}, rows = [];
+    order.forEach(function(c){
+      var h = byCode[c], e = ed[c] || {};
+      var a5 = num(cur.tot[c]), a6 = num(pAtEnd.tot[c]) - num(pAtCut.tot[c]);
+      if(a6 < 0) a6 = 0;
+      var proj = isSal(c) ? num(cur.month[c]) * nRest : a6, autoAnt = a5 + proj;
+      var bud = (e.b != null && e.b !== "") ? num(e.b) : h.budget, ant = (e.a != null && e.a !== "") ? num(e.a) : autoAnt;
+      if(!bud && !a5 && !a6 && !ant && !e.r) return;
+      rows.push({code: c, desc: h.desc, sal: isSal(c), autoBud: h.budget, bud: bud, a5: a5, a6: a6, tot: a5 + a6, autoAnt: autoAnt, ant: ant,
+                 exc: Math.max(ant - bud, 0), sur: Math.max(bud - ant, 0), rem: e.r || "", edB: e.b != null && e.b !== "", edA: e.a != null && e.a !== ""});
+    });
+    rows.sort(function(a, b){ return (b.sal ? 1 : 0) - (a.sal ? 1 : 0) || (a.code < b.code ? -1 : a.code > b.code ? 1 : 0); });
+    function sum(list){ var t = {bud: 0, a5: 0, a6: 0, tot: 0, ant: 0, exc: 0, sur: 0}; list.forEach(function(r){ Object.keys(t).forEach(function(k){ t[k] += r[k]; }); }); return t; }
+    var nEd = 0; Object.keys(ed).forEach(function(c){ var e = ed[c] || {}; if((e.b != null && e.b !== "") || (e.a != null && e.a !== "") || e.r) nEd++; });
+    return {fy: fy, n: n, upto: upto, nCur: nCur, nRest: nRest, pfy: pfy, pFrom: pFrom, pEnd: pEnd, rows: rows, warn: warn, nEd: nEd,
+            tSal: sum(rows.filter(function(r){ return r.sal; })), tCon: sum(rows.filter(function(r){ return !r.sal; })), tAll: sum(rows)};
+  }
+
+  /* ---------- column titles (as in the office file) ---------- */
+  function heads(m){
+    return ["Sr. No", "Object Head", "Description",
+      "Total Budget released till " + MN[+m.upto.split("-")[1] - 1] + " " + m.upto.split("-")[0],
+      "Expenditure first " + m.nCur + " months of FY " + m.fy + " (" + dmy1(fyStartYm(m.fy)) + " to " + dmyEnd(m.upto) + ")",
+      "Expenditure last " + m.nRest + " months of FY " + m.pfy + " (" + dmy1(m.pFrom) + " to " + dmyEnd(m.pEnd) + ")",
+      "Total Actuals (Col. 5 + 6)", "Anticipated Expenditure for the current year " + m.fy, "Excess (+) (Col. 8 - 4)", "Surrender (-) (Col. 4 - 8)", "Remarks"];
+  }
+  var WID = [34, 66, 210, 96, 112, 112, 100, 108, 92, 92, 130];
+  function titleOf(m){ return (m.n === "1" ? hv("form1") : hv("form2")) + " — F.Y " + m.fy; }
+
+  /* ---------- drawing ---------- */
+  function hdrBlock(){
+    var h = "<table class='es-hd'><tbody>", list = [["dept", "Department"], ["att", "Attached Department (Where applicable)"], ["grantNo", "Grant No"], ["grantName", "Grant Name"],
+      ["fcName", "Funds Center Name"], ["ddo", "Funds Center Code (DDO Code)"], ["sdf", "Sub-Detailed Function"]];
+    list.forEach(function(x, i){ h += "<tr><td class='c'>" + (i + 1) + "</td><td>" + x[1] + "</td><td class='v'>" + X(hv(x[0])) + "</td></tr>"; });
+    return h + "</tbody></table>";
+  }
+  function inp(r, k){
+    var v = k === "b" ? r.bud : r.ant, edd = k === "b" ? r.edB : r.edA, auto = k === "b" ? r.autoBud : r.autoAnt;
+    if(!canEdit()) return "<td class='n" + (edd ? " ed" : "") + "'>" + nz(v) + "</td>";
+    return "<td class='n" + (edd ? " ed" : "") + "'><span class='pv'>" + nz(v) + "</span><input class='es-in' inputmode='numeric' data-c='" + X(r.code) + "' data-k='" + k + "' value='" + (edd ? Math.round(v) : "") +
+      "' placeholder='" + X(sN(auto)) + "' title='" + X((edd ? "Edited by hand. Automatic figure: " : "Automatic figure: ") + sN(auto) + " — type a figure to change it, clear the box to go back.") + "'></td>";
+  }
+  function remCell(r){
+    if(!canEdit()) return "<td>" + X(r.rem) + "</td>";
+    return "<td><span class='pv'>" + X(r.rem) + "</span><input class='es-in es-rm' data-c='" + X(r.code) + "' data-k='r' value='" + X(r.rem) + "'></td>";
+  }
+  function tRow(label, t, cls){
+    return "<tr class='" + cls + "'><td></td><td></td><td>" + label + "</td><td class='n'>" + sN(t.bud) + "</td><td class='n'>" + sN(t.a5) + "</td><td class='n'>" + sN(t.a6) + "</td><td class='n'>" + sN(t.tot) +
+      "</td><td class='n'>" + sN(t.ant) + "</td><td class='n'>" + nz(t.exc) + "</td><td class='n'>" + nz(t.sur) + "</td><td></td></tr>";
+  }
+  function statementHtml(m){
+    var hs = heads(m), h = "<div class='es-pg'><div class='es-t1'>" + X(titleOf(m)) + "</div>" + hdrBlock();
+    h += "<div class='table-wrap'><table class='es-t'><colgroup>" + WID.map(function(w){ return "<col style='width:" + w + "px'>"; }).join("") + "</colgroup><thead><tr>" +
+      hs.map(function(x){ return "<th>" + X(x) + "</th>"; }).join("") + "</tr><tr class='cn'>" + hs.map(function(x, i){ return "<th>" + (i + 1) + "</th>"; }).join("") + "</tr></thead><tbody>";
+    var i = 0, sal = m.rows.filter(function(r){ return r.sal; }), con = m.rows.filter(function(r){ return !r.sal; });
+    function line(r){ i++; return "<tr><td class='c'>" + i + "</td><td class='c'>" + X(r.code) + "</td><td>" + X(r.desc) + "</td>" + inp(r, "b") + "<td class='n'>" + nz(r.a5) + "</td><td class='n'>" + nz(r.a6) +
+      "</td><td class='n'>" + nz(r.tot) + "</td>" + inp(r, "a") + "<td class='n ex'>" + nz(r.exc) + "</td><td class='n su'>" + nz(r.sur) + "</td>" + remCell(r) + "</tr>"; }
+    sal.forEach(function(r){ h += line(r); });
+    if(sal.length && con.length) h += tRow("Total — Salary heads", m.tSal, "tt");
+    con.forEach(function(r){ h += line(r); });
+    if(sal.length && con.length) h += tRow("Total — Non-salary heads", m.tCon, "tt");
+    h += tRow("G. TOTAL", m.tAll, "gt") + "</tbody></table></div>";
+    var net = m.tAll.exc - m.tAll.sur;
+    h += "<div class='es-net'>Net position: Excess " + sN(m.tAll.exc) + " &nbsp;−&nbsp; Surrender " + sN(m.tAll.sur) + " &nbsp;=&nbsp; <b>" + (net >= 0 ? "Net Excess " + sN(net) : "Net Surrender " + sN(-net)) + "</b></div>";
+    h += "<div class='es-sg'><div class='s'><div class='ln'></div><div class='nm'>" + (X(hv("prepName")) || "&nbsp;") + "</div><div>" + (X(hv("prepDesig")) || "&nbsp;") + "</div></div>" +
+      "<div class='s'><div class='ln'></div><div class='nm'>" + (X(hv("ddoName")) || "&nbsp;") + "</div><div>" + (X(hv("ddoDesig")) || "&nbsp;") + "</div></div></div></div>";
+    return h;
+  }
+  function controls(m){
+    var h = "<div class='es-ctl'><div class='es-bar'>";
+    h += "<div class='field'><label>" + T("Financial year", "مالی سال") + "</label><select id='es_fy'>" + fyChoices().map(function(f){ return "<option" + (f === S.fy ? " selected" : "") + ">" + f + "</option>"; }).join("") + "</select></div>";
+    h += "<div class='field'><label>" + T("Statement", "اسٹیٹمنٹ") + "</label><select id='es_n'><option value='1'" + (S.n === "1" ? " selected" : "") + ">1st statement</option><option value='2'" + (S.n === "2" ? " selected" : "") + ">2nd statement</option></select></div>";
+    h += "<div class='field'><label>" + T("Actuals up to (end of)", "اصل خرچ (مہینے کے آخر تک)") + "</label><select id='es_upto'" + (canEdit() ? "" : " disabled") + ">" + uptoChoices(S.fy).map(function(k){ return "<option value='" + k + "'" + (k === m.upto ? " selected" : "") + ">" + X(mShort(k)) + "</option>"; }).join("") + "</select></div>";
+    h += "<div class='field'><label>" + T("Paper", "کاغذ") + "</label><select id='es_paper'>" + ["A4", "Legal", "Foolscap", "A3"].map(function(p){ return "<option" + (p === S.paper ? " selected" : "") + ">" + p + "</option>"; }).join("") + "</select></div></div>";
+    h += "<div class='es-btns'><button type='button' class='btn small primary' id='es_print'>🖨 " + T("Print", "پرنٹ") + "</button><button type='button' class='btn small' id='es_pdf'>PDF</button><button type='button' class='btn small' id='es_doc'>Word</button><button type='button' class='btn small' id='es_xls'>Excel</button>" +
+      "<button type='button' class='btn small' id='es_hdrbtn'>" + T("Header & signatures", "ہیڈر اور دستخط") + "</button>" + (canEdit() && m.nEd ? "<button type='button' class='btn small' id='es_reset'>" + T("Clear all hand edits (" + m.nEd + ")", "ہاتھ کی تمام تبدیلیاں ختم (" + m.nEd + ")") + "</button>" : "") + "</div>";
+    h += "<div id='es_confirm'></div>";
+    m.warn.forEach(function(w){ h += "<div class='es-warn'>" + w + "</div>"; });
+    h += "<p class='hint'>" + T("Column 5 = expenditure of this year up to the chosen month (salary from the pay slips / Account Office salary figures, other heads from the Account Office figures). Column 6 = the same remaining months of last year. Column 8 is worked out automatically (salary heads: column 5 + last month × " + m.nRest + " months; other heads: column 5 + column 6). Budget (col. 4), anticipated (col. 8) and remarks can be changed by hand — yellow = edited; clear the box to go back to the automatic figure. Saved online for every computer.",
+      "کالم 5 = اس سال منتخب مہینے تک کا خرچ (تنخواہ پے سلپ / اکاؤنٹ آفس اعداد سے، باقی مدیں اکاؤنٹ آفس اعداد سے)۔ کالم 6 = پچھلے سال کے باقی وہی مہینے۔ کالم 8 خود بنتا ہے (تنخواہ: کالم 5 + آخری مہینہ × " + m.nRest + " مہینے؛ باقی مدیں: کالم 5 + کالم 6)۔ بجٹ (کالم 4)، متوقع خرچ (کالم 8) اور ریمارکس ہاتھ سے بدلے جا سکتے ہیں — پیلا = تبدیل شدہ؛ خانہ خالی کریں تو خودکار عدد واپس۔ آن لائن محفوظ، ہر کمپیوٹر پر ایک جیسا۔") + "</p></div>";
+    return h;
+  }
+  function hdrForm(){
+    var h = "<div class='es-ctl'><div class='es-btns'><button type='button' class='btn small primary' id='es_back'>← " + T("Back to the statement", "اسٹیٹمنٹ پر واپس") + "</button></div><div class='es-hform'>";
+    HDR.forEach(function(x){ h += "<div class='field'><label>" + T(x[1], HDR_UR[x[0]]) + "</label><input data-h='" + x[0] + "' value='" + X(hv(x[0])) + "'" + (canEdit() ? "" : " disabled") + "></div>"; });
+    return h + "</div><p class='hint'>" + T("These lines print on top of the statement and under the signatures. Type them once; they are saved online.", "یہ سطریں اسٹیٹمنٹ کے اوپر اور دستخط کے نیچے چھپتی ہیں۔ ایک بار لکھ دیں؛ آن لائن محفوظ رہیں گی۔") + "</p></div>";
+  }
+  var lastModel = null;
+  function render(){
+    if(!allowed()){ body.innerHTML = "<div class='es-warn'>" + T("This section is only for Admin / Super Admin.", "یہ حصہ صرف ایڈمن / سپر ایڈمن کے لیے ہے۔") + "</div>"; return; }
+    try{
+      if(!S.fy || fyChoices().indexOf(S.fy) < 0) S.fy = defFY();
+      if(S.n !== "1" && S.n !== "2") S.n = defN();
+      if(S.view === "hdr"){ body.innerHTML = hdrForm(); return; }
+      var m = lastModel = build();
+      body.innerHTML = controls(m) + statementHtml(m);
+    }catch(err){ body.innerHTML = "<div class='es-warn'>" + X(String(err && err.message || err)) + "</div>"; if(window.console) console.error(err); }
+  }
+
+  /* ---------- downloads (same exporter as the rest of the portal) ---------- */
+  function exportTables(m){
+    var hs = heads(m), nm = hs.map(function(x, i){ return i >= 3 && i <= 9; }), rows = [], foot = [], i = 0;
+    var sal = m.rows.filter(function(r){ return r.sal; }), con = m.rows.filter(function(r){ return !r.sal; });
+    function line(r){ i++; rows.push({cells: [String(i), r.code, r.desc, nz(r.bud), nz(r.a5), nz(r.a6), nz(r.tot), nz(r.ant), nz(r.exc), nz(r.sur), r.rem || ""], nums: nm}); }
+    function tl(label, t, arr){ arr.push({cells: ["", "", label, sN(t.bud), sN(t.a5), sN(t.a6), sN(t.tot), sN(t.ant), nz(t.exc), nz(t.sur), ""], nums: nm}); }
+    sal.forEach(line); if(sal.length && con.length) tl("Total — Salary heads", m.tSal, rows);
+    con.forEach(line); if(sal.length && con.length) tl("Total — Non-salary heads", m.tCon, rows);
+    tl("G. TOTAL", m.tAll, foot);
+    var hdr = [["Department", hv("dept")], ["Attached Department (Where applicable)", hv("att")], ["Grant No", hv("grantNo")], ["Grant Name", hv("grantName")], ["Funds Center Name", hv("fcName")],
+               ["Funds Center Code (DDO Code)", hv("ddo")], ["Sub-Detailed Function", hv("sdf")]];
+    var net = m.tAll.exc - m.tAll.sur;
+    return {tables: [
+      {title: titleOf(m), heads: ["Particulars", "Detail"], num: [false, false], rows: hdr.map(function(x){ return {cells: [x[0], x[1] || " "], nums: [false, false]}; }), foot: []},
+      {title: "Statement of Excess & Surrenders — F.Y " + m.fy, heads: hs, rows: rows, foot: foot, num: nm, pageBreak: false},
+      {title: "Net position and signatures", heads: ["Net position", "Prepared by", "Drawing & Disbursing Officer"], num: [false, false, false], pageBreak: false,
+       rows: [{cells: [(net >= 0 ? "Net Excess " + sN(net) : "Net Surrender " + sN(-net)), " ", " "], nums: [false, false, false]},
+              {cells: ["Excess " + sN(m.tAll.exc) + " / Surrender " + sN(m.tAll.sur), hv("prepName") || " ", hv("ddoName") || " "], nums: [false, false, false]},
+              {cells: [" ", hv("prepDesig") || " ", hv("ddoDesig") || " "], nums: [false, false, false]}], foot: []}
+    ], title: titleOf(m), sub: "DDO Code " + (hv("ddo") || "") + "   |   Actuals up to " + mShort(m.upto), base: "Excess_Surrender_" + (m.n === "1" ? "1st" : "2nd") + "_" + m.fy};
+  }
+  async function runExport(kind){
+    var m = lastModel; if(!m){ toast("Nothing to export yet"); return; }
+    if(!window.__brExportTables){ toast("The export tools are not ready — reload the page"); return; }
+    var x = exportTables(m);
+    await window.__brExportTables(kind, x.tables, {title: x.title, sub: x.sub, base: x.base, landscape: true, office: "", paper: S.paper});
+  }
+
+  /* ---------- screen events ---------- */
+  function setEdit(code, k, val){
+    if(!canEdit()) return;
+    var rec = stRec(true); rec.ed = rec.ed || {}; var e = rec.ed[code] = Object.assign({}, rec.ed[code] || {});
+    if(k === "r"){ val = String(val || "").trim(); if(val) e.r = val; else delete e.r; }
+    else { var t = String(val || "").replace(/[, ]/g, ""); if(t === "" || !isFinite(+t)) delete e[k]; else e[k] = Math.round(+t); }
+    if(!Object.keys(e).length) delete rec.ed[code];
+    persist();
+    setTimeout(function(){
+      var a = document.activeElement, key = a && a.classList && a.classList.contains("es-in") ? [a.getAttribute("data-c"), a.getAttribute("data-k")] : null;
+      render();
+      if(key){ var nx = body.querySelector(".es-in[data-c='" + key[0] + "'][data-k='" + key[1] + "']"); if(nx){ nx.focus(); try{ nx.select(); }catch(e){} } }
+    }, 0);
+  }
+  panel.addEventListener("change", function(ev){
+    var t = ev.target, id = t && t.id;
+    if(id === "es_fy"){ S.fy = t.value; ss("es_fy", S.fy); render(); }
+    else if(id === "es_n"){ S.n = t.value; ss("es_n", S.n); render(); }
+    else if(id === "es_paper"){ S.paper = t.value; ss("es_paper", S.paper); }
+    else if(id === "es_upto"){ if(!canEdit()) return; var r = stRec(true); r.upto = t.value; persist(); render(); }
+    else if(t.classList && t.classList.contains("es-in")){ setEdit(t.getAttribute("data-c"), t.getAttribute("data-k"), t.value); }
+    else if(t.getAttribute && t.getAttribute("data-h")){ if(!canEdit()) return; var k = t.getAttribute("data-h"), v = String(t.value || "").trim(); if(v) root().hdr[k] = v; else delete root().hdr[k]; persist(); }
+  });
+  panel.addEventListener("keydown", function(ev){ var t = ev.target; if(ev.key === "Enter" && t.classList && t.classList.contains("es-in")){ ev.preventDefault(); t.blur(); } });
+  panel.addEventListener("click", function(ev){
+    var b = ev.target.closest && ev.target.closest("button"); if(!b) return;
+    if(b.id === "es_print"){ window.print(); }
+    else if(b.id === "es_pdf"){ runExport("pdf"); }
+    else if(b.id === "es_doc"){ runExport("word"); }
+    else if(b.id === "es_xls"){ runExport("excel"); }
+    else if(b.id === "es_hdrbtn"){ S.view = "hdr"; render(); }
+    else if(b.id === "es_back"){ S.view = "st"; render(); }
+    else if(b.id === "es_reset"){
+      var c = document.getElementById("es_confirm"); if(!c) return;
+      c.innerHTML = "<div class='es-warn'>" + T("Clear every hand edit of this statement (budget, anticipated, remarks) and go back to the automatic figures?", "اس اسٹیٹمنٹ کی ہاتھ کی تمام تبدیلیاں (بجٹ، متوقع خرچ، ریمارکس) ختم کر کے خودکار اعداد واپس لائیں؟") +
+        " <button type='button' class='btn small danger' id='es_reset_yes'>" + T("Yes, clear", "ہاں، ختم کریں") + "</button> <button type='button' class='btn small' id='es_reset_no'>" + T("No", "نہیں") + "</button></div>";
+    }
+    else if(b.id === "es_reset_yes"){ if(!canEdit()) return; var r = stRec(true); r.ed = {}; persist(); render(); }
+    else if(b.id === "es_reset_no"){ var c2 = document.getElementById("es_confirm"); if(c2) c2.innerHTML = ""; }
+  });
+
+  /* ---------- printing: page size from the Paper box, whole width on one page ---------- */
+  function onBeforePrint(){
+    if(!panel.classList.contains("active") || !lastModel) return;
+    var pg = PAGES[S.paper] || PAGES.Legal, usable = pg[1] - 64, z = Math.min(1, usable / WID.reduce(function(a, b){ return a + b; }, 0));
+    var st = document.getElementById("esPrintStyle");
+    if(!st){ st = document.createElement("style"); st.id = "esPrintStyle"; document.head.appendChild(st); }
+    st.textContent = "@media print{ @page{ size:" + pg[0] + "; margin:8mm; } #panel-es .es-pg{ zoom:" + z.toFixed(3) + "; } }";
+  }
+  function onAfterPrint(){ var st = document.getElementById("esPrintStyle"); if(st) st.textContent = ""; }
+  window.addEventListener("beforeprint", onBeforePrint);
+  window.addEventListener("afterprint", onAfterPrint);
+
+  function syncTabButton(){ var btn = document.getElementById("esTabBtn"); if(btn) btn.style.display = allowed() ? "flex" : "none"; }
+  document.querySelectorAll(".tab-btn").forEach(function(b){
+    b.addEventListener("click", function(){ if(b.getAttribute("data-tab") === "es") setTimeout(render, 0); });
+  });
+  setInterval(function(){ try{ syncTabButton(); }catch(e){} }, 1500);
+  window.__brES = {build: function(){ return build(); }, render: render, exportTables: exportTables, state: S};
 })();
 
 
