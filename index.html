@@ -14822,6 +14822,14 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
                 fcName:"فنڈز سینٹر کا نام", ddo:"فنڈز سینٹر کوڈ (DDO کوڈ)", sdf:"سب ڈیٹیلڈ فنکشن", prepName:"تیار کنندہ — نام", prepDesig:"تیار کنندہ — عہدہ", ddoName:"ڈی ڈی او — نام", ddoDesig:"ڈی ڈی او — عہدہ"};
   var DEF = {form1: "First Statement of Excess & Surrenders", form2: "Form: BM-VII-A — Revised Estimates / Second Statement of Excess & Surrenders", ddo: "RI-4720"};
 
+  /* Account Office (fabs) year-wise figures of DDO RI-4720, FY 2020-21 to 2026-27, from the exports the user downloaded on 13-11-2026:
+     fy -> code -> [released budget, final budget, Jul, Aug, ... Jun].  Kept in the database (STATE.stmtData.es.ao), not in this public file.  Used for closed years (month-wise spending) and as the released budget when
+     the quarterly releases are not typed in. */
+  function AOd(){ var a = (typeof STATE !== "undefined" && STATE && STATE.stmtData && STATE.stmtData.es && STATE.stmtData.es.ao) || null; return (a && a.fy) ? a : {asOf: "", upto: "", fy: {}, L: {}}; }
+  function aoFy(fy){ var a = AOd(); return (a.fy && a.fy[fy]) || null; }
+  /* only years already finished when the Account Office file was downloaded are complete in it (ao.upto = last month in the file);
+     the running year always comes from the portal itself (its file is used only for the released budget) */
+  function useAO(fy){ var u = AOd().upto || ""; return !!aoFy(fy) && !!u && fyEndYm(fy) <= u; }
   function allowed(){ try{ return isAdmin(); }catch(e){ return false; } }
   function canEdit(){ try{ return allowed() && (typeof silentOK === "function" ? silentOK("cf") : true); }catch(e){ return false; } }
   function num(v){ return Number(v) || 0; }
@@ -14879,6 +14887,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   function fyChoices(){
     var set = {}; set[typeof baseFY === "function" ? baseFY() : "2026-27"] = 1; set[fyOfDate(curYm() + "-01")] = 1;
     (STATE.bills || []).forEach(function(b){ if(b.date) set[fyOfDate(b.date)] = 1; });
+    Object.keys(AOd().fy || {}).forEach(function(f){ set[f] = 1; });
     return Object.keys(set).sort().reverse();
   }
   function defFY(){ return fyOfDate(curYm() + "-01"); }
@@ -14890,6 +14899,12 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
 
   /* ---------- the figures ---------- */
   function totalsAt(mk){
+    var fyM = fyOfDate(mk + "-01");
+    if(useAO(fyM)){
+      var A = aoFy(fyM), idx = ((+mk.split("-")[1]) + 5) % 12, o = {tot: {}, month: {}, bud: {}, lab: {}, salOK: true, haveMonth: true, ao: true};
+      Object.keys(A).forEach(function(c){ var v = A[c], t = 0; for(var i = 0; i <= idx; i++) t += num(v[2 + i]); o.tot[c] = t; o.month[c] = num(v[2 + idx]); o.bud[c] = num(v[1]); o.lab[c] = c + "-" + (AOd().L[c] || c); });
+      return o;
+    }
     var M = window.__brMonthly; if(!M) throw new Error("The Monthly Report is not ready yet — reload the page.");
     var d = M.compute(mk, {ao: true}), out = {}, month = {}, bud = {}, lab = {}, ok = d.uptoOK !== false && d.haveMonth !== false;
     function take(r){ var c = codeOf(r.head); if(!/^[A-Z0-9]{6}$/.test(c)) return; if(!lab[c]) lab[c] = r.head; bud[c] = (bud[c] || 0) + num(r.budget); out[c] = (out[c] || 0) + num(r.total == null ? 0 : r.total); month[c] = (month[c] || 0) + num(r.month); }
@@ -14906,23 +14921,28 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
                                "جولائی " + fy.slice(0, 4) + " سے " + mShort(upto) + " تک کچھ مہینوں کی تنخواہ کے اعداد موجود نہیں (پے سلپ / اکاؤنٹ آفس اعداد نہیں)، اس لیے تنخواہ کی مدوں کا کالم 5 کم ہے۔"));
     if(!pAtCut.salOK || !pAtEnd.salOK) warn.push(T("Salary figures of some months of FY " + pfy + " are missing, so column 6 of the salary heads may be wrong.",
                                "مالی سال " + pfy + " کے کچھ مہینوں کی تنخواہ کے اعداد موجود نہیں، اس لیے تنخواہ کی مدوں کا کالم 6 غلط ہو سکتا ہے۔"));
+    if(cur.ao) warn.push(T("F.Y " + fy + " is closed: spending is taken month-wise from the Account Office file (downloaded " + AOd().asOf + ").", "مالی سال " + fy + " بند ہو چکا ہے: خرچ اکاؤنٹ آفس کی فائل (ڈاؤن لوڈ " + AOd().asOf + ") سے مہینہ وار لیا گیا ہے۔"));
+    if(!aoFy(pfy) && pfy < "2021-22") warn.push(T("Figures of F.Y " + pfy + " are not in the portal or the Account Office files, so column 7 is empty.", "مالی سال " + pfy + " کے اعداد نہ پورٹل میں ہیں نہ اکاؤنٹ آفس فائلوں میں، اس لیے کالم 7 خالی ہے۔"));
     var byCode = {}, order = [];
     [cur, pAtEnd, pAtCut].forEach(function(t, i){ Object.keys(t.lab).forEach(function(c){ if(!byCode[c]){ byCode[c] = {code: c, desc: descOf(t.lab[c]) || c, budget: i === 0 ? num(t.bud[c]) : 0}; order.push(c); } }); });
-    var ed = rec.ed || {}, rows = [], nQ = qDone(upto), cmp = cmpMode(), hasRel = relHas();
+    var ed = rec.ed || {}, rows = [], nQ = qDone(upto), cmp = cmpMode(), aoF = aoFy(fy), nRelAO = 0, hasRel = relHas() || !!aoF;
     if(!hasRel) warn.push(T("The quarterly budget releases of FY " + fy + " are not entered yet, so the column \"Budget released\" is empty. Press \"Budget releases (quarters)\" to enter them.",
                             "مالی سال " + fy + " کی سہ ماہی بجٹ ریلیز ابھی درج نہیں، اس لیے \"جاری شدہ بجٹ\" کا کالم خالی ہے۔ \"بجٹ ریلیز (سہ ماہی)\" کا بٹن دبا کر درج کریں۔"));
     order.forEach(function(c){
       var h = byCode[c], e = ed[c] || {};
       var a5 = num(cur.tot[c]), a6 = num(pAtEnd.tot[c]) - num(pAtCut.tot[c]);
       if(a6 < 0) a6 = 0;
-      var proj = isSal(c) ? num(cur.month[c]) * nRest : a6, autoAnt = a5 + proj;
+      var proj = (isSal(c) && c !== "A01273" && c !== "A01274") ? num(cur.month[c]) * nRest : a6,   /* honoraria / medical charges are not paid every month: use last year's same months */ autoAnt = a5 + proj;
       var bud = (e.b != null && e.b !== "") ? num(e.b) : h.budget, ant = (e.a != null && e.a !== "") ? num(e.a) : autoAnt;
-      var q = relOf(c), rel = 0; for(var qi = 1; qi <= nQ; qi++) rel += num(q["q" + qi]);
+      var q = relOf(c), rel = 0, qHas = ["q1","q2","q3","q4"].some(function(k){ return q[k] != null && q[k] !== ""; }), relAO = false;
+      if(qHas){ for(var qi = 1; qi <= nQ; qi++) rel += num(q["q" + qi]); }
+      else if(aoF && aoF[c]){ rel = num(aoF[c][0]); relAO = true; nRelAO++; }
       if(!bud && !a5 && !a6 && !ant && !e.r && !rel) return;
       var base = cmp === "rel" ? rel : bud;
       rows.push({code: c, desc: h.desc, sal: isSal(c), autoBud: h.budget, bud: bud, rel: rel, a5: a5, a6: a6, tot: a5 + a6, autoAnt: autoAnt, ant: ant,
-                 exc: Math.max(ant - base, 0), sur: Math.max(base - ant, 0), rem: e.r || "", edB: e.b != null && e.b !== "", edA: e.a != null && e.a !== ""});
+                 exc: Math.max(ant - base, 0), sur: Math.max(base - ant, 0), relAO: relAO, rem: e.r || "", edB: e.b != null && e.b !== "", edA: e.a != null && e.a !== ""});
     });
+    if(nRelAO) warn.push(T("Column 5: where the quarterly releases are not typed in, the released budget is taken from the Account Office file (as on " + AOd().asOf + "), marked *.", "کالم 5: جن مدوں کی سہ ماہی ریلیز درج نہیں، وہاں جاری شدہ بجٹ اکاؤنٹ آفس فائل (" + AOd().asOf + ") سے لیا گیا ہے، نشان *۔"));
     rows.sort(function(a, b){ return (b.sal ? 1 : 0) - (a.sal ? 1 : 0) || (a.code < b.code ? -1 : a.code > b.code ? 1 : 0); });
     function sum(list){ var t = {bud: 0, rel: 0, a5: 0, a6: 0, tot: 0, ant: 0, exc: 0, sur: 0}; list.forEach(function(r){ Object.keys(t).forEach(function(k){ t[k] += r[k]; }); }); return t; }
     var nEd = 0; Object.keys(ed).forEach(function(c){ var e = ed[c] || {}; if((e.b != null && e.b !== "") || (e.a != null && e.a !== "") || e.r) nEd++; });
@@ -14971,7 +14991,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     h += "<div class='table-wrap'><table class='es-t'><colgroup>" + WID.map(function(w){ return "<col style='width:" + w + "px'>"; }).join("") + "</colgroup><thead><tr>" +
       hs.map(function(x){ return "<th>" + X(x) + "</th>"; }).join("") + "</tr><tr class='cn'>" + hs.map(function(x, i){ return "<th>" + (i + 1) + "</th>"; }).join("") + "</tr></thead><tbody>";
     var i = 0, sal = m.rows.filter(function(r){ return r.sal; }), con = m.rows.filter(function(r){ return !r.sal; });
-    function line(r){ i++; return "<tr><td class='c'>" + i + "</td><td class='c'>" + X(r.code) + "</td><td>" + X(r.desc) + "</td>" + inp(r, "b") + "<td class='n rl'>" + (m.hasRel ? nz(r.rel) : "") + "</td><td class='n'>" + nz(r.a5) + "</td><td class='n'>" + nz(r.a6) +
+    function line(r){ i++; return "<tr><td class='c'>" + i + "</td><td class='c'>" + X(r.code) + "</td><td>" + X(r.desc) + "</td>" + inp(r, "b") + "<td class='n rl'>" + (m.hasRel ? nz(r.rel) + (r.relAO && r.rel ? "*" : "") : "") + "</td><td class='n'>" + nz(r.a5) + "</td><td class='n'>" + nz(r.a6) +
       "</td><td class='n'>" + nz(r.tot) + "</td>" + inp(r, "a") + "<td class='n ex'>" + nz(r.exc) + "</td><td class='n su'>" + nz(r.sur) + "</td>" + remCell(r) + "</tr>"; }
     sal.forEach(function(r){ h += line(r); });
     if(sal.length && con.length) h += tRow("Total — Salary heads", m.tSal, "tt");
@@ -15004,22 +15024,23 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     m.rows.forEach(function(r){ heads[r.code] = r; });
     Object.keys(relAll()).forEach(function(c){ if(!heads[c]) heads[c] = {code: c, desc: c, bud: 0, sal: isSal(c)}; });
     Object.keys(heads).sort(function(a, b){ return (isSal(b) ? 1 : 0) - (isSal(a) ? 1 : 0) || (a < b ? -1 : 1); }).forEach(function(c){ list.push(heads[c]); });
-    var ro = canEdit() ? "" : " disabled", t = {bud: 0, q1: 0, q2: 0, q3: 0, q4: 0, all: 0};
+    var ro = canEdit() ? "" : " disabled", t = {bud: 0, q1: 0, q2: 0, q3: 0, q4: 0, all: 0, ao: 0}, aoF2 = aoFy(S.fy);
     var h = "<div class='es-ctl'><div class='es-btns'><button type='button' class='btn small primary' id='es_back'>← " + T("Back to the statement", "اسٹیٹمنٹ پر واپس") + "</button>" +
       (canEdit() ? "<button type='button' class='btn small' id='es_fill25'>" + T("Fill empty boxes with 25% of the budget", "خالی خانوں میں بجٹ کا 25% بھر دیں") + "</button>" : "") + "</div>" +
       "<div class='es-big'>" + T("Budget releases — F.Y " + X(S.fy), "بجٹ ریلیز — مالی سال " + X(S.fy)) + "</div>" +
       "<div class='hint es-help'>" + T("Type the amount released in each quarter for each head (as in the release letter). 1st quarter = July–September, 2nd = October–December, 3rd = January–March, 4th = April–June. The statement adds up the quarters released up to its month. Saved online.",
         "ہر مد کے سامنے ہر سہ ماہی میں جاری ہونے والی رقم لکھیں (جیسے ریلیز لیٹر میں ہے)۔ پہلی سہ ماہی = جولائی–ستمبر، دوسری = اکتوبر–دسمبر، تیسری = جنوری–مارچ، چوتھی = اپریل–جون۔ اسٹیٹمنٹ اپنے مہینے تک کی سہ ماہیاں خود جمع کرتی ہے۔ آن لائن محفوظ۔") + "</div>";
     h += "<div class='es-bar'><div class='field'><label>" + T("Excess / Surrender worked out against", "ایکسس / سرنڈر کس بجٹ کے مقابلے میں") + "</label><select id='es_cmp'" + ro + "><option value='tot'" + (m.cmp === "tot" ? " selected" : "") + ">" + "Total sanctioned budget / کُل منظور شدہ بجٹ</option><option value='rel'" + (m.cmp === "rel" ? " selected" : "") + ">Budget released till date / اب تک جاری شدہ بجٹ</option></select></div></div></div>";
-    h += "<div class='table-wrap'><table class='es-t es-rt'><colgroup><col style='width:62px'><col style='width:200px'><col style='width:110px'><col style='width:104px'><col style='width:104px'><col style='width:104px'><col style='width:104px'><col style='width:110px'></colgroup><thead><tr><th>Object Head</th><th>Description</th><th>" + T("Total sanctioned budget", "کُل منظور شدہ بجٹ") + "</th><th>" + T("1st quarter<br>Jul–Sep", "پہلی سہ ماہی<br>جولائی–ستمبر") + "</th><th>" + T("2nd quarter<br>Oct–Dec", "دوسری سہ ماہی<br>اکتوبر–دسمبر") + "</th><th>" + T("3rd quarter<br>Jan–Mar", "تیسری سہ ماہی<br>جنوری–مارچ") + "</th><th>" + T("4th quarter<br>Apr–Jun", "چوتھی سہ ماہی<br>اپریل–جون") + "</th><th>" + T("Total released", "کُل جاری شدہ") + "</th></tr></thead><tbody>";
+    h += "<div class='table-wrap'><table class='es-t es-rt'><colgroup><col style='width:62px'><col style='width:200px'><col style='width:110px'><col style='width:104px'><col style='width:104px'><col style='width:104px'><col style='width:104px'><col style='width:110px'><col style='width:120px'></colgroup><thead><tr><th>Object Head</th><th>Description</th><th>" + T("Total sanctioned budget", "کُل منظور شدہ بجٹ") + "</th><th>" + T("1st quarter<br>Jul–Sep", "پہلی سہ ماہی<br>جولائی–ستمبر") + "</th><th>" + T("2nd quarter<br>Oct–Dec", "دوسری سہ ماہی<br>اکتوبر–دسمبر") + "</th><th>" + T("3rd quarter<br>Jan–Mar", "تیسری سہ ماہی<br>جنوری–مارچ") + "</th><th>" + T("4th quarter<br>Apr–Jun", "چوتھی سہ ماہی<br>اپریل–جون") + "</th><th>" + T("Total released", "کُل جاری شدہ") + "</th><th>" + T("Account Office released (as on " + AOd().asOf + ")", "اکاؤنٹ آفس کے مطابق جاری شدہ (" + AOd().asOf + ")") + "</th></tr></thead><tbody>";
     list.forEach(function(r){
       var q = relOf(r.code), all = 0;
       h += "<tr><td class='c'>" + X(r.code) + "</td><td>" + X(r.desc) + "</td><td class='n'>" + nz(r.bud) + "</td>";
       ["q1", "q2", "q3", "q4"].forEach(function(k){ var v = q[k]; all += num(v); t[k] += num(v); h += "<td class='n'><input class='es-q' inputmode='numeric' data-c='" + X(r.code) + "' data-k='" + k + "' value='" + (v != null && v !== "" ? Math.round(num(v)) : "") + "'" + ro + "></td>"; });
       t.bud += num(r.bud); t.all += all;
-      h += "<td class='n" + (all && r.bud && all > r.bud ? " ex" : "") + "'><b>" + nz(all) + "</b></td></tr>";
+      var aoR = aoF2 && aoF2[r.code] ? num(aoF2[r.code][0]) : null; if(aoR != null) t.ao += aoR;
+      h += "<td class='n" + (all && r.bud && all > r.bud ? " ex" : "") + "'><b>" + nz(all) + "</b></td><td class='n'>" + (aoR == null ? "" : nz(aoR)) + "</td></tr>";
     });
-    h += "<tr class='gt'><td></td><td>G. TOTAL</td><td class='n'>" + sN(t.bud) + "</td><td class='n'>" + sN(t.q1) + "</td><td class='n'>" + sN(t.q2) + "</td><td class='n'>" + sN(t.q3) + "</td><td class='n'>" + sN(t.q4) + "</td><td class='n'>" + sN(t.all) + "</td></tr></tbody></table></div>";
+    h += "<tr class='gt'><td></td><td>G. TOTAL</td><td class='n'>" + sN(t.bud) + "</td><td class='n'>" + sN(t.q1) + "</td><td class='n'>" + sN(t.q2) + "</td><td class='n'>" + sN(t.q3) + "</td><td class='n'>" + sN(t.q4) + "</td><td class='n'>" + sN(t.all) + "</td><td class='n'>" + (aoF2 ? sN(t.ao) : "") + "</td></tr></tbody></table></div>";
     return h;
   }
   function hdrForm(){
@@ -15044,7 +15065,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   function exportTables(m){
     var hs = heads(m), nm = hs.map(function(x, i){ return i >= 3 && i <= 10; }), rows = [], foot = [], i = 0;
     var sal = m.rows.filter(function(r){ return r.sal; }), con = m.rows.filter(function(r){ return !r.sal; });
-    function line(r){ i++; rows.push({cells: [String(i), r.code, r.desc, nz(r.bud), m.hasRel ? nz(r.rel) : "", nz(r.a5), nz(r.a6), nz(r.tot), nz(r.ant), nz(r.exc), nz(r.sur), r.rem || ""], nums: nm}); }
+    function line(r){ i++; rows.push({cells: [String(i), r.code, r.desc, nz(r.bud), m.hasRel ? nz(r.rel) : "", nz(r.a5), nz(r.a6), nz(r.tot), nz(r.ant), nz(r.exc), nz(r.sur), [r.rem || "", r.relAO ? "Col. 5 as per Account Office (" + AOd().asOf + ")" : ""].filter(Boolean).join("; ")], nums: nm}); }
     function tl(label, t, arr){ arr.push({cells: ["", "", label, sN(t.bud), m.hasRel ? sN(t.rel) : "", sN(t.a5), sN(t.a6), sN(t.tot), sN(t.ant), nz(t.exc), nz(t.sur), ""], nums: nm}); }
     sal.forEach(line); if(sal.length && con.length) tl("Total — Salary heads", m.tSal, rows);
     con.forEach(line); if(sal.length && con.length) tl("Total — Non-salary heads", m.tCon, rows);
