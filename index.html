@@ -1510,7 +1510,8 @@ body.lang-ur .br-part{ font-size:17px; }
 #panel-es .es-t1{ text-align:center; font-weight:700; font-size:16px; margin:4px 0 10px; }
 #panel-es table.es-hd{ border-collapse:collapse; font-size:12.5px; margin:0 0 10px; min-width:min(560px, 100%); }
 #panel-es table.es-hd td{ border:1px solid #888; padding:3px 8px; background:var(--surface); }
-#panel-es table.es-hd td.c{ width:28px; text-align:center; } #panel-es table.es-hd td.v{ min-width:240px; font-weight:600; }
+#panel-es table.es-hd td.c{ width:28px; text-align:center; } #panel-es table.es-hd td.v{ min-width:min(240px, 40vw); font-weight:600; }
+#panel-es table.es-hd{ max-width:100%; } #panel-es table.es-hd td{ overflow-wrap:anywhere; }   /* phone: the header block fits the screen */
 #panel-es table.es-t{ table-layout:fixed; border-collapse:collapse; font-size:12px; }
 #panel-es table.es-t th, #panel-es table.es-t td{ border:1px solid #777; padding:3px 4px; overflow-wrap:anywhere; background:var(--surface); vertical-align:middle; }
 #panel-es table.es-t th{ overflow-wrap:normal; font-size:10px; font-weight:700; text-align:center; background:rgba(127,127,127,.18); }
