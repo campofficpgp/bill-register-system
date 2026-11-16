@@ -1087,6 +1087,7 @@ details.faq-item{ border-radius:8px !important; background:var(--surface) !impor
 .br-snack button:hover{ background:rgba(255,255,255,.12); }
 .br-snack .x{ border:0; color:#cbd5e1; padding:4px 8px; font-size:16px; line-height:1; }
 .toast{ border-radius:10px !important; bottom:76px !important; }
+@media print{ .toast, #toast{ display:none !important; } }   /* a message bubble shown at the moment of printing must not print on every page */
 
 /* ---------- tablet ---------- */
 @media (max-width:960px){
