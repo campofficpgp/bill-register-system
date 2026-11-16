@@ -7903,7 +7903,9 @@ function colNormLabel(s){
   s = s.replace(/\b(january|february|march|april|may|june|july|august|september|october|november|december)\s*\d{4}\b/g, " ");
   s = s.replace(/\bf\.?\s?y\.?\s*\d{4}\s*-\s*\d{2,4}\b/g, " fy ").replace(/\b\d{4}\s*-\s*\d{2}\b/g, " ");
   s = s.replace(/\b(first|last)\s+\d+\s+months\b/g, "$1 months");
-  return s.replace(/[^a-z0-9؀-ۿ]+/g, "");
+  s = s.replace(/[^a-z0-9]+/g, "").replace(/^a[0-9][0-9a-z]{4}(?=[a-z])/, "").replace(/s$/, "");   /* English part only; object-head code and plural "s" ignored */
+  s = s.replace(/allowance(?=[0-9]|$)/, "").replace(/^adhocrelief(?=[0-9])/, "ara");   /* "House Rent Allowance" = "House Rent", "Adhoc Relief 2023" = "ARA 2023" */
+  return s;
 }
 function colEnglishText(th){
   var c = th.cloneNode(true);
@@ -7929,9 +7931,7 @@ function colGenericList(panelKey){
 function colHiddenKeys(panelKey){
   var cfg = (STATE.printColumns && STATE.printColumns[panelKey]) || {}, out = {};
   if(colIsGeneric(panelKey)){ Object.keys(cfg).forEach(function(k){ if(cfg[k] === false) out[k] = 1; }); return out; }
-  var p = document.getElementById("panel-" + panelKey);   /* register tabs: hidden data-col keys -> their heading text */
-  if(p) p.querySelectorAll("table.print-cols-table thead [data-col]").forEach(function(th){ if(cfg[th.dataset.col] === false) out[colNormLabel(colEnglishText(th))] = 1; });
-  return out;
+  return out;   /* register tabs: their hidden columns are dropped inside extractTables() by data-col */
 }
 /* downloads: drop the hidden columns from the tables handed to the PDF / Word / Excel / CSV builders */
 window.__brColFilter = function(panelKey, tables){
@@ -8725,6 +8725,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       ths.forEach(function(th, i){
         var txt = clean(th.textContent);
         if(th.classList.contains("row-actions-th") || /^(actions?|عمل)$/i.test(txt)) return;
+        if(th.dataset && th.dataset.col && tb.classList.contains("print-cols-table")){ var pcK = panel.id.replace("panel-", ""), pcC = (STATE.printColumns && STATE.printColumns[pcK]) || {}; if(pcC[th.dataset.col] === false) return; }
         if(th.offsetWidth === 0 && th.getClientRects().length === 0) return;
         keep.push(i); heads.push(txt);
       });
