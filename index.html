@@ -1803,7 +1803,7 @@ body.lang-ur .br-part{ font-size:17px; }
     <button id="globalPrintBtn" data-perm="x" data-i18n="btn_printCurrent">Print current view</button>
     <button id="globalPdfBtn" data-perm="x" title="Downloads a ready PDF file directly" data-i18n="btn_downloadPdfCurrent">📄 Download PDF</button>
     <button id="hfConfigBtn" type="button" class="btn ghost small" style="display:none;" title="Report header/footer fields / رپورٹ ہیڈر/فوٹر فیلڈز">☰ Header/Footer</button>
-    <button id="colsConfigBtn" type="button" class="btn ghost small" style="display:none;" title="Choose which columns to print / پرنٹ کے لیے کالم منتخب کریں">☰ Select Columns</button>
+    <button id="colsConfigBtn" type="button" class="btn ghost small" style="display:none;" title="Choose which columns to print and download / پرنٹ اور ڈاؤن لوڈ کے لیے کالم منتخب کریں">☰ Select Columns / کالم</button>
     <div class="br-menu left" id="brDataMenu">
       <button type="button" class="br-menu-btn" aria-haspopup="true">💾 <span class="en">Data</span><span class="ur">ڈیٹا</span> <span class="caret">▾</span></button>
       <div class="br-menu-list" role="menu">
@@ -3034,9 +3034,10 @@ body.lang-ur .br-part{ font-size:17px; }
 <div class="hf-modal-overlay" id="colsModalOverlay">
   <div class="hf-modal">
     <h3 id="colsModalTitle">Select print columns</h3>
-    <div class="pb-sub">اس رپورٹ کے پرنٹ پر یہ کالم دکھانے ہیں یا نہیں، منتخب کریں (صرف Administrator کو نظر آتا ہے، اسکرین یا Excel/CSV پر اثر نہیں پڑے گا)۔<br>Choose which columns should appear when this report is printed (Administrator only — does not affect the screen view or Excel/CSV export).</div>
+    <div class="pb-sub">جو کالم پرنٹ اور ڈاؤن لوڈ (PDF / Word / Excel / CSV) میں نہیں چاہیے اس کا ٹِک ہٹا دیں اور محفوظ کریں۔ اسکرین پر سب کالم نظر آتے رہیں گے۔ یہ انتخاب آن لائن محفوظ رہتا ہے۔<br>Untick a column to leave it out of the print and of the PDF / Word / Excel / CSV downloads. The screen always shows every column. Saved online.</div>
     <div id="colsCheckboxWrap"></div>
     <div class="pb-actions">
+      <button type="button" class="pb-cancel" id="colsAllBtn">سب کالم واپس / Show all</button>
       <button type="button" class="pb-cancel" id="colsCancelBtn">Cancel</button>
       <button type="button" class="pb-confirm" id="colsSaveBtn">محفوظ کریں / Save</button>
     </div>
@@ -7637,7 +7638,8 @@ function ensureAttPrintOrientationStyleEl(){
 /* ================= Item 18: optional report header/footer fields ================= */
 var PANEL_LABELS = {
   bill:"Contingent Bill", cash:"Cash Book", stock:"Stock Register", ledger:"Ledger & Budget",
-  employees:"Employees", leave:"Leave Register", attendance:"Attendance Register", reports:"Reports"
+  employees:"Employees", leave:"Leave Register", attendance:"Attendance Register", reports:"Reports",
+  monthly:"Monthly Report", statement:"Balance Statement", payfix:"Pay Fixation", budget:"Budget Demand", bm26:"BM-26 Salary", bm26s:"BM-26 Sample Style", es:"Excess & Surrender"
 };
 function currentPanelKey(){
   var active = document.querySelector(".panel.active");
@@ -7862,7 +7864,7 @@ document.getElementById("hfSaveBtn").addEventListener("click", function(){
    Excel/CSV exports are, as in every other system, never filtered by this setting. */
 function collectPanelColumns(panelKey){
   var table = document.querySelector("#panel-"+panelKey+" table.print-cols-table");
-  if(!table) return [];
+  if(!table) return colGenericList(panelKey);
   var cols = [];
   table.querySelectorAll("thead [data-col]").forEach(function(th){ cols.push({key: th.dataset.col, label: th.textContent.trim()}); });
   return cols;
@@ -7891,6 +7893,110 @@ function renderColsCheckboxes(panelKey, cols){
   });
   document.getElementById("colsCheckboxWrap").innerHTML = html || "<p>No printable columns.</p>";
 }
+/* ===== Column chooser for every tab (16-Nov-2026) =====
+   Tabs without a register table (BM-26, Budget Demand, Excess & Surrender, Monthly Report, Balance Statement ...)
+   get their columns from the table headings on screen. A column switched off is left out of the PRINT and of the
+   PDF / Word / Excel / CSV downloads; the screen always shows every column. Saved online in STATE.printColumns[tab]. */
+function colNormLabel(s){
+  s = String(s || "").toLowerCase();
+  s = s.replace(/\([^)]*\d[^)]*\)/g, " ");                                   /* "(01-07-2026 to 31-10-2026)", "(Col. 6 + 7)" */
+  s = s.replace(/\b(january|february|march|april|may|june|july|august|september|october|november|december)\s*\d{4}\b/g, " ");
+  s = s.replace(/\bf\.?\s?y\.?\s*\d{4}\s*-\s*\d{2,4}\b/g, " fy ").replace(/\b\d{4}\s*-\s*\d{2}\b/g, " ");
+  s = s.replace(/\b(first|last)\s+\d+\s+months\b/g, "$1 months");
+  return s.replace(/[^a-z0-9؀-ۿ]+/g, "");
+}
+function colEnglishText(th){
+  var c = th.cloneNode(true);
+  Array.prototype.forEach.call(c.querySelectorAll(".ur"), function(x){ x.remove(); });
+  return c.textContent;
+}
+function colIsGeneric(panelKey){
+  var p = document.getElementById("panel-" + panelKey);
+  return !!p && !p.querySelector("table.print-cols-table");
+}
+function colGenericList(panelKey){
+  var p = document.getElementById("panel-" + panelKey), seen = {}, out = [];
+  if(!p) return out;
+  p.querySelectorAll("table thead th").forEach(function(th){
+    var key = colNormLabel(colEnglishText(th));
+    if(!key || /^[0-9]+$/.test(key) || seen[key]) return;
+    seen[key] = 1;
+    var label = String(th.innerText || th.textContent || "").replace(/\s+/g, " ").trim();
+    out.push({key: key, label: label || key});
+  });
+  return out;
+}
+function colHiddenKeys(panelKey){
+  var cfg = (STATE.printColumns && STATE.printColumns[panelKey]) || {}, out = {};
+  if(colIsGeneric(panelKey)){ Object.keys(cfg).forEach(function(k){ if(cfg[k] === false) out[k] = 1; }); return out; }
+  var p = document.getElementById("panel-" + panelKey);   /* register tabs: hidden data-col keys -> their heading text */
+  if(p) p.querySelectorAll("table.print-cols-table thead [data-col]").forEach(function(th){ if(cfg[th.dataset.col] === false) out[colNormLabel(colEnglishText(th))] = 1; });
+  return out;
+}
+/* downloads: drop the hidden columns from the tables handed to the PDF / Word / Excel / CSV builders */
+window.__brColFilter = function(panelKey, tables){
+  try{
+    var hid = colHiddenKeys(panelKey);
+    if(!Object.keys(hid).length || !tables) return tables;
+    return tables.map(function(t){
+      if(!t || !t.heads) return t;
+      var keep = t.heads.map(function(h){ return !hid[colNormLabel(h)]; });
+      if(keep.every(Boolean) || !keep.some(Boolean)) return t;
+      function f(a){ return Array.isArray(a) ? a.filter(function(_, i){ return keep[i]; }) : a; }
+      var n = Object.assign({}, t);
+      n.heads = f(t.heads); n.num = f(t.num);
+      n.rows = (t.rows || []).map(function(r){ if(!r || r.banner || !r.cells) return r; var x = Object.assign({}, r); x.cells = f(r.cells); x.nums = f(r.nums); return x; });
+      n.foot = (t.foot || []).map(function(r){ if(!r || !r.cells) return r; var x = Object.assign({}, r); x.cells = f(r.cells); x.nums = f(r.nums); return x; });
+      return n;
+    });
+  }catch(e){ console.error(e); return tables; }
+};
+/* print: on the tabs without a register table, hide the cells of the chosen columns just for the print */
+var colPrintUndo = [];
+function colHideForPrint(){
+  colRestoreAfterPrint();
+  var key = currentPanelKey(); if(!key || !colIsGeneric(key)) return;
+  var hid = colHiddenKeys(key); if(!Object.keys(hid).length) return;
+  var panel = document.getElementById("panel-" + key);
+  panel.querySelectorAll("table").forEach(function(tb){
+    var rows = Array.prototype.slice.call(tb.rows), grid = [], pos = [];
+    rows.forEach(function(tr, r){
+      Array.prototype.forEach.call(tr.cells, function(td){
+        grid[r] = grid[r] || [];
+        var c = 0; while(grid[r][c]) c++;
+        var cs = td.colSpan || 1, rs = td.rowSpan || 1;
+        for(var y = r; y < r + rs; y++){ grid[y] = grid[y] || []; for(var x = c; x < c + cs; x++) grid[y][x] = 1; }
+        pos.push({td: td, c: c, cs: cs, head: tr.parentNode && tr.parentNode.tagName === "THEAD"});
+      });
+    });
+    var hc = {}, nCols = 0;
+    pos.forEach(function(p){ nCols = Math.max(nCols, p.c + p.cs); if(p.head && hid[colNormLabel(colEnglishText(p.td))]) for(var x = p.c; x < p.c + p.cs; x++) hc[x] = 1; });
+    var nh = Object.keys(hc).length; if(!nh || nh >= nCols) return;
+    pos.forEach(function(p){
+      var h = 0; for(var x = p.c; x < p.c + p.cs; x++) if(hc[x]) h++;
+      if(!h) return;
+      if(h === p.cs){ colPrintUndo.push({t: "d", el: p.td, v: p.td.style.display}); p.td.style.display = "none"; }
+      else { colPrintUndo.push({t: "s", el: p.td, v: p.cs}); p.td.colSpan = p.cs - h; }
+    });
+    var ci = 0;
+    Array.prototype.forEach.call(tb.querySelectorAll(":scope > colgroup > col"), function(col){
+      var sp = +(col.getAttribute("span") || 1), here = ci; ci += sp;
+      if(sp === 1 && hc[here]){ colPrintUndo.push({t: "c", el: col, parent: col.parentNode, next: col.nextSibling}); col.parentNode.removeChild(col); }
+    });
+  });
+}
+function colRestoreAfterPrint(){
+  while(colPrintUndo.length){
+    var u = colPrintUndo.pop();
+    try{
+      if(u.t === "d") u.el.style.display = u.v;
+      else if(u.t === "s") u.el.colSpan = u.v;
+      else if(u.t === "c") u.parent.insertBefore(u.el, u.next && u.next.parentNode === u.parent ? u.next : null);
+    }catch(e){}
+  }
+}
+window.addEventListener("beforeprint", colHideForPrint);
+window.addEventListener("afterprint", colRestoreAfterPrint);
 document.getElementById("colsConfigBtn").addEventListener("click", function(){
   if(!permOK("cf")){ permDeny("Only an Administrator can change print columns."); return; }
   var key = currentPanelKey();
@@ -7900,6 +8006,9 @@ document.getElementById("colsConfigBtn").addEventListener("click", function(){
   document.getElementById("colsModalOverlay").dataset.key = key;
   renderColsCheckboxes(key, cols);
   document.getElementById("colsModalOverlay").style.display = "flex";
+});
+document.getElementById("colsAllBtn").addEventListener("click", function(){
+  document.querySelectorAll("#colsCheckboxWrap .colsChk").forEach(function(chk){ chk.checked = true; });
 });
 document.getElementById("colsCancelBtn").addEventListener("click", function(){
   document.getElementById("colsModalOverlay").style.display = "none";
@@ -9248,6 +9357,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(kind === "csv" && CSV_BTN[key] && $(CSV_BTN[key])){ $(CSV_BTN[key]).click(); return; }
     if(key === "statement" && window.__brStatementExport){ window.__brStatementExport(kind); return; }
     var tables = extractTables(panel);
+    if(window.__brColFilter) tables = window.__brColFilter(key, tables);
     if(!tables.length){
       say("There are no records to export on this tab.", "اس ٹیب میں ایکسپورٹ کے لیے کوئی ریکارڈ نہیں ہے۔"); return;
     }
@@ -9305,6 +9415,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
 
   /* Budget Demand (and any other module): export a ready-made list of tables with the same PDF / Word / Excel builders */
   window.__brExportTables = async function(kind, tables, o, asked){
+    if(!asked && window.__brColFilter) tables = window.__brColFilter(currentPanelKey(), tables);
     if(!tables || !tables.length){ say("There are no records to export on this tab.", "اس ٹیب میں ایکسپورٹ کے لیے کوئی ریکارڈ نہیں ہے۔"); return; }
     if(!asked && window.__campAskStamp && window.__campAskStamp(function(){ window.__brExportTables(kind, tables, o, true); })){ return; }
     var maxCols = 0; tables.forEach(function(t){ maxCols = Math.max(maxCols, t.heads.length); });
