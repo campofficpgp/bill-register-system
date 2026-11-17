@@ -12548,6 +12548,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var dis = n ? "" : " disabled";
     h += "<div class='pf-bar'><b>" + T("Statement (due / drawn / difference)", "گوشوارہ (واجب / وصول / فرق)") + ":</b> <button type='button' class='btn small ar-ex' data-k='excel'" + dis + ">Excel</button> <button type='button' class='btn small ar-ex' data-k='word'" + dis + ">Word</button> <button type='button' class='btn small ar-ex' data-k='pdf'" + dis + ">PDF</button></div>";
     h += "<div class='pf-bar'><b>" + T("Covering letter to the Account Office", "اکاؤنٹ آفس کے نام خط") + ":</b> <button type='button' class='btn small ar-lt' data-k='word'" + dis + ">Word</button> <button type='button' class='btn small ar-lt' data-k='pdf'" + dis + ">PDF</button> &nbsp; <b>" + T("Urdu letter", "اردو خط") + ":</b> <button type='button' class='btn small ar-lu' data-k='word'" + dis + ">Word</button> <button type='button' class='btn small ar-lu' data-k='pdf'" + dis + ">PDF</button></div>";
+    h += "<div class='pf-bar'><b>" + T("Form T.R. 22 (detailed pay bill)", "فارم T.R. 22 (تفصیلی پے بل)") + ":</b> <button type='button' class='btn small ar-tr' data-k='pdf'" + dis + ">PDF</button> <button type='button' class='btn small ar-tr' data-k='excel'" + dis + ">Excel</button> <button type='button' class='btn small ar-tr' data-k='csv'" + dis + ">CSV</button> <button type='button' class='btn small ar-tr' data-k='blank'>" + T("Blank form PDF", "خالی فارم PDF") + "</button></div>";
     h += "<p class='hint'>" + T("Tick one bill for a single employee’s separate bill, or several to get them in one file and one letter.", "ایک ملازم کا الگ بل چاہیے تو ایک پر ٹک کریں، ایک فائل اور ایک خط کے لیے کئی پر۔") + "</p>";
     return h;
   }
@@ -12619,7 +12620,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     vh.forEach(function(k){ h += "<td class='num' data-g='" + k[0] + "'><b>" + money(T0[k[0]]) + "</b></td>"; });
     h += "<td class='num' data-g='total'><b>" + money(T0.total) + "</b></td></tr></tbody></table></div>";
     h += "<div class='pf-bar' style='margin-top:12px'><button type='button' class='btn' id='ar_recalc'>↻ " + T("Recalculate", "دوبارہ حساب") + "</button><div class='field' style='max-width:180px'><label>" + T("Add a month", "مہینہ جوڑیں") + "</label><input type='month' id='ar_addm' value='" + esc(mAdd(b.to, 1)) + "'></div><button type='button' class='btn small' id='ar_addbtn'>➕ " + T("Add", "جوڑیں") + "</button></div>";
-    h += "<div class='pf-bar'><b>" + T("Statement", "گوشوارہ") + ":</b> <button type='button' class='btn small ar-ex' data-k='excel'>Excel</button> <button type='button' class='btn small ar-ex' data-k='word'>Word</button> <button type='button' class='btn small ar-ex' data-k='pdf'>PDF</button> &nbsp; <b>" + T("Letter", "خط") + ":</b> <button type='button' class='btn small ar-lt' data-k='word'>Word</button> <button type='button' class='btn small ar-lt' data-k='pdf'>PDF</button> &nbsp; <b>" + T("Urdu letter", "اردو خط") + ":</b> <button type='button' class='btn small ar-lu' data-k='word'>Word</button> <button type='button' class='btn small ar-lu' data-k='pdf'>PDF</button></div>";
+    h += "<div class='pf-bar'><b>" + T("Statement", "گوشوارہ") + ":</b> <button type='button' class='btn small ar-ex' data-k='excel'>Excel</button> <button type='button' class='btn small ar-ex' data-k='word'>Word</button> <button type='button' class='btn small ar-ex' data-k='pdf'>PDF</button> &nbsp; <b>" + T("Letter", "خط") + ":</b> <button type='button' class='btn small ar-lt' data-k='word'>Word</button> <button type='button' class='btn small ar-lt' data-k='pdf'>PDF</button> &nbsp; <b>" + T("Urdu letter", "اردو خط") + ":</b> <button type='button' class='btn small ar-lu' data-k='word'>Word</button> <button type='button' class='btn small ar-lu' data-k='pdf'>PDF</button> &nbsp; <b>" + T("Form T.R. 22", "فارم T.R. 22") + ":</b> <button type='button' class='btn small ar-tr' data-k='pdf'>PDF</button> <button type='button' class='btn small ar-tr' data-k='excel'>Excel</button> <button type='button' class='btn small ar-tr' data-k='csv'>CSV</button></div>";
     h += "<p class='hint'>" + T("Yellow-marked figures were typed by hand. The first month is counted for the days after the effective date. " + KEEP_DEFAULT_NOTE, "پیلے نشان والی رقمیں ہاتھ سے لکھی گئی ہیں۔ پہلا مہینہ نافذ تاریخ کے بعد کے دنوں کا گنا جاتا ہے۔ میڈیکل، پرسنل، دھلائی اور ARA 2022 / 2023 / 2024 جیسی مدیں وصول شدہ کے برابر رکھی ہیں؛ اکاؤنٹ آفس BPS بدلنے پر انہیں دوبارہ طے کرتا ہے۔") + "</p>";
     return h;
   }
@@ -13042,6 +13043,15 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(t.classList.contains("ar-ex")){ exportStmt(t.getAttribute("data-k")); return; }
     if(t.classList.contains("ar-lt")){ exportLetter(t.getAttribute("data-k"), false); return; }
     if(t.classList.contains("ar-lu")){ exportLetter(t.getAttribute("data-k"), true); return; }
+    if(t.classList.contains("ar-tr")){
+      var tk = t.getAttribute("data-k"), TR = window.__brTR22, tb = selBills();
+      if(!TR || !TR.pdf){ toast("Form T.R. 22 is not ready — reload the page"); return; }
+      if(tk !== "blank" && !tb.length){ toast("Tick the bills first"); return; }
+      if(t.disabled) return; t.disabled = true; var tx = t.textContent; t.textContent = "…";
+      if(tk === "pdf" || tk === "blank") toast("Making the T.R. 22 PDF — a few seconds");
+      (tk === "blank" ? TR.blankPdf() : tk === "pdf" ? TR.pdf(tb) : tk === "excel" ? TR.excel(tb) : TR.csv(tb)).then(function(){}, function(err){ console.error(err); toast("T.R. 22: " + (err && err.message || err)); }).then(function(){ t.disabled = false; t.textContent = tx; });
+      return;
+    }
   });
   panel.addEventListener("change", function(ev){
     var t = ev.target; if(!allowed()) return;
@@ -13115,6 +13125,8 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     return out;
   }
   function addTo(t, c){ Object.keys(c).forEach(function(k){ t[k] = (t[k] || 0) + c[k]; }); }
+  /* "Oct–Dec" in one year, "Oct-2025 to Oct" when the arrears run into the next year (the year that follows is printed after it) */
+  function rng(ms){ if(!ms.length) return ""; var a = ms[0], b = ms[ms.length - 1]; if(a === b) return mLab(a).slice(0, 3); return String(a).slice(0, 4) === String(b).slice(0, 4) ? mLab(a).slice(0, 3) + "–" + mLab(b).slice(0, 3) : mLab(a) + " to " + mLab(b).slice(0, 3); }
   var CSS = "@page{size:A4 landscape;margin:8mm 8mm 9mm}*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;color:#000}" +
     "table{border-collapse:collapse;width:100%}th,td{border:.8px solid #000;padding:2px}" +
     "table.f{table-layout:fixed}table.f thead{display:table-header-group}table.f th{font-size:7px;font-weight:700;text-align:center;line-height:1.15;height:124px;vertical-align:bottom;padding:4px 2px}" +
@@ -13154,7 +13166,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(!blank){ used++; body += "<tr class='gt'><td></td><td class='nm'><b>TOTAL ARREARS</b></td>" + cells(grand) + "<td></td><td></td></tr>"; }
     var blanks = Math.max(blank ? 12 : 3, 12 - used); for(i = 0; i < blanks; i++) body += "<tr class='bl'>" + new Array(26).join("<td></td>") + "</tr>";
     var months = []; if(!blank) list.forEach(function(b){ (b.rows || []).forEach(function(r){ if(months.indexOf(r.m) < 0) months.push(r.m); }); }); months.sort();
-    var monthTxt = blank ? "____________" : (months.length ? "<b>Arrears " + esc(mLab(months[0]).slice(0, 3) + (months.length > 1 ? "–" + mLab(months[months.length - 1]).slice(0, 3) : "")) + "</b>" : "____________");
+    var monthTxt = blank ? "____________" : (months.length ? "<b>Arrears " + esc(rng(months)) + "</b>" : "____________");
     var yr = blank ? "___" : "<b>" + (months.length ? String(months[months.length - 1]).slice(2, 4) : "") + "</b>";
     return {grand: grand, months: months, html: "<table class='f'>" + cols + "<thead>" + h1 + h2 + "</thead><tbody>" + num + rs + body + "</tbody></table>" +
       "<div class='foot'>Form T.R. 22 (See rule 265) — Bill No. ____________ &nbsp; Month " + monthTxt + " 20" + yr + " &nbsp; District <b>" + DISTRICT + "</b> &nbsp; DDO Code <b>" + DDO + "</b> &nbsp; Establishment: <b>" + esc(OFFICE) + "</b>" +
@@ -13168,7 +13180,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var g = F.grand || {}, tot = blank ? "" : n(g[11] || 0), V = function(s){ return blank ? "______________" : "<span class='v'>" + s + "</span>"; };
     var other = blank ? 0 : (g[6] || 0) + (g[8] || 0) + (g[9] || 0) + (g[10] || 0);
     function a(v){ return blank || !v ? "" : n(v); }
-    var mon = blank ? "______________" : "<span class='v'>" + esc(F.months.length ? "Arrears " + mLab(F.months[0]).slice(0, 3) + (F.months.length > 1 ? "–" + mLab(F.months[F.months.length - 1]).slice(0, 3) : "") : "") + "</span>";
+    var mon = blank ? "______________" : "<span class='v'>" + esc(F.months.length ? "Arrears " + rng(F.months) : "") + "</span>";
     var yr = blank ? "____" : "<span class='v'>" + (F.months.length ? String(F.months[F.months.length - 1]).slice(2, 4) : "") + "</span>";
     var ob = [["Pay of Permanent Establishment","A01151",a(g[3])],["Pay of Temporary Establishment","A01151",""],["Pay of Contract staff","A01166",""],["<b>Total Basic Salary</b>","",a(g[3]),1],
       ["House Rent Allowance","A01202",a(g[4])],["Conveyance Allowance","A01203",a(g[5])],["Dearness Allowance","A01205",""],["Local Compensatory Allowance","A01208",""],["Washing Allowance","A01207",a(g[7])],["Dress Allowance","A01204",""],
@@ -13213,7 +13225,126 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var A = window.__brArrears, F = front(list || [], A, blank);
     return "<!doctype html><html><head><meta charset='utf-8'><title>Form T.R. 22</title><style>" + CSS + "</style></head><body>" + F.html + back(F, blank) + "</body></html>";
   }
-  window.__brTR22 = {html: function(list){ return html(list, false); }, blank: function(){ return html([], true); }, words: words};
+  /* ---------- PDF and Excel / CSV of Form T.R. 22 ----------
+     The PDF is drawn by the browser itself (each sheet is put in an SVG <foreignObject> and painted at 3x), so the vertical column
+     headings and every line look exactly as in the print preview.  The front is cut into A4-landscape sheets between rows only (no row
+     is ever split), the column headings repeat on every sheet, the footer is on every sheet and the signature on the last one. */
+  var PW = 1062, PH = 729, SC = 3;   /* 281 x 193 mm of printable area at 96 px per inch; painted at 3x (about 290 dpi) */
+  function tick(ms){ return new Promise(function(r){ setTimeout(r, ms || 0); }); }
+  async function sheetsFor(list, blank){
+    var fr = document.createElement("iframe");
+    fr.style.cssText = "position:fixed;left:-30000px;top:0;width:" + PW + "px;height:1200px;border:0;visibility:hidden";
+    document.body.appendChild(fr);
+    try{
+      var d = fr.contentDocument; d.open(); d.write(html(list, blank)); d.close();
+      await tick(150); try{ if(d.fonts && d.fonts.ready) await d.fonts.ready; }catch(e){}
+      var tbl = d.querySelector("table.f"), foot = d.querySelector(".foot"), sig = foot && foot.nextElementSibling && !foot.nextElementSibling.classList.contains("pb") ? foot.nextElementSibling : null, rv = d.querySelector(".rv");
+      var all = Array.prototype.slice.call(tbl.tBodies[0].rows), lead = all.slice(0, 2), rows = all.slice(2);
+      var probe = d.createElement("div"); probe.style.width = PW + "px"; d.body.appendChild(probe);
+      function build(chunk, last){
+        var t = tbl.cloneNode(false), tb = d.createElement("tbody");
+        Array.prototype.forEach.call(tbl.children, function(ch){ if(ch.tagName !== "TBODY") t.appendChild(ch.cloneNode(true)); });
+        lead.concat(chunk).forEach(function(r){ tb.appendChild(r.cloneNode(true)); }); t.appendChild(tb);
+        var w = d.createElement("div"); w.appendChild(t); if(foot) w.appendChild(foot.cloneNode(true)); if(last && sig) w.appendChild(sig.cloneNode(true));
+        return w;
+      }
+      function hOf(w){ probe.innerHTML = ""; probe.appendChild(w); var h = probe.getBoundingClientRect().height; probe.innerHTML = ""; return h; }
+      var pages = [], cur = [];
+      for(var i = 0; i < rows.length; i++){
+        var tryRows = cur.concat([rows[i]]);
+        if(cur.length && hOf(build(tryRows, false)) > PH){
+          /* do not leave an employee's total row alone at the top of a new sheet */
+          if(rows[i].classList.contains("st") && cur.length > 1){ var mv = cur.pop(); pages.push(cur); cur = [mv, rows[i]]; }
+          else { pages.push(cur); cur = [rows[i]]; }
+        } else cur = tryRows;
+      }
+      pages.push(cur);
+      if(sig && hOf(build(pages[pages.length - 1], true)) > PH) pages.push([]);   /* the signature needs room of its own */
+      var out = pages.map(function(ch, k){ return build(ch, k === pages.length - 1); });
+      if(rv){ var bw = d.createElement("div"); bw.appendChild(rv.cloneNode(true)); out.push(bw); }
+      var css = Array.prototype.map.call(d.querySelectorAll("style"), function(s){ return s.textContent; }).join("\n").replace(/@page\s*\{[^}]*\}/g, "");
+      var res = out.map(function(w){ return {xml: new XMLSerializer().serializeToString(w), h: Math.min(PH + 40, Math.ceil(hOf(w)) + 2)}; });
+      return {css: css, pages: res};
+    } finally { fr.remove(); }
+  }
+  function paint(css, pg){
+    return new Promise(function(res, rej){
+      var x = function(s){ return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); };
+      var svg = "<svg xmlns='http://www.w3.org/2000/svg' width='" + PW * SC + "' height='" + pg.h * SC + "' viewBox='0 0 " + PW + " " + pg.h + "'><foreignObject x='0' y='0' width='" + PW + "' height='" + pg.h + "'>" +
+        "<div xmlns='http://www.w3.org/1999/xhtml' style='width:" + PW + "px;background:#fff;font-family:Arial,Helvetica,sans-serif;color:#000'><style>" + x(css) + "</style>" + pg.xml + "</div></foreignObject></svg>";
+      var img = new Image();
+      img.onload = function(){
+        try{ var c = document.createElement("canvas"); c.width = PW * SC; c.height = pg.h * SC; var g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height); res(c); }catch(e){ rej(e); }
+      };
+      img.onerror = function(){ rej(new Error("The sheet could not be drawn")); };
+      img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+    });
+  }
+  function saveBlob(blob, name){ var a = document.createElement("a"), u = URL.createObjectURL(blob); a.href = u; a.download = name; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(u); a.remove(); }, 2000); }
+  function fileBase(list){ return "TR22_Arrears_" + (list.length === 1 ? String(list[0].name || "").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "") : list.length + "-employees"); }
+  async function pdf(list, blank){
+    if(!window.__brLoadPdfLibs || !(await window.__brLoadPdfLibs())) throw new Error("The PDF tools could not be loaded — check the internet and try again");
+    var J = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF, S = await sheetsFor(blank ? [] : list, blank);
+    var doc = new J({orientation: "landscape", unit: "mm", format: "a4", compress: true}), MMX = 281 / PW;
+    for(var i = 0; i < S.pages.length; i++){
+      var pg = S.pages[i], c = await paint(S.css, pg), w = 281, h = pg.h * MMX;
+      if(h > 193){ w = w * 193 / h; h = 193; }   /* never larger than the printable area */
+      if(i) doc.addPage("a4", "landscape");
+      doc.addImage(c.toDataURL("image/png"), "PNG", 8 + (281 - w) / 2, 8, w, h, undefined, "FAST");
+      doc.setFontSize(7); doc.setTextColor(110); doc.text("Form T.R. 22 — sheet " + (i + 1) + " of " + S.pages.length, 289, 205, {align: "right"});
+    }
+    doc.setProperties({title: "Form T.R. 22 — Detailed Pay Bill (Arrears)", subject: blank ? "Blank form" : list.map(function(b){ return b.name; }).join(", "), creator: ""});
+    saveBlob(doc.output("blob"), (blank ? "TR22_Blank" : fileBase(list)) + ".pdf");
+  }
+  /* the same figures as the front page, as plain rows for Excel / CSV */
+  function grid(list){
+    var A = window.__brArrears, cols = []; for(var k = 1; k <= 25; k++) cols.push("(" + k + ") " + HEADS[k]);
+    var rows = [], grand = {}, months = [];
+    list.forEach(function(b, bi){
+      var sub = {}, mr = rowsOf(A, b);
+      (b.rows || []).forEach(function(r){ if(months.indexOf(r.m) < 0) months.push(r.m); });
+      mr.forEach(function(r, ri){
+        var who = ri ? "" : (b.name || "") + ", " + (b.desig || "") + (b.newB ? " (BPS-" + b.newB + ")" : "") + (b.persNo ? ", Pers. No. " + b.persNo : "") + " — ";
+        var line = [ri ? "" : bi + 1, who + r.label + (r.est ? " *" : "")];
+        for(var c = 3; c <= 23; c++) line.push(c === 22 ? 0 : (r.c[c] ? Math.round(r.c[c]) : ""));
+        line.push(ri ? "" : "Arrears on " + (b.kind === "promo" ? "promotion" : "pay change") + (b.oldB && b.newB ? " BPS-" + b.oldB + " to BPS-" + b.newB : "") + (b.eff ? " w.e.f. " + dmy(b.eff) : ""), "");
+        rows.push({t: "d", v: line}); addTo(sub, r.c);
+      });
+      if(list.length > 1){ var st = ["", "Total — " + (b.name || "")]; for(var c2 = 3; c2 <= 23; c2++) st.push(c2 === 22 ? 0 : (sub[c2] ? Math.round(sub[c2]) : "")); st.push("", ""); rows.push({t: "s", v: st}); }
+      addTo(grand, sub);
+    });
+    var gt = ["", "TOTAL ARREARS"]; for(var c3 = 3; c3 <= 23; c3++) gt.push(c3 === 22 ? 0 : (grand[c3] ? Math.round(grand[c3]) : "")); gt.push("", ""); rows.push({t: "g", v: gt});
+    months.sort();
+    return {cols: cols, rows: rows, grand: grand, months: months};
+  }
+  async function sheet(list, kind){
+    var G = grid(list), g = G.grand, base = fileBase(list), mon = G.months.length ? "Arrears " + rng(G.months) + " 20" + String(G.months[G.months.length - 1]).slice(2, 4) : "";
+    if(kind === "csv"){
+      var q = function(v){ v = v == null ? "" : String(v); return /[",\n]/.test(v) ? "\"" + v.replace(/"/g, "\"\"") + "\"" : v; };
+      var lines = [G.cols.map(q).join(",")].concat(G.rows.map(function(r){ return r.v.map(q).join(","); }));
+      saveBlob(new Blob(["﻿" + lines.join("\r\n") + "\r\n"], {type: "text/csv;charset=utf-8"}), base + ".csv"); return;
+    }
+    if(!window.__brLoadXlsx || !(await window.__brLoadXlsx())) throw new Error("The Excel tools could not be loaded — check the internet and try again");
+    var X = window.XLSX, sg = signTR();
+    var head = [["FORM T.R. 22 (See rule 265) — DETAILED PAY BILL OF ESTABLISHMENT (ARREARS)"], ["Establishment: " + OFFICE], ["District: " + DISTRICT + "     DDO Code: " + DDO + "     Month: " + mon + "     Bill No. ____________"], []];
+    var aoa = head.concat([G.cols]).concat(G.rows.map(function(r){ return r.v; }));
+    aoa.push([], ["", "Net amount required for payment: Rs. " + n(g[11] || 0)], ["", "(In words) Rupees " + words(Math.round(g[11] || 0)) + " only"], ["", "* = month without a pay slip (estimate).  Column (6) = Special, Medical, Personal allowances and Adhoc Reliefs."]);
+    if(sg.length){ aoa.push([]); sg.forEach(function(l){ aoa.push(["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", l]); }); }
+    var ws = X.utils.aoa_to_sheet(aoa), hr = head.length, last = hr + G.rows.length;
+    ws["!cols"] = [{wch: 6}, {wch: 46}].concat(new Array(21).join(".").split(".").map(function(){ return {wch: 11}; })).concat([{wch: 34}, {wch: 12}]);
+    ws["!merges"] = [0, 1, 2].map(function(r){ return {s: {r: r, c: 0}, e: {r: r, c: 24}}; });
+    for(var r = hr + 1; r <= last; r++) for(var c = 2; c <= 22; c++){ var cell = ws[X.utils.encode_cell({r: r, c: c})]; if(cell && typeof cell.v === "number") cell.z = "#,##0"; }
+    ws["!freeze"] = {xSplit: 0, ySplit: hr + 1};
+    var ob = [["Object", "Classification Code", "Amount Rs."], ["Pay of Permanent Establishment", "A01151", g[3] || 0], ["House Rent Allowance", "A01202", g[4] || 0], ["Conveyance Allowance", "A01203", g[5] || 0], ["Washing Allowance", "A01207", g[7] || 0],
+      ["Special / Medical / Personal Allow. + Adhoc Reliefs", "A01278", (g[6] || 0) + (g[8] || 0) + (g[9] || 0) + (g[10] || 0)], ["Grand Total — Establishment Charges", "", g[11] || 0], [], ["DDO Code", DDO], ["District", DISTRICT], ["Establishment", OFFICE]];
+    var w2 = X.utils.aoa_to_sheet(ob); w2["!cols"] = [{wch: 48}, {wch: 20}, {wch: 14}];
+    for(var r2 = 1; r2 <= 6; r2++){ var c2 = w2[X.utils.encode_cell({r: r2, c: 2})]; if(c2){ c2.v = Math.round(c2.v); c2.z = "#,##0"; } }
+    var wb = X.utils.book_new(); X.utils.book_append_sheet(wb, ws, "TR-22 front"); X.utils.book_append_sheet(wb, w2, "Obverse classification");
+    wb.Props = {Title: "Form T.R. 22 — Arrears"};
+    saveBlob(new Blob([X.write(wb, {bookType: "xlsx", type: "array"})], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}), base + ".xlsx");
+  }
+  window.__brTR22 = {html: function(list){ return html(list, false); }, blank: function(){ return html([], true); }, words: words,
+    pdf: function(list){ return pdf(list, false); }, blankPdf: function(){ return pdf([], true); }, excel: function(list){ return sheet(list, "xlsx"); }, csv: function(list){ return sheet(list, "csv"); }};
 })();
 
 
@@ -14170,7 +14301,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   var ZJOBS = {
     change: [["pdf", "PDF", "button.cf-ex[data-k=pdf]", 1], ["word", "Word", "button.cf-ex[data-k=word]", 1], ["excel", "Excel", "button.cf-ex[data-k=excel]", 0]],
     arrears: [["s_pdf", "Statement — PDF", "button.ar-ex[data-k=pdf]", 1], ["s_word", "Statement — Word", "button.ar-ex[data-k=word]", 0], ["s_xl", "Statement — Excel", "button.ar-ex[data-k=excel]", 0],
-      ["l_word", "Letter — Word", "button.ar-lt[data-k=word]", 1], ["l_pdf", "Letter — PDF", "button.ar-lt[data-k=pdf]", 0], ["u_word", "Urdu letter — Word", "button.ar-lu[data-k=word]", 0], ["u_pdf", "Urdu letter — PDF", "button.ar-lu[data-k=pdf]", 0]]
+      ["l_word", "Letter — Word", "button.ar-lt[data-k=word]", 1], ["l_pdf", "Letter — PDF", "button.ar-lt[data-k=pdf]", 0], ["u_word", "Urdu letter — Word", "button.ar-lu[data-k=word]", 0], ["u_pdf", "Urdu letter — PDF", "button.ar-lu[data-k=pdf]", 0], ["t_pdf", "T.R. 22 — PDF", "button.ar-tr[data-k=pdf]", 0], ["t_xl", "T.R. 22 — Excel", "button.ar-tr[data-k=excel]", 0]]
   };
   function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
   function waitFor(fn, ms){ return new Promise(function(res){ var t0 = Date.now(); (function p(){ if(fn()) return res(true); if(Date.now() - t0 > ms) return res(false); setTimeout(p, 120); })(); }); }
