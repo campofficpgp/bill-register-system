@@ -7675,9 +7675,46 @@ function printCurrentView(){
   // panels are unaffected (orientation style is cleared for them).
   ensureAttPrintOrientationStyleEl().textContent =
     (!payslipOpen && ["attendance","employees","bill","cash","stock","ledger"].indexOf(currentPanelKey())!==-1) ? "@media print{ @page{ size: " + ({Legal:"13in 8.5in", Foolscap:"13in 8.5in"}[window.brBoxPaper()] || "A4 landscape") + "; } }" : "";
+  brFitWideTablesForPrint();
   window.print();
 }
-window.addEventListener("afterprint", function(){ document.body.classList.remove("payslip-mode"); });
+/* Before printing, any table wider than the printable page width is scaled down (print only) so no column is cut.
+   The width is measured with the print rules switched on and the body set to the page's printable width. */
+function brFitWideTablesForPrint(){
+  var ost = ensureAttPrintOrientationStyleEl(), paper = window.brBoxPaper ? window.brBoxPaper() : "A4";
+  var land = /landscape|13in 8\.5in/.test(ost.textContent || "");
+  function pageW(l){ return l ? (paper === "A4" ? 975 : 1095) : (paper === "A4" ? 650 : 675); }
+  var touched = [], b = document.body, oldW = b.style.width, oldMax = b.style.maxWidth, found = [];
+  document.querySelectorAll("table[data-pfz]").forEach(function(t){ t.removeAttribute("data-pfz"); t.style.removeProperty("--pfz"); });
+  function measure(W){
+    var out = [];
+    b.style.width = W + "px"; b.style.maxWidth = W + "px";
+    document.querySelectorAll("table").forEach(function(t){
+      if(!t.offsetParent) return;
+      var p = t.parentElement; while(p && p !== b){ if(p.tagName === "TABLE") return; p = p.parentElement; }
+      var need = Math.max(t.scrollWidth, t.getBoundingClientRect().width);
+      if(need > W) out.push([t, need]);
+    });
+    return out;
+  }
+  try{
+    Array.prototype.forEach.call(document.styleSheets, function(sh){ var rs; try{ rs = sh.cssRules; }catch(e){ return; } if(!rs) return;
+      Array.prototype.forEach.call(rs, function(r){ if(r.type === CSSRule.MEDIA_RULE && r.media && /print/.test(r.media.mediaText) && !/screen/.test(r.media.mediaText)){ touched.push([r, r.media.mediaText]); try{ r.media.mediaText = "all"; }catch(e){} } }); });
+    found = measure(pageW(land));
+    /* a portrait page whose table is far too wide prints on a landscape page instead */
+    if(!land && found.some(function(x){ return x[1] > pageW(false) * 1.25; })){
+      land = true;
+      ost.textContent = "@media print{ @page{ size: " + ({Legal:"13in 8.5in", Foolscap:"13in 8.5in"}[paper] || "A4 landscape") + "; } }";
+      found = measure(pageW(true));
+    }
+    found.forEach(function(x){ x[0].setAttribute("data-pfz", "1"); x[0].style.setProperty("--pfz", Math.max(.45, pageW(land) / x[1]).toFixed(3)); });
+  }catch(e){}
+  b.style.width = oldW; b.style.maxWidth = oldMax;
+  touched.forEach(function(x){ try{ x[0].media.mediaText = x[1]; }catch(e){} });
+  var st = document.getElementById("brPrintFitStyle");
+  if(!st){ st = document.createElement("style"); st.id = "brPrintFitStyle"; st.textContent = "@media print{ table[data-pfz]{ zoom:var(--pfz); } }"; document.head.appendChild(st); }
+}
+window.addEventListener("afterprint", function(){ document.body.classList.remove("payslip-mode"); document.querySelectorAll("table[data-pfz]").forEach(function(t){ t.removeAttribute("data-pfz"); t.style.removeProperty("--pfz"); }); });
 
 /* ================= Item 39: real "Download PDF" — an actual file, not the print dialog =================
    The old "Download PDF" button just called printCurrentView() and told the user to pick
