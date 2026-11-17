@@ -12543,6 +12543,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var r = root(), n = Object.keys(sel).filter(function(k){ return sel[k] && bills()[k]; }).length;
     h += "<div class='pf-bar' style='margin-top:12px'><div class='field' style='max-width:420px'><label>" + T("Letter is addressed to", "خط کس کے نام") + "</label><textarea id='ar_to' rows='2'>" + esc(r.toAddr != null ? r.toAddr : "The Account Officer,\nAccount Office.") + "</textarea></div><div class='field' style='max-width:340px'><label>" + T("Signature block at the end (type it yourself, one line per line; leave empty for none)", "آخر میں دستخط کا خانہ (خود لکھیں، ہر سطر الگ؛ خالی چھوڑیں تو کچھ نہیں)") + "</label><textarea id='ar_sign' rows='4' placeholder='Name&#10;Designation&#10;Office'>" + esc(r.signBlock || "") + "</textarea></div></div>";
     h += "<div class='pf-bar'><div class='field' style='max-width:420px'><label>" + T("Urdu letter: addressed to", "اردو خط: کس کے نام") + "</label><textarea id='ar_tou' rows='2' dir='rtl'>" + esc(r.toAddrUr != null ? r.toAddrUr : UR_ADDR) + "</textarea></div><div class='field' style='max-width:340px'><label>" + T("Urdu letter: signature block (type it yourself)", "اردو خط: دستخط کا خانہ (خود لکھیں)") + "</label><textarea id='ar_signu' rows='4' dir='rtl' placeholder='نام&#10;عہدہ&#10;دفتر'>" + esc(r.signBlockUr || "") + "</textarea></div></div>";
+    h += "<div class='pf-bar'><div class='field' style='max-width:420px'><label>" + T("Form T.R. 22: signature block on both pages (type it yourself, one line per line; leave empty for none)", "فارم T.R. 22: دونوں صفحات پر دستخط کا خانہ (خود لکھیں، ہر سطر الگ؛ خالی چھوڑیں تو کچھ نہیں)") + "</label><textarea id='ar_tr22s' rows='4' placeholder='Name&#10;Designation&#10;Office'>" + esc(r.tr22Sign || "") + "</textarea></div></div>";
     h += "<div class='pf-chips'><span class='pf-chip'>" + T("Selected", "منتخب") + ": " + n + "</span><span class='pf-chip'>" + T("Arrears of the selected", "منتخب کے بقایا جات") + ": Rs. " + money(gt) + "</span></div>";
     var dis = n ? "" : " disabled";
     h += "<div class='pf-bar'><b>" + T("Statement (due / drawn / difference)", "گوشوارہ (واجب / وصول / فرق)") + ":</b> <button type='button' class='btn small ar-ex' data-k='excel'" + dis + ">Excel</button> <button type='button' class='btn small ar-ex' data-k='word'" + dis + ">Word</button> <button type='button' class='btn small ar-ex' data-k='pdf'" + dis + ">PDF</button></div>";
@@ -13047,7 +13048,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(t.classList.contains("ar-sel")){ sel[t.getAttribute("data-id")] = t.checked; rerender(); return; }
     if(t.classList.contains("ar-ce") && form){ form.emps[t.getAttribute("data-id")] = t.checked; return; }
     if(view === "new" && form && t.id && t.id.indexOf("ar_f_") === 0){ form[t.id.slice(5)] = t.value; return; }
-    if(view === "list" && (t.id === "ar_to" || t.id === "ar_sign" || t.id === "ar_tou" || t.id === "ar_signu")){ var r = root(); if(t.id === "ar_to") r.toAddr = t.value; else if(t.id === "ar_sign") r.signBlock = t.value; else if(t.id === "ar_tou") r.toAddrUr = t.value; else r.signBlockUr = t.value; persist(); return; }
+    if(view === "list" && (t.id === "ar_to" || t.id === "ar_sign" || t.id === "ar_tou" || t.id === "ar_signu" || t.id === "ar_tr22s")){ var r = root(); if(t.id === "ar_tr22s") r.tr22Sign = t.value; else if(t.id === "ar_to") r.toAddr = t.value; else if(t.id === "ar_sign") r.signBlock = t.value; else if(t.id === "ar_tou") r.toAddrUr = t.value; else r.signBlockUr = t.value; persist(); return; }
     var f = t.getAttribute && t.getAttribute("data-f");
     if(view === "edit" && f){
       var b = bills()[cur]; if(!b) return;
@@ -13157,8 +13158,12 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var yr = blank ? "___" : "<b>" + (months.length ? String(months[months.length - 1]).slice(2, 4) : "") + "</b>";
     return {grand: grand, months: months, html: "<table class='f'>" + cols + "<thead>" + h1 + h2 + "</thead><tbody>" + num + rs + body + "</tbody></table>" +
       "<div class='foot'>Form T.R. 22 (See rule 265) — Bill No. ____________ &nbsp; Month " + monthTxt + " 20" + yr + " &nbsp; District <b>" + DISTRICT + "</b> &nbsp; DDO Code <b>" + DDO + "</b> &nbsp; Establishment: <b>" + esc(OFFICE) + "</b>" +
-      (blank ? "" : " &nbsp; <span style='color:#555'>* = month without a pay slip (estimate)</span>") + "</div>"};
+      (blank ? "" : " &nbsp; <span style='color:#555'>* = month without a pay slip (estimate)</span>") + "</div>" +
+      (function(){ var L = blank ? [] : signTR(); return L.length ? "<div style='text-align:right;margin-top:26px;font-size:9px;line-height:1.35;page-break-inside:avoid'>" + signHtml(L) + "</div>" : ""; })()};
   }
+  /* the signature block typed by the clerk on the Arrears page (empty = nothing is printed) */
+  function signTR(){ try{ var r = window.__brArrears.root(); return String(r.tr22Sign || "").split("\n").map(function(l){ return l.trim(); }).filter(Boolean); }catch(e){ return []; } }
+  function signHtml(L){ return "______________________<br>" + L.map(function(l, k){ return k === 0 ? "<b>" + esc(l) + "</b>" : esc(l); }).join("<br>"); }
   function back(F, blank){
     var g = F.grand || {}, tot = blank ? "" : n(g[11] || 0), V = function(s){ return blank ? "______________" : "<span class='v'>" + s + "</span>"; };
     var other = blank ? 0 : (g[6] || 0) + (g[8] || 0) + (g[9] || 0) + (g[10] || 0);
@@ -13189,7 +13194,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
         "<p>(b) his / her / wife / husband. Who is the service of the Federal/Provincial Government / Autonomous Body, is not in receipt of house rent allowance.</p>" +
         "<p>(c) his / her / wife / husband. Who is in the service of the Federal / Provincial Government / Autonomous Body is not in receipt of house rent allowance.</p>" +
         "<p>(d) has not been residing within work premises.</p><p>(e) is maintaining a motor cycle which is registered in his / her name or in the name of his / her spouse.</p>" +
-        "<div class='sig' style='margin-top:40px'>Signature<br>Designation of the Drawing Officer.</div>" +
+        (function(){ var L = blank ? [] : signTR(); return L.length ? "<div class='sig' style='margin-top:30px'>" + signHtml(L) + "</div>" : "<div class='sig' style='margin-top:40px'>Signature<br>Designation of the Drawing Officer.</div>"; })() +
         "<p style='margin-top:26px'>For use in Accountant-General's Office</p><p style='text-align:center'>Objected Rs. ________</p><p>Auditor &nbsp;&nbsp;&nbsp; Superintendent.</p></div>" +
       "<div class='code'><h3>Detail of Code Numbers</h3>" + codes.map(function(c){ return "<p>" + c[0] + "<br>" + c[1] + "</p>"; }).join("") +
         "<p style='margin-top:30px;text-align:right'>Assistant Accounts Officer<br>Assistant Accountant General</p></div>" +
