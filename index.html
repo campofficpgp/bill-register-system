@@ -13503,11 +13503,13 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   function statusFor(e){ return /retire|suspend|dead|died|expire|resign|terminat|transfer|absorb|left/i.test(String((e && e.status) || "")) ? "Stop" : "Start"; }
   function defaults(e){
     var r = root(), dep = String((e && e.department) || "").trim(), off = String(STATE.officeName || "").trim();
-    return {ddo: ddoClean(r.ddo) || DDO_CODE, ddoDesc: r.ddoDesc || dep, officeOf: r.officeOf || off || dep, status: statusFor(e), prep: r.prep || String(STATE.preparedByName || "").trim(), chk: r.chk || "", ver: r.ver || ""};
+    return {ddo: ddoClean(r.ddo) || DDO_CODE, ddoDesc: r.ddoDesc || dep, officeOf: r.officeOf || off || dep, status: statusFor(e), prep: "", chk: r.chk || "", ver: r.ver || ""};
   }
   function fill(f){
     var d = defaults(empById(f.empId)), ch = false;
-    ["ddo", "ddoDesc", "officeOf", "status", "prep", "chk", "ver"].forEach(function(k){ if(!f[k] && d[k]){ f[k] = d[k]; ch = true; } });
+    ["ddo", "ddoDesc", "officeOf", "status", "chk", "ver"].forEach(function(k){ if(!f[k] && d[k]){ f[k] = d[k]; ch = true; } });
+    /* "Prepared By" is no longer filled automatically: a name put in earlier by the portal is cleared, a name typed by the clerk stays */
+    if(f.prep && !f.prepManual){ f.prep = ""; ch = true; }
     if(f.ddo && ddoClean(f.ddo) !== f.ddo){ f.ddo = ddoClean(f.ddo); ch = true; }
     if(!f.month){ f.month = curMonth(); ch = true; }
     if(!f.date){ f.date = today(); ch = true; }
@@ -13705,7 +13707,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var sy = 660;
     Ln(54, sy, 202, sy, 1); Ln(374, sy, 605, sy, 1); Ln(850, sy, 968, sy, 1);
     lab(98, sy + 3, "Prepared By", "23"); lab(442, sy + 3, "Audited/Checked By", "24"); lab(862, sy + 3, "Entered / Verified By", "25");
-    if(ed){ fi("prep", 54, sy - 20, 148, 18); fi("chk", 374, sy - 20, 231, 18); fi("ver", 820, sy - 20, 148, 18); }
+    if(ed){ fi("prep", 54, sy - 20, 148, 18, {ph: "Name (optional)"}); fi("chk", 374, sy - 20, 231, 18); fi("ver", 820, sy - 20, 148, 18); }
     else { T(f.prep, 56, sy - 16, 11, {b: true}); T(f.chk, 376, sy - 16, 11, {b: true}); T(f.ver, 822, sy - 16, 11, {b: true}); }
     /* editable header boxes and fields */
     if(hed){
@@ -13887,7 +13889,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var f = forms()[cur];
     if(view === "edit" && f && t.id && t.id.indexOf("cf_f_") === 0){
       var k = t.id.slice(5); f[k] = t.value; if(k === "desig") f.desigManual = !!t.value;
-      var r = root(); if(k === "ddo"){ t.value = f[k] = ddoClean(t.value); } if(k === "ddo" || k === "ddoDesc" || k === "officeOf" || k === "prep" || k === "chk" || k === "ver") r[k] = t.value;
+      var r = root(); if(k === "ddo"){ t.value = f[k] = ddoClean(t.value); } if(k === "ddo" || k === "ddoDesc" || k === "officeOf" || k === "chk" || k === "ver") r[k] = t.value; if(k === "prep") f.prepManual = true;
       persist(); return;
     }
     if(view === "edit" && f && t.classList.contains("cf-in")){
@@ -13926,7 +13928,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(t.getAttribute && t.getAttribute("data-k") === "eff") t.classList.toggle("noval", !t.value);
     if(view === "edit" && f && t.classList.contains("pp-c1")){ boxStore(t.parentElement, f); if(t.value && t.nextElementSibling) t.nextElementSibling.focus(); return; }
     if(view === "edit" && f && t.classList.contains("cf-in")){ var l = lineAt(f, +t.getAttribute("data-i")); if(l){ var kk = t.getAttribute("data-k"); if(kk !== "wage"){ l[kk] = t.value; if(kk === "amt") l.autoAmt = false; if(kk === "content") l.autoContent = false; persist(); sumRefresh(); } } return; }
-    if(view === "edit" && f && t.id && t.id.indexOf("cf_f_") === 0 && t.type === "text"){ var k = t.id.slice(5); f[k] = t.value; if(k === "desig") f.desigManual = !!t.value; var r = root(); if(k === "ddo" || k === "ddoDesc" || k === "officeOf" || k === "prep" || k === "chk" || k === "ver") r[k] = t.value; persist(); }
+    if(view === "edit" && f && t.id && t.id.indexOf("cf_f_") === 0 && t.type === "text"){ var k = t.id.slice(5); f[k] = t.value; if(k === "desig") f.desigManual = !!t.value; var r = root(); if(k === "ddo" || k === "ddoDesc" || k === "officeOf" || k === "chk" || k === "ver") r[k] = t.value; if(k === "prep") f.prepManual = true; persist(); }
   });
 
   (function(){ var css = PAPER_CSS.split("}").map(function(r){ var i = r.indexOf("{"); if(i < 0) return ""; var sel0 = r.slice(0, i), dec = r.slice(i + 1); if(true) dec = dec.split(";").map(function(d){ d = d.trim(); return d && !/important/.test(d) ? d + " !important" : d; }).filter(Boolean).join(";"); return sel0.split(",").map(function(x){ return "#panel-payfix " + x.trim(); }).join(",") + "{" + dec + "}"; }).join("\n"); var st = document.createElement("style"); st.id = "cf_paper_css"; st.textContent = css; document.head.appendChild(st); })();
