@@ -12541,8 +12541,8 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     });
     h += "</tbody></table></div>";
     var r = root(), n = Object.keys(sel).filter(function(k){ return sel[k] && bills()[k]; }).length;
-    h += "<div class='pf-bar' style='margin-top:12px'><div class='field' style='max-width:420px'><label>" + T("Letter is addressed to", "خط کس کے نام") + "</label><textarea id='ar_to' rows='2'>" + esc(r.toAddr != null ? r.toAddr : "The Account Officer,\nAccount Office.") + "</textarea></div><div class='field' style='max-width:300px'><label>" + T("Signed by (title)", "دستخط کنندہ (عہدہ)") + "</label><input id='ar_sign' value='" + esc(r.sign != null ? r.sign : "Drawing and Disbursing Officer") + "'></div></div>";
-    h += "<div class='pf-bar'><div class='field' style='max-width:420px'><label>" + T("Urdu letter: addressed to", "اردو خط: کس کے نام") + "</label><textarea id='ar_tou' rows='2' dir='rtl'>" + esc(r.toAddrUr != null ? r.toAddrUr : UR_ADDR) + "</textarea></div><div class='field' style='max-width:300px'><label>" + T("Urdu letter: signed by (title)", "اردو خط: دستخط کنندہ (عہدہ)") + "</label><input id='ar_signu' dir='rtl' value='" + esc(r.signUr != null ? r.signUr : UR_SIGN) + "'></div></div>";
+    h += "<div class='pf-bar' style='margin-top:12px'><div class='field' style='max-width:420px'><label>" + T("Letter is addressed to", "خط کس کے نام") + "</label><textarea id='ar_to' rows='2'>" + esc(r.toAddr != null ? r.toAddr : "The Account Officer,\nAccount Office.") + "</textarea></div><div class='field' style='max-width:340px'><label>" + T("Signature block at the end (type it yourself, one line per line; leave empty for none)", "آخر میں دستخط کا خانہ (خود لکھیں، ہر سطر الگ؛ خالی چھوڑیں تو کچھ نہیں)") + "</label><textarea id='ar_sign' rows='4' placeholder='Name&#10;Designation&#10;Office'>" + esc(r.signBlock || "") + "</textarea></div></div>";
+    h += "<div class='pf-bar'><div class='field' style='max-width:420px'><label>" + T("Urdu letter: addressed to", "اردو خط: کس کے نام") + "</label><textarea id='ar_tou' rows='2' dir='rtl'>" + esc(r.toAddrUr != null ? r.toAddrUr : UR_ADDR) + "</textarea></div><div class='field' style='max-width:340px'><label>" + T("Urdu letter: signature block (type it yourself)", "اردو خط: دستخط کا خانہ (خود لکھیں)") + "</label><textarea id='ar_signu' rows='4' dir='rtl' placeholder='نام&#10;عہدہ&#10;دفتر'>" + esc(r.signBlockUr || "") + "</textarea></div></div>";
     h += "<div class='pf-chips'><span class='pf-chip'>" + T("Selected", "منتخب") + ": " + n + "</span><span class='pf-chip'>" + T("Arrears of the selected", "منتخب کے بقایا جات") + ": Rs. " + money(gt) + "</span></div>";
     var dis = n ? "" : " disabled";
     h += "<div class='pf-bar'><b>" + T("Statement (due / drawn / difference)", "گوشوارہ (واجب / وصول / فرق)") + ":</b> <button type='button' class='btn small ar-ex' data-k='excel'" + dis + ">Excel</button> <button type='button' class='btn small ar-ex' data-k='word'" + dis + ">Word</button> <button type='button' class='btn small ar-ex' data-k='pdf'" + dis + ">PDF</button></div>";
@@ -12826,8 +12826,9 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var enc = ["Statements of due and drawn (Annexure-" + (bs.length > 1 ? "A to " + String.fromCharCode(64 + bs.length) : "A") + ")", "Copy of the notification / order of each employee", "Copies of the pay slips for the months claimed"];
     if(bs.some(function(b){ var T0 = totalsOf(b); return T0.sa; })) enc.splice(2, 0, "Copy of Order dated 19-01-2023 on the Special Allowance");
     enc.forEach(function(s, i){ P([x((i + 1) + ".  " + s)], {al: "left", after: 30, ind: 420}); });
+    /* the signature block is only what the clerk typed in the box on the Arrears page */
     P([x("______________________")], {al: "right", before: 600, after: 0});
-    signLines(sign, "Drawing and Disbursing Officer").concat(["(DDO Code: RI-4720)", "Camp Office Prosecutor General Punjab,", "Supreme Court of Pakistan, Islamabad."]).forEach(function(l, k){ P([x(l, {b: k === 0})], {al: "right", after: 0}); });
+    String(r.signBlock || "").split("\n").map(function(l){ return l.trim(); }).filter(Boolean).forEach(function(l, k){ P([x(l, {b: k === 0})], {al: "right", after: 0}); });
     return B;
   }
   var UR_MONTHS = ["جنوری","فروری","مارچ","اپریل","مئی","جون","جولائی","اگست","ستمبر","اکتوبر","نومبر","دسمبر"];
@@ -12874,8 +12875,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(bs.some(function(b){ return totalsOf(b).sa; })) enc.splice(2, 0, "اسپیشل الاؤنس کے حکم مورخہ 19-01-2023 کی نقل");
     enc.forEach(function(s, i){ P([x((i + 1) + "۔  " + s)], {al: "start", after: 30, ind: 420}); });
     P([x("______________________")], {al: "end", before: 600, after: 0});
-    var sl = signLines(r.sign, "Drawing and Disbursing Officer"), nm = r.signUr != null ? signLines(sign, UR_SIGN) : (sl.length > 1 ? [sl[0], UR_SIGN] : [UR_SIGN]);
-    nm.concat(["(ڈی ڈی او کوڈ: RI-4720)", "کیمپ آفس پراسیکیوٹر جنرل پنجاب،", "سپریم کورٹ آف پاکستان، اسلام آباد۔"]).forEach(function(l, k){ P([x(l, {b: k === 0})], {al: "end", after: 0}); });
+    String(r.signBlockUr || "").split("\n").map(function(l){ return l.trim(); }).filter(Boolean).forEach(function(l, k){ P([x(l, {b: k === 0})], {al: "end", after: 0}); });
     return B;
   }
   function selBills(){
@@ -13047,7 +13047,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(t.classList.contains("ar-sel")){ sel[t.getAttribute("data-id")] = t.checked; rerender(); return; }
     if(t.classList.contains("ar-ce") && form){ form.emps[t.getAttribute("data-id")] = t.checked; return; }
     if(view === "new" && form && t.id && t.id.indexOf("ar_f_") === 0){ form[t.id.slice(5)] = t.value; return; }
-    if(view === "list" && (t.id === "ar_to" || t.id === "ar_sign" || t.id === "ar_tou" || t.id === "ar_signu")){ var r = root(); if(t.id === "ar_to") r.toAddr = t.value; else if(t.id === "ar_sign") r.sign = t.value; else if(t.id === "ar_tou") r.toAddrUr = t.value; else r.signUr = t.value; persist(); return; }
+    if(view === "list" && (t.id === "ar_to" || t.id === "ar_sign" || t.id === "ar_tou" || t.id === "ar_signu")){ var r = root(); if(t.id === "ar_to") r.toAddr = t.value; else if(t.id === "ar_sign") r.signBlock = t.value; else if(t.id === "ar_tou") r.toAddrUr = t.value; else r.signBlockUr = t.value; persist(); return; }
     var f = t.getAttribute && t.getAttribute("data-f");
     if(view === "edit" && f){
       var b = bills()[cur]; if(!b) return;
