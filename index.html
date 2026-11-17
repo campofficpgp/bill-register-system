@@ -13071,7 +13071,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       return r.concat([per(b), sN(totalsOf(b).total)]);
     });
     var foot = heads.map(function(){ return ""; }); foot[foot.length - 2] = "Total"; foot[foot.length - 1] = sN(tot);
-    B.push({t: "table", heads: heads, rows: rows, foot: foot, w: multi ? [5, 20, 12, 11, 22, 18, 12] : [6, 28, 15, 14, 23, 14]});
+    B.push({t: "table", heads: heads, rows: rows, foot: foot, w: multi ? [4, 19, 11, 11, 22, 21, 12] : [5, 25, 13, 13, 30, 14]});
     var now = new Date(), fy0 = now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1, fy = fy0 + "-" + String(fy0 + 1).slice(2);
     var grant = soV("soGrant").trim();
     P([x("2.     The expenditure involved will be debited to " + (grant ? grant + ", under " : "") + "the relevant objects of "), x("A01-Employees Related Expenses", {b: true}), x(" (Pay and Allowances of Staff) for the current financial year " + fy + ", as per the T.R. 22 bill.")], {before: 120, after: 120});
@@ -13079,11 +13079,11 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     P([x("3.     Certified that the arrears claim has been worked out month by month on the basis of the pay slips / service record of the official" + (many ? "s" : "") + " concerned (" + ax + "), that it is not more than three years old, and that no payment of the same has been made previously.")], {after: 120});
     var sg = soV("soSign").split("\n").map(function(l){ return l.trim(); }).filter(Boolean);
     function sign(before){ P([x("______________________")], {al: "right", before: before, after: 0}); sg.forEach(function(l, k){ P([x(l, {b: k === 0})], {al: "right", after: 0}); }); }
-    sign(560);
+    sign(440);
     P(noLine(), {al: "left", before: 240, after: 80});
     P([x("Copy forwarded for information and necessary action to:-")], {al: "left", after: 40});
     soV("soCopy").split("\n").map(function(l){ return l.trim(); }).filter(Boolean).forEach(function(l, i){ P([x((i + 1) + ".  " + l)], {al: "left", after: 20, ind: 420}); });
-    sign(480);
+    sign(400);
     return B;
   }
   function soName(bs, ext){ return "SanctionOrder_Arrears_" + (bs.length === 1 ? String(bs[0].name || "").replace(/[^A-Za-z0-9]+/g, "-") : bs.length + "-employees") + "." + ext; }
@@ -13092,7 +13092,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     try{
       toast("Preparing the sanction order…");
       if(kind === "word") await letterWord(bs, false, soBlocks(bs), soName(bs, "docx"), {size: 22, margin: {top: 900, bottom: 800, left: 1150, right: 1150}});
-      else await letterPdf(bs, soBlocks(bs), soName(bs, "pdf"), {sz: 11, mt: 46, mb: 40, mx: 62});
+      else await letterPdf(bs, soBlocks(bs), soName(bs, "pdf"), {sz: 10.5, mt: 40, mb: 36, mx: 58});
     }catch(err){ console.error(err); toast("Could not build the sanction order: " + (err && err.message || err)); }
   }
 
