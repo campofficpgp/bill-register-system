@@ -7612,7 +7612,7 @@ function renderUsers(){ /* Users & Access tab removed */ }
 /* ================= PAPER SIZE & GENERIC PRINT ================= */
 var PAGE_SIZE_CSS = {
   A4: "@page { size: A4; margin: 14mm; }",
-  Legal: "@page { size: 8.5in 14in; margin: 14mm; }",
+  Legal: "@page { size: 8.5in 13in; margin: 14mm; }",   /* Legal prints use a 13 in page: fits a real 14 in sheet and the 13 in sheets sold as Legal */
   Foolscap: "@page { size: 8.5in 13in; margin: 14mm; }"
 };
 function ensurePageSizeStyleEl(){
@@ -7674,7 +7674,7 @@ function printCurrentView(){
   // whole month fits on the page width, regardless of the paper size chosen above. Other
   // panels are unaffected (orientation style is cleared for them).
   ensureAttPrintOrientationStyleEl().textContent =
-    (!payslipOpen && ["attendance","employees","bill","cash","stock","ledger"].indexOf(currentPanelKey())!==-1) ? "@media print{ @page{ size: " + ({Legal:"14in 8.5in", Foolscap:"13in 8.5in"}[window.brBoxPaper()] || "A4 landscape") + "; } }" : "";
+    (!payslipOpen && ["attendance","employees","bill","cash","stock","ledger"].indexOf(currentPanelKey())!==-1) ? "@media print{ @page{ size: " + ({Legal:"13in 8.5in", Foolscap:"13in 8.5in"}[window.brBoxPaper()] || "A4 landscape") + "; } }" : "";
   window.print();
 }
 window.addEventListener("afterprint", function(){ document.body.classList.remove("payslip-mode"); });
@@ -8813,7 +8813,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   }
   function paperSize(){
     var v = ($("globalPaperSize") || {}).value || "A4";
-    if(v === "Legal") return {w:612, h:1008, tw:12240, th:20160, code:5};
+    if(v === "Legal") return {w:612, h:1008, tw:12240, th:18720, code:5};
     if(v === "Foolscap") return {w:612, h:936, tw:12240, th:18720, code:14};
     return {w:595.28, h:841.89, tw:11906, th:16838, code:9};
   }
@@ -9449,7 +9449,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
      The figures are read from the slip on screen, so whatever the clerk edited is what gets exported. */
   function paperFrom(v){
     if(v === "A3") return {w:841.89, h:1190.55, tw:16838, th:23811, code:8};
-    if(v === "Legal") return {w:612, h:1008, tw:12240, th:20160, code:5};
+    if(v === "Legal") return {w:612, h:1008, tw:12240, th:18720, code:5};
     if(v === "Foolscap") return {w:612, h:936, tw:12240, th:18720, code:14};
     return {w:595.28, h:841.89, tw:11906, th:16838, code:9};
   }
@@ -13520,7 +13520,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   }
   function sheetsOf(fs){ var out = []; fs.forEach(function(f){ fill(f); out = out.concat(allSheets(f, false)); }); return out; }
   function docHtml(sheets, word, paperKey){
-    var css = PAPER_CSS + "body{ margin:0; background:#fff; } .pg{ page-break-after:always; } .pg:last-child{ page-break-after:auto; } .pp{ margin:0 auto; } @page{ size:" + (paperKey === "Legal" ? "14in 8.5in" : paperKey === "Foolscap" ? "13in 8.5in" : "A4 landscape") + "; margin:8mm; } @media print{ .pp{ zoom:" + (paperKey === "Legal" ? "0.98" : paperKey === "Foolscap" ? "0.96" : "0.93") + "; } }";
+    var css = PAPER_CSS + "body{ margin:0; background:#fff; } .pg{ page-break-after:always; } .pg:last-child{ page-break-after:auto; } .pp{ margin:0 auto; } @page{ size:" + (paperKey === "Legal" ? "13in 8.5in" : paperKey === "Foolscap" ? "13in 8.5in" : "A4 landscape") + "; margin:8mm; } @media print{ .pp{ zoom:" + (paperKey === "Legal" ? "0.96" : paperKey === "Foolscap" ? "0.96" : "0.93") + "; } }";
     return "<!doctype html><html><head><meta charset='utf-8'><title>PAY02</title><style>" + css + "</style></head><body>" + sheets.map(function(s){ return "<div class='pg'>" + s + "</div>"; }).join("") + "</body></html>";
   }
   function dlBlob(blob, name){ var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 1500); }
@@ -13559,7 +13559,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   /* ---- real Word file (.docx): the same form on a 76-column grid (one column = half a digit box) ---- */
   async function docxSheets(fs, paperKey){
     await window.__brUI.loadLib("docx");
-    var D = window.docx, legal = paperKey === "Legal" || paperKey === "Foolscap", PWd = paperKey === "Legal" ? [12240, 20160] : paperKey === "Foolscap" ? [12240, 18720] : [11906, 16838], MG = 500, usable = PWd[1] - 2 * MG, COLS = 76, U = Math.floor(usable / COLS);
+    var D = window.docx, legal = paperKey === "Legal" || paperKey === "Foolscap", PWd = paperKey === "Legal" ? [12240, 18720] : paperKey === "Foolscap" ? [12240, 18720] : [11906, 16838], MG = 500, usable = PWd[1] - 2 * MG, COLS = 76, U = Math.floor(usable / COLS);
     var NONE = {style: D.BorderStyle.NONE, size: 0, color: "FFFFFF"}, LN = {style: D.BorderStyle.SINGLE, size: 6, color: "000000"}, TK = {style: D.BorderStyle.SINGLE, size: 12, color: "000000"};
     function run(t, o){ o = o || {}; return new D.TextRun({text: String(t == null ? "" : t), font: "Arial", size: o.size || 17, bold: !!o.b, superScript: !!o.sup}); }
     function C(txt, span, o){ return {txt: txt, span: span || 1, o: o || {}}; }
@@ -13867,7 +13867,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
 
   /* ---------- preview / print ---------- */
   function htmlTables(tables, title, sub, land){
-    var h = "<!doctype html><html><head><meta charset='utf-8'><style>body{font:12px Arial,sans-serif;margin:14px;color:#000}h1{font-size:16px;margin:0 0 2px}.sub{color:#444;margin:0 0 8px}h2{font-size:13px;margin:14px 0 4px}table{border-collapse:collapse;width:100%;margin-bottom:6px}th,td{border:1px solid #444;padding:3px 6px;vertical-align:top}th{background:#e8edf3}td.n{text-align:right}tfoot td{font-weight:bold;background:#f3f3f3}.pb{page-break-before:always}@page{size:" + (land ? ({Legal: "14in 8.5in", Foolscap: "13in 8.5in"}[window.brBoxPaper()] || "A4 landscape") : ({Legal: "8.5in 14in", Foolscap: "8.5in 13in"}[window.brBoxPaper()] || "A4")) + ";margin:10mm}</style></head><body><h1>" + esc(title) + "</h1><div class='sub'>" + esc(sub || "") + "</div>";
+    var h = "<!doctype html><html><head><meta charset='utf-8'><style>body{font:12px Arial,sans-serif;margin:14px;color:#000}h1{font-size:16px;margin:0 0 2px}.sub{color:#444;margin:0 0 8px}h2{font-size:13px;margin:14px 0 4px}table{border-collapse:collapse;width:100%;margin-bottom:6px}th,td{border:1px solid #444;padding:3px 6px;vertical-align:top}th{background:#e8edf3}td.n{text-align:right}tfoot td{font-weight:bold;background:#f3f3f3}.pb{page-break-before:always}@page{size:" + (land ? ({Legal: "13in 8.5in", Foolscap: "13in 8.5in"}[window.brBoxPaper()] || "A4 landscape") : ({Legal: "8.5in 13in", Foolscap: "8.5in 13in"}[window.brBoxPaper()] || "A4")) + ";margin:10mm}</style></head><body><h1>" + esc(title) + "</h1><div class='sub'>" + esc(sub || "") + "</div>";
     tables.forEach(function(t, ti){
       h += ((t.title || t.sheet) === title ? "" : "<h2" + (t.pageBreak && ti ? " class='pb'" : "") + ">" + esc(t.title || t.sheet || "") + "</h2>") + "<table><thead><tr>" + t.heads.map(function(x, i){ return "<th" + (t.num && t.num[i] ? " style='text-align:right'" : "") + ">" + esc(x) + "</th>"; }).join("") + "</tr></thead><tbody>";
       var row = function(r){ return "<tr>" + r.cells.map(function(c, i){ return "<td" + ((r.nums || t.num || [])[i] ? " class='n'" : "") + ">" + esc(c) + "</td>"; }).join("") + "</tr>"; };
@@ -13878,7 +13878,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   }
   function htmlBlocks(B, rtl){
     var fam = rtl ? "'Noto Nastaliq Urdu','Jameel Noori Nastaleeq','Urdu Typesetting','Segoe UI',serif" : "'Times New Roman',serif";
-    var h = "<!doctype html><html dir='" + (rtl ? "rtl" : "ltr") + "'><head><meta charset='utf-8'><style>body{font:14px/1.6 " + fam + ";margin:0;padding:22mm 20mm;color:#000}p{margin:0 0 8px;white-space:pre-wrap}table{border-collapse:collapse;width:100%;margin:8px 0}th,td{border:1px solid #333;padding:4px 6px}th{background:#eee}tfoot td{font-weight:bold}.hl{background:#ff0}@page{size:" + ({Legal: "8.5in 14in", Foolscap: "8.5in 13in"}[window.brBoxPaper()] || "A4") + ";margin:0}</style></head><body>";
+    var h = "<!doctype html><html dir='" + (rtl ? "rtl" : "ltr") + "'><head><meta charset='utf-8'><style>body{font:14px/1.6 " + fam + ";margin:0;padding:22mm 20mm;color:#000}p{margin:0 0 8px;white-space:pre-wrap}table{border-collapse:collapse;width:100%;margin:8px 0}th,td{border:1px solid #333;padding:4px 6px}th{background:#eee}tfoot td{font-weight:bold}.hl{background:#ff0}@page{size:" + ({Legal: "8.5in 13in", Foolscap: "8.5in 13in"}[window.brBoxPaper()] || "A4") + ";margin:0}</style></head><body>";
     B.forEach(function(b){
       if(b.t === "p"){
         var st = "text-align:" + (b.al || "justify") + ";"; if(b.after != null) st += "margin-bottom:" + Math.round(b.after / 15) + "px;"; if(b.before) st += "margin-top:" + Math.round(b.before / 15) + "px;"; if(b.ind) st += (rtl ? "margin-right:" : "margin-left:") + Math.round(b.ind / 15) + "px;";
@@ -14524,7 +14524,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       /* page set-up (landscape, chosen paper, one break between allowances and deductions, header rows repeated) + frozen headings */
       try{
         await window.__brUI.loadLib("jszip");
-        var PW = {A4: [9, 11.69], Legal: [5, 14], Foolscap: [14, 13], A3: [8, 16.54]}[paperSel] || [5, 14];
+        var PW = {A4: [9, 11.69], Legal: [5, 13], Foolscap: [14, 13], A3: [8, 16.54]}[paperSel] || [5, 13];
         function pxOf(a, b){ var t = 0; for(var q = a; q < b && q < widths.length; q++) t += widths[q] * 7 + 5; return t; }
         var need = Math.max(pxOf(0, cN2), pxOf(cN2, widths.length)), scale = Math.max(35, Math.min(100, Math.floor((PW[1] - 0.8) * 96 / need * 100)));
         var zz = await JSZip.loadAsync(out), px = "xl/worksheets/sheet1.xml", sx = await zz.file(px).async("string");
@@ -14707,7 +14707,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       var r = recOf(month); r.note = t.value; root().months[month] = r; persistShared();
     }
   });
-  var PRINT_PAGE = {A4: ["A4 landscape", 1123], Legal: ["14in 8.5in", 1344], Foolscap: ["13in 8.5in", 1248], A3: ["A3 landscape", 1587]};
+  var PRINT_PAGE = {A4: ["A4 landscape", 1123], Legal: ["13in 8.5in", 1248], Foolscap: ["13in 8.5in", 1248], A3: ["A3 landscape", 1587]};
   function printSheet(){ var pb = document.getElementById("globalPrintBtn"); if(pb) pb.click(); else window.print(); }
   function onBeforePrint(){
     if(!panel.classList.contains("active")) return;
@@ -14758,7 +14758,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   var panel = document.getElementById("panel-bm26s"), body = document.getElementById("bmsBody");
   if(!panel || !body) return;
   var MN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-  var PAGES = {A4: ["A4 landscape", 1123], Legal: ["14in 8.5in", 1344], Foolscap: ["13in 8.5in", 1248], A3: ["A3 landscape", 1587]};
+  var PAGES = {A4: ["A4 landscape", 1123], Legal: ["13in 8.5in", 1248], Foolscap: ["13in 8.5in", 1248], A3: ["A3 landscape", 1587]};
   function allowed(){ try{ return isAdmin(); }catch(e){ return false; } }
   function num(v){ return Number(v) || 0; }
   function sN(v){ return String(Math.round(num(v))).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
@@ -14936,7 +14936,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   var panel = document.getElementById("panel-es"), body = document.getElementById("esBody");
   if(!panel || !body) return;
   var MN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-  var PAGES = {A4: ["A4 landscape", 1123], Legal: ["14in 8.5in", 1344], Foolscap: ["13in 8.5in", 1248], A3: ["A3 landscape", 1587]};
+  var PAGES = {A4: ["A4 landscape", 1123], Legal: ["13in 8.5in", 1248], Foolscap: ["13in 8.5in", 1248], A3: ["A3 landscape", 1587]};
   var HDR = [["form1", "Form line — 1st statement"], ["form2", "Form line — 2nd statement"], ["dept", "Department"], ["att", "Attached Department (where applicable)"],
              ["grantNo", "Grant No"], ["grantName", "Grant Name"], ["fcName", "Funds Center Name"], ["ddo", "Funds Center Code (DDO Code)"], ["sdf", "Sub-Detailed Function"],
              ["prepName", "Prepared by — name"], ["prepDesig", "Prepared by — designation"], ["ddoName", "DDO — name"], ["ddoDesig", "DDO — designation"]];
