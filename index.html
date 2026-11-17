@@ -9038,6 +9038,14 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       var s = "Page " + (i + 1) + " of " + pages.length;
       p.drawText(s, {x:PW - M - FB.widthOfTextAtSize(s, 7.4), y:15, size:7.4, font:FB, color:navy});
     });
+    if(m.paper && m.paper.h > 990){   /* Legal: keep everything inside 13 in, because many "Legal" sheets are really 8.5 x 13 in and printers cut the extra inch */
+      doc.getPages().forEach(function(p){
+        var k = 12.5 / 14, sz = p.getSize();   /* the whole page shrinks to 12.5 in and sits 1 in from the edge, so it fits a 13 in or 14 in sheet either way */
+        p.scaleContent(k, k);
+        if(sz.width > sz.height) p.translateContent(72, (sz.height - sz.height * k) / 2);
+        else p.translateContent((sz.width - sz.width * k) / 2, 72);
+      });
+    }
     doc.setTitle(san(m.title)); doc.setCreator("");
     return await doc.save();
   }
