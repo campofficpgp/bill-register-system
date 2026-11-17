@@ -12543,7 +12543,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var r = root(), n = Object.keys(sel).filter(function(k){ return sel[k] && bills()[k]; }).length;
     h += "<div class='pf-bar' style='margin-top:12px'><div class='field' style='max-width:420px'><label>" + T("Letter is addressed to", "خط کس کے نام") + "</label><textarea id='ar_to' rows='2'>" + esc(r.toAddr != null ? r.toAddr : "The Account Officer,\nAccount Office.") + "</textarea></div><div class='field' style='max-width:340px'><label>" + T("Signature block at the end (type it yourself, one line per line; leave empty for none)", "آخر میں دستخط کا خانہ (خود لکھیں، ہر سطر الگ؛ خالی چھوڑیں تو کچھ نہیں)") + "</label><textarea id='ar_sign' rows='4' placeholder='Name&#10;Designation&#10;Office'>" + esc(r.signBlock || "") + "</textarea></div></div>";
     h += "<div class='pf-bar'><div class='field' style='max-width:420px'><label>" + T("Urdu letter: addressed to", "اردو خط: کس کے نام") + "</label><textarea id='ar_tou' rows='2' dir='rtl'>" + esc(r.toAddrUr != null ? r.toAddrUr : UR_ADDR) + "</textarea></div><div class='field' style='max-width:340px'><label>" + T("Urdu letter: signature block (type it yourself)", "اردو خط: دستخط کا خانہ (خود لکھیں)") + "</label><textarea id='ar_signu' rows='4' dir='rtl' placeholder='نام&#10;عہدہ&#10;دفتر'>" + esc(r.signBlockUr || "") + "</textarea></div></div>";
-    h += "<div class='pf-bar'><div class='field' style='max-width:420px'><label>" + T("Form T.R. 22: signature block on both pages (type it yourself, one line per line; leave empty for none)", "فارم T.R. 22: دونوں صفحات پر دستخط کا خانہ (خود لکھیں، ہر سطر الگ؛ خالی چھوڑیں تو کچھ نہیں)") + "</label><textarea id='ar_tr22s' rows='4' placeholder='Name&#10;Designation&#10;Office'>" + esc(r.tr22Sign || "") + "</textarea></div></div>";
+    h += "<div class='pf-bar'><div class='field' style='max-width:420px'><label>" + T("Form T.R. 22: signature block on both pages (type it yourself, one line per line; leave empty for none)", "فارم T.R. 22: دونوں صفحات پر دستخط کا خانہ (خود لکھیں، ہر سطر الگ؛ خالی چھوڑیں تو کچھ نہیں)") + "</label><textarea id='ar_tr22s' rows='4' placeholder='Name&#10;Designation&#10;Office'>" + esc(r.tr22Sign || "") + "</textarea></div><div class='field' style='max-width:340px'><label>" + T("Form T.R. 22: lines", "فارم T.R. 22: سطریں") + "</label><select id='ar_tr22m'><option value='sum'" + (r.tr22Mode !== "month" ? " selected" : "") + ">" + T("One line per employee — whole bill on one page", "ہر ملازم کی ایک سطر — پورا بل ایک صفحے پر") + "</option><option value='month'" + (r.tr22Mode === "month" ? " selected" : "") + ">" + T("Month by month (more pages)", "مہینہ وار (زیادہ صفحات)") + "</option></select></div></div>";
     h += "<div class='pf-chips'><span class='pf-chip'>" + T("Selected", "منتخب") + ": " + n + "</span><span class='pf-chip'>" + T("Arrears of the selected", "منتخب کے بقایا جات") + ": Rs. " + money(gt) + "</span></div>";
     var dis = n ? "" : " disabled";
     h += "<div class='pf-bar'><b>" + T("Statement (due / drawn / difference)", "گوشوارہ (واجب / وصول / فرق)") + ":</b> <button type='button' class='btn small ar-ex' data-k='excel'" + dis + ">Excel</button> <button type='button' class='btn small ar-ex' data-k='word'" + dis + ">Word</button> <button type='button' class='btn small ar-ex' data-k='pdf'" + dis + ">PDF</button></div>";
@@ -13058,7 +13058,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(t.classList.contains("ar-sel")){ sel[t.getAttribute("data-id")] = t.checked; rerender(); return; }
     if(t.classList.contains("ar-ce") && form){ form.emps[t.getAttribute("data-id")] = t.checked; return; }
     if(view === "new" && form && t.id && t.id.indexOf("ar_f_") === 0){ form[t.id.slice(5)] = t.value; return; }
-    if(view === "list" && (t.id === "ar_to" || t.id === "ar_sign" || t.id === "ar_tou" || t.id === "ar_signu" || t.id === "ar_tr22s")){ var r = root(); if(t.id === "ar_tr22s") r.tr22Sign = t.value; else if(t.id === "ar_to") r.toAddr = t.value; else if(t.id === "ar_sign") r.signBlock = t.value; else if(t.id === "ar_tou") r.toAddrUr = t.value; else r.signBlockUr = t.value; persist(); return; }
+    if(view === "list" && (t.id === "ar_to" || t.id === "ar_sign" || t.id === "ar_tou" || t.id === "ar_signu" || t.id === "ar_tr22s" || t.id === "ar_tr22m")){ var r = root(); if(t.id === "ar_tr22m") r.tr22Mode = t.value; else if(t.id === "ar_tr22s") r.tr22Sign = t.value; else if(t.id === "ar_to") r.toAddr = t.value; else if(t.id === "ar_sign") r.signBlock = t.value; else if(t.id === "ar_tou") r.toAddrUr = t.value; else r.signBlockUr = t.value; persist(); return; }
     var f = t.getAttribute && t.getAttribute("data-f");
     if(view === "edit" && f){
       var b = bills()[cur]; if(!b) return;
@@ -13125,6 +13125,14 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     return out;
   }
   function addTo(t, c){ Object.keys(c).forEach(function(k){ t[k] = (t[k] || 0) + c[k]; }); }
+  /* layout chosen on the Arrears page: one line per employee (the whole bill on one sheet, month detail stays in the Statement) or month by month */
+  function oneLine(){ try{ return (window.__brArrears.root().tr22Mode || "sum") !== "month"; }catch(e){ return true; } }
+  function sumRow(A, b){
+    var rs = rowsOf(A, b), c = {}, ms = (b.rows || []).map(function(r){ return r.m; }).sort();
+    rs.forEach(function(r){ addTo(c, r.c); });
+    var lab = ms.length ? (ms.length === 1 ? mLab(ms[0]) : mLab(ms[0]) + " to " + mLab(ms[ms.length - 1])) + " (" + ms.length + (ms.length === 1 ? " month)" : " months)") : "";
+    return {label: lab, est: rs.some(function(r){ return r.est; }), c: c};
+  }
   /* "Oct–Dec" in one year, "Oct-2025 to Oct" when the arrears run into the next year (the year that follows is printed after it) */
   function rng(ms){ if(!ms.length) return ""; var a = ms[0], b = ms[ms.length - 1]; if(a === b) return mLab(a).slice(0, 3); return String(a).slice(0, 4) === String(b).slice(0, 4) ? mLab(a).slice(0, 3) + "–" + mLab(b).slice(0, 3) : mLab(a) + " to " + mLab(b).slice(0, 3); }
   var CSS = "@page{size:A4 landscape;margin:8mm 8mm 9mm}*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;color:#000}" +
@@ -13153,14 +13161,14 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     function cells(c){ var s = ""; for(var k = 3; k <= 23; k++){ var v = c[k]; s += "<td class='n'>" + (v == null || (v === 0 && k !== 22) ? "" : (k === 22 && !v ? "Nil" : n(v))) + "</td>"; } return s; }
     var body = "", grand = {}, used = 0;
     if(!blank) list.forEach(function(b, bi){
-      var rows = rowsOf(A, b), sub = {};
+      var one = oneLine(), rows = one ? [sumRow(A, b)] : rowsOf(A, b), sub = {};
       rows.forEach(function(r, ri){
         addTo(sub, r.c); used++;
         var name = ri ? "" : "<b>" + esc(b.name) + "</b><br>" + esc(b.desig || "") + (b.newB ? " (BPS-" + esc(b.newB) + ")" : "") + (b.persNo ? "<br>Pers. No. " + esc(b.persNo) : "") + "<br>";
-        var rem = ri === 0 ? "Arrears on " + (b.kind === "promo" ? "promotion" : "pay change") + (b.oldB && b.newB ? " BPS-" + esc(b.oldB) + " to BPS-" + esc(b.newB) : "") + (b.eff ? " w.e.f. " + dmy(b.eff) : "") : (ri === 1 ? "Col (6) = Special, Medical, Personal allowances and Adhoc Reliefs" : "");
+        var rem = ri === 0 ? "Arrears on " + (b.kind === "promo" ? "promotion" : "pay change") + (b.oldB && b.newB ? " BPS-" + esc(b.oldB) + " to BPS-" + esc(b.newB) : "") + (b.eff ? " w.e.f. " + dmy(b.eff) : "") + (one ? ". Month-wise detail: Annexure-" + String.fromCharCode(65 + bi) : "") : (ri === 1 ? "Col (6) = Special, Medical, Personal allowances and Adhoc Reliefs" : "");
         body += "<tr class='d'><td class='c'>" + (ri ? "" : (bi + 1)) + "</td><td class='nm'>" + name + "<span class='per'>" + esc(r.label) + (r.est ? " *" : "") + "</span></td>" + cells(r.c) + "<td class='rm'>" + rem + "</td><td></td></tr>";
       });
-      if(list.length > 1){ used++; body += "<tr class='st'><td></td><td class='nm'>Total — " + esc(b.name) + "</td>" + cells(sub) + "<td></td><td></td></tr>"; }
+      if(list.length > 1 && !one){ used++; body += "<tr class='st'><td></td><td class='nm'>Total — " + esc(b.name) + "</td>" + cells(sub) + "<td></td><td></td></tr>"; }
       addTo(grand, sub);
     });
     if(!blank){ used++; body += "<tr class='gt'><td></td><td class='nm'><b>TOTAL ARREARS</b></td>" + cells(grand) + "<td></td><td></td></tr>"; }
@@ -13170,7 +13178,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var yr = blank ? "___" : "<b>" + (months.length ? String(months[months.length - 1]).slice(2, 4) : "") + "</b>";
     return {grand: grand, months: months, html: "<table class='f'>" + cols + "<thead>" + h1 + h2 + "</thead><tbody>" + num + rs + body + "</tbody></table>" +
       "<div class='foot'>Form T.R. 22 (See rule 265) — Bill No. ____________ &nbsp; Month " + monthTxt + " 20" + yr + " &nbsp; District <b>" + DISTRICT + "</b> &nbsp; DDO Code <b>" + DDO + "</b> &nbsp; Establishment: <b>" + esc(OFFICE) + "</b>" +
-      (blank ? "" : " &nbsp; <span style='color:#555'>* = month without a pay slip (estimate)</span>") + "</div>" +
+      (blank ? "" : " &nbsp; <span style='color:#555'>* = month without a pay slip (estimate)" + (oneLine() ? " &nbsp; Col (6) = Special, Medical, Personal allowances and Adhoc Reliefs" : "") + "</span>") + "</div>" +
       (function(){ var L = blank ? [] : signTR(); return L.length ? "<div style='text-align:right;margin-top:26px;font-size:9px;line-height:1.35;page-break-inside:avoid'>" + signHtml(L) + "</div>" : ""; })()};
   }
   /* the signature block typed by the clerk on the Arrears page (empty = nothing is printed) */
@@ -13301,16 +13309,16 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var A = window.__brArrears, cols = []; for(var k = 1; k <= 25; k++) cols.push("(" + k + ") " + HEADS[k]);
     var rows = [], grand = {}, months = [];
     list.forEach(function(b, bi){
-      var sub = {}, mr = rowsOf(A, b);
+      var one = oneLine(), sub = {}, mr = one ? [sumRow(A, b)] : rowsOf(A, b);
       (b.rows || []).forEach(function(r){ if(months.indexOf(r.m) < 0) months.push(r.m); });
       mr.forEach(function(r, ri){
         var who = ri ? "" : (b.name || "") + ", " + (b.desig || "") + (b.newB ? " (BPS-" + b.newB + ")" : "") + (b.persNo ? ", Pers. No. " + b.persNo : "") + " — ";
         var line = [ri ? "" : bi + 1, who + r.label + (r.est ? " *" : "")];
         for(var c = 3; c <= 23; c++) line.push(c === 22 ? 0 : (r.c[c] ? Math.round(r.c[c]) : ""));
-        line.push(ri ? "" : "Arrears on " + (b.kind === "promo" ? "promotion" : "pay change") + (b.oldB && b.newB ? " BPS-" + b.oldB + " to BPS-" + b.newB : "") + (b.eff ? " w.e.f. " + dmy(b.eff) : ""), "");
+        line.push(ri ? "" : "Arrears on " + (b.kind === "promo" ? "promotion" : "pay change") + (b.oldB && b.newB ? " BPS-" + b.oldB + " to BPS-" + b.newB : "") + (b.eff ? " w.e.f. " + dmy(b.eff) : "") + (one ? ". Month-wise detail: Annexure-" + String.fromCharCode(65 + bi) : ""), "");
         rows.push({t: "d", v: line}); addTo(sub, r.c);
       });
-      if(list.length > 1){ var st = ["", "Total — " + (b.name || "")]; for(var c2 = 3; c2 <= 23; c2++) st.push(c2 === 22 ? 0 : (sub[c2] ? Math.round(sub[c2]) : "")); st.push("", ""); rows.push({t: "s", v: st}); }
+      if(list.length > 1 && !one){ var st = ["", "Total — " + (b.name || "")]; for(var c2 = 3; c2 <= 23; c2++) st.push(c2 === 22 ? 0 : (sub[c2] ? Math.round(sub[c2]) : "")); st.push("", ""); rows.push({t: "s", v: st}); }
       addTo(grand, sub);
     });
     var gt = ["", "TOTAL ARREARS"]; for(var c3 = 3; c3 <= 23; c3++) gt.push(c3 === 22 ? 0 : (grand[c3] ? Math.round(grand[c3]) : "")); gt.push("", ""); rows.push({t: "g", v: gt});
