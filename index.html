@@ -12771,6 +12771,23 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   }
 
   /* ---------- the covering letter (Word / PDF) ---------- */
+  /* employees on the same order (same notification, BPS and date) share one paragraph */
+  function lGroups(bs){
+    var G = [], K = {};
+    bs.forEach(function(b, i){ var k = [b.kind, b.oldB, b.newB, b.eff, String(b.ref || "").trim().toLowerCase(), b.method].join("|"); if(!K[k]){ K[k] = {bs: [], idx: []}; G.push(K[k]); } K[k].bs.push(b); K[k].idx.push(i); });
+    return G;
+  }
+  function annexList(idx, to, sep){
+    var L = idx.map(function(i){ return String.fromCharCode(65 + i); }), run = idx.every(function(v, k){ return k === 0 || v === idx[k - 1] + 1; });
+    return idx.length > 2 && run ? L[0] + to + L[L.length - 1] : L.join(sep);
+  }
+  /* the signature: name on its own line, then the designation */
+  function signLines(sign, desig){
+    var s = String(sign || "").trim(); if(!s) return [desig];
+    if(s.indexOf("\n") >= 0) return s.split("\n").map(function(l){ return l.trim(); }).filter(Boolean);
+    var k = s.indexOf(desig); if(k > 0) return [s.slice(0, k).trim().replace(/[,،]$/, ""), desig];
+    return [s];
+  }
   function letterBlocks(bs){
     var r = root(), toLines = String(r.toAddr != null ? r.toAddr : "The Account Officer,\nAccount Office.").split("\n").filter(Boolean), sign = r.sign != null ? r.sign : "Drawing and Disbursing Officer";
     var B = [], P = function(parts, o){ B.push(Object.assign({t: "p", parts: parts}, o || {})); }, x = function(s, o){ return Object.assign({x: s}, o || {}); };
@@ -12784,21 +12801,33 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     P([x("I am directed to refer to the subject noted above and to state that the pay and allowances of the following employees of this office were not drawn according to the change of their BPS. The difference between the amounts due and the amounts drawn, month by month, is shown in the enclosed statements (Annexure-" + (bs.length > 1 ? "A to " + String.fromCharCode(64 + bs.length) : "A") + ") and in short below:")]);
     var tot = 0, rows = bs.map(function(b, i){ var t = totalsOf(b).total; tot += t; return [String(i + 1), (b.name || "") + " (" + (b.desig || "") + ")", "BPS-" + b.oldB + " to BPS-" + b.newB, dLabel(b.eff) + " to " + mFull(b.to), sN(t)]; });
     B.push({t: "table", heads: ["#", "Name and designation", "BPS", "Period", "Arrears (Rs)"], rows: rows, foot: ["", "Total", "", "", sN(tot)], w: [6, 38, 18, 24, 14]});
-    bs.forEach(function(b, i){
+    var G = lGroups(bs);
+    G.forEach(function(g, gi){
+      if(g.bs.length > 1){
+        var b0 = g.bs[0], up0 = b0.kind !== "promo", gt = 0, fs = {}, ts = {};
+        g.bs.forEach(function(b){ gt += totalsOf(b).total; fs[b.rows.length ? b.rows[0].m : b.eff.slice(0, 7)] = 1; ts[b.to] = 1; });
+        var sameD = g.bs.every(function(b){ return (b.desig || "") === (b0.desig || ""); }), sameP = Object.keys(fs).length === 1 && Object.keys(ts).length === 1;
+        var gp = [x((gi + 1) + ".  "), x("The following " + g.bs.length + " employees" + (sameD && b0.desig ? " (" + b0.desig + ")" : "") + ", namely ")];
+        g.bs.forEach(function(b, j){ gp.push(x((b.name || "") + (sameD ? "" : " (" + (b.desig || "") + ")"), {b: true})); if(j < g.bs.length - 2) gp.push(x(", ")); else if(j === g.bs.length - 2) gp.push(x(" and ")); });
+        gp.push(x(", were " + (up0 ? "upgraded" : "promoted") + " from BPS-" + b0.oldB + " to BPS-" + b0.newB + " with effect from "), x(dLabel(b0.eff), {b: true}));
+        if(b0.ref) gp.push(x(" vide " + b0.ref)); else gp.push(x(" vide "), x("(notification / order No. and date)", {hl: true}));
+        gp.push(x(". The pay and allowances however continued to be drawn on the old basis. The pay of each may please be fixed in BPS-" + b0.newB + " (the stage next above the pay drawn" + (b0.method === "B" ? ", after one increment" : "") + "), with the allowances worked out accordingly and the Adhoc Relief re-fixed as per rules. The difference " + (sameP ? "from " + mFull(Object.keys(fs)[0]) + " to " + mFull(b0.to) + " " : "") + "of each employee is shown in the table above and in Annexure-" + annexList(g.idx, " to ", ", ") + "; for these employees it comes to Rs " + sN(gt) + " in all."));
+        P(gp); return;
+      }
+      var b = g.bs[0], i = g.idx[0], num = gi;
       var up = b.kind !== "promo", t = totalsOf(b).total, first = mFull(b.rows.length ? b.rows[0].m : b.eff.slice(0, 7));
-      var parts = [x((i + 1) + ".  "), x((b.name || "") + ", " + (b.desig || "") + ",", {b: true}), x(" was " + (up ? "upgraded" : "promoted") + " from BPS-" + b.oldB + " to BPS-" + b.newB + " with effect from "), x(dLabel(b.eff), {b: true})];
+      var parts = [x((num + 1) + ".  "), x((b.name || "") + ", " + (b.desig || "") + ",", {b: true}), x(" was " + (up ? "upgraded" : "promoted") + " from BPS-" + b.oldB + " to BPS-" + b.newB + " with effect from "), x(dLabel(b.eff), {b: true})];
       if(b.ref) parts.push(x(" vide " + b.ref)); else parts.push(x(" vide "), x("(notification / order No. and date)", {hl: true}));
       parts.push(x(". The pay and allowances however continued to be drawn on the old basis. The pay may please be fixed in BPS-" + b.newB + " (the stage next above the pay drawn" + (b.method === "B" ? ", after one increment" : "") + "), with the allowances worked out accordingly and the Adhoc Relief re-fixed as per rules. The difference from " + first + " to " + mFull(b.to) + " comes to Rs " + sN(t) + " as per Annexure-" + String.fromCharCode(65 + i) + "."));
       P(parts);
     });
-    P([x((bs.length + 1) + ".  It is therefore requested that the pay slips of the above employees may kindly be corrected from the dates mentioned above and the arrears of the difference may please be paid on a bill to be passed in the usual way. The deductions on the corrected pay may please be worked out by your office.")]);
+    P([x((G.length + 1) + ".  It is therefore requested that the pay slips of the above employees may kindly be corrected from the dates mentioned above and the arrears of the difference may please be paid on a bill to be passed in the usual way. The deductions on the corrected pay may please be worked out by your office.")]);
     P([x("Enclosures:", {b: true})], {al: "left", after: 40});
     var enc = ["Statements of due and drawn (Annexure-" + (bs.length > 1 ? "A to " + String.fromCharCode(64 + bs.length) : "A") + ")", "Copy of the notification / order of each employee", "Copies of the pay slips for the months claimed"];
     if(bs.some(function(b){ var T0 = totalsOf(b); return T0.sa; })) enc.splice(2, 0, "Copy of Order dated 19-01-2023 on the Special Allowance");
     enc.forEach(function(s, i){ P([x((i + 1) + ".  " + s)], {al: "left", after: 30, ind: 420}); });
-    P([x("Yours faithfully,")], {al: "right", before: 200, after: 520});
-    P([x("______________________")], {al: "right", after: 0});
-    P([x(sign)], {al: "right", after: 0});
+    P([x("______________________")], {al: "right", before: 600, after: 0});
+    signLines(sign, "Drawing and Disbursing Officer").concat(["(DDO Code: RI-4720)", "Camp Office Prosecutor General Punjab,", "Supreme Court of Pakistan, Islamabad."]).forEach(function(l, k){ P([x(l, {b: k === 0})], {al: "right", after: 0}); });
     return B;
   }
   var UR_MONTHS = ["جنوری","فروری","مارچ","اپریل","مئی","جون","جولائی","اگست","ستمبر","اکتوبر","نومبر","دسمبر"];
@@ -12819,21 +12848,34 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     P([x("بحوالہ موضوع بالا مجھے ہدایت کی گئی ہے کہ عرض کروں کہ اس دفتر کے مندرجہ ذیل ملازمین کی تنخواہ اور الاؤنسز ان کے بی پی ایس میں تبدیلی کے مطابق ادا نہیں کیے گئے۔ ہر مہینے کی واجب اور وصول شدہ رقم کا فرق منسلکہ گوشواروں (ضمیمہ-A" + (bs.length > 1 ? " تا ضمیمہ-" + L(bs.length - 1) : "") + ") میں دکھایا گیا ہے اور مختصراً درج ذیل ہے:")]);
     var tot = 0, rows = bs.map(function(b, i){ var t = totalsOf(b).total; tot += t; return [String(i + 1), (b.name || "") + " (" + (b.desig || "") + ")", "BPS-" + b.oldB + " سے BPS-" + b.newB, dLabel(b.eff) + " سے " + mFullUr(b.to), sN(t)]; });
     B.push({t: "table", heads: ["نمبر", "نام و عہدہ", "بی پی ایس", "مدت", "بقایا جات (روپے)"], rows: rows, foot: ["", "میزان", "", "", sN(tot)], w: [7, 31, 23, 25, 14]});
-    bs.forEach(function(b, i){
+    var G = lGroups(bs);
+    G.forEach(function(g, gi){
+      if(g.bs.length > 1){
+        var b0 = g.bs[0], up0 = b0.kind !== "promo", gt = 0, fs = {}, ts = {};
+        g.bs.forEach(function(b){ gt += totalsOf(b).total; fs[b.rows.length ? b.rows[0].m : b.eff.slice(0, 7)] = 1; ts[b.to] = 1; });
+        var sameD = g.bs.every(function(b){ return (b.desig || "") === (b0.desig || ""); }), sameP = Object.keys(fs).length === 1 && Object.keys(ts).length === 1;
+        var gp = [x((gi + 1) + "۔  "), x("اس دفتر کے مندرجہ ذیل " + g.bs.length + " ملازمین" + (sameD && b0.desig ? " (" + b0.desig + ")" : "") + "، یعنی ")];
+        g.bs.forEach(function(b, j){ gp.push(x((b.name || "") + (sameD ? "" : " (" + (b.desig || "") + ")"), {b: true})); if(j < g.bs.length - 2) gp.push(x("، ")); else if(j === g.bs.length - 2) gp.push(x(" اور ")); });
+        gp.push(x("، کو "), x(dLabel(b0.eff), {b: true}), x(" سے BPS-" + b0.oldB + " سے BPS-" + b0.newB + " میں " + (up0 ? "اپ گریڈ" : "ترقی") + " دی گئی"));
+        if(b0.ref) gp.push(x("، بحوالہ " + b0.ref)); else gp.push(x("، بحوالہ "), x("(نوٹیفکیشن / حکم کا نمبر اور تاریخ)", {hl: true}));
+        gp.push(x("۔ تاہم تنخواہ اور الاؤنسز پرانے بی پی ایس کے مطابق ہی وصول ہوتے رہے۔ استدعا ہے کہ ہر ملازم کی تنخواہ BPS-" + b0.newB + " میں (وصول شدہ تنخواہ سے اگلے اسٹیج پر" + (b0.method === "B" ? "، ایک انکریمنٹ کے بعد" : "") + ") طے کی جائے، الاؤنسز اس کے مطابق نکالے جائیں اور ایڈہاک ریلیف قواعد کے مطابق دوبارہ طے کیا جائے۔ " + (sameP ? mFullUr(Object.keys(fs)[0]) + " سے " + mFullUr(b0.to) + " تک " : "") + "ہر ملازم کا فرق اوپر جدول اور ضمیمہ-" + annexList(g.idx, " تا ضمیمہ-", "، ") + " میں دکھایا گیا ہے؛ ان ملازمین کا کل فرق " + sN(gt) + " روپے بنتا ہے۔"));
+        P(gp); return;
+      }
+      var b = g.bs[0], i = g.idx[0];
       var up = b.kind !== "promo", t = totalsOf(b).total, first = mFullUr(b.rows.length ? b.rows[0].m : b.eff.slice(0, 7));
-      var parts = [x((i + 1) + "۔  "), x((b.name || "") + "، " + (b.desig || "") + "،", {b: true}), x(" کو "), x(dLabel(b.eff), {b: true}), x(" سے BPS-" + b.oldB + " سے BPS-" + b.newB + " میں " + (up ? "اپ گریڈ" : "ترقی") + " دی گئی")];
+      var parts = [x((gi + 1) + "۔  "), x((b.name || "") + "، " + (b.desig || "") + "،", {b: true}), x(" کو "), x(dLabel(b.eff), {b: true}), x(" سے BPS-" + b.oldB + " سے BPS-" + b.newB + " میں " + (up ? "اپ گریڈ" : "ترقی") + " دی گئی")];
       if(b.ref) parts.push(x("، بحوالہ " + b.ref)); else parts.push(x("، بحوالہ "), x("(نوٹیفکیشن / حکم کا نمبر اور تاریخ)", {hl: true}));
       parts.push(x("۔ تاہم تنخواہ اور الاؤنسز پرانے بی پی ایس کے مطابق ہی وصول ہوتے رہے۔ استدعا ہے کہ تنخواہ BPS-" + b.newB + " میں (وصول شدہ تنخواہ سے اگلے اسٹیج پر" + (b.method === "B" ? "، ایک انکریمنٹ کے بعد" : "") + ") طے کی جائے، الاؤنسز اس کے مطابق نکالے جائیں اور ایڈہاک ریلیف قواعد کے مطابق دوبارہ طے کیا جائے۔ " + first + " سے " + mFullUr(b.to) + " تک کا فرق ضمیمہ-" + L(i) + " کے مطابق " + sN(t) + " روپے بنتا ہے۔"));
       P(parts);
     });
-    P([x((bs.length + 1) + "۔  لہٰذا گزارش ہے کہ مذکورہ ملازمین کی تنخواہ کی پرچیاں مذکورہ تاریخوں سے درست کر دی جائیں اور فرق کے بقایا جات معمول کے مطابق بل پاس کر کے ادا کیے جائیں۔ درست شدہ تنخواہ پر کٹوتیاں آپ کا دفتر نکال لے۔")]);
+    P([x((G.length + 1) + "۔  لہٰذا گزارش ہے کہ مذکورہ ملازمین کی تنخواہ کی پرچیاں مذکورہ تاریخوں سے درست کر دی جائیں اور فرق کے بقایا جات معمول کے مطابق بل پاس کر کے ادا کیے جائیں۔ درست شدہ تنخواہ پر کٹوتیاں آپ کا دفتر نکال لے۔")]);
     P([x("ملفوفات:", {b: true})], {al: "start", after: 40});
     var enc = ["گوشوارہ واجب و وصول شدہ (ضمیمہ-A" + (bs.length > 1 ? " تا ضمیمہ-" + L(bs.length - 1) : "") + ")", "ہر ملازم کے نوٹیفکیشن / حکم کی نقل", "دعویٰ کردہ مہینوں کی پے سلپس کی نقول"];
     if(bs.some(function(b){ return totalsOf(b).sa; })) enc.splice(2, 0, "اسپیشل الاؤنس کے حکم مورخہ 19-01-2023 کی نقل");
     enc.forEach(function(s, i){ P([x((i + 1) + "۔  " + s)], {al: "start", after: 30, ind: 420}); });
-    P([x("آپ کا مخلص،")], {al: "end", before: 200, after: 520});
-    P([x("______________________")], {al: "end", after: 0});
-    P([x(sign)], {al: "end", after: 0});
+    P([x("______________________")], {al: "end", before: 600, after: 0});
+    var sl = signLines(r.sign, "Drawing and Disbursing Officer"), nm = r.signUr != null ? signLines(sign, UR_SIGN) : (sl.length > 1 ? [sl[0], UR_SIGN] : [UR_SIGN]);
+    nm.concat(["(ڈی ڈی او کوڈ: RI-4720)", "کیمپ آفس پراسیکیوٹر جنرل پنجاب،", "سپریم کورٹ آف پاکستان، اسلام آباد۔"]).forEach(function(l, k){ P([x(l, {b: k === 0})], {al: "end", after: 0}); });
     return B;
   }
   function selBills(){
