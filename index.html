@@ -14077,7 +14077,15 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     rec = ids.map(function(id){ return dict(d.sc)[id]; });
     if(d.sc === "change"){
       if(!window.__brChangeForm.previewHtml){ toast("Preview is not ready — reload the page"); return null; }
-      return [{label: "Form PAY02", html: window.__brChangeForm.previewHtml(rec)}];
+      var cfDocs = [{label: "Form PAY02", html: window.__brChangeForm.previewHtml(rec)}];
+      /* Form T.R. 22 for the arrears bill(s) these change forms belong to (linked by billId) */
+      if(window.__brTR22 && window.__brArrears){
+        var AB = window.__brArrears.bills() || {}, seen = {}, linked = [];
+        rec.forEach(function(f){ var bb = f && f.billId && AB[f.billId]; if(bb && !seen[f.billId]){ seen[f.billId] = 1; linked.push(bb); } });
+        if(linked.length) cfDocs.push({label: "Form T.R. 22", html: window.__brTR22.html(linked)});
+        cfDocs.push({label: "T.R. 22 (blank)", html: window.__brTR22.blank()});
+      }
+      return cfDocs;
     }
     A = window.__brArrears;
     out.push({label: "Statement", html: htmlTables(A.stmtTables(rec), "Statement of Due and Drawn (Arrears)", rec.map(function(b){ return b.name; }).join(", "), true)});
