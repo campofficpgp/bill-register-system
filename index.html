@@ -13594,10 +13594,10 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
         var pn = f.page && pages === 1 ? f.page : (p + 1) + " of " + pages, chunk = ls.slice(p * PER_PAGE, (p + 1) * PER_PAGE), tag = "F" + (fi + 1) + "-P" + (p + 1), first = page === 0; page++;
         var hr = function(a, b2, c, d, e, g){ return {cells: [a, b2 || "", c || "", d || "", e || "", g || ""], nums: [false, false, false, false, false, false]}; };
         T2.push({sheet: tag + " Header", pageBreak: !first, title: "FORM: PAY02 — Payroll System Amendment Form — Single Employee Entry", heads: ["Field", "Entry", "Field", "Entry", "Field", "Entry"], num: [false, false, false, false, false, false], rows: [
-          hr("1  Date", dLabel(f.date), "2  Page No.", pn, "3  Office of the", f.officeOf || ""),
-          hr("4  For the month of", mLabel(f.month), "5  DDO Code (Cost Center)", f.ddo || "", "6  Description", f.ddoDesc || ""),
-          hr("7  Personnel Number", f.persNo || "", "8  Employee Name", f.name || "", "9  National ID Card Number", nidOf(f)),
-          hr("10-11  Grade (Pay Scale Group)", f.grade ? String(f.grade) : "", "12  Salary Status", f.status || "( Start / Stop )", "Designation", f.desig || "")], foot: [], dense: true});
+          hr("Date", dLabel(f.date), "Page No.", pn, "Office of the", f.officeOf || ""),
+          hr("For the month of", mLabel(f.month), "DDO Code (Cost Center)", f.ddo || "", "Description", f.ddoDesc || ""),
+          hr("Personnel Number", f.persNo || "", "Employee Name", f.name || "", "National ID Card Number", nidOf(f)),
+          hr("10-11  Grade (Pay Scale Group)", f.grade ? String(f.grade) : "", "Salary Status", f.status || "( Start / Stop )", "Designation", f.desig || "")], foot: [], dense: true});
         var rows = [];
         for(var i = 0; i < PER_PAGE; i++){
           var l = chunk[i] || null, gi = p * PER_PAGE + i, dflt = gi === 0 ? "0008" : gi === 1 ? "0014" : "", a = l ? rs(l.amt) : ["", ""], has = l && num(l.amt) !== 0 || l && l.amt !== "" && l.amt != null;
@@ -13605,7 +13605,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
         }
         T2.push({sheet: tag + " Lines", title: "General data change / Change in payments and deductions", heads: ["#", "14 Info Type", "15 Field ID", "16 New Contents", "18 Wage Type", "17 Rupees", "Paisa", "Adj", "21 Effective Date", "22 Remarks"], num: [false, false, false, false, false, true, true, false, false, false], rows: rows, foot: []});
         var blank = {cells: [" ", " ", " "], nums: [false, false, false]};
-        T2.push({sheet: tag + " Sign", title: "", heads: ["23  Prepared By", "24  Audited / Checked By", "25  Entered / Verified By"], num: [false, false, false], rows: [blank, {cells: [f.prep || " ", f.chk || " ", f.ver || " "], nums: [false, false, false]}], foot: [], dense: true});
+        T2.push({sheet: tag + " Sign", title: "", heads: ["Prepared By", "Audited / Checked By", "Entered / Verified By"], num: [false, false, false], rows: [blank, {cells: [f.prep || " ", f.chk || " ", f.ver || " "], nums: [false, false, false]}], foot: [], dense: true});
       }
     });
     return T2;
@@ -13640,7 +13640,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   /* ---- layout: the whole sheet as primitives ---- */
   function layout(f, chunk, p, pages, ed, startIdx){
     var P = [], I = [], pn = f.page && pages === 1 ? f.page : (p + 1) + " of " + pages, hed = ed && p === 0;
-    function T(s, x, y, sz, o){ if(s === "" || s == null) return; P.push({t: "text", s: String(s), x: x, y: y, sz: sz, o: o || {}}); }
+    function T(s, x, y, sz, o){ if(s === "" || s == null) return; if(sz === 7 && /^\d{1,2}$/.test(String(s))) return; /* no small box numbers 1–25 */ P.push({t: "text", s: String(s), x: x, y: y, sz: sz, o: o || {}}); }
     function Ln(x1, y1, x2, y2, w){ P.push({t: "line", x1: x1, y1: y1, x2: x2, y2: y2, w: w || 1}); }
     function Rc(x, y, w, h, bw, fill){ P.push({t: "rect", x: x, y: y, w: w, h: h, bw: bw || 1, fill: fill}); }
     function lab(x, y, s, num, o){ T(s, x, y, 11.5, o); if(num) T(num, x + tw(s, 11.5, o && o.b) + 1.5, y - 3, 7); }
@@ -13786,7 +13786,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     await window.__brUI.loadLib("docx");
     var D = window.docx, legal = paperKey === "Legal" || paperKey === "Foolscap", PWd = paperKey === "Legal" ? [12240, 18720] : paperKey === "Foolscap" ? [12240, 18720] : [11906, 16838], MG = 500, usable = PWd[1] - 2 * MG, COLS = 76, U = Math.floor(usable / COLS);
     var NONE = {style: D.BorderStyle.NONE, size: 0, color: "FFFFFF"}, LN = {style: D.BorderStyle.SINGLE, size: 6, color: "000000"}, TK = {style: D.BorderStyle.SINGLE, size: 12, color: "000000"};
-    function run(t, o){ o = o || {}; return new D.TextRun({text: String(t == null ? "" : t), font: "Arial", size: o.size || 17, bold: !!o.b, superScript: !!o.sup}); }
+    function run(t, o){ o = o || {}; if(o.sup && /^\d{1,2}$/.test(String(t))) t = ""; /* no small box numbers 1–25 */ return new D.TextRun({text: String(t == null ? "" : t), font: "Arial", size: o.size || 17, bold: !!o.b, superScript: !!o.sup}); }
     function C(txt, span, o){ return {txt: txt, span: span || 1, o: o || {}}; }
     function BX(v, n, right, w){ return chars(v, n, right).map(function(c){ return C(c, w || 2, {box: true}); }); }
     function mk(sp){
