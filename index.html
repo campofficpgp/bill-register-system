@@ -7806,7 +7806,7 @@ function downloadCurrentViewAsPdf(paperSizeKey){
     btns.forEach(function(b){ b.disabled = false; });
   });
 }
-document.getElementById("globalPaperSize").addEventListener("change", function(){ setPageSize(this.value); try{ localStorage.setItem("br_paper", this.value); localStorage.setItem("br_paper2", this.value); localStorage.setItem("br_paper3", this.value); }catch(e){} });
+document.getElementById("globalPaperSize").addEventListener("change", function(){ setPageSize(this.value); try{ localStorage.setItem("br_paper", this.value); localStorage.setItem("br_paper2", this.value); localStorage.setItem("br_paper3", this.value); localStorage.setItem("br_paper4", this.value); }catch(e){} });
 document.getElementById("globalPrintBtn").addEventListener("click", printCurrentView);
 document.getElementById("globalPdfBtn").addEventListener("click", function(){
   downloadCurrentViewAsPdf(document.getElementById("globalPaperSize").value);
@@ -8076,7 +8076,7 @@ document.getElementById("repHeadsSaveBtn").addEventListener("click", function(){
 });
 
 document.getElementById("uiLangSelect").addEventListener("change", function(){ applyUILang(this.value); });
-(function(){ var pv = "Foolscap"; try{ pv = localStorage.getItem("br_paper3") || "Foolscap"; }catch(e){} if(pv !== "A4" && pv !== "Legal" && pv !== "Foolscap") pv = "Foolscap"; var gs = document.getElementById("globalPaperSize"); if(gs) gs.value = pv; setPageSize(pv); })();
+(function(){ var pv = "A4"; try{ pv = localStorage.getItem("br_paper4") || "A4"; }catch(e){} if(pv !== "A4" && pv !== "Legal" && pv !== "Foolscap") pv = "A4";   /* A4 is the safe default: an A4 page prints whole on A4, Foolscap and Legal sheets */ var gs = document.getElementById("globalPaperSize"); if(gs) gs.value = pv; setPageSize(pv); })();
 
 /* ================= PAY SLIP ================= */
 var I18N = {
@@ -14351,7 +14351,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
         "<button type='button' class='btn small' id='bm_reset'>↺ " + T(resetArm && Date.now() - resetArm < 5000 ? "Click again to confirm" : "Everything back to automatic", resetArm && Date.now() - resetArm < 5000 ? "تصدیق کے لیے دوبارہ دبائیں" : "سب کچھ خودکار") + "</button>" +
         "<span class='pf-chip " + (dirty ? "pf-c-bad" : "pf-c-ok") + "'>" + T(dirty ? "Editing — not saved yet" : "Editing", dirty ? "ترمیم جاری — ابھی محفوظ نہیں" : "ترمیم جاری") + "</span>";
     }
-    h += "<span class='bm-sep'></span><label class='hint' style='margin:0 4px 0 0'>" + T("Paper", "کاغذ") + " <select id='bm_paper'>" + ["A4", "Legal", "Foolscap", "A3"].map(function(p){ return "<option value='" + p + "'" + (p === paperSel ? " selected" : "") + ">" + p + "</option>"; }).join("") + "</select></label><button type='button' class='btn small' id='bm_xl'>📊 " + T("Excel", "ایکسل") + "</button><button type='button' class='btn small' id='bm_pdf'>📄 PDF</button><button type='button' class='btn small' id='bm_doc'>📝 " + T("Word", "ورڈ") + "</button><button type='button' class='btn small' id='bm_prt'" + (editing ? " disabled" : "") + ">🖨 " + T("Print", "پرنٹ") + "</button></div>";
+    h += "<span class='bm-sep'></span><label class='hint' style='margin:0 4px 0 0'>" + T("Paper", "کاغذ") + " <select id='bm_paper'>" + ["A4", "Legal", "Foolscap"].map(function(p){ return "<option value='" + p + "'" + (p === paperSel ? " selected" : "") + ">" + p + "</option>"; }).join("") + "</select></label><button type='button' class='btn small' id='bm_xl'>📊 " + T("Excel", "ایکسل") + "</button><button type='button' class='btn small' id='bm_pdf'>📄 PDF</button><button type='button' class='btn small' id='bm_doc'>📝 " + T("Word", "ورڈ") + "</button><button type='button' class='btn small' id='bm_prt'" + (editing ? " disabled" : "") + ">🖨 " + T("Print", "پرنٹ") + "</button></div>";
     if(editing) h += "<p class='hint'>" + T("Type over any figure to change it (a changed figure turns yellow); clear the box to go back to the automatic figure. Nothing is kept until you press Save.", "کسی بھی رقم پر لکھ کر بدلیں (بدلی ہوئی رقم پیلی ہو جاتی ہے)؛ خانہ خالی کر دیں تو خودکار رقم واپس آ جاتی ہے۔ محفوظ کریں دبانے تک کچھ محفوظ نہیں ہوتا۔") + "</p>";
     return h;
   }
@@ -14461,7 +14461,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   }
   function colName(i){ var s = ""; i++; while(i > 0){ var r = (i - 1) % 26; s = String.fromCharCode(65 + r) + s; i = Math.floor((i - 1) / 26); } return s; }
   function F(f, v){ return {f: f, v: v}; }
-  var paperSel = "Legal"; try{ paperSel = localStorage.getItem("bm26_paper") || "Legal"; }catch(e){}
+  var paperSel = "A4"; try{ paperSel = localStorage.getItem("bm26_paper2") || "A4"; }catch(e){}
   function titleLines(m){
     return ["BM-26 STATEMENT FOR THE MONTH OF " + mUpper(m.mk), "", "",
       "PUBLIC ORDER AND SAFETY AFFAIRS 036 ADMINISTRATION OF PUBLIC ORDER 0361 ADMINISTRATION   |   DDO Code RI-4720   |   Financial year " + m.fy];
@@ -14691,7 +14691,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   panel.addEventListener("change", function(ev){
     var t = ev.target, id = t.id || "";
     if(t.classList && t.classList.contains("bm-in")){ if(editing){ onEdit(t); rerenderKeepFocus(); } return; }
-    if(id === "bm_paper"){ paperSel = t.value; try{ localStorage.setItem("bm26_paper", paperSel); }catch(e){} return; }
+    if(id === "bm_paper"){ paperSel = t.value; try{ localStorage.setItem("bm26_paper2", paperSel); }catch(e){} return; }
     if(id === "bm_month"){ month = t.value; try{ localStorage.setItem(MKEY, month); }catch(e){} render(); return; }
     if(id === "bm_sens"){
       showSens = !!t.checked;
@@ -14770,8 +14770,8 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   function mLabel(k){ var a = k.split("-"); return MN[+a[1] - 1] + " " + a[0]; }
   function mUpper(k){ var a = k.split("-"); return MN[+a[1] - 1].toUpperCase() + "-" + a[0]; }
   function codeShow(c){ var k = c && c.code; if(!k) return ""; if(c.extra) return k; return /^A[0-9A-Z]{5}$/.test(k) ? k : ""; }
-  var month = "", paper = ls("bms_paper", "Legal"), S = {off: ls("bms_off", ""), ddo: ls("bms_ddo", ""), prep: ls("bms_prep", ""), chk: ls("bms_chk", "")}, lastModel = null, W = {a: [], d: []};
-  if(!PAGES[paper]) paper = "Legal";
+  var month = "", paper = ls("bms_paper2", "A4"), S = {off: ls("bms_off", ""), ddo: ls("bms_ddo", ""), prep: ls("bms_prep", ""), chk: ls("bms_chk", "")}, lastModel = null, W = {a: [], d: []};
+  if(!PAGES[paper]) paper = "A4";
 
   function months(){
     var set = {}, ps = (typeof STATE !== "undefined" && STATE && STATE.payslipData) || {};
@@ -14828,7 +14828,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   function controls(){
     var set = months(), keys = Object.keys(set).sort(), h = "<div class='bms-ctl'><div class='bms-bar'>";
     h += "<div class='field'><label>" + T("Month", "مہینہ") + "</label><select id='bms_month'>" + keys.map(function(k){ return "<option value='" + k + "'" + (k === month ? " selected" : "") + ">" + X(mLabel(k)) + " (" + set[k] + ")</option>"; }).join("") + "</select></div>";
-    h += "<div class='field'><label>" + T("Paper", "کاغذ") + "</label><select id='bms_paper'>" + ["A4", "Legal", "Foolscap", "A3"].map(function(p){ return "<option value='" + p + "'" + (p === paper ? " selected" : "") + ">" + p + "</option>"; }).join("") + "</select></div>";
+    h += "<div class='field'><label>" + T("Paper", "کاغذ") + "</label><select id='bms_paper'>" + ["A4", "Legal", "Foolscap"].map(function(p){ return "<option value='" + p + "'" + (p === paper ? " selected" : "") + ">" + p + "</option>"; }).join("") + "</select></div>";
     h += "<div class='field'><label>" + T("Office name (type here)", "دفتر کا نام (یہاں لکھیں)") + "</label><input id='bms_off' value='" + X(S.off) + "'></div>";
     h += "<div class='field'><label>" + T("DDO name", "ڈی ڈی او کا نام") + "</label><input id='bms_ddo' value='" + X(S.ddo) + "'></div>";
     h += "<div class='field'><label>" + T("Prepared by", "تیار کنندہ") + "</label><input id='bms_prep' value='" + X(S.prep) + "'></div>";
@@ -14886,7 +14886,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   panel.addEventListener("change", function(ev){
     var t = ev.target, id = t && t.id;
     if(id === "bms_month"){ month = t.value; ss("bms_month", month); render(); }
-    else if(id === "bms_paper"){ paper = t.value; ss("bms_paper", paper); }
+    else if(id === "bms_paper"){ paper = t.value; ss("bms_paper2", paper); }
   });
   panel.addEventListener("input", function(ev){
     var t = ev.target, id = t && t.id; if(!id || id.indexOf("bms_") !== 0) return;
@@ -15016,8 +15016,8 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   function defN(){ var m = +curYm().split("-")[1]; return (m >= 7 && m <= 12) ? "1" : "2"; }
   function defUpto(fy, n){ return n === "1" ? fy.slice(0, 4) + "-10" : (+fy.slice(0, 4) + 1) + "-02"; }
   function uptoChoices(fy){ var out = [], k = fyStartYm(fy), e = shiftYm(fyEndYm(fy), -1); while(k <= e){ out.push(k); k = shiftYm(k, 1); } return out; }
-  var S = {fy: ls("es_fy", ""), n: ls("es_n", ""), paper: ls("es_paper", "Legal"), view: "st"};
-  if(!PAGES[S.paper]) S.paper = "Legal";
+  var S = {fy: ls("es_fy", ""), n: ls("es_n", ""), paper: ls("es_paper2", "A4"), view: "st"};
+  if(!PAGES[S.paper]) S.paper = "A4";
 
   /* ---------- the figures ---------- */
   function totalsAt(mk){
@@ -15131,7 +15131,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     h += "<div class='field'><label>" + T("Financial year", "مالی سال") + "</label><select id='es_fy'>" + fyChoices().map(function(f){ return "<option" + (f === S.fy ? " selected" : "") + ">" + f + "</option>"; }).join("") + "</select></div>";
     h += "<div class='field'><label>" + T("Statement", "اسٹیٹمنٹ") + "</label><select id='es_n'><option value='1'" + (S.n === "1" ? " selected" : "") + ">1st statement</option><option value='2'" + (S.n === "2" ? " selected" : "") + ">2nd statement</option></select></div>";
     h += "<div class='field'><label>" + T("Actuals up to (end of)", "اصل خرچ (مہینے کے آخر تک)") + "</label><select id='es_upto'" + (canEdit() ? "" : " disabled") + ">" + uptoChoices(S.fy).map(function(k){ return "<option value='" + k + "'" + (k === m.upto ? " selected" : "") + ">" + X(mShort(k)) + "</option>"; }).join("") + "</select></div>";
-    h += "<div class='field'><label>" + T("Paper", "کاغذ") + "</label><select id='es_paper'>" + ["A4", "Legal", "Foolscap", "A3"].map(function(p){ return "<option" + (p === S.paper ? " selected" : "") + ">" + p + "</option>"; }).join("") + "</select></div></div>";
+    h += "<div class='field'><label>" + T("Paper", "کاغذ") + "</label><select id='es_paper'>" + ["A4", "Legal", "Foolscap"].map(function(p){ return "<option" + (p === S.paper ? " selected" : "") + ">" + p + "</option>"; }).join("") + "</select></div></div>";
     h += "<div class='es-btns'><button type='button' class='btn small primary' id='es_print'>🖨 " + T("Print", "پرنٹ") + "</button><button type='button' class='btn small' id='es_pdf'>PDF</button><button type='button' class='btn small' id='es_doc'>Word</button><button type='button' class='btn small' id='es_xls'>Excel</button>" +
       "<button type='button' class='btn small' id='es_relbtn'>" + T("Budget releases (quarters)", "بجٹ ریلیز (سہ ماہی)") + "</button><button type='button' class='btn small' id='es_hdrbtn'>" + T("Header & signatures", "ہیڈر اور دستخط") + "</button>" + (canEdit() && m.nEd ? "<button type='button' class='btn small' id='es_reset'>" + T("Clear all hand edits (" + m.nEd + ")", "ہاتھ کی تمام تبدیلیاں ختم (" + m.nEd + ")") + "</button>" : "") + "</div>";
     h += "<div id='es_confirm'></div>";
@@ -15242,7 +15242,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var t = ev.target, id = t && t.id;
     if(id === "es_fy"){ S.fy = t.value; ss("es_fy", S.fy); render(); }
     else if(id === "es_n"){ S.n = t.value; ss("es_n", S.n); render(); }
-    else if(id === "es_paper"){ S.paper = t.value; ss("es_paper", S.paper); }
+    else if(id === "es_paper"){ S.paper = t.value; ss("es_paper2", S.paper); }
     else if(id === "es_upto"){ if(!canEdit()) return; var r = stRec(true); r.upto = t.value; persist(); render(); }
     else if(t.classList && t.classList.contains("es-in")){ setEdit(t.getAttribute("data-c"), t.getAttribute("data-k"), t.value); }
     else if(t.classList && t.classList.contains("es-q")){ setRel(t.getAttribute("data-c"), t.getAttribute("data-k"), t.value); }
