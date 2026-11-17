@@ -12549,6 +12549,9 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     h += "<div class='pf-bar'><b>" + T("Statement (due / drawn / difference)", "گوشوارہ (واجب / وصول / فرق)") + ":</b> <button type='button' class='btn small ar-ex' data-k='excel'" + dis + ">Excel</button> <button type='button' class='btn small ar-ex' data-k='word'" + dis + ">Word</button> <button type='button' class='btn small ar-ex' data-k='pdf'" + dis + ">PDF</button></div>";
     h += "<div class='pf-bar'><b>" + T("Covering letter to the Account Office", "اکاؤنٹ آفس کے نام خط") + ":</b> <button type='button' class='btn small ar-lt' data-k='word'" + dis + ">Word</button> <button type='button' class='btn small ar-lt' data-k='pdf'" + dis + ">PDF</button> &nbsp; <b>" + T("Urdu letter", "اردو خط") + ":</b> <button type='button' class='btn small ar-lu' data-k='word'" + dis + ">Word</button> <button type='button' class='btn small ar-lu' data-k='pdf'" + dis + ">PDF</button></div>";
     h += "<div class='pf-bar'><b>" + T("Form T.R. 22 (detailed pay bill)", "فارم T.R. 22 (تفصیلی پے بل)") + ":</b> <button type='button' class='btn small ar-tr' data-k='pdf'" + dis + ">PDF</button> <button type='button' class='btn small ar-tr' data-k='excel'" + dis + ">Excel</button> <button type='button' class='btn small ar-tr' data-k='csv'" + dis + ">CSV</button> <button type='button' class='btn small ar-tr' data-k='blank'>" + T("Blank form PDF", "خالی فارم PDF") + "</button></div>";
+    h += "<div class='pf-bar'><b>" + T("Sanction order (arrears)", "منظوری کا حکم (بقایا جات)") + ":</b> <button type='button' class='btn small ar-so' data-k='word'" + dis + ">Word</button> <button type='button' class='btn small ar-so' data-k='pdf'" + dis + ">PDF</button> <span class='hint' style='margin:0'>" + T("Empty boxes print as yellow blanks to fill by hand.", "خالی خانے پیلی خالی جگہ کے طور پر چھپتے ہیں، ہاتھ سے بھریں۔") + "</span></div>";
+    h += "<div class='pf-bar'><div class='field' style='max-width:460px'><label>" + T("Notification / order No. and date", "نوٹیفکیشن / حکم نمبر اور تاریخ") + "</label><input id='ar_soNotif' value='" + esc(soV("soNotif")) + "' placeholder='e.g. No. S-Admn/PGP/24-07/2026-561 dated 11-06-2026'></div><div class='field' style='max-width:120px'><label>" + T("Order No.", "حکم نمبر") + "</label><input id='ar_soNo' value='" + esc(soV("soNo")) + "' placeholder='e.g. 125'></div><div class='field' style='max-width:150px'><label>" + T("Dated", "تاریخ") + "</label><input id='ar_soDate' value='" + esc(soV("soDate")) + "' placeholder='e.g. 18-11-2026'></div><div class='field' style='max-width:300px'><label>" + T("Signature block (type it yourself)", "دستخط کا خانہ (خود لکھیں)") + "</label><textarea id='ar_soSign' rows='3' placeholder='Name&#10;Designation&#10;Office'>" + esc(soV("soSign")) + "</textarea></div></div>";
+    h += "<details class='pf-bar' style='display:block'><summary style='cursor:pointer;font-weight:600'>" + T("Sanction order: letterhead, file reference, rule, grant and copy-to", "منظوری کا حکم: لیٹر ہیڈ، فائل حوالہ، رول، گرانٹ اور نقول") + "</summary><div class='pf-bar' style='margin-top:8px'><div class='field' style='max-width:340px'><label>" + T("Letterhead (one line per line)", "لیٹر ہیڈ (ہر سطر الگ)") + "</label><textarea id='ar_soHead' rows='4' placeholder=''>" + esc(soV("soHead")) + "</textarea></div><div class='field' style='max-width:260px'><label>" + T("File reference (after the No.)", "فائل حوالہ") + "</label><input id='ar_soRef' value='" + esc(soV("soRef")) + "' placeholder='e.g. PGP.CRL/CMP/ISB-26-27'></div><div class='field' style='max-width:420px'><label>" + T("Rule", "رول") + "</label><input id='ar_soRule' value='" + esc(soV("soRule")) + "' placeholder=''></div><div class='field' style='max-width:420px'><label>" + T("Grant / function text", "گرانٹ / فنکشن") + "</label><textarea id='ar_soGrant' rows='3' placeholder=''>" + esc(soV("soGrant")) + "</textarea></div><div class='field' style='max-width:340px'><label>" + T("Copy forwarded to (one per line)", "نقول (ہر سطر الگ)") + "</label><textarea id='ar_soCopy' rows='3' placeholder=''>" + esc(soV("soCopy")) + "</textarea></div></div></details>";
     h += "<p class='hint'>" + T("Tick one bill for a single employee’s separate bill, or several to get them in one file and one letter.", "ایک ملازم کا الگ بل چاہیے تو ایک پر ٹک کریں، ایک فائل اور ایک خط کے لیے کئی پر۔") + "</p>";
     return h;
   }
@@ -12620,7 +12623,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     vh.forEach(function(k){ h += "<td class='num' data-g='" + k[0] + "'><b>" + money(T0[k[0]]) + "</b></td>"; });
     h += "<td class='num' data-g='total'><b>" + money(T0.total) + "</b></td></tr></tbody></table></div>";
     h += "<div class='pf-bar' style='margin-top:12px'><button type='button' class='btn' id='ar_recalc'>↻ " + T("Recalculate", "دوبارہ حساب") + "</button><div class='field' style='max-width:180px'><label>" + T("Add a month", "مہینہ جوڑیں") + "</label><input type='month' id='ar_addm' value='" + esc(mAdd(b.to, 1)) + "'></div><button type='button' class='btn small' id='ar_addbtn'>➕ " + T("Add", "جوڑیں") + "</button></div>";
-    h += "<div class='pf-bar'><b>" + T("Statement", "گوشوارہ") + ":</b> <button type='button' class='btn small ar-ex' data-k='excel'>Excel</button> <button type='button' class='btn small ar-ex' data-k='word'>Word</button> <button type='button' class='btn small ar-ex' data-k='pdf'>PDF</button> &nbsp; <b>" + T("Letter", "خط") + ":</b> <button type='button' class='btn small ar-lt' data-k='word'>Word</button> <button type='button' class='btn small ar-lt' data-k='pdf'>PDF</button> &nbsp; <b>" + T("Urdu letter", "اردو خط") + ":</b> <button type='button' class='btn small ar-lu' data-k='word'>Word</button> <button type='button' class='btn small ar-lu' data-k='pdf'>PDF</button> &nbsp; <b>" + T("Form T.R. 22", "فارم T.R. 22") + ":</b> <button type='button' class='btn small ar-tr' data-k='pdf'>PDF</button> <button type='button' class='btn small ar-tr' data-k='excel'>Excel</button> <button type='button' class='btn small ar-tr' data-k='csv'>CSV</button></div>";
+    h += "<div class='pf-bar'><b>" + T("Statement", "گوشوارہ") + ":</b> <button type='button' class='btn small ar-ex' data-k='excel'>Excel</button> <button type='button' class='btn small ar-ex' data-k='word'>Word</button> <button type='button' class='btn small ar-ex' data-k='pdf'>PDF</button> &nbsp; <b>" + T("Letter", "خط") + ":</b> <button type='button' class='btn small ar-lt' data-k='word'>Word</button> <button type='button' class='btn small ar-lt' data-k='pdf'>PDF</button> &nbsp; <b>" + T("Urdu letter", "اردو خط") + ":</b> <button type='button' class='btn small ar-lu' data-k='word'>Word</button> <button type='button' class='btn small ar-lu' data-k='pdf'>PDF</button> &nbsp; <b>" + T("Form T.R. 22", "فارم T.R. 22") + ":</b> <button type='button' class='btn small ar-tr' data-k='pdf'>PDF</button> <button type='button' class='btn small ar-tr' data-k='excel'>Excel</button> <button type='button' class='btn small ar-tr' data-k='csv'>CSV</button> &nbsp; <b>" + T("Sanction order", "منظوری کا حکم") + ":</b> <button type='button' class='btn small ar-so' data-k='word'>Word</button> <button type='button' class='btn small ar-so' data-k='pdf'>PDF</button></div>";
     h += "<p class='hint'>" + T("Yellow-marked figures were typed by hand. The first month is counted for the days after the effective date. " + KEEP_DEFAULT_NOTE, "پیلے نشان والی رقمیں ہاتھ سے لکھی گئی ہیں۔ پہلا مہینہ نافذ تاریخ کے بعد کے دنوں کا گنا جاتا ہے۔ میڈیکل، پرسنل، دھلائی اور ARA 2022 / 2023 / 2024 جیسی مدیں وصول شدہ کے برابر رکھی ہیں؛ اکاؤنٹ آفس BPS بدلنے پر انہیں دوبارہ طے کرتا ہے۔") + "</p>";
     return h;
   }
@@ -12887,8 +12890,9 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   }
   function dl(blob, name){ var a = document.createElement("a"), u = URL.createObjectURL(blob); a.href = u; a.download = name; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(u); a.remove(); }, 1500); }
   function letterName(bs, ur, ext){ return (ur ? "ArrearsLetterUrdu_" : "ArrearsLetter_") + (bs.length === 1 ? String(bs[0].name || "").replace(/[^A-Za-z0-9]+/g, "-") : bs.length + "-employees") + "." + ext; }
-  async function letterWord(bs, ur){
-    await window.__brUI.loadLib("docx"); var D = window.docx, FONT = "Times New Roman", UF = "Urdu Typesetting", blocks = ur ? letterBlocksUr(bs) : letterBlocks(bs), ch = [];
+  async function letterWord(bs, ur, B0, nm, wo){
+    wo = wo || {};
+    await window.__brUI.loadLib("docx"); var D = window.docx, FONT = "Times New Roman", UF = "Urdu Typesetting", blocks = B0 || (ur ? letterBlocksUr(bs) : letterBlocks(bs)), ch = [];
     var AL = ur ? {start: D.AlignmentType.LEFT, end: D.AlignmentType.RIGHT, left: D.AlignmentType.LEFT, right: D.AlignmentType.RIGHT, c: D.AlignmentType.CENTER} : {left: D.AlignmentType.LEFT, right: D.AlignmentType.RIGHT, c: D.AlignmentType.CENTER};
     function run(p, o){
       o = o || {}; var isU = ur && /[؀-ۿ]/.test(p.x);
@@ -12911,8 +12915,8 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
         ch.push(new D.Paragraph({spacing: {after: 120}, children: []}));
       }
     });
-    var doc = new D.Document({styles: {default: {document: {run: {font: FONT, size: 22}}}}, sections: [{properties: {page: {size: {width: 11906, height: 16838}, margin: {top: 1100, bottom: 1000, left: 1300, right: 1300}}}, children: ch}]});
-    dl(await D.Packer.toBlob(doc), letterName(bs, ur, "docx"));
+    var doc = new D.Document({styles: {default: {document: {run: {font: FONT, size: wo.size || 22}}}}, sections: [{properties: {page: {size: {width: 11906, height: 16838}, margin: wo.margin || {top: 1100, bottom: 1000, left: 1300, right: 1300}}}, children: ch}]});
+    dl(await D.Packer.toBlob(doc), nm || letterName(bs, ur, "docx"));
   }
   async function letterPdfUr(bs){
     var blocks = letterBlocksUr(bs), div = document.createElement("div"), FS = "'Jameel Noori Nastaleeq','Noto Nastaliq Urdu','Urdu Typesetting','Noto Naskh Arabic',Tahoma,Arial,sans-serif";
@@ -12942,10 +12946,11 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     }
     finally{ div.remove(); }
   }
-  async function letterPdf(bs){
+  async function letterPdf(bs, B0, nm, po){
+    po = po || {};
     await window.__brUI.loadLib("pdflib");
     var PL = window.PDFLib, doc = await PL.PDFDocument.create(), F = await doc.embedFont(PL.StandardFonts.TimesRoman), FB = await doc.embedFont(PL.StandardFonts.TimesRomanBold);
-    var W = 595.28, H = 841.89, MX = 72, MT = 64, MB = 60, CW = W - 2 * MX, SZ = 11.5, LH = SZ * 1.38, black = PL.rgb(0, 0, 0), grey = PL.rgb(0.45, 0.45, 0.45);
+    var W = 595.28, H = 841.89, MX = po.mx || 72, MT = po.mt || 64, MB = po.mb || 60, CW = W - 2 * MX, SZ = po.sz || 11.5, LH = SZ * 1.38, black = PL.rgb(0, 0, 0), grey = PL.rgb(0.45, 0.45, 0.45);
     var page = doc.addPage([W, H]), y = H - MT;
     function safe(s){ return String(s == null ? "" : s).replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/[−–]/g, "-").replace(/[^\x20-\x7E\xA0-\xFF—•]/g, "?"); }
     function fnt(b){ return b ? FB : F; }
@@ -12981,7 +12986,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
         x += w;
       });
     }
-    var blocks = letterBlocks(bs);
+    var blocks = B0 || letterBlocks(bs);
     blocks.forEach(function(bk){
       if(bk.t === "p"){
         var ind = (bk.ind || 0) / 20, lines = wrap(tokens(bk.parts), CW - ind), al = bk.al || "j";
@@ -13011,8 +13016,86 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       }
     });
     var bytes = await doc.save();
-    dl(new Blob([bytes], {type: "application/pdf"}), letterName(bs, false, "pdf"));
+    dl(new Blob([bytes], {type: "application/pdf"}), nm || letterName(bs, false, "pdf"));
   }
+  /* ---------- the sanction order for the arrears (A4, one page) ----------
+     Same office letterhead, grant text and file reference as the contingent sanction orders (Contingent Bill > TR-30), each of which can be
+     changed here.  The notification, order No. and date are boxes the clerk fills; an empty box prints as a yellow blank.  The signature
+     block is only what the clerk typed. */
+  var SO_RULE = "Rule 3(1) of the Punjab Delegation of Financial Powers Rules, 2016", SO_COPY = "The District Accounts Officer, Rawalpindi.\nThe officials concerned.\nOffice copy for record.";
+  function soHdr(){ try{ return (typeof STATE !== "undefined" && STATE && STATE.stmtData && STATE.stmtData.tr30 && STATE.stmtData.tr30.hdr) || {}; }catch(e){ return {}; } }
+  function soV(k){
+    var r = root(); if(r[k] != null) return String(r[k]);
+    var h = soHdr();
+    return k === "soRule" ? SO_RULE : k === "soCopy" ? SO_COPY : k === "soHead" ? (h.soHead || "") : k === "soRef" ? (h.soRef || "") : k === "soGrant" ? (h.soGrant || "") : "";
+  }
+  function titleCase(s){ return String(s || "").toLowerCase().replace(/(^|[\s\/(-])([a-z])/g, function(m, a, b){ return a + b.toUpperCase(); }); }
+  function lastDay(k){ var a = String(k || "").split("-"); if(a.length < 2) return ""; var d = new Date(+a[0], +a[1], 0).getDate(); return (d < 10 ? "0" : "") + d + "-" + a[1] + "-" + a[0]; }
+  function soBlocks(bs){
+    var B = [], P = function(parts, o){ B.push(Object.assign({t: "p", parts: parts}, o || {})); }, x = function(s, o){ return Object.assign({x: s}, o || {}); };
+    var blank = function(s){ return x(s, {hl: true}); };
+    var head = soV("soHead").split("\n").map(function(l){ return l.trim(); }).filter(Boolean);
+    head.forEach(function(l, i){ P([x(l, {b: true})], {al: "c", after: i === head.length - 1 ? 200 : 0}); });
+    var ref = soV("soRef").trim(), no = soV("soNo").trim(), dt = soV("soDate").trim();
+    var noLine = function(){ return [x("No. "), no ? x(no) : blank("______"), x(ref ? " - " + ref : ""), x("          Dated: "), dt ? x(dt) : blank("______________")]; };
+    P(noLine(), {al: "left", after: 160});
+    P([x("SANCTION ORDER", {b: true})], {al: "c", after: 200});
+    var G = lGroups(bs), tot = 0; bs.forEach(function(b){ tot += totalsOf(b).total; });
+    var W = (window.__brTR22 && window.__brTR22.words) ? window.__brTR22.words(Math.round(tot)) : "";
+    var amt = x("Rs. " + sN(tot) + "/- (Rupees " + (W || "______") + " only)", {b: true});
+    var per = function(b){ return dLabel(b.eff) + " to " + lastDay(b.to); }, pers = {}; bs.forEach(function(b){ pers[per(b)] = 1; });
+    var oneP = Object.keys(pers).length === 1, many = bs.length > 1;
+    var typed = soV("soNotif").trim();
+    function notif(b){
+      var s = typed || String(b.ref || "").trim();
+      if(!s) return [x("Notification No. "), blank("(notification / order No. and date)")];
+      return [x(/^(notification|order|office order|no\.)/i.test(s) ? s : "Notification No. " + s)];
+    }
+    var rule = soV("soRule").trim() || SO_RULE, p1;
+    if(G.length === 1){
+      var b0 = G[0].bs[0], up = b0.kind !== "promo", ds = []; G[0].bs.forEach(function(b){ var d = titleCase(b.desig); if(d && ds.indexOf(d) < 0) ds.push(d); });
+      var bsT = "BS-" + ("0" + b0.oldB).slice(-2) + " to BS-" + ("0" + b0.newB).slice(-2) + " with effect from " + dLabel(b0.eff);
+      p1 = [x("In pursuance of the ")].concat(notif(b0));
+      if(up) p1.push(x(", whereby the post" + (many ? "s" : "") + " of "), x(ds.join(" / ") || "______", {b: true}), x(" of this office " + (many ? "have" : "has") + " been upgraded from "), x(bsT, {b: true}));
+      else p1.push(x(", whereby the following official" + (many ? "s" : "") + " of this office " + (many ? "have" : "has") + " been promoted from "), x(bsT, {b: true}));
+    } else {
+      p1 = [x("In pursuance of the notifications / orders noted against each official in the table below, regarding the upgradation / promotion of the following officials of this office")];
+    }
+    p1.push(x(", sanction is hereby accorded under " + rule + ", to the drawal of arrears of pay and allowances (difference of pay and allowances due and drawn) amounting to "), amt,
+      x(" in favour of the following official" + (many ? "s" : "") + " of this office " + (oneP ? "for the period from " + Object.keys(pers)[0] : "for the period" + (many ? "s" : "") + " shown against each") + ", as per detail given below:-"));
+    P(p1, {after: 160});
+    var multi = G.length > 1, heads = ["Sr.", "Name", "Designation", "Personnel No."].concat(multi ? ["Upgradation / promotion"] : []).concat(["Period", "Amount (Rs.)"]);
+    var rows = bs.map(function(b, i){
+      var r = [String(i + 1), b.name || "", titleCase(b.desig), String(b.persNo || "")];
+      if(multi){ var s = typed || String(b.ref || "").trim(); r.push("BS-" + ("0" + b.oldB).slice(-2) + " to BS-" + ("0" + b.newB).slice(-2) + " w.e.f. " + dLabel(b.eff) + (s ? ", " + s : "")); }
+      return r.concat([per(b), sN(totalsOf(b).total)]);
+    });
+    var foot = heads.map(function(){ return ""; }); foot[foot.length - 2] = "Total"; foot[foot.length - 1] = sN(tot);
+    B.push({t: "table", heads: heads, rows: rows, foot: foot, w: multi ? [5, 20, 12, 11, 22, 18, 12] : [6, 28, 15, 14, 23, 14]});
+    var now = new Date(), fy0 = now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1, fy = fy0 + "-" + String(fy0 + 1).slice(2);
+    var grant = soV("soGrant").trim();
+    P([x("2.     The expenditure involved will be debited to " + (grant ? grant + ", under " : "") + "the relevant objects of "), x("A01-Employees Related Expenses", {b: true}), x(" (Pay and Allowances of Staff) for the current financial year " + fy + ", as per the T.R. 22 bill.")], {before: 120, after: 120});
+    var ax = "Annexure-A" + (bs.length > 1 ? " to " + String.fromCharCode(64 + bs.length) : "");
+    P([x("3.     Certified that the arrears claim has been worked out month by month on the basis of the pay slips / service record of the official" + (many ? "s" : "") + " concerned (" + ax + "), that it is not more than three years old, and that no payment of the same has been made previously.")], {after: 120});
+    var sg = soV("soSign").split("\n").map(function(l){ return l.trim(); }).filter(Boolean);
+    function sign(before){ P([x("______________________")], {al: "right", before: before, after: 0}); sg.forEach(function(l, k){ P([x(l, {b: k === 0})], {al: "right", after: 0}); }); }
+    sign(560);
+    P(noLine(), {al: "left", before: 240, after: 80});
+    P([x("Copy forwarded for information and necessary action to:-")], {al: "left", after: 40});
+    soV("soCopy").split("\n").map(function(l){ return l.trim(); }).filter(Boolean).forEach(function(l, i){ P([x((i + 1) + ".  " + l)], {al: "left", after: 20, ind: 420}); });
+    sign(480);
+    return B;
+  }
+  function soName(bs, ext){ return "SanctionOrder_Arrears_" + (bs.length === 1 ? String(bs[0].name || "").replace(/[^A-Za-z0-9]+/g, "-") : bs.length + "-employees") + "." + ext; }
+  async function exportSO(kind, only){
+    var bs = only || selBills(); if(!bs.length){ toast("Tick the bills first"); return; }
+    try{
+      toast("Preparing the sanction order…");
+      if(kind === "word") await letterWord(bs, false, soBlocks(bs), soName(bs, "docx"), {size: 22, margin: {top: 900, bottom: 800, left: 1150, right: 1150}});
+      else await letterPdf(bs, soBlocks(bs), soName(bs, "pdf"), {sz: 11, mt: 46, mb: 40, mx: 62});
+    }catch(err){ console.error(err); toast("Could not build the sanction order: " + (err && err.message || err)); }
+  }
+
   async function exportLetter(kind, ur, only){
     var bs = only || selBills(); if(!bs.length){ toast("Tick the bills first"); return; }
     try{
@@ -13043,6 +13126,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(t.classList.contains("ar-ex")){ exportStmt(t.getAttribute("data-k")); return; }
     if(t.classList.contains("ar-lt")){ exportLetter(t.getAttribute("data-k"), false); return; }
     if(t.classList.contains("ar-lu")){ exportLetter(t.getAttribute("data-k"), true); return; }
+    if(t.classList.contains("ar-so")){ exportSO(t.getAttribute("data-k")); return; }
     if(t.classList.contains("ar-tr")){
       var tk = t.getAttribute("data-k"), TR = window.__brTR22, tb = selBills();
       if(!TR || !TR.pdf){ toast("Form T.R. 22 is not ready — reload the page"); return; }
@@ -13058,6 +13142,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(t.classList.contains("ar-sel")){ sel[t.getAttribute("data-id")] = t.checked; rerender(); return; }
     if(t.classList.contains("ar-ce") && form){ form.emps[t.getAttribute("data-id")] = t.checked; return; }
     if(view === "new" && form && t.id && t.id.indexOf("ar_f_") === 0){ form[t.id.slice(5)] = t.value; return; }
+    if(view === "list" && t.id && /^ar_so[A-Z]/.test(t.id)){ root()[t.id.slice(3)] = t.value; persist(); return; }
     if(view === "list" && (t.id === "ar_to" || t.id === "ar_sign" || t.id === "ar_tou" || t.id === "ar_signu" || t.id === "ar_tr22s" || t.id === "ar_tr22m")){ var r = root(); if(t.id === "ar_tr22m") r.tr22Mode = t.value; else if(t.id === "ar_tr22s") r.tr22Sign = t.value; else if(t.id === "ar_to") r.toAddr = t.value; else if(t.id === "ar_sign") r.signBlock = t.value; else if(t.id === "ar_tou") r.toAddrUr = t.value; else r.signBlockUr = t.value; persist(); return; }
     var f = t.getAttribute && t.getAttribute("data-f");
     if(view === "edit" && f){
@@ -13081,7 +13166,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(view === "new" && form && t.id && t.id.indexOf("ar_f_") === 0 && (t.id === "ar_f_ref" || t.id === "ar_f_p0" || t.id === "ar_f_nb")) form[t.id.slice(5)] = t.value;
   });
 
-  window.__brArrears = {view: viewMain, build: build, diffOf: diffOf, totalsOf: totalsOf, bills: bills, stmtTables: stmtTables, letterBlocks: letterBlocks, letterBlocksUr: letterBlocksUr, exportStmt: exportStmt, exportLetter: exportLetter, root: root, state: function(){ return {view: view, cur: cur}; }};
+  window.__brArrears = {view: viewMain, build: build, diffOf: diffOf, totalsOf: totalsOf, bills: bills, stmtTables: stmtTables, letterBlocks: letterBlocks, letterBlocksUr: letterBlocksUr, soBlocks: soBlocks, exportSO: exportSO, exportStmt: exportStmt, exportLetter: exportLetter, root: root, state: function(){ return {view: view, cur: cur}; }};
 })();
 
 /* ================= FORM T.R. 22 (Sigma) — detailed pay bill for arrears =================
@@ -14279,6 +14364,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     out.push({label: "Statement", html: htmlTables(A.stmtTables(rec), "Statement of Due and Drawn (Arrears)", rec.map(function(b){ return b.name; }).join(", "), true)});
     out.push({label: "Letter", edit: true, html: htmlBlocks(A.letterBlocks(rec), false)});
     if(A.letterBlocksUr) out.push({label: "Urdu letter · اردو خط", edit: true, html: htmlBlocks(A.letterBlocksUr(rec), true)});
+    if(A.soBlocks) out.push({label: "Sanction order", edit: true, html: htmlBlocks(A.soBlocks(rec), false)});
     if(window.__brTR22){ out.push({label: "Form T.R. 22", html: window.__brTR22.html(rec)}); out.push({label: "T.R. 22 (blank)", html: window.__brTR22.blank()}); }
     return out;
   }
@@ -14309,7 +14395,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   var ZJOBS = {
     change: [["pdf", "PDF", "button.cf-ex[data-k=pdf]", 1], ["word", "Word", "button.cf-ex[data-k=word]", 1], ["excel", "Excel", "button.cf-ex[data-k=excel]", 0]],
     arrears: [["s_pdf", "Statement — PDF", "button.ar-ex[data-k=pdf]", 1], ["s_word", "Statement — Word", "button.ar-ex[data-k=word]", 0], ["s_xl", "Statement — Excel", "button.ar-ex[data-k=excel]", 0],
-      ["l_word", "Letter — Word", "button.ar-lt[data-k=word]", 1], ["l_pdf", "Letter — PDF", "button.ar-lt[data-k=pdf]", 0], ["u_word", "Urdu letter — Word", "button.ar-lu[data-k=word]", 0], ["u_pdf", "Urdu letter — PDF", "button.ar-lu[data-k=pdf]", 0], ["t_pdf", "T.R. 22 — PDF", "button.ar-tr[data-k=pdf]", 0], ["t_xl", "T.R. 22 — Excel", "button.ar-tr[data-k=excel]", 0]]
+      ["l_word", "Letter — Word", "button.ar-lt[data-k=word]", 1], ["l_pdf", "Letter — PDF", "button.ar-lt[data-k=pdf]", 0], ["u_word", "Urdu letter — Word", "button.ar-lu[data-k=word]", 0], ["u_pdf", "Urdu letter — PDF", "button.ar-lu[data-k=pdf]", 0], ["t_pdf", "T.R. 22 — PDF", "button.ar-tr[data-k=pdf]", 0], ["so_word", "Sanction order — Word", "button.ar-so[data-k=word]", 0], ["so_pdf", "Sanction order — PDF", "button.ar-so[data-k=pdf]", 0], ["t_xl", "T.R. 22 — Excel", "button.ar-tr[data-k=excel]", 0]]
   };
   function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
   function waitFor(fn, ms){ return new Promise(function(res){ var t0 = Date.now(); (function p(){ if(fn()) return res(true); if(Date.now() - t0 > ms) return res(false); setTimeout(p, 120); })(); }); }
