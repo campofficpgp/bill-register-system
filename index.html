@@ -13031,6 +13031,145 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   window.__brArrears = {view: viewMain, build: build, diffOf: diffOf, totalsOf: totalsOf, bills: bills, stmtTables: stmtTables, letterBlocks: letterBlocks, letterBlocksUr: letterBlocksUr, exportStmt: exportStmt, exportLetter: exportLetter, root: root, state: function(){ return {view: view, cur: cur}; }};
 })();
 
+/* ================= FORM T.R. 22 (Sigma) — detailed pay bill for arrears =================
+   Made from the same arrears bills as the Statement and the covering letter, so it is always up to date.  Front page: columns 1–25
+   (rupees only, no paise columns).  Second page: reverse (totals, certificates, code numbers) and obverse (classification).
+   Office, district and DDO code are filled; Bill No. and Date are left for the clerk.  A blank form is offered too. */
+(function(){
+  "use strict";
+  var OFFICE = "Camp Office Prosecutor General Punjab, Supreme Court of Pakistan, Islamabad", DISTRICT = "Islamabad", DDO = "RI-4720";
+  var MN = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  var COLMAP = {basic: 3, hra: 4, ca: 5, wash: 7};   /* every other allowance goes to column (6) */
+  function esc(s){ return String(s == null ? "" : s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]; }); }
+  function n(v){ v = Math.round(+v || 0); return v.toLocaleString("en-US"); }
+  function mLab(k){ var a = String(k || "").split("-"); return a.length > 1 ? MN[+a[1] - 1] + "-" + a[0] : k; }
+  function dmy(iso){ var m = String(iso || "").match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? m[3] + "-" + m[2] + "-" + m[1] : (iso || ""); }
+  function words(num){
+    num = Math.round(Math.abs(+num || 0));
+    if(!num) return "Zero";
+    var a = ["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"],
+        t = ["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];
+    function two(x){ return x < 20 ? a[x] : t[Math.floor(x / 10)] + (x % 10 ? "-" + a[x % 10] : ""); }
+    function three(x){ var h = Math.floor(x / 100), r = x % 100; return (h ? a[h] + " Hundred" + (r ? " and " : "") : "") + (r ? two(r) : ""); }
+    var out = [], cr = Math.floor(num / 10000000), lk = Math.floor(num / 100000) % 100, th = Math.floor(num / 1000) % 100, rest = num % 1000;
+    if(cr) out.push(three(cr) + " Crore"); if(lk) out.push(two(lk) + " Lakh"); if(th) out.push(two(th) + " Thousand"); if(rest) out.push(three(rest));
+    return out.join(" ");
+  }
+  var HEADS = {1:"Serial Number of posts",2:"Section of establishment and name of incumbents",3:"Substantive pay",4:"House Rent Allowance",5:"Conveyance Allowance",
+    6:"Local Compensatory Allowance / Dearness Allowance",7:"Washing Allowance",8:"Overtime Allowance / Night Duty Allowance",9:"Honoraria / Medical charges",
+    10:"Rest and Recreation Allowance / Leave Salary",11:"Grand Total",12:"General Provident Fund / Contributory Provident Fund",13:"Benevolent Fund",
+    14:"Postal Life Insurance Fund",15:"Income Tax",16:"Trade Tax",17:"House Building Advance",18:"Motor Cycle Advance",19:"Cycle Advance",20:"House Rent",
+    21:"Recoveries of Over drawls / Court Attachment Order",22:"Total Deductions",23:"Net Amount Payable",24:"Remarks",25:"Acquittance"};
+  /* one bill -> month rows {label, c:{3..23}} */
+  function rowsOf(A, b){
+    var out = [];
+    (b.rows || []).forEach(function(r){
+      var d = A.diffOf(r), c = {};
+      Object.keys(d).forEach(function(k){ if(k === "total") return; var col = COLMAP[k] || 6; c[col] = (c[col] || 0) + (+d[k] || 0); });
+      c[11] = +d.total || 0; c[22] = 0; c[23] = c[11];
+      out.push({label: mLab(r.m) + (r.sn === r.sd ? " (full month)" : " (" + r.sn + " of " + r.sd + " days)"), est: r.src === "est", c: c});
+    });
+    return out;
+  }
+  function addTo(t, c){ Object.keys(c).forEach(function(k){ t[k] = (t[k] || 0) + c[k]; }); }
+  var CSS = "@page{size:A4 landscape;margin:8mm 8mm 9mm}*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;color:#000}" +
+    "table{border-collapse:collapse;width:100%}th,td{border:.8px solid #000;padding:2px}" +
+    "table.f{table-layout:fixed}table.f thead{display:table-header-group}table.f th{font-size:7px;font-weight:700;text-align:center;line-height:1.15;height:124px;vertical-align:bottom;padding:4px 2px}" +
+    "table.f th .vt{display:inline-block;writing-mode:vertical-rl;transform:rotate(180deg);text-align:left;max-height:118px}" +
+    "table.f th.hz{vertical-align:middle;font-size:7.6px}table.f th.grp{height:auto;vertical-align:middle;font-size:11px;padding:4px}" +
+    "tr.num td{font-size:6.8px;font-weight:700;text-align:center;padding:2px 0}tr.rs td{font-size:6.6px;text-align:center;padding:1px 0}" +
+    "tr.d td,tr.st td,tr.gt td{height:32px;vertical-align:middle}td.n{text-align:right;font-size:8.6px;padding-right:3px;white-space:nowrap;color:#00267a}" +
+    "td.nm{font-size:7.6px;line-height:1.3;color:#00267a;overflow-wrap:anywhere}td.nm .per{color:#000;font-size:7px}td.c{text-align:center;font-size:8px;color:#00267a}" +
+    "td.rm{font-size:6.6px;line-height:1.25;color:#00267a;overflow-wrap:anywhere}tr.st td{font-weight:700}tr.gt td{font-weight:700;background:#eef2f8}tr.gt td.n{font-size:9.2px}" +
+    "tr.bl td{height:30px}tr{page-break-inside:avoid}.foot{font-size:8px;margin-top:5px}.foot b{color:#00267a;font-weight:400}.pb{page-break-before:always}" +
+    ".rv{display:grid;grid-template-columns:23% 27% 17% 33%;gap:0;font-size:7.4px;line-height:1.35;min-height:178mm}.rv>div{padding:0 7px}.rv .ob{border-left:1px dashed #000}" +
+    ".rv h3{font-size:9.5px;margin:0 0 6px;text-align:center}.rv p{margin:0 0 5px}.rv .bl{font-weight:700}.rv .v{color:#00267a;font-weight:700}" +
+    ".rv table td,.rv table th{font-size:7.2px;padding:1.6px 3px}.rv .abs td{height:150px}.rv .amt{text-align:right;color:#00267a;white-space:nowrap}.rv .tb td{font-weight:700}" +
+    ".rv .code p{margin:0 0 4px}.rv .ttl{text-align:center;font-weight:700;font-size:12px;line-height:1.25;margin:4px 0 6px}.rv .sig{margin-top:18px;text-align:center;font-weight:700}" +
+    ".rv .stn p{margin:0 0 7px;font-weight:700}.rv .note{font-size:6.6px}";
+  function front(list, A, blank){
+    var cols = "<colgroup><col style='width:3.4%'><col style='width:12.5%'>" + new Array(22).join("<col>") + "<col style='width:8.5%'><col style='width:5.5%'></colgroup>";
+    var h1 = "<tr>", i;
+    for(i = 1; i <= 11; i++) h1 += i === 2 ? "<th rowspan='2' class='hz'>" + HEADS[i] + "</th>" : "<th rowspan='2'><span class='vt'>" + HEADS[i] + "</span></th>";
+    h1 += "<th colspan='11' class='grp'>Deductions and Recoveries</th><th rowspan='2'><span class='vt'>" + HEADS[23] + "</span></th><th rowspan='2' class='hz'>Remarks</th><th rowspan='2' class='hz'>Acquittance</th></tr>";
+    var h2 = "<tr>"; for(i = 12; i <= 22; i++) h2 += "<th><span class='vt'>" + HEADS[i] + "</span></th>"; h2 += "</tr>";
+    var num = "<tr class='num'>"; for(i = 1; i <= 25; i++) num += "<td>(" + i + ")</td>"; num += "</tr>";
+    var rs = "<tr class='rs'><td></td><td></td>"; for(i = 3; i <= 23; i++) rs += "<td>Rs.</td>"; rs += "<td></td><td></td></tr>";
+    function cells(c){ var s = ""; for(var k = 3; k <= 23; k++){ var v = c[k]; s += "<td class='n'>" + (v == null || (v === 0 && k !== 22) ? "" : (k === 22 && !v ? "Nil" : n(v))) + "</td>"; } return s; }
+    var body = "", grand = {}, used = 0;
+    if(!blank) list.forEach(function(b, bi){
+      var rows = rowsOf(A, b), sub = {};
+      rows.forEach(function(r, ri){
+        addTo(sub, r.c); used++;
+        var name = ri ? "" : "<b>" + esc(b.name) + "</b><br>" + esc(b.desig || "") + (b.newB ? " (BPS-" + esc(b.newB) + ")" : "") + (b.persNo ? "<br>Pers. No. " + esc(b.persNo) : "") + "<br>";
+        var rem = ri === 0 ? "Arrears on " + (b.kind === "promo" ? "promotion" : "pay change") + (b.oldB && b.newB ? " BPS-" + esc(b.oldB) + " to BPS-" + esc(b.newB) : "") + (b.eff ? " w.e.f. " + dmy(b.eff) : "") : (ri === 1 ? "Col (6) = Special, Medical, Personal allowances and Adhoc Reliefs" : "");
+        body += "<tr class='d'><td class='c'>" + (ri ? "" : (bi + 1)) + "</td><td class='nm'>" + name + "<span class='per'>" + esc(r.label) + (r.est ? " *" : "") + "</span></td>" + cells(r.c) + "<td class='rm'>" + rem + "</td><td></td></tr>";
+      });
+      if(list.length > 1){ used++; body += "<tr class='st'><td></td><td class='nm'>Total — " + esc(b.name) + "</td>" + cells(sub) + "<td></td><td></td></tr>"; }
+      addTo(grand, sub);
+    });
+    if(!blank){ used++; body += "<tr class='gt'><td></td><td class='nm'><b>TOTAL ARREARS</b></td>" + cells(grand) + "<td></td><td></td></tr>"; }
+    var blanks = Math.max(blank ? 12 : 3, 12 - used); for(i = 0; i < blanks; i++) body += "<tr class='bl'>" + new Array(26).join("<td></td>") + "</tr>";
+    var months = []; if(!blank) list.forEach(function(b){ (b.rows || []).forEach(function(r){ if(months.indexOf(r.m) < 0) months.push(r.m); }); }); months.sort();
+    var monthTxt = blank ? "____________" : (months.length ? "<b>Arrears " + esc(mLab(months[0]).slice(0, 3) + (months.length > 1 ? "–" + mLab(months[months.length - 1]).slice(0, 3) : "")) + "</b>" : "____________");
+    var yr = blank ? "___" : "<b>" + (months.length ? String(months[months.length - 1]).slice(2, 4) : "") + "</b>";
+    return {grand: grand, months: months, html: "<table class='f'>" + cols + "<thead>" + h1 + h2 + "</thead><tbody>" + num + rs + body + "</tbody></table>" +
+      "<div class='foot'>Form T.R. 22 (See rule 265) — Bill No. ____________ &nbsp; Month " + monthTxt + " 20" + yr + " &nbsp; District <b>" + DISTRICT + "</b> &nbsp; DDO Code <b>" + DDO + "</b> &nbsp; Establishment: <b>" + esc(OFFICE) + "</b>" +
+      (blank ? "" : " &nbsp; <span style='color:#555'>* = month without a pay slip (estimate)</span>") + "</div>"};
+  }
+  function back(F, blank){
+    var g = F.grand || {}, tot = blank ? "" : n(g[11] || 0), V = function(s){ return blank ? "______________" : "<span class='v'>" + s + "</span>"; };
+    var other = blank ? 0 : (g[6] || 0) + (g[8] || 0) + (g[9] || 0) + (g[10] || 0);
+    function a(v){ return blank || !v ? "" : n(v); }
+    var mon = blank ? "______________" : "<span class='v'>" + esc(F.months.length ? "Arrears " + mLab(F.months[0]).slice(0, 3) + (F.months.length > 1 ? "–" + mLab(F.months[F.months.length - 1]).slice(0, 3) : "") : "") + "</span>";
+    var yr = blank ? "____" : "<span class='v'>" + (F.months.length ? String(F.months[F.months.length - 1]).slice(2, 4) : "") + "</span>";
+    var ob = [["Pay of Permanent Establishment","A01151",a(g[3])],["Pay of Temporary Establishment","A01151",""],["Pay of Contract staff","A01166",""],["<b>Total Basic Salary</b>","",a(g[3]),1],
+      ["House Rent Allowance","A01202",a(g[4])],["Conveyance Allowance","A01203",a(g[5])],["Dearness Allowance","A01205",""],["Local Compensatory Allowance","A01208",""],["Washing Allowance","A01207",a(g[7])],["Dress Allowance","A01204",""],
+      ["<b>Total Regular Allowance</b>","",a((g[4] || 0) + (g[5] || 0) + (g[7] || 0)),1],["Overtime Allowance","A01271",""],["Night Duty Allowance","A01272",""],["Honoraria","A01273",""],["Medical Charges","A01274",""],["Rest and Recreation Allowance","A01275",""],
+      [blank ? "................................" : "<span class='v' style='font-weight:400'>Special / Medical / Personal Allow. + Adhoc Reliefs</span>","A01278",a(other)],["Leave Salary","",""],["<b>Total Other Allowances (Excluding T.A.)</b>","",a(other),1],
+      ["<b>Grand Total-Establishment Charges</b>","G06103 / G06123 / G06202",a(g[11]),1],["Deduct:-","",""],["*General Provident Fund","B01187",""],["Contributory Provident Fund","B01603",""],["*Benevolent Fund (Federal Govt.)","E02501 / E02503",""],
+      ["Postal Life Insurance Fund","E02504 / C02701",""],["Income Tax F. govt. Employee","",""],["Deduction at Source","",""],["*Deduction of advances and Recoveries","",""],["Advance of","",""]];
+    var obRows = ob.map(function(r){ return "<tr" + (r[3] ? " class='tb'" : "") + "><td>" + r[0] + "</td><td>" + r[1] + "</td><td class='amt'>" + r[2] + "</td></tr>"; }).join("");
+    var codes = [["General Provident Fund (Civil)","G06103"],["General Provident Fund (Post Office)","G06112"],["General Provident Fund (Rail-ways)","G06114"],["General Provident Fund (Defence)","G06104"],["General Provident Fund (Telegraph and Telephone)","G06113"],["Federal Government Employees Benevolent Fund (Civil)","G06202"],["Federal Government Employees Benevolent Fund (Defence)","G06203"],["Federal Government Employees Benevolent Fund (Post Office)","G06205"],["Railway Employees Benevolent Fund","G06213"],["Federal Government Employees Benevolent Fund (Telegraph and Telephone)","G06205"],["Objection Book Advances (Civil)","F02119"],["Objection Book Advances (Post Office)","14102"],["Advances Recoverable (Defence)","14103"],["Objection Book Advances (Railway)","F02133"]];
+    return "<div class='pb'></div><div class='rv'>" +
+      "<div><h3>Total [Column (11)] " + (blank ? "" : "<span class='v'>Rs. " + tot + "</span>") + "</h3>" +
+        "<p class='bl'>Deduct undisbursed salary as detailed below : " + (blank ? "" : "<span class='v'>Nil</span>") + "</p><p class='bl'>Deduction : Column (22) " + (blank ? "" : "<span class='v'>Nil</span>") + "</p>" +
+        "<p class='bl'>Total " + V(tot) + "</p><p class='bl'>Net amount required for payment " + V(tot) + "</p><p class='bl'>(In words) Rupees " + (blank ? "______________________" : "<span class='v'>" + words(g[11]) + " only</span>") + "</p>" +
+        "<h3 style='margin-top:8px'>DETAILS OF PAY OF ABSENTEES REFUNDED</h3><table class='abs'><tr><th>Section of establishment</th><th>Name of Incumbent</th><th>Period</th><th>Amount Rs.</th></tr><tr><td></td><td></td><td></td><td></td></tr></table>" +
+        "<div class='stn' style='margin-top:10px'><p>Station " + (blank ? "__________" : "<span class='v'>" + DISTRICT + "</span>") + "</p><p>Date __________</p><p>Net Payable Before</p><p>Pass Rs. __________ (Rupees __________)</p><p>District Accounts Officer</p><p>Treasury Officer</p><p>Assistant Accounts Officer</p><p>Assistant Accountant ———— General</p></div></div>" +
+      "<div><h3>Certificates</h3>" +
+        "<p>1. Received contents and certified that I have satisfied myself that all emoluments included in this bill drawn one month / two months / three months previous to the date, with the exception of those detailed below of which the total has been refunded by deduction from this bill have been disbursed to the proper persons and that their acquittances have been taken and filed in my office with except stamp duty cancelled for every payment in excess of twenty rupees.</p>" +
+        "<p>2. Certified that no person has been absent either on other duty or suspension or without leave (except on casual leave) during the month of ______.</p>" +
+        "<p>3. Certified that no leave has been granted until by reference to the applicant's Service Book, leave accounts and to leave rules applicable to him, I had satisfied myself that it was admissible and that all grant of leave and departures on and returns from leave and all period of suspension and other duty and other leaves which are required under the rules to be so recorded have been recorded in the Service Books and leave accounts under my attestation.</p>" +
+        "<p>4. Certified that all appointments and substantive promotions and such of the officiating promotions as have to be entered in the Service Books have been entered in the Service Books of the persons concerned under my attestation.</p>" +
+        "<p>5. Certified that each official for whom House Rent Allowance / Conveyance Allowance has been claimed in this bill:-</p>" +
+        "<p>(a) has neither been provided with accommodation by the Government for sharing any such accommodation with another allottee without necessary permission of the Estate Officer and is in occupation of rent free Government Quarter.</p>" +
+        "<p>(b) his / her / wife / husband. Who is the service of the Federal/Provincial Government / Autonomous Body, is not in receipt of house rent allowance.</p>" +
+        "<p>(c) his / her / wife / husband. Who is in the service of the Federal / Provincial Government / Autonomous Body is not in receipt of house rent allowance.</p>" +
+        "<p>(d) has not been residing within work premises.</p><p>(e) is maintaining a motor cycle which is registered in his / her name or in the name of his / her spouse.</p>" +
+        "<div class='sig' style='margin-top:40px'>Signature<br>Designation of the Drawing Officer.</div>" +
+        "<p style='margin-top:26px'>For use in Accountant-General's Office</p><p style='text-align:center'>Objected Rs. ________</p><p>Auditor &nbsp;&nbsp;&nbsp; Superintendent.</p></div>" +
+      "<div class='code'><h3>Detail of Code Numbers</h3>" + codes.map(function(c){ return "<p>" + c[0] + "<br>" + c[1] + "</p>"; }).join("") +
+        "<p style='margin-top:30px;text-align:right'>Assistant Accounts Officer<br>Assistant Accountant General</p></div>" +
+      "<div class='ob'><p style='text-align:right;font-weight:700'>Bill No. ____________</p><div class='ttl'>FORM T. R. 22<br>(See rule 265)<br>Obverse</div>" +
+        "<p style='text-align:center;font-weight:700;font-size:7.4px'>DETAILED PAY BILL OF PERMANENT / TEMPORARY ESTABLISHMENT OF THE<br>" + (blank ? "______________________" : "<span class='v'>" + esc(OFFICE.toUpperCase()) + "</span>") + "</p>" +
+        "<p style='text-align:center;font-weight:700'>FOR THE MONTH OF " + mon + " 20" + yr + " &nbsp;DISTRICT " + (blank ? "__________" : "<span class='v'>" + DISTRICT + "</span>") + "</p>" +
+        "<table style='border:0;margin:4px 0 6px'><tr><td style='border:0;padding:0'>Major Function ......<br>Minor Function ......<br>Detailed Function ......<br>Grant No. ......<br>DDO Code " + (blank ? "......" : "<span class='v'>" + DDO + "</span>") + "</td><td style='border:0;padding:0;text-align:right;vertical-align:top'>Vouchers No. ......<br>List ......<br>For ...... 20</td></tr></table>" +
+        "<table><tr><th style='text-align:left'>Object</th><th>Classification Code</th><th>Amount Rs.</th></tr>" + obRows + "</table>" +
+        "<p class='note' style='margin-top:4px'>*Code number applicable to Government servant be inserted from Codes given on reverse.</p>" +
+        "<p class='note'>1. In the Remarks column (24) should be recorded all unusual permanent events such as deaths, retirements, permanent transfers and first appointments, which find no place in the increment certificates of absentee statement.</p>" +
+        "<p class='note'>2. When an increment claimed operates to carry a Government Servant over an efficiency bar, it should be supported by a declaration that the Government servant in question is to pass the bar.</p>" +
+        "<p class='note'>3. The names of Government servants holding posts substantively should be entered in order of seniority as measured by substantive pay drawn and below those will be shown the posts left vacant and the men officiating in the vacancies.</p>" +
+        "<p class='note'>4. Officiating pay should be recorded in section of the bill appropriate to that in which the Government servant officiates and transit pay should be recorded in the same section as that in which the duty pay of the Government servant after transfer is recorded.</p></div></div>";
+  }
+  function html(list, blank){
+    var A = window.__brArrears, F = front(list || [], A, blank);
+    return "<!doctype html><html><head><meta charset='utf-8'><title>Form T.R. 22</title><style>" + CSS + "</style></head><body>" + F.html + back(F, blank) + "</body></html>";
+  }
+  window.__brTR22 = {html: function(list){ return html(list, false); }, blank: function(){ return html([], true); }, words: words};
+})();
+
+
 /* ================= OPTION RECORD — Pay Scales 2022 or 2026 (inside the Pay Fixation tab, Admin / Super Admin) =================
    Para 12 of the Punjab notification (FD.SR-V.2-1/2026, 22-07-2026): every existing employee had 30 days from the date of issue to give an
    irrevocable option in writing — keep drawing pay in the Basic Pay Scales 2022 or move to the Basic Pay Scales 2026.  An employee who did
@@ -13944,6 +14083,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     out.push({label: "Statement", html: htmlTables(A.stmtTables(rec), "Statement of Due and Drawn (Arrears)", rec.map(function(b){ return b.name; }).join(", "), true)});
     out.push({label: "Letter", edit: true, html: htmlBlocks(A.letterBlocks(rec), false)});
     if(A.letterBlocksUr) out.push({label: "Urdu letter · اردو خط", edit: true, html: htmlBlocks(A.letterBlocksUr(rec), true)});
+    if(window.__brTR22){ out.push({label: "Form T.R. 22", html: window.__brTR22.html(rec)}); out.push({label: "T.R. 22 (blank)", html: window.__brTR22.blank()}); }
     return out;
   }
   function preview(d, autoPrint){
