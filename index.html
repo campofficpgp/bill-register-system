@@ -12946,7 +12946,21 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     }
     finally{ div.remove(); }
   }
+  /* the PDF is made at the normal size first; when only a little runs over to a second page (a long signature, many names),
+     it is made again slightly smaller, so a one-page letter / order never prints its last lines alone on a second sheet */
   async function letterPdf(bs, B0, nm, po){
+    po = po || {};
+    var tries = [[0, 1], [0.5, 0.85], [1, 0.72], [1.5, 0.6]], orig = null, pick = null;
+    for(var ti = 0; ti < tries.length; ti++){
+      var d0 = await letterPdfDoc(bs, B0, Object.assign({}, po, {sz: (po.sz || 11.5) - tries[ti][0], k: tries[ti][1]}));
+      if(!orig) orig = d0;
+      if(d0.getPageCount() === 1){ pick = d0; break; }
+      if(orig.getPageCount() > 2) break;   /* a genuinely long letter keeps its normal size */
+    }
+    var bytes = await (pick || orig).save();
+    dl(new Blob([bytes], {type: "application/pdf"}), nm || letterName(bs, false, "pdf"));
+  }
+  async function letterPdfDoc(bs, B0, po){
     po = po || {};
     await window.__brUI.loadLib("pdflib");
     var PL = window.PDFLib, doc = await PL.PDFDocument.create(), F = await doc.embedFont(PL.StandardFonts.TimesRoman), FB = await doc.embedFont(PL.StandardFonts.TimesRomanBold);
@@ -12990,10 +13004,10 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     blocks.forEach(function(bk){
       if(bk.t === "p"){
         var ind = (bk.ind || 0) / 20, lines = wrap(tokens(bk.parts), CW - ind), al = bk.al || "j";
-        y -= (bk.before || 0) / 20;
+        y -= (bk.before || 0) / 20 * (po.k || 1);
         need(LH * Math.min(lines.length, 3));
         lines.forEach(function(ln){ need(LH); y -= SZ; drawLine(ln, MX + ind, CW - ind, al, al === "j"); y -= LH - SZ; });
-        y -= (bk.after != null ? bk.after : 120) / 20;
+        y -= (bk.after != null ? bk.after : 120) / 20 * (po.k || 1);
       } else {
         var cols = bk.w.map(function(w){ return CW * w / 100; }), PADX = 5, PADY = 3.5;
         function rowOf(cells, o){
@@ -13015,8 +13029,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
         y -= 10;
       }
     });
-    var bytes = await doc.save();
-    dl(new Blob([bytes], {type: "application/pdf"}), nm || letterName(bs, false, "pdf"));
+    return doc;
   }
   /* ---------- the sanction order for the arrears (A4, one page) ----------
      Same office letterhead, grant text and file reference as the contingent sanction orders (Contingent Bill > TR-30), each of which can be
@@ -13091,7 +13104,8 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var bs = only || selBills(); if(!bs.length){ toast("Tick the bills first"); return; }
     try{
       toast("Preparing the sanction order…");
-      if(kind === "word") await letterWord(bs, false, soBlocks(bs), soName(bs, "docx"), {size: 21, line: 252, margin: {top: 850, bottom: 750, left: 1150, right: 1150}});
+      var sl = soV("soSign").split("\n").filter(function(l){ return l.trim(); }).length;
+      if(kind === "word") await letterWord(bs, false, soBlocks(bs), soName(bs, "docx"), sl > 3 ? {size: 20, line: 236, margin: {top: 760, bottom: 680, left: 1100, right: 1100}} : {size: 21, line: 252, margin: {top: 850, bottom: 750, left: 1150, right: 1150}});
       else await letterPdf(bs, soBlocks(bs), soName(bs, "pdf"), {sz: 10.5, mt: 34, mb: 30, mx: 58});
     }catch(err){ console.error(err); toast("Could not build the sanction order: " + (err && err.message || err)); }
   }
