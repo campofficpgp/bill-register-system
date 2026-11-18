@@ -8277,7 +8277,7 @@ function psCompactToolbar(){
 var PS_PAPER = {A4: [210, 297], Legal: [215.9, 355.6], Foolscap: [215.9, 330.2]};
 function psPreviewDoc(sizeKey){
   var paper = document.getElementById("payslipPaper"), clone = paper.cloneNode(true);
-  clone.removeAttribute("id");
+  /* the clone keeps id="payslipPaper" (it lives in its own page), so the statement table keeps its official black-and-white look */
   Array.prototype.forEach.call(clone.querySelectorAll(".slip-tools,.add-row-btn,.row-remove-btn,button,.ps-nodata,.month-flag"), function(n){ n.remove(); });
   Array.prototype.forEach.call(clone.querySelectorAll("input"), function(i){
     var pv = i.nextElementSibling;
