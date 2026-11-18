@@ -1242,6 +1242,24 @@ body.lang-ur .br-part{ font-size:17px; }
 #payslipPaper table.stmt td.num input.cell-input{ min-width:84px; }
 #payslipPaper table.stmt td.num.neg input.cell-input{ color:#000; }
 #payslipPaper .ps-top{ z-index:0; }
+/* pay slip: compact toolbar, notice, preview, a cleaner statement */
+.payslip-toolbar{ gap:10px 12px !important; padding:10px 16px !important; }
+.payslip-toolbar .ps-more{ flex-basis:100%; }
+.payslip-toolbar .ps-more summary{ cursor:pointer; font-weight:600; font-size:13px; color:var(--navy); padding:2px 0; }
+.payslip-toolbar .ps-more-body{ display:flex; flex-wrap:wrap; gap:10px 12px; align-items:flex-end; margin-top:8px; }
+.ps-nodata{ border:1px dashed #b8c2d0; border-radius:12px; padding:34px 22px; text-align:center; background:#f7f9fc; margin:10px 0; }
+.ps-nodata .ps-nd-t{ font-size:18px; font-weight:700; color:var(--navy); margin-bottom:8px; }
+.ps-nodata .ps-nd-s{ font-size:13.5px; color:#555; margin-bottom:16px; }
+.ps-nodata .ps-nd-b{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+#psPreviewOv{ position:fixed; inset:0; z-index:100000; background:rgba(15,23,42,.72); display:flex; flex-direction:column; }
+#psPreviewOv .psp-bar{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:10px 16px; background:#fff; box-shadow:0 2px 10px rgba(0,0,0,.2); }
+#psPreviewOv .psp-sp{ flex:1; }
+#psPreviewOv label{ font-size:13px; display:flex; align-items:center; gap:6px; }
+#psPreviewOv iframe{ flex:1; border:0; width:100%; background:#e6e9ef; }
+.payslip-paper .ps-top{ border-bottom:2px solid #000; padding-bottom:10px !important; margin-bottom:14px !important; }
+.payslip-paper .ps-sec{ border-bottom:1px solid #9aa3ad; padding-bottom:3px; margin-top:14px !important; }
+.payslip-paper .ps-totals{ border:1.5px solid #000; background:#f2f4f7; padding:8px 12px !important; margin:16px 0 12px !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+.payslip-paper .payslip-sign{ margin-top:52px !important; }
 .payslip-toolbar{ z-index:5; }
 
 /* ---------- print : the new on-screen pieces never reach the paper ---------- */
@@ -8180,10 +8198,14 @@ function populateIncMonthSelect(){
 function openPaySlip(employeeId){
   var overlay = document.getElementById("payslipOverlay");
   overlay.dataset.empId = employeeId;
-  if(!document.getElementById("ps_month").value){
-    var d = new Date();
-    document.getElementById("ps_month").value = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+  var psm = document.getElementById("ps_month");
+  /* open on a month that really has a slip for this employee (the current month usually has none yet) */
+  if(!psm.value || !psHas(employeeId, psm.value)){
+    var lastM = psLatest(employeeId);
+    if(lastM) psm.value = lastM;
+    else if(!psm.value){ var d = new Date(); psm.value = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); }
   }
+  psCompactToolbar();
   document.getElementById("ps_preparedByName").value = STATE.preparedByName;
   document.getElementById("ps_preparedByDesignation").value = STATE.preparedByDesignation;
   document.getElementById("ps_approvedByName").value = STATE.approvedByName;
@@ -8218,7 +8240,84 @@ document.getElementById("ps_approvedByDesignation").addEventListener("change", f
 });
 function closePaySlip(){
   document.getElementById("payslipOverlay").style.display = "none";
+  var pvo = document.getElementById("psPreviewOv"); if(pvo) pvo.remove();
 }
+/* ================= Pay slip: right month on opening, clear notice when no slip, compact toolbar, print preview ================= */
+function psHas(empId, mv){ var s = STATE.payslipData && STATE.payslipData[empId] && STATE.payslipData[empId][mv]; return !!(s && (((s.earnings || []).length) || ((s.deductions || []).length))); }
+function psLatest(empId){ var p = (STATE.payslipData && STATE.payslipData[empId]) || {}; var ms = Object.keys(p).filter(function(m){ return /^\d{4}-\d{2}$/.test(m) && psHas(empId, m); }).sort(); return ms.length ? ms[ms.length - 1] : ""; }
+window.__psManual = window.__psManual || {};
+function psNoDataHtml(e, mv, lang){
+  var ur = lang === "ur", last = psLatest(e.id), ml = formatMonthLabel(mv, lang), ll = last ? formatMonthLabel(last, lang) : "";
+  return "<div class='ps-nodata'><div class='ps-nd-t'>" + (ur ? ml + " کی پے سلپ ابھی پورٹل میں نہیں" : "No pay slip for " + esc(ml) + " yet") + "</div>" +
+    "<div class='ps-nd-s'>" + (ur ? "اس مہینے کی اکاؤنٹ آفس کی سلپ ابھی درج نہیں ہوئی، اور اس گریڈ کے ریٹ بھی موجود نہیں۔" : "The Account Office slip for this month has not been entered, and there are no rates for this grade, so the slip would print empty (Gross 0).") + "</div>" +
+    "<div class='ps-nd-b'>" + (last ? "<button type='button' class='btn primary' data-psact='last' data-month='" + esc(last) + "'>" + (ur ? "آخری سلپ کھولیں: " : "Open the latest slip: ") + esc(ll) + "</button> " : "") +
+    "<button type='button' class='btn ghost' data-psact='manual'>" + (ur ? "ہاتھ سے بھریں" : "Fill this month by hand") + "</button></div></div>";
+}
+document.getElementById("payslipPaper").addEventListener("click", function(ev){
+  var b = ev.target.closest && ev.target.closest("[data-psact]"); if(!b) return;
+  var ov = document.getElementById("payslipOverlay"), mi = document.getElementById("ps_month");
+  if(b.getAttribute("data-psact") === "last"){ mi.value = b.getAttribute("data-month"); }
+  else { window.__psManual[ov.dataset.empId + "|" + mi.value] = 1; }
+  renderPaySlip();
+});
+function psCompactToolbar(){
+  var tb = document.querySelector("#payslipOverlay .payslip-toolbar"); if(!tb || tb.dataset.compact) return; tb.dataset.compact = "1";
+  var det = document.createElement("details"); det.className = "ps-more";
+  det.innerHTML = "<summary>More settings · مزید ترتیبات (DDO, BPS, language, prepared / approved by)</summary><div class='ps-more-body'></div>";
+  var body = det.querySelector(".ps-more-body");
+  ["ps_slipFields", "ps_showStage", "ps_lang", "ps_preparedByName", "ps_preparedByDesignation", "ps_approvedByName", "ps_approvedByDesignation"].forEach(function(id){
+    var el = document.getElementById(id); if(!el) return; var f = id === "ps_slipFields" ? el : el.closest(".field"); if(f) body.appendChild(f);
+  });
+  var pb = document.getElementById("ps_printBtn");
+  var pv = document.createElement("button"); pv.type = "button"; pv.className = "btn primary"; pv.id = "ps_previewBtn"; pv.textContent = "👁 Print preview · پرنٹ پری ویو";
+  pv.addEventListener("click", psPreview);
+  if(pb) pb.parentNode.insertBefore(pv, pb);
+  tb.appendChild(det);
+}
+var PS_PAPER = {A4: [210, 297], Legal: [215.9, 355.6], Foolscap: [215.9, 330.2]};
+function psPreviewDoc(sizeKey){
+  var paper = document.getElementById("payslipPaper"), clone = paper.cloneNode(true);
+  clone.removeAttribute("id");
+  Array.prototype.forEach.call(clone.querySelectorAll(".slip-tools,.add-row-btn,.row-remove-btn,button,.ps-nodata,.month-flag"), function(n){ n.remove(); });
+  Array.prototype.forEach.call(clone.querySelectorAll("input"), function(i){
+    var pv = i.nextElementSibling;
+    if(pv && pv.classList && pv.classList.contains("pv")){ i.remove(); }
+    else { var s = document.createElement("span"); s.textContent = i.value; i.parentNode.replaceChild(s, i); }
+  });
+  Array.prototype.forEach.call(clone.querySelectorAll(".pv"), function(p){ p.classList.remove("pv"); });
+  var sz = PS_PAPER[sizeKey] || PS_PAPER.A4, W = sz[0], H = sz[1], M = 12;
+  var css = Array.prototype.map.call(document.querySelectorAll("style"), function(s){ return s.textContent; }).join("\n");
+  var links = Array.prototype.map.call(document.querySelectorAll("link[rel=stylesheet]"), function(l){ return "<link rel='stylesheet' href='" + l.href + "'>"; }).join("");
+  var own = "html,body{margin:0!important;padding:0!important;overflow:auto!important;height:auto!important;background:#e6e9ef!important}" +
+    "body{padding:20px 0 40px!important}" +
+    ".payslip-paper{padding:0!important;background:transparent!important;max-width:none!important}" +
+    ".payslip-page{background:#fff;width:" + W + "mm;min-height:" + H + "mm;box-sizing:border-box;padding:" + M + "mm;margin:0 auto 20px!important;box-shadow:0 3px 16px rgba(15,23,42,.22);border-top:0!important;padding-top:" + M + "mm!important}" +
+    "@page{size:" + W + "mm " + H + "mm;margin:" + M + "mm}" +
+    "@media print{html,body{background:#fff!important;padding:0!important}.payslip-page{width:auto;min-height:0;padding:0!important;margin:0!important;box-shadow:none;page-break-after:always}.payslip-page:last-child{page-break-after:auto}}";
+  return "<!doctype html><html class='" + document.documentElement.className + "'><head><meta charset='utf-8'><title>Pay slip</title>" + links + "<style>" + css + "</style><style>" + own + "</style></head><body>" + clone.outerHTML + "</body></html>";
+}
+function psPreview(){
+  var paper = document.getElementById("payslipPaper");
+  if(!paper.querySelector(".payslip-page")){ toast("Open a month that has a pay slip first"); return; }
+  var old = document.getElementById("psPreviewOv"); if(old) old.remove();
+  var sel = document.getElementById("ps_paperSize"), key = (sel && sel.value) || "A4";
+  var ov = document.createElement("div"); ov.id = "psPreviewOv"; ov.className = "no-print";
+  ov.innerHTML = "<div class='psp-bar'><b>Pay slip — print preview · پرنٹ پری ویو</b><span class='psp-sp'></span>" +
+    "<label>Paper <select id='psp_paper'><option value='A4'>A4</option><option value='Legal'>Legal</option><option value='Foolscap'>Foolscap</option></select></label>" +
+    "<button type='button' class='btn primary' id='psp_print'>🖨 Print</button><button type='button' class='btn' id='psp_pdf'>📄 Download PDF</button><button type='button' class='btn ghost' id='psp_close'>✕ Close</button></div>" +
+    "<iframe id='psp_frame' title='Pay slip preview'></iframe>";
+  document.body.appendChild(ov);
+  var ps = ov.querySelector("#psp_paper"), fr = ov.querySelector("#psp_frame");
+  ps.value = key;
+  function load(){ fr.srcdoc = psPreviewDoc(ps.value); }
+  ps.addEventListener("change", function(){ if(sel){ sel.value = ps.value; } setPageSize(ps.value); load(); });
+  ov.querySelector("#psp_print").addEventListener("click", function(){ try{ fr.contentWindow.focus(); fr.contentWindow.print(); }catch(e){ toast("Printing is not available here"); } });
+  ov.querySelector("#psp_pdf").addEventListener("click", function(){ setPageSize(ps.value); downloadCurrentViewAsPdf(ps.value); });
+  ov.querySelector("#psp_close").addEventListener("click", function(){ ov.remove(); });
+  document.addEventListener("keydown", function esc1(ev){ if(ev.key === "Escape" && document.getElementById("psPreviewOv")){ ov.remove(); document.removeEventListener("keydown", esc1); } });
+  load();
+}
+
 
 function computeEarningsForMonth(bps, monthVal, incPercent, incFromVal){
   var earnings = STATE.allowanceRates.filter(function(r){ return r.bps===bps; }).map(function(r){ return Object.assign({}, r); });
@@ -8362,6 +8461,13 @@ function renderPaySlip(){
     }).join("");
   } else {
     var monthVal = document.getElementById("ps_month").value;
+    var hasRates = (STATE.allowanceRates || []).some(function(r){ return r.bps===e.bps; });
+    if(!psHas(e.id, monthVal) && !hasRates && !window.__psManual[e.id+"|"+monthVal]){
+      paper.innerHTML = psNoDataHtml(e, monthVal, lang);
+      paper.className = "payslip-paper" + (rtl? " rtl":""); paper.setAttribute("dir", rtl? "rtl":"ltr");
+      var sf0 = document.getElementById("ps_slipFields"); if(sf0) sf0.style.display = "none";
+      return;
+    }
     paper.innerHTML = "<div class='payslip-page' data-emp='"+esc(e.id)+"' data-month='"+esc(monthVal)+"'>"+buildEditableSlipHtml(e, monthVal, lang, 0, null)+"</div>";
   }
   paper.className = "payslip-paper" + (rtl? " rtl":"");
