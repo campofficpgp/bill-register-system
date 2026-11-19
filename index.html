@@ -8341,7 +8341,7 @@ function ensureSlipData(empId, monthVal, bps, incPercent, incFromVal){
       .map(function(r){ return {id:uid(), desc:r.desc, amount:Number(r.amount)||0}; });
     var deductions = STATE.deductionRates.filter(function(r){ return r.bps===bps; })
       .map(function(r){ return {id:uid(), desc:r.desc, amount:Number(r.amount)||0}; });
-    STATE.payslipData[empId][monthVal] = {earnings:earnings, deductions:deductions};
+    STATE.payslipData[empId][monthVal] = {earnings:earnings, deductions:deductions, bps:bps || ""}; /* each month keeps the BPS it was drawn at */
   }
   return STATE.payslipData[empId][monthVal];
 }
@@ -9970,7 +9970,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       Object.keys(ps[id] || {}).forEach(function(ymk){
         var sl = ps[id][ymk]; if(!sl || ymk < fyStart || ymk > mk || !slipIsMain(sl)) return;
         (sl.earnings || []).forEach(function(x){
-          var code = slipCode(x.desc, e.bps), lab = code ? headByCode(heads, code) : null;
+          var code = slipCode(x.desc, sl.bps || e.bps), lab = code ? headByCode(heads, code) : null;
           if(!lab){ lab = "(Unmapped: " + x.desc + ")"; unmapped[lab] = 1; }
           var r = srow(lab); if(ymk === mk) r.month += num(x.amount); else r.upto += num(x.amount);
         });
@@ -9982,7 +9982,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
             if(/^gpf subscription/i.test(x.desc)) gpf += a; else if(/income tax/i.test(x.desc)) tax += a;
             var k = x.desc || "(other)"; var q = dedBy[k] = dedBy[k] || {desc:k, n:0, amt:0}; q.n++; q.amt += a;
           });
-          if(gross || ded) empRows.push({name:e.name, persNo:e.persNo, desig:e.designation, bps:e.bps, gross:gross, gpf:gpf, tax:tax, other:ded - gpf - tax, ded:ded, net:gross - ded});
+          if(gross || ded) empRows.push({name:e.name, persNo:e.persNo, desig:e.designation, bps:sl.bps || e.bps, gross:gross, gpf:gpf, tax:tax, other:ded - gpf - tax, ded:ded, net:gross - ded});
         }
       });
     });
