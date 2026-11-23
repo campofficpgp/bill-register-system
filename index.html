@@ -7695,6 +7695,19 @@ function buildPrintExtraFieldsHtml(){
   }
   return rows.join("");
 }
+/* Print without the browser's web address / date / time: those are only printed inside the page margin, so the margin is set
+   to 0 and the same white border is drawn by the page itself (repeated on every sheet). Used for prints made in a hidden frame. */
+window.__cleanPrintFrame = function(w){
+  try{
+    var d = w.document; if(d.getElementById("cleanPrintCss")) return;
+    var css = Array.prototype.map.call(d.querySelectorAll("style"), function(x){ return x.textContent; }).join(" ");
+    var m = /@page\s*\{[^}]*?margin\s*:\s*([^;}]+)/i.exec(css), pad = m ? m[1].replace(/!important/i, "").trim() : "10mm";
+    if(/^0(px|mm|in)?$/.test(pad)) return;
+    var st = d.createElement("style"); st.id = "cleanPrintCss";
+    st.textContent = "@media print{@page{margin:0 !important}html{padding:" + pad + " !important;-webkit-box-decoration-break:clone !important;box-decoration-break:clone !important;background:#fff !important}}";
+    (d.head || d.documentElement).appendChild(st);
+  }catch(e){}
+};
 function printCurrentView(){
   if(!xOK()) return;
   if(document.getElementById("payslipOverlay").style.display !== "flex" && typeof currentPanelKey === "function" && currentPanelKey() === "statement" && window.__brStatementPrint){ window.__brStatementPrint(); return; }
@@ -8324,7 +8337,7 @@ function psPreview(){
   ps.value = key;
   function load(){ fr.srcdoc = psPreviewDoc(ps.value); }
   ps.addEventListener("change", function(){ if(sel){ sel.value = ps.value; } setPageSize(ps.value); load(); });
-  ov.querySelector("#psp_print").addEventListener("click", function(){ try{ fr.contentWindow.focus(); fr.contentWindow.print(); }catch(e){ toast("Printing is not available here"); } });
+  ov.querySelector("#psp_print").addEventListener("click", function(){ try{ window.__cleanPrintFrame(fr.contentWindow); fr.contentWindow.focus(); fr.contentWindow.print(); }catch(e){ toast("Printing is not available here"); } });
   ov.querySelector("#psp_pdf").addEventListener("click", function(){ setPageSize(ps.value); downloadCurrentViewAsPdf(ps.value); });
   ov.querySelector("#psp_close").addEventListener("click", function(){ ov.remove(); });
   document.addEventListener("keydown", function esc1(ev){ if(ev.key === "Escape" && document.getElementById("psPreviewOv")){ ov.remove(); document.removeEventListener("keydown", esc1); } });
@@ -14214,7 +14227,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   function printHtml(html){
     var fr = document.createElement("iframe"); fr.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;"; document.body.appendChild(fr);
     var d = fr.contentWindow.document; d.open(); d.write(html); d.close();
-    setTimeout(function(){ try{ fr.contentWindow.focus(); fr.contentWindow.print(); }catch(e){ toast("Printing is not available here"); } setTimeout(function(){ fr.remove(); }, 60000); }, 400);
+    setTimeout(function(){ try{ window.__cleanPrintFrame(fr.contentWindow); fr.contentWindow.focus(); fr.contentWindow.print(); }catch(e){ toast("Printing is not available here"); } setTimeout(function(){ fr.remove(); }, 60000); }, 400);
   }
 
   /* ---- vector PDF: the same primitives drawn with pdf-lib ---- */
@@ -14620,7 +14633,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     ov.querySelectorAll(".et-tab").forEach(function(b){ b.onclick = function(){ show(+b.getAttribute("data-i")); }; });
     ov.querySelector("#et_pclose").onclick = function(){ ov.remove(); };
     ov.querySelector("#et_pedit").onclick = function(){ try{ var dc = fr.contentDocument; dc.designMode = dc.designMode === "on" ? "off" : "on"; toast(dc.designMode === "on" ? "You can type in the letter now. The Word file is the place for lasting changes." : "Editing off"); }catch(e){} };
-    function doPrint(){ try{ fr.contentWindow.focus(); fr.contentWindow.print(); }catch(e){ toast("Printing is not available here"); } }
+    function doPrint(){ try{ window.__cleanPrintFrame(fr.contentWindow); fr.contentWindow.focus(); fr.contentWindow.print(); }catch(e){ toast("Printing is not available here"); } }
     ov.querySelector("#et_pprint").onclick = doPrint;
     fr.onload = function(){ if(autoPrint){ autoPrint = false; setTimeout(doPrint, 300); } };
     show(0);
