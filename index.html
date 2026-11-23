@@ -2458,6 +2458,14 @@ body.lang-ur .br-part{ font-size:17px; }
           <button type="button" class="btn ghost small" id="st_prev">◀ <span class="en">Previous</span><span class="ur">پچھلا</span></button>
           <button type="button" class="btn ghost small" id="st_next"><span class="en">Next</span><span class="ur">اگلا</span> ▶</button>
           <button type="button" class="btn small" id="st_upload">⬆ <span class="en">Upload Account Office file</span><span class="ur">اکاؤنٹس آفس کی فائل اپ لوڈ</span></button>
+          <span class="st-printpick" style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            <select id="st_printWhich" aria-label="Which copy to print" style="min-height:32px;">
+              <option value="both">Both copies / دونوں کاپیاں</option>
+              <option value="office">Office Record copy only / صرف آفس ریکارڈ کاپی</option>
+              <option value="ao">Account Office copy only / صرف اکاؤنٹس آفس کاپی</option>
+            </select>
+            <button type="button" class="btn small" id="st_printBtn">🖨 <span class="en">Print</span><span class="ur">پرنٹ</span></button>
+          </span>
           <button type="button" class="btn ghost small" id="st_paste">📋 <span class="en">Paste list</span><span class="ur">فہرست پیسٹ کریں</span></button>
           <button type="button" class="btn ghost small" id="st_clear">🗑 <span class="en">Clear Account Office figures</span><span class="ur">رقمیں صاف کریں</span></button>
           <input type="file" id="st_file" accept=".xlsx,.csv,.txt,.tsv" style="display:none">
@@ -7685,6 +7693,7 @@ function buildPrintExtraFieldsHtml(){
 }
 function printCurrentView(){
   if(!xOK()) return;
+  if(document.getElementById("payslipOverlay").style.display !== "flex" && typeof currentPanelKey === "function" && currentPanelKey() === "statement" && window.__brStatementPrint){ window.__brStatementPrint(); return; }
   var payslipOpen = document.getElementById("payslipOverlay").style.display === "flex";
   if(payslipOpen){ document.body.classList.add("payslip-mode"); }
   document.getElementById("pbPrintExtraFields").innerHTML = buildPrintExtraFieldsHtml();
@@ -10754,6 +10763,58 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     }
     await window.__brExportTables(kind, tables, {title:title, sub:sg("grant"), base:"BillRegister_MonthlyBalanceStatement_" + mk, landscape:false, office:""});
   };
+  /* ---------- print: choose Office Record copy / Account Office copy / both; each copy is fitted to one page (two at most) ---------- */
+  var ST_PRINT_CSS =
+    "#panel-statement .st-copy{box-shadow:none!important;border:none!important;padding:0!important;margin:0!important;background:#fff!important}" +
+    "#panel-statement .table-wrap{overflow:visible!important}" +
+    "#panel-statement .st-tbl{width:100%!important;table-layout:fixed;border-collapse:collapse;line-height:1.15;font-family:'Book Antiqua',Palatino,'Palatino Linotype',serif;color:#000}" +
+    "#panel-statement .st-tbl td,#panel-statement .st-tbl th{padding:2px 4px!important;height:auto!important;border:1px solid #000!important;word-wrap:break-word;overflow-wrap:anywhere;white-space:normal!important;text-overflow:clip!important;overflow:visible!important;color:#000!important}" +
+    "#panel-statement .st-tbl td.c{text-align:center}#panel-statement .st-tbl td.num,#panel-statement .st-tbl th.num{text-align:right}#panel-statement .st-tbl td:not(.num):not(.c){text-align:left}" +
+    "#panel-statement .st-tbl thead{display:table-header-group}#panel-statement .st-tbl thead th{background:#fff!important;color:#000!important;font-weight:700;text-align:center}" +
+    "#panel-statement .st-tbl tr{break-inside:avoid;page-break-inside:avoid}" +
+    "#panel-statement .st-a{font-size:10.5px!important}#panel-statement .st-a thead th{font-size:10px!important}" +
+    "#panel-statement .st-c{font-size:8.6px!important}#panel-statement .st-c thead th{font-size:8px!important}" +
+    "#panel-statement tr.st-sub td,#panel-statement tr.st-grand td{background:#fff!important;font-weight:700}" +
+    "#panel-statement .st-a tr.st-grand td{font-size:11.5px!important}#panel-statement .st-c tr.st-grand td{font-size:9.2px!important}" +
+    "#panel-statement .st-sigrow{margin-top:30px}#panel-statement .st-sigline{border-bottom:1px solid #000}" +
+    "#panel-statement .st-cert{margin:8px 0 2px;font-size:10px;font-weight:700}" +
+    "#panel-statement .st-title{margin:0 0 6px;color:#000!important}#panel-statement .st-title .t1{font-size:13px}#panel-statement .st-title .t2{font-size:10px}#panel-statement .st-title h3.t3{font-size:9px;color:#000!important}";
+  window.__brStatementPrint = function(){
+    var host = $("stBody"), cards = host ? host.querySelectorAll(".st-copy") : [];
+    if(!cards.length){ toast("There are no figures to print for this month."); return; }
+    var which = ($("st_printWhich") || {}).value || "both", pick = [];
+    if(which !== "ao") pick.push(cards[0]);
+    if(which !== "office" && cards[1]) pick.push(cards[1]);
+    var paper = window.brBoxPaper ? window.brBoxPaper() : "A4", a4 = paper === "A4";
+    var MM = 3.7795, M = 10, pw = Math.floor(((a4 ? 210 : 215.9) - 2 * M) * MM), ph = Math.floor(((a4 ? 297 : 330.2) - 2 * M) * MM) - 6;
+    var css = Array.prototype.map.call(document.querySelectorAll("style"), function(st){ return st.textContent; }).join("\n").replace(/@page\s*\{[^}]*\}/g, "");
+    var own = "@page{size:" + (a4 ? "210mm 297mm" : "8.5in 13in") + ";margin:" + M + "mm}html,body{margin:0!important;padding:0!important;background:#fff!important;color:#000}" +
+      "#panel-statement{display:block!important;padding:0!important;margin:0!important;background:#fff!important}" +
+      ".pg{width:" + pw + "px;break-after:page;page-break-after:always}.pg:last-child{break-after:auto;page-break-after:auto}" +
+      "#panel-statement .st-first{break-after:auto!important;page-break-after:auto!important}" + ST_PRINT_CSS;
+    var fr = document.createElement("iframe");
+    fr.setAttribute("aria-hidden", "true");
+    fr.style.cssText = "position:fixed;left:-12000px;top:0;width:" + (pw + 40) + "px;height:600px;border:0;";
+    document.body.appendChild(fr);
+    var d = fr.contentDocument, ur = document.body.classList.contains("lang-ur");
+    d.open();
+    d.write("<!doctype html><html><head><meta charset='utf-8'><title>Monthly Balance Statement</title><style>" + css + "</style><style>" + own + "</style></head><body" + (ur ? " class='lang-ur'" : "") + "><div id='panel-statement'>" +
+      pick.map(function(c){ return "<div class='pg'><div class='pgi'>" + c.outerHTML + "</div></div>"; }).join("") + "</div></body></html>");
+    d.close();
+    setTimeout(function(){
+      Array.prototype.forEach.call(d.querySelectorAll(".pgi"), function(el){
+        var h = el.scrollHeight;
+        var z = Math.floor(ph / h * 1000) / 1000;                    /* fill one page: enlarge a short copy (up to 120%), shrink a long one */
+        z = Math.min(1.2, Math.max(0.74, z));                         /* below 74% the list is allowed to flow onto a second page */
+        if(Math.abs(z - 1) > 0.01) el.style.zoom = z;
+      });
+      try{ fr.contentWindow.focus(); fr.contentWindow.print(); }catch(e){ toast("Could not open the print window: " + (e && e.message ? e.message : e)); }
+      setTimeout(function(){ fr.remove(); }, 60000);
+    }, 350);
+  };
+  $("st_printBtn").addEventListener("click", function(){ if(typeof xOK === "function" && !xOK()) return; window.__brStatementPrint(); });
+  try{ var spw = localStorage.getItem("brStPrintWhich"); if(spw) $("st_printWhich").value = spw; }catch(e){}
+  $("st_printWhich").addEventListener("change", function(){ try{ localStorage.setItem("brStPrintWhich", $("st_printWhich").value); }catch(e){} });
   window.__brStatement = {rows:function(mk){ return buildRows(mk); }, parseText:parseText, matchCode:matchCode, applyParsed:applyParsed, render:render};
 })();
 
