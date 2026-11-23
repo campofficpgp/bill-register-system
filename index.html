@@ -10509,7 +10509,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
      Month amount = the chosen month's column; progressive = July of that financial year up to the chosen month. */
   var MCOL = {JAN:1, FEB:2, MAR:3, APR:4, MAY:5, JUN:6, JUL:7, AUG:8, SEP:9, OCT:10, NOV:11, DEC:12};
   function multiColumn(raw, heads, mk){
-    var hi = -1, descCol = -1, cols = {}, budCol = -1, i, j;
+    var hi = -1, descCol = -1, cols = {}, budCol = -1, expCol = -1, i, j;
     for(i = 0; i < raw.length && hi < 0; i++){
       var r = raw[i] || [];
       for(j = 0; j < r.length; j++){ if(typeof r[j] === "string" && /^detail object desc/i.test(r[j].trim())){ hi = i; descCol = j; } }
@@ -10519,6 +10519,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       if(typeof c !== "string") return;
       var m = /^([A-Za-z]{3})_AMOUNT$/.exec(c.trim().replace(/\s+/g, "_")); if(m && MCOL[m[1].toUpperCase()]) cols[MCOL[m[1].toUpperCase()]] = k;
       if(/^final budget$/i.test(c.trim())) budCol = k;
+      if(/^expenditure$/i.test(c.trim())) expCol = k;
     });
     if(Object.keys(cols).length < 2) return null;
     var cm = +mk.slice(5), order = [], x = 7;
@@ -10529,6 +10530,9 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       if(typeof desc !== "string" || !desc.trim() || /^(total|tot|grand|g\/l|sub)/i.test(desc.trim())) continue;
       var vals = {}; fyOrder.forEach(function(mn){ var v = cols[mn] != null ? row[cols[mn]] : 0; vals[mn] = typeof v === "number" ? v : 0; sumCol[mn] = (sumCol[mn] || 0) + vals[mn]; });
       var month = vals[cm] || 0, prog = 0; order.forEach(function(mn){ prog += vals[mn]; });
+      if(expCol >= 0 && typeof row[expCol] === "number"){         /* Expenditure = progressive up to the file's last month; take off the months after the chosen one */
+        prog = row[expCol]; var after = false; fyOrder.forEach(function(mn){ if(after) prog -= vals[mn]; if(mn === cm) after = true; });
+      }
       var code = matchCode(desc, heads);
       if(budCol >= 0 && code){
         var fb = typeof row[budCol] === "number" ? row[budCol] : 0, h = heads.filter(function(q){ return codeOf(q.label) === code; })[0];
@@ -11215,7 +11219,8 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     var dIx = ix["DETAIL OBJECT DESC"], yIx = ix["YEAR"], eIx = ix["EXPENDITURE"];
     if(dIx == null) throw new Error("Column 'Detail Object Desc' not found — is this the Account Office RI-4720 file?");
     var mIx = MON.map(function(m){ return ix[m + "_AMOUNT"]; });
-    if(mIx.some(function(v){ return v == null; })) throw new Error("Month columns (JUL_AMOUNT … JUN_AMOUNT) not found.");
+    var known = mIx.map(function(v){ return v != null; });
+    if(!known.some(Boolean)) throw new Error("Month columns (JUL_AMOUNT … JUN_AMOUNT) not found.");
     var heads = {}, order = [], year = null, warn = [];
     for(var r = 1; r < rows.length; r++){
       var row = rows[r], desc = row[dIx];
@@ -11223,7 +11228,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       desc = String(desc).trim();
       if(!/^[A-Za-z]\d{4,5}[A-Za-z0-9]?\s*-/.test(desc)) continue;          /* "Total" and other non-head rows */
       if(year == null && yIx != null && row[yIx] != null && row[yIx] !== "") year = parseInt(row[yIx], 10);
-      var m = mIx.map(function(i){ return num(row[i]); }), exp = eIx != null ? num(row[eIx]) : m.reduce(function(a, b){ return a + b; }, 0);
+      var m = mIx.map(function(i){ return i == null ? 0 : num(row[i]); }), exp = eIx != null ? num(row[eIx]) : m.reduce(function(a, b){ return a + b; }, 0);
       var c = codeOf(desc), h = heads[c];
       if(!h){ h = heads[c] = {code: c, label: desc, m: m, exp: exp, lines: 1}; order.push(c); }
       else{
@@ -11235,7 +11240,12 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
         }
       }
     }
-    return {year: year, fy: year ? fyOfYear(year) : null, heads: heads, order: order, warn: Array.from(new Set(warn))};
+    if(known.some(function(k){ return !k; })){
+      var have = MON.filter(function(mn, i){ return known[i]; });
+      warn = warn.filter(function(w){ return !/different month figures/.test(w); });
+      warn.unshift("This Account Office file has month columns only for " + have.join(", ") + " — only these months are compared; the year total uses its Expenditure column.");
+    }
+    return {year: year, fy: year ? fyOfYear(year) : null, heads: heads, order: order, known: known, warn: Array.from(new Set(warn))};
   }
 
   /* reg = {contMonthly:{code:{"YYYY-MM":gross}}, contFYHasData:{fy:bool}, salMonthly:{code:{"YYYY-MM":amount}}, salMonthHasData:{"YYYY-MM":bool}} */
@@ -11248,7 +11258,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
       var a = ao.heads[c], sal = isSalaryCode(c), cells = [], hasAny = false;
       months.forEach(function(mk, i){
         var aoV = a ? a.m[i] : 0, regV = sal ? num(((reg.salMonthly || {})[c] || {})[mk]) : num(((reg.contMonthly || {})[c] || {})[mk]);
-        var has = sal ? !!(reg.salMonthHasData && reg.salMonthHasData[mk]) : contHas;
+        var has = (sal ? !!(reg.salMonthHasData && reg.salMonthHasData[mk]) : contHas) && !(ao.known && !ao.known[i]);
         var cell = {mk: mk, ao: Math.round(aoV), reg: Math.round(regV), has: has, diff: has ? Math.round(regV) - Math.round(aoV) : null};
         if(has) hasAny = true; cells.push(cell);
       });
