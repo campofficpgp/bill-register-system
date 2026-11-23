@@ -2458,13 +2458,17 @@ body.lang-ur .br-part{ font-size:17px; }
           <button type="button" class="btn ghost small" id="st_prev">◀ <span class="en">Previous</span><span class="ur">پچھلا</span></button>
           <button type="button" class="btn ghost small" id="st_next"><span class="en">Next</span><span class="ur">اگلا</span> ▶</button>
           <button type="button" class="btn small" id="st_upload">⬆ <span class="en">Upload Account Office file</span><span class="ur">اکاؤنٹس آفس کی فائل اپ لوڈ</span></button>
-          <span class="st-printpick" style="display:inline-flex;align-items:center;gap:6px;flex-wrap:nowrap;max-width:100%;">
+          <span class="st-printpick" style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;max-width:100%;">
             <select id="st_printWhich" aria-label="Which copy to print" style="min-height:32px;width:auto!important;max-width:100%;flex:0 1 auto;">
               <option value="both">Both copies / دونوں کاپیاں</option>
               <option value="office">Office Record copy only / صرف آفس ریکارڈ کاپی</option>
               <option value="ao">Account Office copy only / صرف اکاؤنٹس آفس کاپی</option>
             </select>
             <button type="button" class="btn small" id="st_printBtn">🖨 <span class="en">Print</span><span class="ur">پرنٹ</span></button>
+            <button type="button" class="btn ghost small" id="st_dlPdf" title="Download PDF">📄 PDF</button>
+            <button type="button" class="btn ghost small" id="st_dlWord" title="Download Word">📝 Word</button>
+            <button type="button" class="btn ghost small" id="st_dlXlsx" title="Download Excel">📊 Excel</button>
+            <button type="button" class="btn ghost small" id="st_dlCsv" title="Download CSV">CSV</button>
           </span>
           <button type="button" class="btn ghost small" id="st_paste">📋 <span class="en">Paste list</span><span class="ur">فہرست پیسٹ کریں</span></button>
           <button type="button" class="btn ghost small" id="st_clear">🗑 <span class="en">Clear Account Office figures</span><span class="ur">رقمیں صاف کریں</span></button>
@@ -9583,7 +9587,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(!asked && window.__campAskStamp && window.__campAskStamp(function(){ window.__brExportTables(kind, tables, o, true); })){ return; }
     var maxCols = 0; tables.forEach(function(t){ maxCols = Math.max(maxCols, t.heads.length); });
     tables.forEach(function(t, i){ if(i > 0 && t.pageBreak == null && t.heads.length > 8 && tables[i - 1].heads.length > 8) t.pageBreak = true; });   /* two wide tables: each starts on its own page */
-    var m = {office:o.office || clean(STATE.officeName || "") || "", title:o.title, sub:(o.sub ? o.sub + "   |   " : "") + "Generated " + todayText(), landscape:o.landscape != null ? !!o.landscape : maxCols > 6, base:o.base + "_" + todayIso(), sign:signoff(), stamp:!!(window.__campStampOn && window.__campStampOn()), paper:o.paper ? paperFrom(o.paper) : paperSize()};
+    var m = {office:o.office || clean(STATE.officeName || "") || "", title:o.title, sub:o.noGen ? (o.sub || "") : (o.sub ? o.sub + "   |   " : "") + "Generated " + todayText(), landscape:o.landscape != null ? !!o.landscape : maxCols > 6, base:o.noDate ? o.base : o.base + "_" + todayIso(), sign:signoff(), stamp:!!(window.__campStampOn && window.__campStampOn()), paper:o.paper ? paperFrom(o.paper) : paperSize()};
     say("Preparing the file…", "فائل تیار ہو رہی ہے…");
     try{
       if(kind === "pdf"){ await loadLib("pdflib"); download(new Blob([await buildPdf(tables, m)], {type:"application/pdf"}), m.base + ".pdf"); }
@@ -10755,13 +10759,15 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
   window.__brStatementExport = async function(kind){
     var mk = $("st_month") && $("st_month").value; if(!mk || !lastRows.length){ toast("There are no figures to export for this month."); return; }
     var tables = exportTables(mk), title = "MONTHLY BALANCE STATEMENT FOR THE MONTH OF " + ymLabel(mk).toUpperCase().replace(" ", ", ");
+    var which = stPick().which, base = stFileBase();
+    if(which === "office") tables = tables.slice(0, 1); else if(which === "ao") tables = tables.slice(1, 2);
     if(kind === "csv"){
       var q = function(v){ v = String(v == null ? "" : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }, out = [q(title), q(sg("grant"))];
       tables.forEach(function(t){ out.push(""); out.push(q(t.title)); out.push(t.heads.map(q).join(",")); t.rows.forEach(function(r){ out.push(r.banner ? q(r.banner) : r.cells.map(q).join(",")); }); });
       var a = document.createElement("a"), u = URL.createObjectURL(new Blob(["\ufeff" + out.join("\r\n")], {type:"text/csv;charset=utf-8"}));
-      a.href = u; a.download = "BillRegister_MonthlyBalanceStatement_" + mk + ".csv"; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(u); a.remove(); }, 1500); return;
+      a.href = u; a.download = base + ".csv"; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(u); a.remove(); }, 1500); return;
     }
-    await window.__brExportTables(kind, tables, {title:title, sub:sg("grant"), base:"BillRegister_MonthlyBalanceStatement_" + mk, landscape:false, office:""});
+    await window.__brExportTables(kind, tables, {title:title, sub:sg("grant"), base:base, landscape:false, office:"", noGen:true, noDate:true});
   };
   /* ---------- print: choose Office Record copy / Account Office copy / both; each copy is fitted to one page (two at most) ---------- */
   var ST_PRINT_CSS =
@@ -10779,26 +10785,31 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     "#panel-statement .st-sigrow{margin-top:30px}#panel-statement .st-sigline{border-bottom:1px solid #000}" +
     "#panel-statement .st-cert{margin:8px 0 2px;font-size:10px;font-weight:700}" +
     "#panel-statement .st-title{margin:0 0 6px;color:#000!important}#panel-statement .st-title .t1{font-size:13px}#panel-statement .st-title .t2{font-size:10px}#panel-statement .st-title h3.t3{font-size:9px;color:#000!important}";
-  window.__brStatementPrint = function(){
+  /* one hidden page holding the chosen copies, each fitted to its own sheet. Page margins are 0 so the browser prints
+     no web address / date / time in the corners; the 10 mm white border is drawn by the page itself. */
+  function stPick(){
     var host = $("stBody"), cards = host ? host.querySelectorAll(".st-copy") : [];
-    if(!cards.length){ toast("There are no figures to print for this month."); return; }
     var which = ($("st_printWhich") || {}).value || "both", pick = [];
-    if(which !== "ao") pick.push(cards[0]);
-    if(which !== "office" && cards[1]) pick.push(cards[1]);
+    if(cards.length){ if(which !== "ao") pick.push(cards[0]); if(which !== "office" && cards[1]) pick.push(cards[1]); }
+    return {which: which, cards: pick};
+  }
+  function stBuildFrame(pick, done){
     var paper = window.brBoxPaper ? window.brBoxPaper() : "A4", a4 = paper === "A4";
-    var MM = 3.7795, M = 10, pw = Math.floor(((a4 ? 210 : 215.9) - 2 * M) * MM), ph = Math.floor(((a4 ? 297 : 330.2) - 2 * M) * MM) - 6;
+    var MM = 3.7795, M = 10, W = (a4 ? 210 : 215.9), H = (a4 ? 297 : 330.2);
+    var pw = Math.floor((W - 2 * M) * MM), ph = Math.floor((H - 2 * M) * MM) - 6;
     var css = Array.prototype.map.call(document.querySelectorAll("style"), function(st){ return st.textContent; }).join("\n").replace(/@page\s*\{[^}]*\}/g, "");
-    var own = "@page{size:" + (a4 ? "210mm 297mm" : "8.5in 13in") + ";margin:" + M + "mm}html,body{margin:0!important;padding:0!important;background:#fff!important;color:#000}" +
+    var own = "@page{size:" + W + "mm " + H + "mm;margin:0}html,body{margin:0!important;padding:0!important;background:#fff!important;color:#000}" +
       "#panel-statement{display:block!important;padding:0!important;margin:0!important;background:#fff!important}" +
-      ".pg{width:" + pw + "px;break-after:page;page-break-after:always}.pg:last-child{break-after:auto;page-break-after:auto}" +
+      ".pg{box-sizing:border-box;width:" + W + "mm;padding:" + M + "mm;background:#fff;-webkit-box-decoration-break:clone;box-decoration-break:clone;break-after:page;page-break-after:always}" +
+      ".pg:last-child{break-after:auto;page-break-after:auto}.pgi{width:" + pw + "px}" +
       "#panel-statement .st-first{break-after:auto!important;page-break-after:auto!important}" + ST_PRINT_CSS;
     var fr = document.createElement("iframe");
     fr.setAttribute("aria-hidden", "true");
-    fr.style.cssText = "position:fixed;left:-12000px;top:0;width:" + (pw + 40) + "px;height:600px;border:0;";
+    fr.style.cssText = "position:fixed;left:-12000px;top:0;width:" + Math.ceil(W * MM + 40) + "px;height:800px;border:0;";
     document.body.appendChild(fr);
     var d = fr.contentDocument, ur = document.body.classList.contains("lang-ur");
     d.open();
-    d.write("<!doctype html><html><head><meta charset='utf-8'><title>Monthly Balance Statement</title><style>" + css + "</style><style>" + own + "</style></head><body" + (ur ? " class='lang-ur'" : "") + "><div id='panel-statement'>" +
+    d.write("<!doctype html><html><head><meta charset='utf-8'><title>&#8203;</title><style>" + css + "</style><style>" + own + "</style></head><body" + (ur ? " class='lang-ur'" : "") + "><div id='panel-statement'>" +
       pick.map(function(c){ return "<div class='pg'><div class='pgi'>" + c.outerHTML + "</div></div>"; }).join("") + "</div></body></html>");
     d.close();
     setTimeout(function(){
@@ -10808,11 +10819,46 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
         z = Math.min(1.2, Math.max(0.74, z));                         /* below 74% the list is allowed to flow onto a second page */
         if(Math.abs(z - 1) > 0.01) el.style.zoom = z;
       });
+      done(fr, d, {a4: a4, W: W, H: H, M: M, paper: paper});
+    }, 350);
+  }
+  window.__brStatementPrint = function(){
+    var P = stPick();
+    if(!P.cards.length){ toast("There are no figures to print for this month."); return; }
+    stBuildFrame(P.cards, function(fr){
       try{ fr.contentWindow.focus(); fr.contentWindow.print(); }catch(e){ toast("Could not open the print window: " + (e && e.message ? e.message : e)); }
       setTimeout(function(){ fr.remove(); }, 60000);
-    }, 350);
+    });
+  };
+  /* PDF = a picture of exactly what prints (one sheet per copy); Word / Excel / CSV = the same copies as tables */
+  function stFileBase(){ var mk = ($("st_month") || {}).value || "", w = stPick().which; return "Monthly_Balance_Statement_" + mk + (w === "office" ? "_Office_Record_Copy" : w === "ao" ? "_Account_Office_Copy" : ""); }
+  window.__brStatementPdf = async function(){
+    var P = stPick();
+    if(!P.cards.length){ toast("There are no figures to export for this month."); return; }
+    toast("Preparing the PDF…");
+    var ok = window.__brLoadPdfLibs ? await window.__brLoadPdfLibs() : false;
+    if(!ok){ toast("The PDF helper could not be loaded — check the internet connection and try again."); return; }
+    stBuildFrame(P.cards, async function(fr, d, g){
+      try{
+        var JP = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF, pdf = new JP({unit: "mm", format: [g.W, g.H], orientation: "portrait", compress: true});
+        var pages = d.querySelectorAll(".pgi");
+        for(var i = 0; i < pages.length; i++){
+          var cv = await window.html2canvas(pages[i], {scale: 2.5, backgroundColor: "#ffffff", logging: false, useCORS: true});
+          var maxW = g.W - 2 * g.M, maxH = g.H - 2 * g.M, r = cv.height / cv.width, w = maxW, h = w * r;
+          if(h > maxH){ h = maxH; w = h / r; }
+          if(i) pdf.addPage([g.W, g.H], "portrait");
+          pdf.addImage(cv.toDataURL("image/jpeg", 0.95), "JPEG", g.M + (maxW - w) / 2, g.M, w, h, undefined, "FAST");
+        }
+        pdf.save(stFileBase() + ".pdf");
+        toast("File ready — check your Downloads folder.");
+      }catch(e){ toast("Could not build the PDF: " + (e && e.message ? e.message : e)); }
+      setTimeout(function(){ fr.remove(); }, 2000);
+    });
   };
   $("st_printBtn").addEventListener("click", function(){ if(typeof xOK === "function" && !xOK()) return; window.__brStatementPrint(); });
+  [["st_dlPdf", "pdf"], ["st_dlWord", "word"], ["st_dlXlsx", "excel"], ["st_dlCsv", "csv"]].forEach(function(x){
+    $(x[0]).addEventListener("click", function(){ if(typeof xOK === "function" && !xOK()) return; if(x[1] === "pdf") window.__brStatementPdf(); else window.__brStatementExport(x[1]); });
+  });
   try{ var spw = localStorage.getItem("brStPrintWhich"); if(spw) $("st_printWhich").value = spw; }catch(e){}
   $("st_printWhich").addEventListener("change", function(){ try{ localStorage.setItem("brStPrintWhich", $("st_printWhich").value); }catch(e){} });
   window.__brStatement = {rows:function(mk){ return buildRows(mk); }, parseText:parseText, matchCode:matchCode, applyParsed:applyParsed, render:render};
