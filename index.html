@@ -10843,7 +10843,8 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
         var JP = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF, pdf = new JP({unit: "mm", format: [g.W, g.H], orientation: "portrait", compress: true});
         var pages = d.querySelectorAll(".pgi");
         for(var i = 0; i < pages.length; i++){
-          var cv = await window.html2canvas(pages[i], {scale: 2.5, backgroundColor: "#ffffff", logging: false, useCORS: true});
+          var cv = await window.html2canvas(pages[i], {scale: 2, backgroundColor: "#ffffff", logging: false, useCORS: true,
+            onclone: function(cd){ try{ if(typeof fixUnsupportedColors === "function") fixUnsupportedColors(cd); }catch(e){} }});
           var maxW = g.W - 2 * g.M, maxH = g.H - 2 * g.M, r = cv.height / cv.width, w = maxW, h = w * r;
           if(h > maxH){ h = maxH; w = h / r; }
           if(i) pdf.addPage([g.W, g.H], "portrait");
