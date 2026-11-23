@@ -8994,7 +8994,6 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(fySel && $(fySel)){ var fv = $(fySel).value; sub.push(fv && fv !== "ALL" ? "Financial year " + fv : "All financial years"); }
     var chip = panel.querySelector(".results-strip .count-chip, .panel-head .count-chip");
     if(chip && clean(chip.textContent)) sub.push(clean(chip.textContent));
-    sub.push("Generated " + todayText());
     var maxCols = 0; tables.forEach(function(t){ maxCols = Math.max(maxCols, t.heads.length); });
     var base = "BillRegister_" + (PANEL_TITLE[key] || key).replace(/[^A-Za-z0-9]+/g, "") + (key === "monthly" && window.__brMonthlyTag ? "_" + window.__brMonthlyTag : (key === "statement" && window.__brStatementTag ? "_" + window.__brStatementTag : "")) + "_" + todayIso();
     return {office:office, title:PANEL_TITLE[key] || key, sub:sub.join("   |   "), landscape:maxCols > 6, base:base, sign:signoff(), stamp:!!(window.__campStampOn && window.__campStampOn()), paper:paperSize()};
@@ -9202,7 +9201,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     pages.forEach(function(p, i){
       p.drawLine({start:{x:M, y:26}, end:{x:PW - M, y:26}, thickness:.6, color:line});
       p.drawText("", {x:M, y:15, size:7, font:F, color:grey});
-      var mid = "Generated " + todayText();
+      var mid = "";
       p.drawText(mid, {x:(PW - F.widthOfTextAtSize(mid, 7)) / 2, y:15, size:7, font:F, color:grey});
       var s = "Page " + (i + 1) + " of " + pages.length;
       p.drawText(s, {x:PW - M - FB.widthOfTextAtSize(s, 7.4), y:15, size:7.4, font:FB, color:navy});
@@ -9600,7 +9599,7 @@ document.getElementById("exportMasterDataBtn").addEventListener("click", functio
     if(!asked && window.__campAskStamp && window.__campAskStamp(function(){ window.__brExportTables(kind, tables, o, true); })){ return; }
     var maxCols = 0; tables.forEach(function(t){ maxCols = Math.max(maxCols, t.heads.length); });
     tables.forEach(function(t, i){ if(i > 0 && t.pageBreak == null && t.heads.length > 8 && tables[i - 1].heads.length > 8) t.pageBreak = true; });   /* two wide tables: each starts on its own page */
-    var m = {office:o.office || clean(STATE.officeName || "") || "", title:o.title, sub:o.noGen ? (o.sub || "") : (o.sub ? o.sub + "   |   " : "") + "Generated " + todayText(), landscape:o.landscape != null ? !!o.landscape : maxCols > 6, base:o.noDate ? o.base : o.base + "_" + todayIso(), sign:signoff(), stamp:!!(window.__campStampOn && window.__campStampOn()), paper:o.paper ? paperFrom(o.paper) : paperSize()};
+    var m = {office:o.office || clean(STATE.officeName || "") || "", title:o.title, sub:(o.sub || ""), landscape:o.landscape != null ? !!o.landscape : maxCols > 6, base:o.noDate ? o.base : o.base + "_" + todayIso(), sign:signoff(), stamp:!!(window.__campStampOn && window.__campStampOn()), paper:o.paper ? paperFrom(o.paper) : paperSize()};
     say("Preparing the file…", "فائل تیار ہو رہی ہے…");
     try{
       if(kind === "pdf"){ await loadLib("pdflib"); download(new Blob([await buildPdf(tables, m)], {type:"application/pdf"}), m.base + ".pdf"); }
